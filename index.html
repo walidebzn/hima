@@ -1269,7 +1269,7 @@ html, body { height: 100%; overflow: hidden; background: var(--off); font-family
 </div>
 
 <!-- ═══════ SPLASH ═══════ -->
-<div id="sp" class="view" style="display:none">
+<div id="sp" class="view on">
   <div class="sp-in">
     <div class="sp-mark"><div class="sp-mark-ltr">H</div></div>
     <div class="sp-wordmark">HIMA</div>
@@ -1284,7 +1284,7 @@ html, body { height: 100%; overflow: hidden; background: var(--off); font-family
 </div>
 
 <!-- ═══════ ONBOARDING ═══════ -->
-<div id="onb" class="view on">
+<div id="onb" class="view">
   <div class="ohd">
     <div class="prg" id="prg"></div>
     <div class="step-lbl" id="slbl">Étape 1 / 8</div>
@@ -2676,25 +2676,33 @@ const OBJ={
 const STEPS=['Faisons connaissance','Votre mode','Votre objectif','Vos mensurations','Niveau & disponibilité','Lieu d\'entraînement','Votre santé','Alimentation'];
 
 /* ═══ BOOT ═══ */
-// Direct boot - no splash
-try {
-  const s = localStorage.getItem('hima9');
-  if(s){
-    try { U = JSON.parse(s); } catch(e){ U={}; }
-    hist = U.hist||[];
-    streak = U.streak||1;
-    eau = U.eau||0;
-    show('app');
-    setTimeout(function(){ try{ initApp(); }catch(e){ console.warn(e); } }, 100);
-  } else {
+function boot(){
+  try {
+    const s=localStorage.getItem('hima9');
+    if(s){
+      try { U=JSON.parse(s); } catch(e){ U={}; }
+      hist=U.hist||[];streak=U.streak||1;eau=U.eau||0;
+      show('app');
+      try { initApp(); } catch(e){ console.warn(e); }
+    } else {
+      show('onb');
+      try { buildPrg(); } catch(e){ console.warn(e); }
+    }
+  } catch(e) {
+    console.warn('Boot error:', e);
     show('onb');
-    setTimeout(function(){ try{ buildPrg(); }catch(e){ console.warn(e); } }, 100);
+    try { buildPrg(); } catch(e2){}
   }
-} catch(e){
-  console.warn(e);
-  show('onb');
-  setTimeout(function(){ try{ buildPrg(); }catch(e2){} }, 100);
 }
+// Multiple fallbacks to ensure boot always happens
+window._bootTimer = setTimeout(boot, 1500);
+setTimeout(boot, 3000); // backup
+// Click anywhere to skip
+document.addEventListener('click', function bootOnClick(){
+  document.removeEventListener('click', bootOnClick);
+  clearTimeout(window._bootTimer);
+  boot();
+});
 
 function show(id){document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));document.getElementById(id).classList.add('on');}
 
@@ -3652,7 +3660,7 @@ function buildFallbackAnalysis() {
       isF ? 'Épaules — créent une silhouette en V féminine, amincit visuellement la taille' : 'Bras — complémentent le développement du torse',
     ],
     programme_ajuste: `Votre programme est ajusté dès maintenant. ${isF?'2 séances glutes/week + 1 épaules':'2 séances épaules/week + 1 poitrine/bras'} en priorité. Le déséquilibre actuel se corrige en 6-8 semaines avec la bonne programmation.`,
-    nutrition_conseil: `${mode==='bodybuilding'?'Augmentez les glucides les jours d'entraînement des zones déficitaires pour maximiser la synthèse protéique locale.':obj==='perte'?'Maintenez un déficit modéré mais ne descendez pas sous '+Math.round((U.macros?.kcal||2000)*0.85)+' kcal les jours de séance intense.':'Timing des protéines autour des séances prioritaires — 30g dans les 30 min post-entraînement.'}`
+    nutrition_conseil: `${mode==='bodybuilding'?'Augmentez les glucides les jours des zones déficitaires pour maximiser la synthèse protéique locale.':obj==='perte'?'Maintenez un déficit modéré - ne pas descendre sous les macros minimum.':'Timing des protéines autour des séances prioritaires — 30g dans les 30 min post-entraînement.'}`
   };
 }
 
@@ -3714,6 +3722,7 @@ function renderBodyAnalysisResults(data) {
   // Update user profile with analysis
   U.body_analysis = data;
   U.body_analysis_date = Date.now();
+  window._lastBodyAnalysis = data;
   save();
 }
 
