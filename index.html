@@ -1269,7 +1269,7 @@ html, body { height: 100%; overflow: hidden; background: var(--off); font-family
 </div>
 
 <!-- ═══════ SPLASH ═══════ -->
-<div id="sp" class="view on">
+<div id="sp" class="view" style="display:none">
   <div class="sp-in">
     <div class="sp-mark"><div class="sp-mark-ltr">H</div></div>
     <div class="sp-wordmark">HIMA</div>
@@ -1284,7 +1284,7 @@ html, body { height: 100%; overflow: hidden; background: var(--off); font-family
 </div>
 
 <!-- ═══════ ONBOARDING ═══════ -->
-<div id="onb" class="view">
+<div id="onb" class="view on">
   <div class="ohd">
     <div class="prg" id="prg"></div>
     <div class="step-lbl" id="slbl">Étape 1 / 8</div>
@@ -2676,33 +2676,25 @@ const OBJ={
 const STEPS=['Faisons connaissance','Votre mode','Votre objectif','Vos mensurations','Niveau & disponibilité','Lieu d\'entraînement','Votre santé','Alimentation'];
 
 /* ═══ BOOT ═══ */
-function boot(){
-  try {
-    const s=localStorage.getItem('hima9');
-    if(s){
-      try { U=JSON.parse(s); } catch(e){ U={}; }
-      hist=U.hist||[];streak=U.streak||1;eau=U.eau||0;
-      show('app');
-      try { initApp(); } catch(e){ console.warn(e); }
-    } else {
-      show('onb');
-      try { buildPrg(); } catch(e){ console.warn(e); }
-    }
-  } catch(e) {
-    console.warn('Boot error:', e);
+// Direct boot - no splash
+try {
+  const s = localStorage.getItem('hima9');
+  if(s){
+    try { U = JSON.parse(s); } catch(e){ U={}; }
+    hist = U.hist||[];
+    streak = U.streak||1;
+    eau = U.eau||0;
+    show('app');
+    setTimeout(function(){ try{ initApp(); }catch(e){ console.warn(e); } }, 100);
+  } else {
     show('onb');
-    try { buildPrg(); } catch(e2){}
+    setTimeout(function(){ try{ buildPrg(); }catch(e){ console.warn(e); } }, 100);
   }
+} catch(e){
+  console.warn(e);
+  show('onb');
+  setTimeout(function(){ try{ buildPrg(); }catch(e2){} }, 100);
 }
-// Multiple fallbacks to ensure boot always happens
-window._bootTimer = setTimeout(boot, 1500);
-setTimeout(boot, 3000); // backup
-// Click anywhere to skip
-document.addEventListener('click', function bootOnClick(){
-  document.removeEventListener('click', bootOnClick);
-  clearTimeout(window._bootTimer);
-  boot();
-});
 
 function show(id){document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));document.getElementById(id).classList.add('on');}
 
