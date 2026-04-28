@@ -174,7 +174,9 @@ function showStep(i) {
       btn.textContent = 'Commencer maintenant !';
       btn.onclick = function() {
         localStorage.setItem('hima4', JSON.stringify(U));
-        alert('Programme configure ! Bienvenue ' + U.prenom + ' !');
+        document.body.innerHTML = '<div style="height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#264414;color:white;text-align:center;padding:30px"><div style="font-size:60px;margin-bottom:20px">🎉</div><div style="font-family:sans-serif;font-size:28px;font-weight:900;letter-spacing:1px;margin-bottom:10px">HIMA</div><div style="font-size:16px;opacity:.7;margin-bottom:32px">Ton coach, partout avec toi</div><div style="background:white;color:#264414;border-radius:16px;padding:20px;max-width:320px;width:100%;margin-bottom:14px;cursor:pointer" onclick="startPro()"><div style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#F35695;margin-bottom:8px">PRO</div><div style="font-size:36px;font-weight:900;color:#0F0F0A">29€<span style="font-size:14px;color:#888">/mois</span></div><div style="font-size:12px;color:#666;margin:8px 0">7 jours gratuits · HIMA illimitée · Macros · Programme · Recettes</div><div style="background:#264414;color:#DDE255;border-radius:10px;padding:12px;font-weight:700;font-size:15px">Essayer 7 jours gratuits</div></div><div style="color:rgba(255,255,255,.4);font-size:13px;cursor:pointer" onclick="startFree()">Continuer gratuitement →</div></div>';
+        window.startFree = function() { window.location.reload(); };
+        window.startPro = function() { window.location.reload(); };
       };
       chips.appendChild(btn);
     }
