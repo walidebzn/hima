@@ -2,661 +2,1227 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
-<title>HIMA Test</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>HIMA</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,900;1,400&display=swap" rel="stylesheet">
 <style>
-body{margin:0;padding:0;font-family:Arial,sans-serif;background:#f5f3ec;height:100vh;display:flex;flex-direction:column}
-.top{background:#264414;padding:52px 20px 16px;text-align:center;flex-shrink:0}
-.av{width:90px;height:90px;border-radius:50%;overflow:hidden;margin:0 auto 10px;border:3px solid #DDE255}
-.av img{width:100%;height:100%;object-fit:cover}
-h1{color:white;font-size:26px;margin:0}
-p{color:rgba(255,255,255,.5);font-size:12px;margin:4px 0 0}
-.msgs{flex:1;overflow-y:auto;padding:16px}
-.msg{display:flex;gap:8px;margin-bottom:8px}
-.msg-av{width:32px;height:32px;border-radius:10px;overflow:hidden;flex-shrink:0}
-.msg-av img{width:100%;height:100%;object-fit:cover}
-.msg-b{background:white;border:1px solid rgba(38,68,20,.1);border-radius:16px 16px 16px 4px;padding:12px 14px;font-size:14px;line-height:1.6;max-width:82%}
-.user{flex-direction:row-reverse}
-.user .msg-b{background:#264414;color:white;border-radius:16px 16px 4px 16px}
-.dots{display:flex;gap:5px;padding:4px}
-.dot{width:7px;height:7px;border-radius:50%;animation:td 1.2s infinite}
-.dot:nth-child(1){background:#F35695}.dot:nth-child(2){background:#F98805;animation-delay:.15s}.dot:nth-child(3){background:#DDE255;animation-delay:.3s}
-@keyframes td{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-6px)}}
-.bottom{flex-shrink:0;background:white;border-top:1px solid rgba(38,68,20,.1);padding:12px 16px 32px}
-.chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;min-height:8px}
-.chip{padding:10px 18px;border-radius:24px;font-size:13px;font-weight:600;cursor:pointer;border:1.5px solid rgba(38,68,20,.15);background:white;color:#0F0F0A}
-.chip:active{transform:scale(.95)}
-.chip.sel{background:#264414;color:#DDE255;border-color:transparent}
-.row{display:flex;gap:8px}
-input{flex:1;background:#F5F3EC;border:1.5px solid rgba(38,68,20,.1);border-radius:14px;padding:13px 16px;font-size:15px;outline:none}
-input:focus{border-color:#F35695}
-button.send{width:48px;height:48px;border-radius:14px;background:#264414;border:none;cursor:pointer;color:#DDE255;font-size:20px;display:flex;align-items:center;justify-content:center}
+:root {
+  --c: #F6DCDD;
+  --y: #DDE35F;
+  --o: #F58E03;
+  --g: #2C4D14;
+  --ink: #0A0A08;
+  --w: #FDFCF8;
+  --off: #F4F2EB;
+  --dim: #8A8A78;
+  --r: rgba(44,77,20,.1);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden;background:var(--ink);font-family:'DM Sans',sans-serif;color:var(--ink);-webkit-font-smoothing:antialiased}
+.screen{position:absolute;inset:0;overflow:hidden;transition:opacity .4s,transform .4s;opacity:0;pointer-events:none;transform:translateY(20px)}
+.screen.active{opacity:1;pointer-events:all;transform:none}
+
+/* ─── SPLASH ─── */
+#s-splash{background:var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:center}
+.logo-wrap{position:relative;margin-bottom:32px}
+.logo-ring{width:110px;height:110px;border-radius:50%;background:var(--y);display:flex;align-items:center;justify-content:center;animation:logoPulse 2s ease-in-out infinite;box-shadow:0 0 60px rgba(221,227,95,.3)}
+.logo-svg{width:80px;height:80px}
+.logo-dot{position:absolute;bottom:6px;right:6px;width:20px;height:20px;border-radius:50%;background:#00E87A;border:3px solid var(--ink)}
+.splash-brand{font-family:'Bebas Neue',sans-serif;font-size:56px;letter-spacing:4px;color:var(--w);margin-bottom:6px}
+.splash-tag{font-size:13px;color:rgba(255,255,255,.35);letter-spacing:2px;text-transform:uppercase}
+.splash-loader{width:48px;height:2px;background:rgba(255,255,255,.1);border-radius:1px;margin-top:48px;overflow:hidden}
+.splash-loader-bar{height:100%;background:var(--y);border-radius:1px;animation:load 1.8s ease forwards}
+@keyframes load{0%{width:0}100%{width:100%}}
+@keyframes logoPulse{0%,100%{box-shadow:0 0 60px rgba(221,227,95,.3)}50%{box-shadow:0 0 90px rgba(221,227,95,.5),0 0 120px rgba(221,227,95,.15)}}
+
+/* ─── AUTH ─── */
+#s-auth{background:var(--ink);display:flex;flex-direction:column;overflow-y:auto}
+#s-auth::-webkit-scrollbar{display:none}
+.auth-hero{position:relative;height:340px;flex-shrink:0;overflow:hidden}
+.auth-hero-bg{position:absolute;inset:0;background:linear-gradient(135deg,var(--g) 0%,#1A3A08 50%,#0A1F04 100%)}
+.auth-hero-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(221,227,95,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(221,227,95,.04) 1px,transparent 1px);background-size:40px 40px}
+.auth-hero-content{position:relative;z-index:2;padding:52px 28px 0;display:flex;flex-direction:column;align-items:center}
+.auth-logo-sm{font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:3px;color:var(--y);margin-bottom:28px;opacity:.8}
+.auth-av{width:120px;height:120px;border-radius:50%;overflow:hidden;border:3px solid var(--y);box-shadow:0 0 40px rgba(221,227,95,.3);margin-bottom:0;position:relative}
+.auth-av img{width:100%;height:100%;object-fit:cover}
+.auth-av-glow{position:absolute;inset:-8px;border-radius:50%;border:1px solid rgba(221,227,95,.2);animation:avGlow 3s ease-in-out infinite}
+@keyframes avGlow{0%,100%{transform:scale(1);opacity:.5}50%{transform:scale(1.05);opacity:1}}
+.auth-wave{position:absolute;bottom:-1px;left:0;right:0}
+.auth-body{background:var(--ink);padding:28px 24px 48px;flex:1}
+.auth-h{font-family:'Bebas Neue',sans-serif;font-size:42px;letter-spacing:1px;color:var(--w);line-height:1;margin-bottom:6px}
+.auth-h span{color:var(--y)}
+.auth-sub{font-size:14px;color:rgba(255,255,255,.4);line-height:1.6;margin-bottom:32px}
+/* Auth buttons */
+.auth-btn{width:100%;padding:15px 20px;border-radius:16px;border:none;font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:12px;margin-bottom:10px;transition:all .18s;font-family:'DM Sans',sans-serif}
+.auth-btn:active{transform:scale(.98)}
+.auth-btn-apple{background:#fff;color:#000}
+.auth-btn-google{background:rgba(255,255,255,.06);color:#fff;border:1.5px solid rgba(255,255,255,.12)}
+.auth-btn-email{background:var(--g);color:var(--y)}
+.auth-btn-ico{width:24px;height:24px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.auth-btn-lbl{flex:1;text-align:left}
+.auth-divider{display:flex;align-items:center;gap:12px;margin:18px 0}
+.auth-line{flex:1;height:1px;background:rgba(255,255,255,.08)}
+.auth-divider-txt{font-size:12px;color:rgba(255,255,255,.25);letter-spacing:1px}
+.auth-input-wrap{position:relative;margin-bottom:10px}
+.auth-input{width:100%;padding:15px 16px;background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.1);border-radius:16px;font-size:15px;font-family:'DM Sans',sans-serif;color:#fff;outline:none;-webkit-appearance:none}
+.auth-input:focus{border-color:var(--y)}
+.auth-input::placeholder{color:rgba(255,255,255,.25)}
+.auth-cta{width:100%;padding:16px;background:var(--y);border:none;border-radius:16px;font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px;color:var(--g);cursor:pointer;margin-top:6px;transition:all .15s}
+.auth-cta:active{transform:scale(.98)}
+.auth-terms{font-size:11px;color:rgba(255,255,255,.2);text-align:center;margin-top:16px;line-height:1.6}
+.auth-terms a{color:rgba(255,255,255,.4)}
+
+/* ─── ONBOARDING PROFIL ─── */
+#s-onb{background:var(--off);display:flex;flex-direction:column}
+.onb-progress{height:3px;background:var(--r);flex-shrink:0}
+.onb-bar{height:100%;background:var(--o);transition:width .4s cubic-bezier(.4,0,.2,1)}
+.onb-scroll{flex:1;overflow-y:auto}
+.onb-scroll::-webkit-scrollbar{display:none}
+.onb-card{background:var(--w);margin:20px 16px;border-radius:28px;overflow:hidden;box-shadow:0 8px 40px rgba(10,10,8,.08)}
+.onb-card-hd{background:var(--g);padding:28px 24px 20px}
+.onb-step-label{font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:rgba(255,255,255,.35);margin-bottom:8px;font-weight:600}
+.onb-q{font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:.5px;color:#fff;line-height:1.1}
+.onb-q-sub{font-size:13px;color:rgba(255,255,255,.45);margin-top:6px;line-height:1.5}
+.onb-card-body{padding:20px 20px 24px}
+/* Option grid */
+.opt-grid{display:grid;gap:10px}
+.opt-grid.cols2{grid-template-columns:1fr 1fr}
+.opt-grid.cols3{grid-template-columns:1fr 1fr 1fr}
+.opt-item{background:var(--off);border-radius:18px;padding:18px 14px;cursor:pointer;transition:all .18s;border:2px solid transparent;text-align:center;position:relative;overflow:hidden}
+.opt-item:active{transform:scale(.97)}
+.opt-item.sel{background:var(--g);border-color:var(--g)}
+.opt-item.sel .opt-ico{filter:none}
+.opt-ico{font-size:28px;margin-bottom:8px;display:block}
+.opt-lbl{font-size:13px;font-weight:700;color:var(--ink)}
+.opt-sub{font-size:11px;color:var(--dim);margin-top:3px}
+.opt-item.sel .opt-lbl,.opt-item.sel .opt-sub{color:#fff}
+.opt-item.sel .opt-sub{color:rgba(255,255,255,.6)}
+/* Big option */
+.big-opt{background:var(--off);border-radius:18px;padding:18px 20px;cursor:pointer;transition:all .18s;border:2px solid transparent;display:flex;align-items:center;gap:14px;margin-bottom:10px}
+.big-opt:last-child{margin:0}
+.big-opt:active{transform:scale(.98)}
+.big-opt.sel{background:var(--g);border-color:var(--g)}
+.big-opt.sel .big-opt-t,.big-opt.sel .big-opt-s{color:#fff}
+.big-opt.sel .big-opt-s{color:rgba(255,255,255,.6)}
+.big-opt-ico{font-size:28px;width:48px;height:48px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.6);border-radius:14px;flex-shrink:0}
+.big-opt.sel .big-opt-ico{background:rgba(255,255,255,.15)}
+.big-opt-t{font-size:15px;font-weight:700;color:var(--ink)}
+.big-opt-s{font-size:12px;color:var(--dim);margin-top:2px}
+.big-opt-check{width:24px;height:24px;border-radius:50%;border:2px solid var(--r);margin-left:auto;flex-shrink:0;transition:all .2s}
+.big-opt.sel .big-opt-check{background:var(--y);border-color:var(--y)}
+/* Input */
+.onb-input{width:100%;padding:16px 18px;background:var(--off);border:2px solid var(--r);border-radius:16px;font-size:18px;font-family:'DM Sans',sans-serif;color:var(--ink);outline:none;-webkit-appearance:none;margin-bottom:10px;transition:border-color .2s}
+.onb-input:focus{border-color:var(--o)}
+.onb-input::placeholder{color:#C0C0A8}
+.onb-input-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+/* Slider */
+.slider-wrap{padding:8px 0 16px}
+.slider-labels{display:flex;justify-content:space-between;font-size:12px;color:var(--dim);margin-bottom:12px}
+.slider-val{font-family:'Bebas Neue',sans-serif;font-size:52px;color:var(--g);letter-spacing:-2px;text-align:center;margin-bottom:8px}
+.slider-unit{font-size:14px;color:var(--dim);font-weight:500}
+input[type=range]{width:100%;-webkit-appearance:none;height:6px;border-radius:3px;background:linear-gradient(to right,var(--g) 0%,var(--g) var(--pct,50%),var(--r) var(--pct,50%));outline:none}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:28px;height:28px;border-radius:50%;background:var(--g);cursor:pointer;box-shadow:0 2px 10px rgba(44,77,20,.3)}
+/* CTA row */
+.onb-foot{padding:16px 16px 32px;flex-shrink:0;background:var(--off)}
+.onb-cta{width:100%;padding:16px;background:var(--g);border:none;border-radius:16px;font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px;color:var(--y);cursor:pointer;transition:all .15s}
+.onb-cta:active{transform:scale(.98)}
+.onb-cta:disabled{opacity:.4}
+.onb-back{background:none;border:none;color:var(--dim);font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;display:block;margin:10px auto 0}
+
+/* ─── APP ─── */
+#s-app{background:var(--off);display:flex;flex-direction:column}
+.app-tab{display:none;flex-direction:column;height:100%;overflow:hidden}
+.app-tab.on{display:flex}
+/* Bottom Nav */
+.app-nav{position:absolute;bottom:0;left:0;right:0;height:calc(72px + env(safe-area-inset-bottom,0px));padding-bottom:env(safe-area-inset-bottom,0px);background:var(--w);border-top:1.5px solid var(--r);display:flex;align-items:center;z-index:50}
+.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:8px 4px;transition:all .15s}
+.nav-ico{font-size:22px;transition:transform .2s}
+.nav-lbl{font-size:9px;letter-spacing:.5px;text-transform:uppercase;color:var(--dim);font-weight:600;transition:color .15s}
+.nav-btn.on .nav-lbl{color:var(--g);font-weight:700}
+.nav-btn.on .nav-ico{transform:scale(1.12)}
+/* Scrollable content */
+.tab-scroll{flex:1;overflow-y:auto;padding-bottom:80px}
+.tab-scroll::-webkit-scrollbar{display:none}
+
+/* ─── HOME TAB ─── */
+.home-hero{background:var(--g);padding:52px 20px 0;position:relative;overflow:hidden;flex-shrink:0}
+.home-hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 100% 70% at 80% 0%,rgba(221,227,95,.1),transparent),radial-gradient(ellipse 60% 50% at 0% 100%,rgba(245,142,3,.07),transparent);pointer-events:none}
+.home-top{display:flex;align-items:flex-start;justify-content:space-between;position:relative;z-index:1}
+.home-greet{font-size:12px;color:rgba(255,255,255,.4);margin-bottom:4px;letter-spacing:.5px}
+.home-name{font-family:'Bebas Neue',sans-serif;font-size:40px;color:#fff;line-height:1;letter-spacing:.5px}
+.home-mode-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);border-radius:99px;padding:4px 12px;font-size:11px;color:rgba(255,255,255,.7);font-weight:600;margin-top:6px}
+.coach-bubble{position:relative;width:88px;height:88px;flex-shrink:0}
+.coach-av{width:88px;height:88px;border-radius:50%;overflow:hidden;border:3px solid var(--y);box-shadow:0 0 30px rgba(221,227,95,.35);animation:coachFloat 4s ease-in-out infinite;position:relative}
+.coach-av img{width:100%;height:100%;object-fit:cover}
+.coach-eyes-svg{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;border-radius:50%}
+.coach-online{position:absolute;bottom:3px;right:3px;width:18px;height:18px;border-radius:50%;background:#00E87A;border:3px solid var(--g)}
+@keyframes coachFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+/* Notif bar */
+.notif-bar{margin:14px 0 0;background:rgba(245,86,149,.15);border:1px solid rgba(245,86,149,.25);border-radius:14px;padding:11px 14px;display:flex;align-items:center;gap:10px;cursor:pointer;position:relative;z-index:1}
+.notif-txt{flex:1;font-size:13px;color:rgba(255,255,255,.8);line-height:1.45}
+.notif-n{background:#F35695;color:#fff;width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0}
+/* Stats strip */
+.stats-strip{display:flex;gap:8px;padding:14px 0 20px;overflow-x:auto;scrollbar-width:none;position:relative;z-index:1}
+.stats-strip::-webkit-scrollbar{display:none}
+.stat-pill{flex-shrink:0;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:12px 16px;text-align:center;min-width:84px}
+.stat-v{font-family:'Bebas Neue',sans-serif;font-size:22px;color:#fff;letter-spacing:-.5px;line-height:1}
+.stat-l{font-size:9px;color:rgba(255,255,255,.4);letter-spacing:.5px;text-transform:uppercase;margin-top:3px}
+/* Home content */
+.home-content{padding:16px}
+/* Today message card */
+.hima-msg-card{background:var(--w);border-radius:24px;padding:20px;margin-bottom:14px;box-shadow:0 4px 24px rgba(10,10,8,.07);border:1.5px solid var(--r)}
+.hmc-top{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.hmc-av{width:44px;height:44px;border-radius:14px;overflow:hidden;flex-shrink:0}
+.hmc-av img{width:100%;height:100%;object-fit:cover}
+.hmc-name{font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--ink)}
+.hmc-status{font-size:11px;color:#00A855;font-weight:600;display:flex;align-items:center;gap:4px;margin-top:2px}
+.hmc-dot{width:5px;height:5px;border-radius:50%;background:#00E87A;animation:blink 2s infinite}
+.hima-speech{background:var(--off);border-radius:4px 18px 18px 18px;padding:14px 16px;font-size:14px;line-height:1.7;color:var(--ink);margin-bottom:16px;border:1px solid var(--r);position:relative}
+.hima-speech::before{content:'';position:absolute;top:-1px;left:-1px;width:30px;height:20px;background:var(--off);border-radius:0 0 16px 0;border-right:1px solid var(--r);border-bottom:1px solid var(--r)}
+/* Quick actions */
+.qa-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.qa-btn{border-radius:20px;padding:18px 16px;cursor:pointer;border:none;text-align:left;position:relative;overflow:hidden;transition:all .18s}
+.qa-btn:active{transform:scale(.97)}
+.qa-ico{font-size:26px;margin-bottom:10px;display:block}
+.qa-t{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:.3px;display:block;line-height:1.1}
+.qa-s{font-size:11px;margin-top:4px;display:block;opacity:.6}
+.qa-seance{background:var(--g);color:#fff}.qa-seance .qa-t{color:#fff}.qa-seance::after{content:'→';position:absolute;bottom:16px;right:16px;font-size:18px;color:var(--y)}
+.qa-recettes{background:var(--o);color:var(--w)}.qa-recettes .qa-t{color:var(--w)}
+.qa-corps{background:var(--c);color:var(--ink)}
+.qa-hima{background:var(--ink);color:#fff}.qa-hima .qa-t{color:#fff}
+/* Section title */
+.sec-title{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:.5px;color:var(--ink);margin:20px 0 12px}
+/* Progress card */
+.prog-ring-card{background:var(--w);border-radius:22px;padding:18px;box-shadow:0 4px 20px rgba(10,10,8,.06);border:1.5px solid var(--r);margin-bottom:14px}
+.prc-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.prc-title{font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--ink)}
+.prc-sub{font-size:11px;color:var(--dim)}
+.prc-body{display:flex;align-items:center;gap:16px}
+.pring-wrap{position:relative;width:80px;height:80px;flex-shrink:0}
+.pring-wrap svg{transform:rotate(-90deg)}
+.pr-bg{fill:none;stroke:var(--r);stroke-width:7}
+.pr-fg{fill:none;stroke-width:7;stroke-linecap:round;stroke-dasharray:220;stroke-dashoffset:154;transition:stroke-dashoffset .9s;stroke:var(--o)}
+.pr-txt{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--o)}
+.prc-lines{flex:1}
+.prcl{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--r);font-size:13px}
+.prcl:last-child{border:none}
+.prcl-l{color:var(--dim)}
+.prcl-v{font-weight:700;color:var(--ink)}
+.prcl-v.accent{color:var(--o)}
+
+/* ─── HIMA CHAT TAB ─── */
+.chat-hd{background:var(--w);border-bottom:1.5px solid var(--r);flex-shrink:0}
+.chat-hd-top{padding:50px 18px 14px;display:flex;align-items:center;gap:12px}
+.chat-hd-av{width:48px;height:48px;border-radius:16px;overflow:hidden;flex-shrink:0;box-shadow:0 4px 14px rgba(221,227,95,.3);position:relative}
+.chat-hd-av img{width:100%;height:100%;object-fit:cover}
+.chat-hd-dot{position:absolute;bottom:1px;right:1px;width:10px;height:10px;border-radius:50%;background:#00E87A;border:2.5px solid var(--w)}
+.chat-hd-name{font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--ink)}
+.chat-hd-status{font-size:11px;color:#00A855;font-weight:600;display:flex;align-items:center;gap:4px;margin-top:2px}
+.chat-sport-badge{font-size:10px;color:var(--dim);background:var(--off);border:1px solid var(--r);border-radius:99px;padding:3px 10px;margin-left:auto}
+.msgs{flex:1;overflow-y:auto;padding:14px 16px 8px;display:flex;flex-direction:column;gap:4px}
+.msgs::-webkit-scrollbar{display:none}
+.msep{display:flex;align-items:center;gap:9px;margin:4px 0 10px}
+.msep-l{flex:1;height:1px;background:var(--r)}
+.msep-t{font-size:10px;color:#C0C0A8;padding:2px 9px;background:var(--w);border-radius:99px;border:1px solid var(--r)}
+.mg{display:flex;gap:8px;align-items:flex-end;margin-bottom:6px;animation:msgIn .2s ease}
+.mg.u{flex-direction:row-reverse}
+.mav{width:34px;height:34px;border-radius:12px;overflow:hidden;flex-shrink:0}
+.mav img{width:100%;height:100%;object-fit:cover}
+.mav.u{background:var(--o);display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:14px;color:#fff;overflow:visible}
+.mbs{display:flex;flex-direction:column;gap:3px;max-width:83%}
+.mg.u .mbs{align-items:flex-end}
+.b{padding:12px 16px;background:var(--w);border:1.5px solid var(--r);border-radius:18px 18px 18px 4px;font-size:14px;line-height:1.65;color:var(--ink);word-break:break-word}
+.b.u{background:var(--g);border:none;color:#fff;border-radius:18px 18px 4px 18px}
+/* Cards */
+.hcard{border-radius:20px;overflow:hidden;margin-top:4px;box-shadow:0 6px 28px rgba(10,10,8,.1)}
+.hc-hd{padding:16px;background:var(--g)}
+.hc-badge{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--y);font-weight:700;margin-bottom:7px;display:flex;align-items:center;gap:6px}
+.hc-badge::before{content:'';width:12px;height:2px;background:var(--y);border-radius:1px;display:inline-block}
+.hc-title{font-family:'Bebas Neue',sans-serif;font-size:22px;color:#fff}
+.hc-sub{font-size:12px;color:rgba(255,255,255,.45);margin-top:3px}
+.hcb{padding:14px;background:var(--w)}
+.macro-g{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.mc{background:var(--off);border-radius:12px;padding:11px 8px;text-align:center}
+.mcv{font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--ink)}
+.mcl{font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--dim);margin-top:2px}
+.exo-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1.5px solid var(--r)}
+.exo-row:last-child{border:none;padding-bottom:0}
+.exo-n{width:28px;height:28px;border-radius:9px;background:var(--g);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--y);flex-shrink:0}
+.exo-nm{font-size:13px;font-weight:600;color:var(--ink)}
+.exo-dt{font-size:11px;color:var(--dim);margin-top:1px}
+.exo-rest{font-size:9px;font-weight:700;color:var(--o);background:rgba(245,142,3,.08);padding:3px 8px;border-radius:6px;border:1px solid rgba(245,142,3,.2);white-space:nowrap}
+.rec-card{border-radius:20px;overflow:hidden;box-shadow:0 6px 28px rgba(10,10,8,.1)}
+.rec-hd{padding:16px;background:var(--o)}
+.rec-ico{font-size:28px;margin-bottom:6px}
+.rec-nm{font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--w)}
+.rec-mac{font-size:11px;color:rgba(253,252,248,.65);margin-top:3px}
+.rec-body{padding:14px;background:var(--w)}
+.rec-ing{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--r);font-size:13px}
+.rec-ing:last-child{border:none}
+.rec-step{display:flex;gap:10px;padding:7px 0;font-size:13px;color:var(--dim);border-bottom:1px solid var(--r);line-height:1.5}
+.rec-step:last-child{border:none}
+.rec-step-n{width:20px;height:20px;border-radius:6px;background:var(--o);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff;flex-shrink:0;margin-top:1px}
+.off-card{background:var(--c);border-radius:16px;padding:14px;margin-top:4px;border:1.5px solid rgba(245,86,149,.15)}
+.off-t{font-family:'Bebas Neue',sans-serif;font-size:15px;color:var(--ink);margin-bottom:4px}
+.off-s{font-size:13px;color:var(--ink);opacity:.7;line-height:1.6}
+/* Quick replies */
+.qrb{display:flex;gap:7px;padding:10px 16px;overflow-x:auto;scrollbar-width:none;border-top:1.5px solid var(--r);background:var(--w);flex-shrink:0}
+.qrb::-webkit-scrollbar{display:none}
+.qr{white-space:nowrap;padding:8px 14px;border-radius:10px;font-size:12.5px;font-weight:600;cursor:pointer;flex-shrink:0;border:1.5px solid var(--r);color:var(--ink);background:var(--off);transition:all .15s}
+.qr:active{transform:scale(.95)}
+.qr.g{background:var(--g);border-color:transparent;color:var(--y)}
+.qr.ro{background:var(--c);border-color:rgba(245,86,149,.2)}
+/* Chat input */
+.chat-inpb{padding:10px 14px 28px;background:var(--w);border-top:1.5px solid var(--r);display:flex;gap:9px;align-items:flex-end;flex-shrink:0}
+.chat-inp{flex:1;background:var(--off);border:1.5px solid var(--r);border-radius:22px;padding:12px 16px;font-size:15px;font-family:'DM Sans',sans-serif;color:var(--ink);outline:none;resize:none;max-height:90px;line-height:1.45;-webkit-appearance:none}
+.chat-inp:focus{border-color:var(--o);background:var(--w)}
+.chat-inp::placeholder{color:#C0C0A8}
+.chat-snd{width:46px;height:46px;border-radius:14px;background:var(--g);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0}
+.chat-snd:active{transform:scale(.93)}
+.chat-snd svg{width:18px;height:18px;stroke:var(--y);fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+
+/* ─── PROGRAMME TAB ─── */
+.prog-hd{padding:52px 20px 16px;background:var(--w);border-bottom:1.5px solid var(--r);flex-shrink:0}
+.prog-hd-eye{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--dim);margin-bottom:5px}
+.prog-hd-t{font-family:'Bebas Neue',sans-serif;font-size:32px;color:var(--ink)}
+.prog-hd-s{font-size:12px;color:var(--dim);margin-top:3px}
+.week-strip{display:flex;gap:6px;padding:12px 16px;overflow-x:auto;scrollbar-width:none;border-bottom:1.5px solid var(--r);background:var(--w);flex-shrink:0}
+.week-strip::-webkit-scrollbar{display:none}
+.wd{flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 12px;border-radius:14px;cursor:pointer;border:1.5px solid var(--r);background:var(--off);min-width:52px;transition:all .18s}
+.wd.on{background:var(--g);border-color:transparent}
+.wd-d{font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--dim);font-weight:600}
+.wd-n{font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--ink);line-height:1}
+.wd-t{font-size:9px;color:var(--dim)}
+.wd.on .wd-d,.wd.on .wd-n,.wd.on .wd-t{color:var(--y)}
+.prog-sc{flex:1;overflow-y:auto;padding:16px}
+.prog-sc::-webkit-scrollbar{display:none}
+.seance-hero{background:var(--g);border-radius:24px;padding:22px;margin-bottom:14px}
+.sh-eye{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--y);margin-bottom:8px;opacity:.7;font-weight:700}
+.sh-t{font-family:'Bebas Neue',sans-serif;font-size:28px;color:#fff;margin-bottom:10px}
+.sh-pills{display:flex;gap:6px;flex-wrap:wrap}
+.sh-pill{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);border-radius:99px;padding:4px 12px;font-size:11px;color:rgba(255,255,255,.75)}
+.exo-card{background:var(--w);border-radius:18px;padding:16px;margin-bottom:9px;border:2px solid var(--r)}
+.ec-hd{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.ec-n{width:32px;height:32px;border-radius:10px;background:var(--y);display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:16px;color:var(--g);flex-shrink:0}
+.ec-nm{font-size:15px;font-weight:700;color:var(--ink);flex:1}
+.ec-demo{font-size:10px;font-weight:700;color:var(--o);background:rgba(245,142,3,.08);border:1px solid rgba(245,142,3,.2);padding:3px 8px;border-radius:6px;cursor:pointer}
+.sets-row{display:flex;gap:8px}
+.setb{flex:1;background:var(--off);border-radius:12px;padding:11px 8px;text-align:center}
+.setb-v{font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--ink)}
+.setb-l{font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--dim);margin-top:2px}
+.timer-btn{width:100%;padding:14px;border:none;border-radius:14px;background:var(--g);color:var(--y);font-family:'Bebas Neue',sans-serif;font-size:18px;cursor:pointer;margin-top:4px;display:flex;align-items:center;justify-content:center;gap:8px}
+.rest-day{background:var(--w);border-radius:24px;padding:40px 24px;text-align:center;border:2px solid var(--r)}
+
+/* ─── CORPS TAB ─── */
+.corps-sc{flex:1;overflow-y:auto;padding:16px}
+.corps-sc::-webkit-scrollbar{display:none}
+.weight-hero{background:var(--g);border-radius:24px;padding:22px;margin-bottom:14px;position:relative;overflow:hidden}
+.weight-hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 80% 100%,rgba(221,227,95,.12),transparent);pointer-events:none}
+.wh-big{font-family:'Bebas Neue',sans-serif;font-size:64px;color:#fff;letter-spacing:-3px;line-height:1}
+.wh-unit{font-size:16px;color:rgba(255,255,255,.4)}
+.wh-delta{font-size:12px;font-weight:700;color:var(--y);background:rgba(221,227,95,.12);border:1px solid rgba(221,227,95,.2);padding:4px 12px;border-radius:99px;margin-top:8px;display:inline-block}
+.wh-bars{display:flex;align-items:flex-end;gap:3px;height:44px;margin-top:14px}
+.wbar{border-radius:3px 3px 0 0;background:rgba(255,255,255,.15);flex:1}
+.wbar.now{background:var(--y)}
+.data-bloc{background:var(--w);border-radius:20px;padding:18px;margin-bottom:12px;border:2px solid var(--r)}
+.db-t{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--dim);margin-bottom:4px}
+.db-title{font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--ink);margin-bottom:12px}
+.pesee-row{display:flex;gap:9px;align-items:center}
+.pesee-inp{flex:1;background:var(--off);border:1.5px solid var(--r);border-radius:14px;padding:14px;font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--ink);outline:none;text-align:center;-webkit-appearance:none;letter-spacing:-1px}
+.pesee-inp:focus{border-color:var(--o)}
+.pesee-btn{padding:14px 20px;border:none;border-radius:14px;background:var(--g);color:var(--y);font-family:'Bebas Neue',sans-serif;font-size:16px;cursor:pointer}
+.stats2{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.st2{background:var(--off);border-radius:14px;padding:14px}
+.st2-l{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--dim);margin-bottom:5px}
+.st2-v{font-family:'Bebas Neue',sans-serif;font-size:24px;color:var(--ink);line-height:1}
+.st2-u{font-size:12px;color:var(--dim)}
+
+/* ─── TIMER ─── */
+.timer-ov{position:fixed;inset:0;z-index:200;background:var(--g);display:flex;flex-direction:column;align-items:center;justify-content:center;transform:translateY(100%);transition:transform .38s cubic-bezier(.16,1,.3,1)}
+.timer-ov.on{transform:translateY(0)}
+.t-label{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,.3);margin-bottom:6px}
+.t-exo{font-family:'Bebas Neue',sans-serif;font-size:26px;color:#fff;text-align:center;margin-bottom:4px;max-width:280px}
+.t-detail{font-size:13px;color:rgba(255,255,255,.4);margin-bottom:44px}
+.t-ring{position:relative;width:200px;height:200px;margin-bottom:40px}
+.t-ring svg{transform:rotate(-90deg)}
+.t-bg{fill:none;stroke:rgba(255,255,255,.08);stroke-width:6}
+.t-fg{fill:none;stroke-width:6;stroke-linecap:round;stroke:var(--y);stroke-dasharray:565;stroke-dashoffset:0;transition:stroke-dashoffset .1s linear}
+.t-num{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.t-sec{font-family:'Bebas Neue',sans-serif;font-size:72px;color:#fff;letter-spacing:-4px;line-height:1}
+.t-phase{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,.3);margin-top:6px}
+.t-btns{display:flex;gap:12px}
+.t-main{padding:14px 32px;border:none;border-radius:14px;background:var(--y);color:var(--g);font-family:'Bebas Neue',sans-serif;font-size:18px;cursor:pointer}
+.t-skip{padding:14px 24px;border:1px solid rgba(255,255,255,.15);border-radius:14px;background:rgba(255,255,255,.07);color:rgba(255,255,255,.6);font-family:'Bebas Neue',sans-serif;font-size:18px;cursor:pointer}
+.t-close{margin-top:28px;background:none;border:none;color:rgba(255,255,255,.3);font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif}
+
+/* ─── PROFILE ─── */
+.profile-hd{background:var(--g);padding:52px 20px 28px;text-align:center;flex-shrink:0}
+.profile-av{width:90px;height:90px;border-radius:50%;overflow:hidden;margin:0 auto 14px;border:3px solid var(--y);box-shadow:0 0 30px rgba(221,227,95,.3)}
+.profile-av img{width:100%;height:100%;object-fit:cover}
+.profile-name{font-family:'Bebas Neue',sans-serif;font-size:32px;color:#fff;letter-spacing:.5px}
+.profile-plan{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);border-radius:99px;padding:4px 14px;font-size:12px;color:rgba(255,255,255,.7);font-weight:600;margin-top:6px}
+.profile-sc{flex:1;overflow-y:auto;padding:16px}
+.profile-sc::-webkit-scrollbar{display:none}
+.profile-section{background:var(--w);border-radius:20px;padding:18px;margin-bottom:12px;border:2px solid var(--r)}
+.ps-title{font-family:'Bebas Neue',sans-serif;font-size:16px;color:var(--ink);margin-bottom:12px;letter-spacing:.3px}
+.ps-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--r);font-size:14px}
+.ps-row:last-child{border:none;padding-bottom:0}
+.ps-row-l{color:var(--dim)}
+.ps-row-v{font-weight:600;color:var(--ink)}
+.ps-row-v.accent{color:var(--o)}
+.logout-btn{width:100%;padding:14px;background:var(--c);border:none;border-radius:14px;color:var(--ink);font-family:'Bebas Neue',sans-serif;font-size:18px;cursor:pointer;margin-top:8px}
+.api-section{background:var(--w);border-radius:20px;padding:18px;margin-bottom:12px;border:2px solid var(--r)}
+.api-inp-app{width:100%;background:var(--off);border:1.5px solid var(--r);border-radius:12px;padding:12px 14px;font-size:13px;color:var(--ink);outline:none;font-family:monospace;margin-top:8px}
+.api-inp-app:focus{border-color:var(--o)}
+.api-save-btn{width:100%;padding:12px;background:var(--g);border:none;border-radius:12px;color:var(--y);font-family:'Bebas Neue',sans-serif;font-size:16px;cursor:pointer;margin-top:8px}
+
+/* ─── ANIMATIONS ─── */
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.4}}
+@keyframes msgIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes td{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-7px)}}
+.td{width:7px;height:7px;border-radius:50%;animation:td 1.2s infinite;display:inline-block}
+.td:nth-child(1){background:var(--c)}.td:nth-child(2){background:var(--o);animation-delay:.15s}.td:nth-child(3){background:var(--y);animation-delay:.3s}
 </style>
 </head>
 <body>
-<div class="top">
-  <div class="av" id="hima-av-wrap" style="position:relative">
-    <img src="data:image/jpeg;base64,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" alt="HIMA" style="width:100%;height:100%;object-fit:cover;border-radius:50%">
-    <svg id="hima-eyes" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none" viewBox="0 0 90 90">
-      <circle id="el" cx="33" cy="32" r="5" fill="#1A0A00" opacity="0.82"/>
-      <circle id="elg" cx="35" cy="30" r="1.8" fill="white" opacity="0.9"/>
-      <circle id="er" cx="57" cy="32" r="5" fill="#1A0A00" opacity="0.82"/>
-      <circle id="erg" cx="59" cy="30" r="1.8" fill="white" opacity="0.9"/>
+
+<!-- SPLASH -->
+<div class="screen active" id="s-splash">
+  <div class="logo-wrap">
+    <div class="logo-ring">
+      <svg class="logo-svg" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+        <text x="40" y="56" text-anchor="middle" font-family="Arial Black" font-size="48" font-weight="900" fill="#2C4D14">H</text>
+        <circle cx="62" cy="18" r="8" fill="#F58E03"/>
+        <circle cx="18" cy="62" r="6" fill="#F6DCDD"/>
+      </svg>
+    </div>
+    <div class="logo-dot"></div>
+  </div>
+  <div class="splash-brand">HIMA</div>
+  <div class="splash-tag">Ton coach, partout avec toi</div>
+  <div class="splash-loader"><div class="splash-loader-bar"></div></div>
+</div>
+
+<!-- AUTH -->
+<div class="screen" id="s-auth">
+  <div class="auth-hero">
+    <div class="auth-hero-bg"></div>
+    <div class="auth-hero-grid"></div>
+    <div class="auth-hero-content">
+      <div class="auth-logo-sm">HIMA COACH</div>
+      <div class="auth-av" id="auth-av">
+        <img id="auth-av-img" alt="HIMA" src="data:image/jpeg;base64,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" style="width:100%;height:100%;object-fit:cover" draggable="false">
+        <svg style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;border-radius:50%" viewBox="0 0 120 120" id="auth-eyes">
+          <circle id="ae-l" cx="42" cy="44" r="6" fill="#1A0A00" opacity="0.8"/>
+          <circle id="ae-lg" cx="44.5" cy="41.5" r="2.2" fill="white" opacity="0.85"/>
+          <circle id="ae-r" cx="78" cy="44" r="6" fill="#1A0A00" opacity="0.8"/>
+          <circle id="ae-rg" cx="80.5" cy="41.5" r="2.2" fill="white" opacity="0.85"/>
+        </svg>
+        <div class="auth-av-glow"></div>
+      </div>
+    </div>
+    <svg class="auth-wave" viewBox="0 0 390 40" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0 40 C100 0 290 0 390 40 L390 40 L0 40Z" fill="#0A0A08"/>
     </svg>
   </div>
-  <h1>HIMA</h1>
-  <p>Ton coach, partout avec toi</p>
-</div>
-<div class="msgs" id="msgs"></div>
-<div class="bottom">
-  <div class="chips" id="chips"></div>
-  <div class="row">
-    <input type="text" id="inp" placeholder="Ecris ta reponse..." onkeydown="if(event.key==='Enter')send()">
-    <button class="send" onclick="send()">↑</button>
+  <div class="auth-body">
+    <div class="auth-h">COMMENCE<br>TON <span>GLOW UP</span></div>
+    <div class="auth-sub">Rejoins HIMA — ton coach IA personnel qui s'adapte à toi 24h/24 pour transformer ton corps.</div>
+    <button class="auth-btn auth-btn-apple" onclick="authWith('apple')">
+      <div class="auth-btn-ico">
+        <svg width="18" height="22" viewBox="0 0 18 22"><path d="M14.5 11.5c0-2.5 1.3-4.7 3.3-6-1.2-1.7-3-2.8-5-3-2-.2-4 1.2-5 1.2s-2.8-1.2-4.5-1.1C1.5 2.8 0 4.2 0 6c0 3.3 2.3 8.6 3.3 10.7 1 2 2 4.4 3.8 4.3 1.5 0 2-.9 3.9-.9 1.8 0 2.3.9 4 .9 1.7 0 2.8-2.3 3.7-4.3C20 15 19.8 13 18 11.5c-.5-.3-3.5-1-3.5-2zM12 3c.8-1 1.3-2.5 1-4-1.3.1-2.8.9-3.7 2-.8.9-1.4 2.3-1.1 3.7 1.4.1 2.8-.7 3.8-1.7z" fill="#000"/></svg>
+      </div>
+      <span class="auth-btn-lbl">Continuer avec Apple</span>
+    </button>
+    <button class="auth-btn auth-btn-google" onclick="authWith('google')">
+      <div class="auth-btn-ico">
+        <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.5 0 6.5 1.2 8.9 3.2l6.6-6.6C35.5 2.5 30 0 24 0 14.6 0 6.6 5.4 2.6 13.4l7.7 6C12.3 13.1 17.7 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v8.5h12.7c-.6 3-2.3 5.5-4.8 7.2l7.4 5.8c4.3-4 6.8-9.9 6.8-16.8-.1-.7-.1-1.4-.1-0.2z"/><path fill="#FBBC05" d="M10.3 28.6c-.5-1.5-.8-3-.8-4.6s.3-3.1.8-4.6L2.6 13.4C.9 16.8 0 20.3 0 24s.9 7.2 2.6 10.6l7.7-6z"/><path fill="#34A853" d="M24 48c6 0 11.1-2 14.8-5.4l-7.4-5.8c-2 1.4-4.6 2.2-7.4 2.2-6.3 0-11.7-3.6-13.7-8.8l-7.7 6C6.6 42.6 14.6 48 24 48z"/></svg>
+      </div>
+      <span class="auth-btn-lbl">Continuer avec Google</span>
+    </button>
+    <div class="auth-divider"><div class="auth-line"></div><div class="auth-divider-txt">ou</div><div class="auth-line"></div></div>
+    <input class="auth-input" id="auth-email" type="email" placeholder="Ton adresse email">
+    <input class="auth-input" id="auth-pass" type="password" placeholder="Mot de passe">
+    <button class="auth-cta" onclick="authEmail()">COMMENCER →</button>
+    <div class="auth-terms">En continuant, tu acceptes nos <a href="#">Conditions</a> et notre <a href="#">Politique de confidentialité</a></div>
   </div>
+</div>
+
+<!-- ONBOARDING PROFIL -->
+<div class="screen" id="s-onb">
+  <div class="onb-progress"><div class="onb-bar" id="onb-bar" style="width:12%"></div></div>
+  <div class="onb-scroll" id="onb-scroll">
+    <div id="onb-content"></div>
+  </div>
+  <div class="onb-foot">
+    <button class="onb-cta" id="onb-cta" onclick="onbNext()">CONTINUER →</button>
+    <button class="onb-back" id="onb-back" onclick="onbBack()" style="display:none">← Retour</button>
+  </div>
+</div>
+
+<!-- APP -->
+<div class="screen" id="s-app">
+  <!-- HOME -->
+  <div class="app-tab on" id="t-home">
+    <div style="flex:1;overflow:hidden;display:flex;flex-direction:column">
+      <div class="home-hero">
+        <div class="home-top">
+          <div>
+            <div class="home-greet" id="h-greet">Bonjour</div>
+            <div class="home-name" id="h-name">CHAMPION</div>
+            <div class="home-mode-badge" id="h-mode">✨ Ton Glow Up</div>
+          </div>
+          <div class="coach-bubble" id="app-coach-wrap">
+            <div class="coach-av">
+              <img id="app-coach-img" alt="HIMA" src="data:image/jpeg;base64,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" style="width:100%;height:100%;object-fit:cover">
+              <svg class="coach-eyes-svg" viewBox="0 0 88 88" id="app-eyes">
+                <circle id="ap-l" cx="31" cy="30" r="4.5" fill="#1A0A00" opacity="0.8"/>
+                <circle id="ap-lg" cx="33" cy="28" r="1.6" fill="white" opacity="0.85"/>
+                <circle id="ap-r" cx="57" cy="30" r="4.5" fill="#1A0A00" opacity="0.8"/>
+                <circle id="ap-rg" cx="59" cy="28" r="1.6" fill="white" opacity="0.85"/>
+              </svg>
+              <div class="coach-online"></div>
+            </div>
+          </div>
+        </div>
+        <div class="notif-bar" onclick="switchTab('t-chat')">
+          <span style="font-size:18px">🔔</span>
+          <div class="notif-txt" id="notif-txt">HIMA attend ton bilan du jour</div>
+          <div class="notif-n">1</div>
+        </div>
+        <div class="stats-strip">
+          <div class="stat-pill" onclick="switchTab('t-corps')"><div class="stat-v" id="st-p">--</div><div class="stat-l">Poids kg</div></div>
+          <div class="stat-pill"><div class="stat-v" id="st-k">--</div><div class="stat-l">kcal/j</div></div>
+          <div class="stat-pill"><div class="stat-v" id="st-s">J1</div><div class="stat-l">Streak</div></div>
+          <div class="stat-pill" onclick="switchTab('t-chat')"><div class="stat-v" id="st-r">--</div><div class="stat-l">Récup</div></div>
+        </div>
+      </div>
+      <div class="tab-scroll">
+        <div style="padding:16px">
+          <div class="hima-msg-card">
+            <div class="hmc-top">
+              <div class="hmc-av"><img id="hmc-av-img" alt="H" src="data:image/jpeg;base64,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" style="width:100%;height:100%;object-fit:cover"></div>
+              <div>
+                <div class="hmc-name">HIMA</div>
+                <div class="hmc-status"><div class="hmc-dot"></div>Ton coach · En ligne</div>
+              </div>
+            </div>
+            <div class="hima-speech" id="hima-today-msg">Chargement...</div>
+            <div class="qa-grid">
+              <button class="qa-btn qa-seance" onclick="switchTab('t-prog')"><span class="qa-ico">💪</span><span class="qa-t">MA SÉANCE</span><span class="qa-s">Programme du jour</span></button>
+              <button class="qa-btn qa-recettes" onclick="switchTab('t-chat');setTimeout(function(){chatQ('Une recette gourmande ce soir')},300)"><span class="qa-ico">🍽️</span><span class="qa-t">RECETTES</span><span class="qa-s">Idées gourmandes</span></button>
+              <button class="qa-btn qa-corps" onclick="switchTab('t-corps')"><span class="qa-ico">📊</span><span class="qa-t">MON CORPS</span><span class="qa-s">Suivi & pesée</span></button>
+              <button class="qa-btn qa-hima" onclick="switchTab('t-chat')"><span class="qa-ico">💬</span><span class="qa-t">PARLER À HIMA</span><span class="qa-s">Coach IA</span></button>
+            </div>
+          </div>
+          <div class="sec-title">PROGRESSION</div>
+          <div class="prog-ring-card">
+            <div class="prc-top"><div><div class="prc-title">VERS TON OBJECTIF</div><div class="prc-sub" id="prog-ring-sub">En cours</div></div></div>
+            <div class="prc-body">
+              <div class="pring-wrap">
+                <svg width="80" height="80" viewBox="0 0 80 80"><circle class="pr-bg" cx="40" cy="40" r="34"/><circle class="pr-fg" id="pr-fg" cx="40" cy="40" r="34"/></svg>
+                <div class="pr-txt" id="pr-pct">0%</div>
+              </div>
+              <div class="prc-lines">
+                <div class="prcl"><div class="prcl-l">Départ</div><div class="prcl-v" id="prc-dep">--</div></div>
+                <div class="prcl"><div class="prcl-l">Actuel</div><div class="prcl-v accent" id="prc-act">--</div></div>
+                <div class="prcl" style="border:none"><div class="prcl-l">Objectif</div><div class="prcl-v" id="prc-cib">--</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CHAT -->
+  <div class="app-tab" id="t-chat">
+    <div class="chat-hd">
+      <div class="chat-hd-top">
+        <div class="chat-hd-av"><img id="chat-hd-img" alt="H" src="data:image/jpeg;base64,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" style="width:100%;height:100%;object-fit:cover"><div class="chat-hd-dot"></div></div>
+        <div style="flex:1"><div class="chat-hd-name">HIMA</div><div class="chat-hd-status"><div class="hmc-dot"></div>Coach IA · Sport uniquement</div></div>
+        <div class="chat-sport-badge">💪 Sport &amp; Nutrition</div>
+      </div>
+    </div>
+    <div class="msgs" id="msgs"></div>
+    <div class="qrb">
+      <div class="qr g" onclick="chatQ(this.textContent)">Ma séance 💪</div>
+      <div class="qr g" onclick="chatQ(this.textContent)">Mon menu ce soir</div>
+      <div class="qr ro" onclick="chatQ(this.textContent)">Une recette 🍽️</div>
+      <div class="qr" onclick="chatQ(this.textContent)">Ma progression</div>
+      <div class="qr" onclick="chatQ(this.textContent)">J'ai craqué</div>
+      <div class="qr" onclick="chatQ(this.textContent)">Mal dormi</div>
+      <div class="qr" onclick="chatQ(this.textContent)">Routine soir</div>
+    </div>
+    <div class="chat-inpb">
+      <textarea class="chat-inp" id="ci" placeholder="Parle à HIMA..." rows="1" onkeydown="onKey(event)" oninput="grow(this)"></textarea>
+      <button class="chat-snd" onclick="chatSend()"><svg viewBox="0 0 24 24"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg></button>
+    </div>
+  </div>
+
+  <!-- PROGRAMME -->
+  <div class="app-tab" id="t-prog">
+    <div class="prog-hd">
+      <div class="prog-hd-eye">Ton programme</div>
+      <div class="prog-hd-t">SEMAINE 1</div>
+      <div class="prog-hd-s" id="prog-sub">Chargement...</div>
+    </div>
+    <div class="week-strip" id="week-strip"></div>
+    <div class="prog-sc" id="prog-sc"></div>
+  </div>
+
+  <!-- CORPS -->
+  <div class="app-tab" id="t-corps">
+    <div class="prog-hd">
+      <div class="prog-hd-eye">Suivi corporel</div>
+      <div class="prog-hd-t">MON CORPS</div>
+      <div class="prog-hd-s">Transformation en cours</div>
+    </div>
+    <div class="corps-sc" id="corps-sc"></div>
+  </div>
+
+  <!-- PROFILE -->
+  <div class="app-tab" id="t-profile">
+    <div class="profile-hd">
+      <div class="profile-av"><img id="profile-av-img" alt="H" src="data:image/jpeg;base64,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" style="width:100%;height:100%;object-fit:cover"></div>
+      <div class="profile-name" id="profile-name">Champion</div>
+      <div class="profile-plan" id="profile-plan">✨ Glow Up</div>
+    </div>
+    <div class="profile-sc">
+      <div class="profile-section">
+        <div class="ps-title">MON PROFIL</div>
+        <div class="ps-row"><div class="ps-row-l">Mode</div><div class="ps-row-v" id="ps-mode">--</div></div>
+        <div class="ps-row"><div class="ps-row-l">Objectif</div><div class="ps-row-v" id="ps-obj">--</div></div>
+        <div class="ps-row"><div class="ps-row-l">Niveau</div><div class="ps-row-v" id="ps-niv">--</div></div>
+        <div class="ps-row"><div class="ps-row-l">Lieu</div><div class="ps-row-v" id="ps-lieu">--</div></div>
+        <div class="ps-row"><div class="ps-row-l">Régime</div><div class="ps-row-v" id="ps-reg">--</div></div>
+        <div class="ps-row"><div class="ps-row-l">Macros</div><div class="ps-row-v accent" id="ps-macros">--</div></div>
+      </div>
+      <div class="api-section">
+        <div class="ps-title">CLÉ API CLAUDE</div>
+        <div style="font-size:13px;color:var(--dim);line-height:1.5;margin-bottom:8px">Pour des réponses IA personnalisées illimitées. Obtiens ta clé sur console.anthropic.com</div>
+        <input class="api-inp-app" id="api-inp-profile" type="password" placeholder="sk-ant-..." oninput="if(this.value.startsWith('sk-ant-')){U.apiKey=this.value;save();}">
+        <button class="api-save-btn" onclick="saveApiKey()">SAUVEGARDER LA CLÉ</button>
+      </div>
+      <div class="profile-section">
+        <button class="logout-btn" onclick="logout()">SE DÉCONNECTER</button>
+      </div>
+      <div style="height:16px"></div>
+    </div>
+  </div>
+
+  <!-- NAV -->
+  <div class="app-nav">
+    <div class="nav-btn on" id="nav-home" onclick="switchTab('t-home')"><div class="nav-ico">🏠</div><div class="nav-lbl">Moi</div></div>
+    <div class="nav-btn" id="nav-chat" onclick="switchTab('t-chat')"><div class="nav-ico">🏋️</div><div class="nav-lbl">HIMA</div></div>
+    <div class="nav-btn" id="nav-prog" onclick="switchTab('t-prog')"><div class="nav-ico">💪</div><div class="nav-lbl">Programme</div></div>
+    <div class="nav-btn" id="nav-corps" onclick="switchTab('t-corps')"><div class="nav-ico">📊</div><div class="nav-lbl">Corps</div></div>
+    <div class="nav-btn" id="nav-profile" onclick="switchTab('t-profile')"><div class="nav-ico">👤</div><div class="nav-lbl">Profil</div></div>
+  </div>
+</div>
+
+<!-- TIMER -->
+<div class="timer-ov" id="timer-ov">
+  <div class="t-label" id="t-label">Série en cours</div>
+  <div class="t-exo" id="t-exo">Exercice</div>
+  <div class="t-detail" id="t-detail">Série 1/4</div>
+  <div class="t-ring"><svg width="200" height="200" viewBox="0 0 200 200"><circle class="t-bg" cx="100" cy="100" r="90"/><circle class="t-fg" id="t-fg" cx="100" cy="100" r="90"/></svg><div class="t-num"><div class="t-sec" id="t-sec">--</div><div class="t-phase" id="t-phase">GO</div></div></div>
+  <div class="t-btns"><button class="t-main" id="t-main" onclick="timerToggle()">Série finie ✓</button><button class="t-skip" onclick="timerSkip()">Suivant →</button></div>
+  <button class="t-close" onclick="closeTimer()">Terminer la séance</button>
 </div>
 
 <script>
-var U = {};
-var step = 0;
-var steps = [
-  {q: ["Salut ! Je suis HIMA, ton coach sport et nutrition.", "Je suis la uniquement pour toi - seances, macros, recup.", "Quel est ton prenom ?"], type: 'text', key: 'prenom'},
-  {qf: function() { return ["Super " + U.prenom + " ! Quel age as-tu ?"]; }, type: 'text', key: 'age', num: true},
-  {qf: function() { return ["Tu es ?"]; }, type: 'chips', key: 'sexe', opts: [{"v":"f","l":"Femme"}, {"v":"m","l":"Homme"}]},
-  {qf: function() { return ["Ton mode !"]; }, type: 'chips', key: 'mode', opts: [{"v":"glow","l":"Ton Glow Up"}, {"v":"bodybuilding","l":"A ton prime"}, {"v":"hyrox","l":"Race Ready"}]},
-  {qf: function() { return ["Ton objectif ?"]; }, type: 'chips', key: 'obj', opts: [{"v":"perte","l":"Perdre du poids"}, {"v":"muscle","l":"Prendre du muscle"}, {"v":"mixte","l":"Rééquilibrage"}]},
-  {qf: function() { return ["Ton poids en kg ?"]; }, type: 'text', key: 'poids', num: true},
-  {qf: function() { return ["Ta taille en cm ?"]; }, type: 'text', key: 'taille', num: true},
-  {qf: function() { return ["Niveau sportif ?"]; }, type: 'chips', key: 'niv', opts: [{"v":"deb","l":"Debutant"}, {"v":"int","l":"Intermediaire"}, {"v":"av","l":"Avance"}]},
-  {qf: function() { return ["Temps par seance ?"]; }, type: 'chips', key: 'tps', opts: [{"v":"20m","l":"20 min"}, {"v":"30m","l":"30 min"}, {"v":"45m","l":"45 min"}, {"v":"60m","l":"60 min+"}]},
-  {qf: function() { return ["Ou tu t entraines ?"]; }, type: 'chips', key: 'lieu', opts: [{"v":"maison","l":"Maison"}, {"v":"salle","l":"Salle"}, {"v":"mixte","l":"Les deux"}]},
-  {qf: function() {
-    U.poids = parseFloat(U.poids) || 75;
-    U.taille = parseInt(U.taille) || 170;
-    var m = calcM();
-    return ["Parfait " + U.prenom + " ! Tout configure.", "Tes besoins : " + m.kcal + " kcal/jour, " + m.prot + "g proteines.", "C est parti !"];
-  }, type: 'go', key: null}
+var U = {}, hist = [], streak = 1, chatLog = [], chatBusy = false;
+var IMG_DATA = '';
+var ONB_STEP = 0;
+
+// ── SCREENS ──
+function show(id) {
+  document.querySelectorAll('.screen').forEach(function(s) { s.classList.remove('active'); });
+  document.getElementById(id).classList.add('active');
+}
+
+// ── SPLASH ──
+window.addEventListener('DOMContentLoaded', function() {
+  // Check saved profile
+  var saved = null;
+  try { saved = localStorage.getItem('hima5'); } catch(e) {}
+  
+  setTimeout(function() {
+    if (saved) {
+      try { U = JSON.parse(saved); } catch(e) { U = {}; }
+      hist = U.hist || [];
+      streak = U.streak || 1;
+      initApp();
+      show('s-app');
+    } else {
+      show('s-auth');
+    }
+  }, 2000);
+});
+
+// ── AUTH ──
+function authWith(provider) {
+  // Simulate auth
+  U.authProvider = provider;
+  U.email = provider === 'google' ? 'user@gmail.com' : 'user@icloud.com';
+  startOnb();
+}
+function authEmail() {
+  var e = document.getElementById('auth-email').value.trim();
+  var p = document.getElementById('auth-pass').value.trim();
+  if (!e || !p) { alert('Remplis les champs'); return; }
+  U.email = e;
+  startOnb();
+}
+
+// ── ONBOARDING ──
+var ONB_STEPS = [
+  {
+    step: 1, pct: 12,
+    q: 'Quel est ton prénom ?', sub: 'Pour personnaliser ton expérience.',
+    type: 'text', key: 'prenom', placeholder: 'Ton prénom...'
+  },
+  {
+    step: 2, pct: 24,
+    q: 'Quel est ton mode ?', sub: 'Choisis selon qui tu es vraiment.',
+    type: 'bigopt', key: 'mode',
+    opts: [
+      {v:'glow', ico:'✨', l:'Ton Glow Up', s:'Transformation complète, santé, énergie'},
+      {v:'bodybuilding', ico:'🏆', l:'À ton prime', s:'Bodybuilding compétition'},
+      {v:'hyrox', ico:'⚡', l:'Race Ready', s:'Préparation Hyrox officielle'}
+    ]
+  },
+  {
+    step: 3, pct: 36,
+    q: 'Ton objectif principal ?', sub: null,
+    type: 'opts2', key: 'obj',
+    opts: [
+      {v:'perte', ico:'⚖️', l:'Perdre du poids'},
+      {v:'muscle', ico:'💪', l:'Prendre du muscle'},
+      {v:'mixte', ico:'🔄', l:'Rééquilibrage'},
+      {v:'sante', ico:'🫀', l:'Santé & énergie'}
+    ]
+  },
+  {
+    step: 4, pct: 48,
+    q: 'Ton poids actuel ?', sub: 'Pour calculer tes besoins exacts.',
+    type: 'slider', key: 'poids', min: 40, max: 150, val: 75, unit: 'kg'
+  },
+  {
+    step: 5, pct: 60,
+    q: 'Ta taille ?', sub: null,
+    type: 'slider', key: 'taille', min: 140, max: 220, val: 175, unit: 'cm'
+  },
+  {
+    step: 6, pct: 70,
+    q: 'Ton niveau sportif ?', sub: null,
+    type: 'opts3', key: 'niv',
+    opts: [
+      {v:'deb', ico:'🌱', l:'Débutant'},
+      {v:'int', ico:'🔥', l:'Intermédiaire'},
+      {v:'av', ico:'⚡', l:'Avancé'}
+    ]
+  },
+  {
+    step: 7, pct: 80,
+    q: 'Temps disponible par séance ?', sub: null,
+    type: 'opts2', key: 'tps',
+    opts: [
+      {v:'20m', ico:'⏱️', l:'20 min'},
+      {v:'30m', ico:'⏱️', l:'30 min'},
+      {v:'45m', ico:'⏱️', l:'45 min'},
+      {v:'60m', ico:'⏱️', l:'60 min+'}
+    ]
+  },
+  {
+    step: 8, pct: 90,
+    q: 'Où tu t\'entraînes ?', sub: null,
+    type: 'bigopt', key: 'lieu',
+    opts: [
+      {v:'maison', ico:'🏠', l:'À la maison', s:'Poids du corps, tapis'},
+      {v:'salle', ico:'🏋️', l:'En salle', s:'Machines, haltères'},
+      {v:'mixte', ico:'🔀', l:'Les deux', s:'Selon les jours'}
+    ]
+  },
+  {
+    step: 9, pct: 95,
+    q: 'Ton régime alimentaire ?', sub: null,
+    type: 'opts3', key: 'reg',
+    opts: [
+      {v:'omni', ico:'🍗', l:'Omnivore'},
+      {v:'vege', ico:'🥗', l:'Végétarien'},
+      {v:'vegan', ico:'🌱', l:'Vegan'}
+    ]
+  }
 ];
 
-function showPaywall() {
-  document.body.innerHTML = getPaywallHTML();
+function startOnb() {
+  ONB_STEP = 0;
+  show('s-onb');
+  renderOnbStep();
 }
 
-function showApp() {
-  var m = calcM();
-  document.body.style.background = '#F5F3EC';
-  document.body.innerHTML = getAppHTML(m);
-  setTimeout(function() { switchTab('accueil'); }, 300);
-}
-
-function getPaywallHTML() {
-  var m = calcM();
-  return '<div style="height:100vh;display:flex;flex-direction:column;background:#264414;overflow:hidden">' +
-    '<div style="flex:1;overflow-y:auto;padding:52px 20px 32px">' +
-    '<div style="display:flex;align-items:center;gap:10px;margin-bottom:28px">' +
-    '<div style="width:40px;height:40px;border-radius:13px;background:#DDE255;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:18px;color:#264414">H</div>' +
-    '<div style="font-size:22px;font-weight:900;color:white;letter-spacing:1px">HIMA</div>' +
-    '<div style="font-size:12px;color:rgba(255,255,255,.4);font-style:italic;margin-left:auto">Ton coach, partout avec toi</div>' +
-    '</div>' +
-    '<div style="font-size:14px;color:rgba(255,255,255,.5);margin-bottom:6px">Salut ' + (U.prenom||'') + ' !</div>' +
-    '<div style="font-size:38px;font-weight:900;color:white;line-height:1;margin-bottom:8px">COMMENCE TA<br>TRANSFORMATION</div>' +
-    '<div style="font-size:13px;color:rgba(255,255,255,.4);margin-bottom:24px">7 jours gratuits · Sans engagement · Annule quand tu veux</div>' +
-    '<div style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:20px;margin-bottom:10px;cursor:pointer" onclick="choosePlan('free')">' +
-    '<div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.4);font-weight:700;margin-bottom:8px">Gratuit</div>' +
-    '<div style="font-size:38px;font-weight:900;color:white">0€</div>' +
-    '<div style="font-size:12px;color:rgba(255,255,255,.4);margin:6px 0 12px">pour toujours</div>' +
-    '<div style="font-size:13px;color:rgba(255,255,255,.4);line-height:1.7;margin-bottom:12px">10 messages/jour · Programme basique · Suivi poids</div>' +
-    '<div style="background:rgba(255,255,255,.1);border-radius:12px;padding:13px;text-align:center;color:rgba(255,255,255,.6);font-weight:700">Commencer gratuitement</div>' +
-    '</div>' +
-    '<div style="background:#F8DBDB;border-radius:20px;padding:20px;margin-bottom:10px;cursor:pointer" onclick="choosePlan('pro')">' +
-    '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">' +
-    '<div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#F35695;font-weight:700">Pro</div>' +
-    '<div style="background:#F35695;color:white;font-size:9px;font-weight:700;padding:3px 10px;border-radius:99px">Le plus populaire</div>' +
-    '</div>' +
-    '<div style="font-size:38px;font-weight:900;color:#0F0F0A">29€<span style="font-size:14px;color:#888">/mois</span></div>' +
-    '<div style="font-size:12px;font-weight:700;color:#F35695;margin:6px 0">7 jours gratuits · Sans CB</div>' +
-    '<div style="font-size:13px;color:#555;line-height:1.7;margin-bottom:12px">HIMA illimitée 24h/24 · Macros quotidiennes · Programme 7j · 40+ recettes · Bilan hebdo</div>' +
-    '<div style="background:#264414;border-radius:12px;padding:13px;text-align:center;color:#DDE255;font-weight:700;font-size:15px">Essayer 7 jours gratuits</div>' +
-    '</div>' +
-    '<div style="background:#F5F3EC;border:1.5px solid #264414;border-radius:20px;padding:20px;margin-bottom:10px;cursor:pointer" onclick="choosePlan('elite')">' +
-    '<div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#264414;font-weight:700;margin-bottom:8px">Elite ◆</div>' +
-    '<div style="font-size:38px;font-weight:900;color:#0F0F0A">49€<span style="font-size:14px;color:#888">/mois</span></div>' +
-    '<div style="font-size:12px;font-weight:700;color:#264414;margin:6px 0">7 jours gratuits · Tout Pro inclus</div>' +
-    '<div style="font-size:13px;color:#555;line-height:1.7;margin-bottom:12px">+ Bodybuilding compétition · Hyrox officiel · Analyse corporelle IA</div>' +
-    '<div style="background:#DDE255;border-radius:12px;padding:13px;text-align:center;color:#264414;font-weight:700;font-size:15px">Essayer Elite</div>' +
-    '</div>' +
-    '<div style="background:rgba(0,0,0,.2);border-radius:14px;padding:14px;margin-top:14px">' +
-    '<label style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.4);display:block;margin-bottom:7px">Clé API Claude (optionnel)</label>' +
-    '<input id="api-key" type="password" placeholder="sk-ant-..." style="width:100%;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);border-radius:10px;padding:11px 14px;font-size:13px;color:white;outline:none;font-family:monospace">' +
-    '<div style="font-size:11px;color:rgba(255,255,255,.3);margin-top:6px;line-height:1.5">Sans clé : HIMA répond hors-ligne. Avec clé Claude : réponses IA illimitées.</div>' +
-    '</div>' +
-    '<div style="height:20px"></div>' +
-    '</div></div>';
-}
-
-window.choosePlan = function(plan) {
-  U.plan = plan;
-  var apiInp = document.getElementById('api-key');
-  if(apiInp && apiInp.value && apiInp.value.startsWith('sk-ant-')) {
-    U.apiKey = apiInp.value;
-  }
-  localStorage.setItem('hima4', JSON.stringify(U));
-  showApp();
-};
-
-function getAppHTML(m) {
-  var greeting = new Date().getHours() < 12 ? 'Bonjour' : new Date().getHours() < 18 ? 'Bon après-midi' : 'Bonsoir';
-  var modeLabel = {glow:'Ton Glow Up', bodybuilding:'À ton prime', hyrox:'Race Ready'}[U.mode||'glow'] || 'Ton Glow Up';
+function renderOnbStep() {
+  var s = ONB_STEPS[ONB_STEP];
+  var bar = document.getElementById('onb-bar');
+  if (bar) bar.style.width = s.pct + '%';
+  var back = document.getElementById('onb-back');
+  if (back) back.style.display = ONB_STEP > 0 ? 'block' : 'none';
+  var content = document.getElementById('onb-content');
+  if (!content) return;
   
-  return '<div style="height:100vh;display:flex;flex-direction:column;background:#F5F3EC;overflow:hidden">' +
-    // Header
-    '<div style="background:#264414;padding:52px 20px 16px;flex-shrink:0;position:relative;overflow:hidden">' +
-    '<div style="display:flex;align-items:flex-start;justify-content:space-between;position:relative;z-index:1">' +
-    '<div>' +
-    '<div style="font-size:12px;color:rgba(255,255,255,.45);margin-bottom:3px">' + greeting + '</div>' +
-    '<div style="font-family:sans-serif;font-size:36px;font-weight:900;color:white;line-height:1;letter-spacing:1px">' + (U.prenom||'Champion').toUpperCase() + '</div>' +
-    '<div style="display:inline-flex;align-items:center;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);border-radius:99px;padding:4px 12px;font-size:11px;color:rgba(255,255,255,.7);font-weight:600;margin-top:6px">' + modeLabel + '</div>' +
-    '</div>' +
-    '<div style="width:80px;height:80px;border-radius:50%;overflow:hidden;border:3px solid #DDE255;flex-shrink:0;box-shadow:0 0 20px rgba(221,226,85,.4)">' +
-    '<img src="' + IMG + '" style="width:100%;height:100%;object-fit:cover">' +
-    '</div>' +
-    '</div>' +
-    // Notif
-    '<div style="margin-top:12px;background:rgba(243,86,149,.15);border:1px solid rgba(243,86,149,.25);border-radius:14px;padding:11px 14px;display:flex;align-items:center;gap:10px;cursor:pointer;position:relative;z-index:1" onclick="document.getElementById('tab-chat').click()">' +
-    '<span style="font-size:18px">🔔</span>' +
-    '<div style="flex:1;font-size:13px;color:rgba(255,255,255,.8)">HIMA attend ton bilan du jour</div>' +
-    '<div style="background:#F35695;color:white;width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700">1</div>' +
-    '</div>' +
-    // Stats
-    '<div style="display:flex;gap:8px;padding:14px 0 18px;overflow-x:auto;position:relative;z-index:1">' +
-    '<div style="flex-shrink:0;background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:12px 16px;text-align:center;min-width:80px">' +
-    '<div style="font-size:22px;font-weight:900;color:white;line-height:1">' + (U.poids||'--') + '</div>' +
-    '<div style="font-size:9px;color:rgba(255,255,255,.4);letter-spacing:.5px;text-transform:uppercase;margin-top:2px">Poids kg</div>' +
-    '</div>' +
-    '<div style="flex-shrink:0;background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:12px 16px;text-align:center;min-width:80px">' +
-    '<div style="font-size:22px;font-weight:900;color:white;line-height:1">' + m.kcal.toLocaleString('fr') + '</div>' +
-    '<div style="font-size:9px;color:rgba(255,255,255,.4);letter-spacing:.5px;text-transform:uppercase;margin-top:2px">kcal/j</div>' +
-    '</div>' +
-    '<div style="flex-shrink:0;background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:12px 16px;text-align:center;min-width:80px">' +
-    '<div style="font-size:22px;font-weight:900;color:white;line-height:1">' + m.prot + 'g</div>' +
-    '<div style="font-size:9px;color:rgba(255,255,255,.4);letter-spacing:.5px;text-transform:uppercase;margin-top:2px">Protéines</div>' +
-    '</div>' +
-    '</div>' +
-    '</div>' +
-    // Tabs
-    '<div style="display:flex;background:white;border-bottom:2px solid rgba(38,68,20,.1);flex-shrink:0">' +
-    '<div id="tab-accueil" style="flex:1;padding:12px 4px;text-align:center;cursor:pointer;border-bottom:2px solid #F35695;margin-bottom:-2px" onclick="switchTab('accueil')">' +
-    '<div style="font-size:20px">🏠</div><div style="font-size:9px;font-weight:700;color:#F35695;text-transform:uppercase;letter-spacing:.5px">Moi</div>' +
-    '</div>' +
-    '<div id="tab-chat" style="flex:1;padding:12px 4px;text-align:center;cursor:pointer" onclick="switchTab('chat')">' +
-    '<div style="font-size:20px">🏋️</div><div style="font-size:9px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.5px">HIMA</div>' +
-    '</div>' +
-    '<div id="tab-prog" style="flex:1;padding:12px 4px;text-align:center;cursor:pointer" onclick="switchTab('prog')">' +
-    '<div style="font-size:20px">💪</div><div style="font-size:9px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.5px">Programme</div>' +
-    '</div>' +
-    '<div id="tab-corps" style="flex:1;padding:12px 4px;text-align:center;cursor:pointer" onclick="switchTab('corps')">' +
-    '<div style="font-size:20px">📊</div><div style="font-size:9px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.5px">Corps</div>' +
-    '</div>' +
-    '</div>' +
-    // Content
-    '<div id="tab-content" style="flex:1;overflow-y:auto"></div>' +
-    '</div>';
+  var html = '<div class="onb-card"><div class="onb-card-hd">';
+  html += '<div class="onb-step-label">Étape ' + s.step + ' / ' + ONB_STEPS.length + '</div>';
+  html += '<div class="onb-q">' + s.q + '</div>';
+  if (s.sub) html += '<div class="onb-q-sub">' + s.sub + '</div>';
+  html += '</div><div class="onb-card-body">';
+  
+  if (s.type === 'text') {
+    html += '<input class="onb-input" id="onb-inp" type="text" placeholder="' + s.placeholder + '" value="' + (U[s.key]||'') + '" onkeydown="if(event.key===\'Enter\')onbNext()">';
+  } else if (s.type === 'slider') {
+    var cur = U[s.key] || s.val;
+    html += '<div class="slider-wrap"><div class="slider-val" id="sv-' + s.key + '">' + cur + ' <span class="slider-unit">' + s.unit + '</span></div>';
+    html += '<div class="slider-labels"><span>' + s.min + s.unit + '</span><span>' + s.max + s.unit + '</span></div>';
+    html += '<input type="range" id="sr-' + s.key + '" min="' + s.min + '" max="' + s.max + '" value="' + cur + '" style="--pct:' + ((cur-s.min)/(s.max-s.min)*100) + '%"';
+    html += ' oninput="var v=this.value;document.getElementById(\'sv-' + s.key + '\').innerHTML=v+\' <span class=&quot;slider-unit&quot;>' + s.unit + '</span>\';this.style.setProperty(\'--pct\',((v-' + s.min + ')/(' + s.max + '-' + s.min + ')*100)+\'%\');U[\'' + s.key + '\']=parseFloat(v);">';
+    html += '</div>';
+  } else if (s.type === 'bigopt') {
+    s.opts.forEach(function(o) {
+      var sel = U[s.key] === o.v ? ' sel' : '';
+      html += '<div class="big-opt' + sel + '" onclick="selOpt(this,\'' + s.key + '\',\'' + o.v + '\')">';
+      html += '<div class="big-opt-ico">' + o.ico + '</div>';
+      html += '<div><div class="big-opt-t">' + o.l + '</div><div class="big-opt-s">' + o.s + '</div></div>';
+      html += '<div class="big-opt-check"></div></div>';
+    });
+  } else if (s.type === 'opts2') {
+    html += '<div class="opt-grid cols2">';
+    s.opts.forEach(function(o) {
+      var sel = U[s.key] === o.v ? ' sel' : '';
+      html += '<div class="opt-item' + sel + '" onclick="selOpt(this,\'' + s.key + '\',\'' + o.v + '\')">';
+      html += '<span class="opt-ico">' + o.ico + '</span><div class="opt-lbl">' + o.l + '</div></div>';
+    });
+    html += '</div>';
+  } else if (s.type === 'opts3') {
+    html += '<div class="opt-grid cols3">';
+    s.opts.forEach(function(o) {
+      var sel = U[s.key] === o.v ? ' sel' : '';
+      html += '<div class="opt-item' + sel + '" onclick="selOpt(this,\'' + s.key + '\',\'' + o.v + '\')">';
+      html += '<span class="opt-ico">' + o.ico + '</span><div class="opt-lbl">' + o.l + '</div></div>';
+    });
+    html += '</div>';
+  }
+  
+  html += '</div></div>';
+  content.innerHTML = html;
+  var sc = document.getElementById('onb-scroll');
+  if (sc) sc.scrollTop = 0;
+  
+  // Focus input if text
+  if (s.type === 'text') {
+    setTimeout(function() { var inp = document.getElementById('onb-inp'); if(inp) inp.focus(); }, 200);
+  }
 }
 
+function selOpt(el, key, val) {
+  var parent = el.parentNode;
+  parent.querySelectorAll('.opt-item,.big-opt').forEach(function(x) { x.classList.remove('sel'); });
+  el.classList.add('sel');
+  U[key] = val;
+}
+
+function onbNext() {
+  var s = ONB_STEPS[ONB_STEP];
+  if (s.type === 'text') {
+    var inp = document.getElementById('onb-inp');
+    if (inp) U[s.key] = inp.value.trim();
+    if (!U[s.key]) { if(inp) inp.style.borderColor='var(--o)'; return; }
+  }
+  if (s.type === 'slider') {
+    var sr = document.getElementById('sr-' + s.key);
+    if (sr) U[s.key] = parseFloat(sr.value);
+  }
+  if (!U[s.key] && s.type !== 'slider' && s.type !== 'text') return;
+  
+  ONB_STEP++;
+  if (ONB_STEP >= ONB_STEPS.length) {
+    // Done — calculate and save
+    U.poids = parseFloat(U.poids) || 75;
+    U.taille = parseInt(U.taille) || 170;
+    U.dep = U.poids;
+    hist = [U.poids];
+    U.macros = calcM();
+    U.hist = hist;
+    U.plan = 'pro';
+    save();
+    initApp();
+    show('s-app');
+  } else {
+    renderOnbStep();
+  }
+}
+
+function onbBack() {
+  if (ONB_STEP > 0) { ONB_STEP--; renderOnbStep(); }
+}
+
+// ── MACROS ──
 function calcM() {
-  var p = U.poids || 75, t = U.taille || 170, a = parseInt(U.age) || 26;
-  var mb = U.sexe === 'f' ? (10*p + 6.25*t - 5*a - 161) : (10*p + 6.25*t - 5*a + 5);
-  var td = mb * 1.375;
-  if(U.obj === 'perte') td -= 400;
-  else if(U.obj === 'muscle') td += 200;
+  var p = U.poids||75, t = U.taille||170, a = parseInt(U.age)||26;
+  var mb = U.sexe === 'f' ? (10*p+6.25*t-5*a-161) : (10*p+6.25*t-5*a+5);
+  var ac = {deb:1.375, int:1.55, av:1.725};
+  var td = mb * (ac[U.niv] || 1.375);
+  var mode = U.mode||'glow', obj = U.obj||'perte';
+  if (mode==='bodybuilding') { if(obj==='masse')td+=400; else if(obj==='seche')td-=500; else if(obj==='peak')td-=300; }
+  else if (mode==='hyrox') { td+=250; }
+  else { if(obj==='perte')td-=400; else if(obj==='muscle')td+=200; else if(obj==='mixte')td-=200; }
   var kcal = Math.round(td);
-  var prot = Math.round(p * 2);
-  var lip = Math.round((kcal * .28) / 9);
-  var gluc = Math.round((kcal - prot*4 - lip*9) / 4);
+  var prot = Math.round(p * (mode==='bodybuilding'?2.5:2));
+  var lip = Math.round((kcal*.28)/9);
+  var gluc = Math.round((kcal-prot*4-lip*9)/4);
   return {kcal:kcal, prot:prot, gluc:gluc, lip:lip};
 }
-
-function addHima(msgs, cb) {
-  var i = 0;
-  function next() {
-    if(i >= msgs.length) { if(cb) cb(); return; }
-    showTyping(function() {
-      var m = document.getElementById('msgs');
-      var g = document.createElement('div'); g.className = 'msg';
-      var av = document.createElement('div'); av.className = 'msg-av';
-      av.innerHTML = '<img src="data:image/jpeg;base64,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" alt="H">';
-      var b = document.createElement('div'); b.className = 'msg-b';
-      b.textContent = msgs[i];
-      g.appendChild(av); g.appendChild(b);
-      m.appendChild(g); scrl();
-      i++;
-      next();
-    });
-  }
-  next();
+function save() { try { localStorage.setItem('hima5', JSON.stringify(Object.assign({},U,{hist:hist,streak:streak}))); } catch(e) {} }
+function logout() { try { localStorage.removeItem('hima5'); } catch(e) {} window.location.reload(); }
+function saveApiKey() {
+  var inp = document.getElementById('api-inp-profile');
+  if (inp && inp.value.startsWith('sk-ant-')) { U.apiKey = inp.value; save(); alert('Clé sauvegardée !'); }
 }
 
-function showTyping(cb) {
-  var m = document.getElementById('msgs');
-  var g = document.createElement('div'); g.className = 'msg'; g.id = 'typ';
-  var av = document.createElement('div'); av.className = 'msg-av';
-  av.innerHTML = '<img src="data:image/jpeg;base64,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" alt="H">';
-  var b = document.createElement('div'); b.className = 'msg-b';
-  b.innerHTML = '<div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>';
-  g.appendChild(av); g.appendChild(b);
-  m.appendChild(g); scrl();
-  setTimeout(function() {
-    var t = document.getElementById('typ');
-    if(t) t.remove();
-    cb();
-  }, 800);
-}
-
-function addUser(txt) {
-  var m = document.getElementById('msgs');
-  var g = document.createElement('div'); g.className = 'msg user';
-  var av = document.createElement('div'); av.className = 'msg-av';
-  av.style.cssText = 'background:#F35695;display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:13px';
-  av.textContent = (U.prenom || txt || 'U')[0].toUpperCase();
-  var b = document.createElement('div'); b.className = 'msg-b';
-  b.textContent = txt;
-  g.appendChild(av); g.appendChild(b);
-  m.appendChild(g); scrl();
-}
-
-function scrl() {
-  var m = document.getElementById('msgs');
-  if(m) setTimeout(function() { m.scrollTop = m.scrollHeight; }, 50);
-}
-
-function showStep(i) {
-  if(i >= steps.length) return;
-  var s = steps[i];
-  var msgs = s.q || (s.qf ? s.qf() : []);
-  var chips = document.getElementById('chips');
-  var inp = document.getElementById('inp');
-  chips.innerHTML = '';
-  inp.style.display = 'none';
-  document.querySelector('.send').style.display = 'none';
-
-  addHima(msgs, function() {
-    if(s.type === 'chips') {
-      (s.opts || []).forEach(function(o) {
-        var c = document.createElement('div');
-        c.className = 'chip';
-        c.textContent = o.l;
-        c.onclick = function() {
-          document.querySelectorAll('.chip').forEach(function(x) { x.classList.remove('sel'); });
-          c.classList.add('sel');
-          U[s.key] = o.v;
-          setTimeout(function() { choose(o.l); }, 200);
-        };
-        chips.appendChild(c);
-      });
-    } else if(s.type === 'text') {
-      inp.style.display = 'block';
-      inp.type = s.num ? 'number' : 'text';
-      inp.placeholder = 'Ecris ta reponse...';
-      inp.value = '';
-      document.querySelector('.send').style.display = 'flex';
-      setTimeout(function() { inp.focus(); }, 100);
-    } else if(s.type === 'go') {
-      var btn = document.createElement('div');
-      btn.className = 'chip sel';
-      btn.style.cssText = 'width:100%;text-align:center;padding:14px;font-size:14px;cursor:pointer';
-      btn.textContent = 'Commencer maintenant !';
-      btn.onclick = function() {
-        localStorage.setItem('hima4', JSON.stringify(U));
-        document.body.innerHTML = '<div style="height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#264414;color:white;text-align:center;padding:30px"><div style="font-size:60px;margin-bottom:20px">🎉</div><div style="font-family:sans-serif;font-size:28px;font-weight:900;letter-spacing:1px;margin-bottom:10px">HIMA</div><div style="font-size:16px;opacity:.7;margin-bottom:32px">Ton coach, partout avec toi</div><div style="background:white;color:#264414;border-radius:16px;padding:20px;max-width:320px;width:100%;margin-bottom:14px;cursor:pointer" onclick="startPro()"><div style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#F35695;margin-bottom:8px">PRO</div><div style="font-size:36px;font-weight:900;color:#0F0F0A">29€<span style="font-size:14px;color:#888">/mois</span></div><div style="font-size:12px;color:#666;margin:8px 0">7 jours gratuits · HIMA illimitée · Macros · Programme · Recettes</div><div style="background:#264414;color:#DDE255;border-radius:10px;padding:12px;font-weight:700;font-size:15px">Essayer 7 jours gratuits</div></div><div style="color:rgba(255,255,255,.4);font-size:13px;cursor:pointer" onclick="startFree()">Continuer gratuitement →</div></div>';
-        window.startFree = function() { 
-          localStorage.setItem('hima4', JSON.stringify(U));
-          window.location.href = window.location.href.split('?')[0] + '?app=1';
-        };
-        window.startPro = function() { 
-          U.plan = 'pro';
-          localStorage.setItem('hima4', JSON.stringify(U));
-          window.location.href = window.location.href.split('?')[0] + '?app=1';
-        };
-      };
-      chips.appendChild(btn);
-    }
-  });
-}
-
-function send() {
-  var inp = document.getElementById('inp');
-  var v = inp.value.trim();
-  if(!v) return;
-  var s = steps[step];
-  if(s && s.key) U[s.key] = v;
-  choose(v);
-}
-
-function choose(txt) {
-  addUser(txt);
-  document.getElementById('inp').value = '';
-  step++;
-  setTimeout(function() { showStep(step); }, 200);
-}
-
-// BOOT - check if already configured
-var saved = null;
-try { saved = localStorage.getItem('hima4'); } catch(e) {}
-var params = window.location.search;
-
-if(saved && (params.includes('app=1') || params.includes('app'))) {
-  // Go to app
-  try { U = JSON.parse(saved); } catch(e) { U = {}; }
-  showApp();
-} else if(saved && !params.includes('reset')) {
-  // Already done onboarding, show paywall or app
-  try { U = JSON.parse(saved); } catch(e) { U = {}; }
-  if(U.plan) {
-    showApp();
-  } else {
-    showPaywall();
-  }
-} else {
-  // Fresh start
-  setTimeout(function() { showStep(0); }, 500);
-}
-
-window.switchTab = function(tab) {
-  ['accueil','chat','prog','corps'].forEach(function(t) {
-    var el = document.getElementById('tab-'+t);
-    if(el) {
-      el.style.borderBottom = t===tab ? '2px solid #F35695' : 'none';
-      el.querySelector('div:last-child').style.color = t===tab ? '#F35695' : '#888';
-      el.querySelector('div:last-child').style.fontWeight = t===tab ? '700' : '600';
-    }
-  });
-  var content = document.getElementById('tab-content');
-  if(!content) return;
-  if(tab==='accueil') renderAccueil(content);
-  else if(tab==='chat') renderChat(content);
-  else if(tab==='prog') renderProg(content);
-  else if(tab==='corps') renderCorps(content);
-};
-
-function renderAccueil(el) {
-  var msgs = [
-    'Comment tu te sens ce matin ? Dis-moi ton énergie sur 10.',
-    (U.prenom||'Champion') + ', ton programme est prêt. On commence ?',
-    'Bonjour ! Énergie + sommeil sur 10 ? J\'adapte ta séance.'
-  ];
-  el.innerHTML = '<div style="padding:14px">' +
-    '<div style="background:white;border-radius:22px;padding:18px;box-shadow:0 4px 20px rgba(0,0,0,.08);border:2px solid rgba(38,68,20,.08)">' +
-    '<div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">' +
-    '<div style="width:44px;height:44px;border-radius:14px;overflow:hidden;flex-shrink:0"><img src="' + IMG + '" style="width:100%;height:100%;object-fit:cover"></div>' +
-    '<div><div style="font-weight:900;font-size:18px;color:#0F0F0A">HIMA</div>' +
-    '<div style="font-size:11px;color:#00A855;font-weight:600;display:flex;align-items:center;gap:4px"><span style="width:5px;height:5px;border-radius:50%;background:#00E87A;display:inline-block"></span>Ton coach · En ligne</div>' +
-    '</div></div>' +
-    '<div style="background:#F5F3EC;border-radius:4px 16px 16px 16px;padding:13px 15px;font-size:14px;line-height:1.65;margin-bottom:14px;border:1px solid rgba(38,68,20,.08)">' +
-    msgs[new Date().getDay()%3] + '</div>' +
-    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">' +
-    '<button style="background:#264414;color:white;border:none;border-radius:18px;padding:16px 14px;text-align:left;cursor:pointer" onclick="switchTab('prog')">' +
-    '<div style="font-size:24px;margin-bottom:8px">💪</div><div style="font-size:17px;font-weight:900;letter-spacing:.3px">MA SÉANCE</div><div style="font-size:11px;opacity:.6;margin-top:3px">Voir le programme</div></button>' +
-    '<button style="background:#F98805;color:#FDFCF8;border:none;border-radius:18px;padding:16px 14px;text-align:left;cursor:pointer" onclick="switchTab('chat')">' +
-    '<div style="font-size:24px;margin-bottom:8px">🍽️</div><div style="font-size:17px;font-weight:900;letter-spacing:.3px">RECETTES</div><div style="font-size:11px;opacity:.6;margin-top:3px">Idées gourmandes</div></button>' +
-    '<button style="background:#F8DBDB;border:none;border-radius:18px;padding:16px 14px;text-align:left;cursor:pointer" onclick="switchTab('corps')">' +
-    '<div style="font-size:24px;margin-bottom:8px">📊</div><div style="font-size:17px;font-weight:900;letter-spacing:.3px">MON CORPS</div><div style="font-size:11px;opacity:.6;margin-top:3px">Suivi & pesée</div></button>' +
-    '<button style="background:#0F0F0A;color:white;border:none;border-radius:18px;padding:16px 14px;text-align:left;cursor:pointer" onclick="switchTab('chat')">' +
-    '<div style="font-size:24px;margin-bottom:8px">💬</div><div style="font-size:17px;font-weight:900;letter-spacing:.3px">PARLER À HIMA</div><div style="font-size:11px;opacity:.6;margin-top:3px">Coach IA</div></button>' +
-    '</div></div></div>';
-}
-
-var chatLog = [];
-var chatBusy = false;
-var KEY = U.apiKey || '';
-
-function renderChat(el) {
-  el.style.cssText = 'flex:1;overflow:hidden;display:flex;flex-direction:column';
-  el.innerHTML = '<div id="chat-msgs" style="flex:1;overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:4px"></div>' +
-    '<div style="display:flex;gap:7px;padding:10px 16px;overflow-x:auto;border-top:1.5px solid rgba(38,68,20,.1);background:white;flex-shrink:0">' +
-    '<div style="white-space:nowrap;padding:8px 15px;border-radius:10px;font-size:12.5px;font-weight:600;cursor:pointer;border:1.5px solid rgba(38,68,20,.1);background:#264414;color:#DDE255" onclick="chatSend(this.textContent)">Ma séance 💪</div>' +
-    '<div style="white-space:nowrap;padding:8px 15px;border-radius:10px;font-size:12.5px;font-weight:600;cursor:pointer;border:1.5px solid rgba(38,68,20,.1);background:#264414;color:#DDE255" onclick="chatSend(this.textContent)">Mon menu ce soir</div>' +
-    '<div style="white-space:nowrap;padding:8px 15px;border-radius:10px;font-size:12.5px;font-weight:600;cursor:pointer;border:1.5px solid rgba(243,86,149,.2);background:#F8DBDB" onclick="chatSend(this.textContent)">Une recette 🍽️</div>' +
-    '<div style="white-space:nowrap;padding:8px 15px;border-radius:10px;font-size:12.5px;font-weight:600;cursor:pointer;border:1.5px solid rgba(38,68,20,.1);background:#F5F3EC" onclick="chatSend(this.textContent)">Ma progression</div>' +
-    '<div style="white-space:nowrap;padding:8px 15px;border-radius:10px;font-size:12.5px;font-weight:600;cursor:pointer;border:1.5px solid rgba(38,68,20,.1);background:#F5F3EC" onclick="chatSend(this.textContent)">J'ai craqué</div>' +
-    '</div>' +
-    '<div style="padding:10px 14px 28px;background:white;border-top:1.5px solid rgba(38,68,20,.1);display:flex;gap:9px;align-items:flex-end;flex-shrink:0">' +
-    '<textarea id="chat-inp" placeholder="Parle à HIMA..." rows="1" style="flex:1;background:#F5F3EC;border:1.5px solid rgba(38,68,20,.1);border-radius:22px;padding:12px 16px;font-size:15px;font-family:Arial,sans-serif;color:#0F0F0A;outline:none;resize:none;max-height:90px;line-height:1.45" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();chatSend();}"></textarea>' +
-    '<button onclick="chatSend()" style="width:46px;height:46px;border-radius:14px;background:#264414;border:none;color:#DDE255;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0">↑</button>' +
-    '</div>';
-  if(chatLog.length === 0) startChatMsgs();
-}
-
-function startChatMsgs() {
+// ── APP INIT ──
+function initApp() {
+  var m = U.macros || calcM();
   var h = new Date().getHours();
-  var sal = h<12?'Bonjour':h<18?'Bon après-midi':'Bonsoir';
-  addChatMsg('hima', sal + ' ' + (U.prenom||'') + ' ! Je suis HIMA, ton coach sport et nutrition. Je réponds uniquement à ce qui touche ton corps et tes performances. Pour le reste, d\'autres experts sont là !');
-  setTimeout(function() {
-    addChatMsg('hima', 'Comment tu te sens ce matin ? Énergie sur 10 et sommeil sur 10 — j\'adapte ta séance en fonction.');
-  }, 900);
+  var g = h<12?'Bonjour':h<18?'Bon après-midi':'Bonsoir';
+  var el; 
+  el=document.getElementById('h-greet'); if(el) el.textContent=g;
+  el=document.getElementById('h-name'); if(el) el.textContent=(U.prenom||'Champion').toUpperCase();
+  var ml = {glow:'✨ Ton Glow Up', bodybuilding:'🏆 À ton prime', hyrox:'⚡ Race Ready'};
+  el=document.getElementById('h-mode'); if(el) el.textContent=ml[U.mode||'glow']||'✨ Ton Glow Up';
+  el=document.getElementById('st-p'); if(el) el.textContent=U.poids||'--';
+  el=document.getElementById('st-k'); if(el) el.textContent=m.kcal.toLocaleString('fr');
+  el=document.getElementById('st-s'); if(el) el.textContent='J'+streak;
+  el=document.getElementById('st-r'); if(el) el.textContent=recov()+'/100';
+  // Today msg
+  var msgs = ['Salut '+(U.prenom||'')+' ! Comment tu te sens ce matin ? Énergie sur 10 — j\'adapte ta séance.', (U.prenom||'')+', ton programme est prêt. Qu\'est-ce qu\'on attaque aujourd\'hui ?', 'Bonjour '+(U.prenom||'')+' ! Dis-moi ton énergie et ton sommeil sur 10.'];
+  el=document.getElementById('hima-today-msg'); if(el) el.textContent=msgs[new Date().getDay()%3];
+  // Profile
+  el=document.getElementById('profile-name'); if(el) el.textContent=U.prenom||'Champion';
+  el=document.getElementById('profile-plan'); if(el) el.textContent=ml[U.mode||'glow']||'✨ Glow Up';
+  el=document.getElementById('ps-mode'); if(el) el.textContent=ml[U.mode||'glow']||'--';
+  el=document.getElementById('ps-obj'); if(el) el.textContent={perte:'Perdre du poids',muscle:'Prendre du muscle',mixte:'Rééquilibrage',sante:'Santé'}[U.obj||'perte']||'--';
+  el=document.getElementById('ps-niv'); if(el) el.textContent={deb:'Débutant',int:'Intermédiaire',av:'Avancé'}[U.niv||'deb']||'--';
+  el=document.getElementById('ps-lieu'); if(el) el.textContent={maison:'Maison',salle:'Salle',mixte:'Les deux',ext:'Extérieur'}[U.lieu||'maison']||'--';
+  el=document.getElementById('ps-reg'); if(el) el.textContent={omni:'Omnivore',vege:'Végétarien',vegan:'Vegan'}[U.reg||'omni']||'--';
+  el=document.getElementById('ps-macros'); if(el) el.textContent=m.kcal+' kcal · '+m.prot+'g P · '+m.gluc+'g G';
+  // Progress ring
+  updateRing();
+  // Init chat
+  var msgsEl = document.getElementById('msgs');
+  if (msgsEl && !msgsEl.children.length) initChat();
+  // Build prog
+  buildProg();
+  buildCorps();
+  // API key
+  var apiEl = document.getElementById('api-inp-profile');
+  if (apiEl && U.apiKey) apiEl.value = U.apiKey;
 }
 
-function addChatMsg(who, txt) {
-  var msgs = document.getElementById('chat-msgs');
-  if(!msgs) return;
-  var g = document.createElement('div');
-  g.style.cssText = 'display:flex;gap:8px;align-items:flex-end;margin-bottom:7px;animation:aMsg .2s ease;' + (who==='user'?'flex-direction:row-reverse':'');
-  if(who==='hima') {
-    var av = document.createElement('div');
-    av.style.cssText = 'width:34px;height:34px;border-radius:12px;overflow:hidden;flex-shrink:0';
-    av.innerHTML = '<img src="' + IMG + '" style="width:100%;height:100%;object-fit:cover">';
-    g.appendChild(av);
-  } else {
-    var uav = document.createElement('div');
-    uav.style.cssText = 'width:34px;height:34px;border-radius:12px;background:#F35695;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:white;flex-shrink:0';
-    uav.textContent = (U.prenom||'U')[0].toUpperCase();
-    g.appendChild(uav);
+function recov() { return Math.min(100,Math.max(0,Math.round(((U.le||7)+(U.ls||7)+(10-(U.lst||5)))/3*10))); }
+
+function updateRing() {
+  var pct = 0;
+  if (U.dep && U.poids && U.cible) {
+    var tot = Math.abs(U.dep-U.cible), done = Math.abs(U.dep-U.poids);
+    pct = Math.min(100, Math.round((done/tot)*100));
   }
-  var b = document.createElement('div');
-  b.style.cssText = who==='hima' ?
-    'padding:13px 16px;background:white;border:1.5px solid rgba(38,68,20,.1);border-radius:18px 18px 18px 4px;font-size:14px;line-height:1.65;color:#0F0F0A;max-width:83%;word-break:break-word' :
-    'padding:13px 16px;background:#264414;border-radius:18px 18px 4px 18px;font-size:14px;line-height:1.65;color:white;max-width:83%;word-break:break-word';
-  b.textContent = txt;
-  g.appendChild(b);
-  msgs.appendChild(g);
-  chatLog.push({role: who==='hima'?'assistant':'user', content: txt});
-  setTimeout(function() { msgs.scrollTop = msgs.scrollHeight; }, 60);
+  var fg = document.getElementById('pr-fg'); if(fg) fg.style.strokeDashoffset = 220-(220*pct/100);
+  var pt = document.getElementById('pr-pct'); if(pt) pt.textContent=pct+'%';
+  var pd = document.getElementById('prc-dep'); if(pd) pd.textContent=(U.dep||'--')+' kg';
+  var pa = document.getElementById('prc-act'); if(pa) pa.textContent=(U.poids||'--')+' kg';
+  var pc = document.getElementById('prc-cib'); if(pc) pc.textContent=U.cible?U.cible+' kg':'--';
+  var ps = document.getElementById('prog-ring-sub'); if(ps) ps.textContent=pct+'% vers ton objectif';
 }
 
-function addChatTyping() {
-  var msgs = document.getElementById('chat-msgs');
-  if(!msgs) return;
-  var g = document.createElement('div');
-  g.id = 'chat-typ';
-  g.style.cssText = 'display:flex;gap:8px;align-items:flex-end;margin-bottom:7px';
-  var av = document.createElement('div');
-  av.style.cssText = 'width:34px;height:34px;border-radius:12px;overflow:hidden;flex-shrink:0';
-  av.innerHTML = '<img src="' + IMG + '" style="width:100%;height:100%;object-fit:cover">';
-  g.appendChild(av);
-  var b = document.createElement('div');
-  b.style.cssText = 'padding:13px 18px;background:white;border:1.5px solid rgba(38,68,20,.1);border-radius:18px;display:flex;gap:6px;align-items:center';
-  b.innerHTML = '<span class="dot" style="width:7px;height:7px;border-radius:50%;background:#F35695;display:inline-block;animation:td 1.2s infinite"></span><span class="dot" style="width:7px;height:7px;border-radius:50%;background:#F98805;display:inline-block;animation:td 1.2s infinite;animation-delay:.15s"></span><span class="dot" style="width:7px;height:7px;border-radius:50%;background:#DDE255;display:inline-block;animation:td 1.2s infinite;animation-delay:.3s"></span>';
-  g.appendChild(b);
-  msgs.appendChild(g);
-  setTimeout(function() { msgs.scrollTop = msgs.scrollHeight; }, 60);
+// ── TABS ──
+function switchTab(id) {
+  document.querySelectorAll('.app-tab').forEach(function(t) { t.classList.remove('on'); });
+  document.querySelectorAll('.nav-btn').forEach(function(n) { n.classList.remove('on'); });
+  var el = document.getElementById(id); if(el) el.classList.add('on');
+  var nid = 'nav-' + id.replace('t-',''); var nel = document.getElementById(nid); if(nel) nel.classList.add('on');
 }
 
-window.chatSend = function(txt) {
-  if(!txt) {
-    var inp = document.getElementById('chat-inp');
-    txt = inp ? inp.value.trim() : '';
-  }
-  if(!txt || chatBusy) return;
-  var inp2 = document.getElementById('chat-inp');
-  if(inp2) inp2.value = '';
-  addChatMsg('user', txt);
-  chatBusy = true;
-  addChatTyping();
-  var NO = ['amour','relation','politique','argent','finance','programmation','film','serie','musique','meteo','actualite'];
-  var isOff = false;
-  for(var i=0;i<NO.length;i++) { if(txt.toLowerCase().includes(NO[i])) { isOff=true; break; } }
-  if(isOff) {
-    setTimeout(function() {
-      var t = document.getElementById('chat-typ'); if(t) t.remove();
-      addChatMsg('hima', 'Ce sujet dépasse mon domaine. Je suis HIMA — uniquement sport et nutrition. Tu veux parler de ta séance ou d\'une recette ?');
-      chatBusy = false;
-    }, 700);
-    return;
-  }
-  var m = calcM();
-  var sys = 'Tu es HIMA coach sportif IA. Tu reponds UNIQUEMENT sport, nutrition, recuperation. Tutoie. Reponds conversationnellement, personnalise, 2-3 paragraphes, question de suivi. Profil: ' + (U.prenom||'') + ' ' + (U.age||25) + 'ans ' + (U.sexe==='f'?'F':'H') + ' ' + (U.poids||75) + 'kg mode:' + (U.mode||'glow') + ' macros:' + m.kcal + 'kcal ' + m.prot + 'g prot.';
-  var apiKey = U.apiKey || KEY || '';
-  if(!apiKey) {
-    setTimeout(function() {
-      var t = document.getElementById('chat-typ'); if(t) t.remove();
-      addChatMsg('hima', localReply(txt));
-      chatBusy = false;
-    }, 800);
-    return;
-  }
-  fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-    body: JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:600,system:sys,messages:chatLog.slice(-12)})
-  }).then(function(r) { return r.json(); }).then(function(d) {
-    var t = document.getElementById('chat-typ'); if(t) t.remove();
-    addChatMsg('hima', d.content && d.content[0] ? d.content[0].text : localReply(txt));
-    chatBusy = false;
-  }).catch(function() {
-    var t = document.getElementById('chat-typ'); if(t) t.remove();
-    addChatMsg('hima', localReply(txt));
-    chatBusy = false;
+// ── CHAT ──
+var NO_SPORT = ['amour','relation','politique','argent','finance','investissement','programmation','geographie','film','serie','musique','meteo','actualite'];
+function notSport(msg) {
+  var l = msg.toLowerCase();
+  for(var i=0;i<NO_SPORT.length;i++) { if(l.includes(NO_SPORT[i])) return true; }
+  var ok = ['seance','sport','entrainement','exercice','muscle','cardio','poids','manger','repas','calories','proteine','dormi','fatigue','recup','programme','corps','nutrition','squat','course','soir','matin','energie','stress','sommeil','eau','craque','bilan','kg','recette','menu','running','marche','yoga'];
+  for(var j=0;j<ok.length;j++) { if(l.includes(ok[j])) return false; }
+  return msg.length > 40;
+}
+
+function initChat() {
+  var el = document.getElementById('msgs'); if(!el) return;
+  el.innerHTML = ''; chatLog = [];
+  var d = new Date();
+  var J = ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
+  addSep(J[d.getDay()]+' '+d.getDate());
+  var h = d.getHours(), s = h<12?'Bonjour':h<18?'Bon après-midi':'Bonsoir';
+  addHMsg([s+' '+(U.prenom||'Champion')+' ! Je suis HIMA, ton coach sport et nutrition. Je suis là uniquement pour ton corps — séances, macros, recettes, récupération. Pour tout le reste, d\'autres experts sont là !']);
+  setTimeout(function() { addHMsg(['Comment tu te sens ? Énergie sur 10 et sommeil sur 10 — j\'adapte tout en fonction.']); }, 900);
+  setTimeout(function() { addMacroCard(U.macros||calcM()); }, 1800);
+}
+
+function addSep(t) {
+  var el = document.getElementById('msgs');
+  var d = document.createElement('div'); d.className='msep';
+  d.innerHTML='<div class="msep-l"></div><div class="msep-t">'+t+'</div><div class="msep-l"></div>';
+  el.appendChild(d);
+}
+
+function mkAv() {
+  var av = document.createElement('div'); av.className='mav';
+  var img = document.createElement('img'); img.alt='H'; img.style.cssText='width:34px;height:34px;object-fit:cover;border-radius:12px';
+  // Use the loaded image
+  var src = document.getElementById('app-coach-img');
+  if(src && src.src) img.src = src.src;
+  else { av.style.background='var(--y)'; av.style.display='flex'; av.style.alignItems='center'; av.style.justifyContent='center'; av.style.fontSize='18px'; av.textContent='🏋️'; return av; }
+  av.appendChild(img); return av;
+}
+
+function addHMsg(txts) {
+  var el = document.getElementById('msgs'); if(!el) return;
+  var g = document.createElement('div'); g.className='mg';
+  g.appendChild(mkAv());
+  var bs = document.createElement('div'); bs.className='mbs';
+  txts.forEach(function(t,i) {
+    var b = document.createElement('div'); b.className='b'; b.textContent=t; bs.appendChild(b);
+    chatLog.push({role:'assistant',content:t});
   });
-};
-
-function localReply(msg) {
-  var l = msg.toLowerCase(); var m = calcM(); var p = U.prenom||'';
-  if(/running|footing|course/i.test(l)) return 'Parfait ' + p + ' ! Running ce soir : 5 min échauffement marche, puis zone 2 (tu peux parler) 25-35 min, 5 min retour calme. Zone 2 = 65-75% FC max. Tu brûles les graisses et tu progresses. Ton niveau en course ?';
-  if(/seance|entrainement|exercice|programme/i.test(l)) return 'Ta séance du jour est prête ' + p + '. Construite pour toi. Respecte les temps de repos — ils font partie de la progression !';
-  if(/recette|gourmand/i.test(l)) return 'Voilà une idée gourmande et dans tes macros ' + p + ' ! Tu veux une autre option ?';
-  if(/menu|manger|repas|diner/i.test(l)) return 'Pour ce soir ' + p + ' avec tes ' + m.kcal + ' kcal : 150g protéines (poulet/saumon), 150g féculent cuit, légumes à volonté. Simple, efficace, dans tes macros.';
-  if(/dormi|sommeil|fatigue/i.test(l)) return 'Je prends note ' + p + '. Mauvaise nuit = récup impactée. Séance allégée aujourd\'hui, couche-toi 30 min plus tôt ce soir. Qu\'est-ce qui perturbe ton sommeil ?';
-  if(/craque|pizza|burger/i.test(l)) return 'Un écart ça arrive. Ce soir tu manges léger et demain tu reprends normalement. La vraie discipline c\'est de reprendre sans culpabilité. Comment tu te sens ?';
-  if(/progression|bilan/i.test(l)) return 'Bilan ' + p + ' : ' + (U.poids||'--') + ' kg — ' + m.kcal + ' kcal/jour — ' + m.prot + 'g protéines. Tu es sur la bonne voie. Continue !';
-  if(/energie|\d+.*10/i.test(l)) return 'Noté ! J\'adapte ta séance du jour en fonction. Tu veux voir le programme ?';
-  return 'Je suis là pour toi ' + p + ', 24h/24. Sport, nutrition, récupération — dis-moi ce qui est le plus important maintenant.';
+  g.appendChild(bs); el.appendChild(g); scChat();
 }
 
-function renderProg(el) {
-  var s = buildSeance();
-  el.innerHTML = '<div style="padding:16px">' +
-    '<div style="background:#264414;border-radius:22px;padding:22px;margin-bottom:14px">' +
-    '<div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#DDE255;margin-bottom:8px;opacity:.7;font-weight:700">Séance du jour</div>' +
-    '<div style="font-size:26px;font-weight:900;color:white;margin-bottom:10px">' + s.titre + '</div>' +
-    '<div style="display:flex;gap:6px">' +
-    '<div style="background:rgba(255,255,255,.1);border-radius:99px;padding:4px 12px;font-size:11px;color:rgba(255,255,255,.75)">' + s.duree + '</div>' +
-    '<div style="background:rgba(255,255,255,.1);border-radius:99px;padding:4px 12px;font-size:11px;color:rgba(255,255,255,.75)">' + (U.lieu==='salle'?'Salle':'Maison') + '</div>' +
-    '</div></div>' +
-    s.exos.map(function(e, i) {
-      var sets = e.d.split('x')[0] ? e.d.split('x')[0].trim() : '--';
-      var reps = e.d.includes('x') ? (e.d.split('x')[1] ? e.d.split('x')[1].split(' ')[0].trim() : '--') : e.d;
-      return '<div style="background:white;border-radius:16px;padding:16px;margin-bottom:9px;border:2px solid rgba(38,68,20,.08)">' +
-        '<div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">' +
-        '<div style="width:32px;height:32px;border-radius:10px;background:#DDE255;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;color:#264414;flex-shrink:0">' + (i+1) + '</div>' +
-        '<div style="font-size:15px;font-weight:700;color:#0F0F0A;flex:1">' + e.n + '</div>' +
-        '<div style="font-size:10px;font-weight:700;color:#F35695;background:rgba(243,86,149,.08);border:1px solid rgba(243,86,149,.15);padding:3px 8px;border-radius:6px;cursor:pointer" onclick="chatSend('Comment faire: ' + e.n + '')">Démo</div>' +
-        '</div>' +
-        '<div style="display:flex;gap:8px">' +
-        '<div style="flex:1;background:#F5F3EC;border-radius:12px;padding:11px 8px;text-align:center"><div style="font-size:20px;font-weight:900;color:#0F0F0A">' + sets + '</div><div style="font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#888;margin-top:2px">Séries</div></div>' +
-        '<div style="flex:1;background:#F5F3EC;border-radius:12px;padding:11px 8px;text-align:center"><div style="font-size:20px;font-weight:900;color:#0F0F0A">' + reps + '</div><div style="font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#888;margin-top:2px">Reps</div></div>' +
-        '<div style="flex:1;background:#F5F3EC;border-radius:12px;padding:11px 8px;text-align:center"><div style="font-size:16px;font-weight:900;color:#0F0F0A">' + e.r + '</div><div style="font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#888;margin-top:2px">Repos</div></div>' +
-        '</div></div>';
-    }).join('') +
-    '</div>';
+function addCard(html) {
+  var el = document.getElementById('msgs'); if(!el) return;
+  var g = document.createElement('div'); g.className='mg';
+  g.appendChild(mkAv());
+  var bs = document.createElement('div'); bs.className='mbs';
+  var b = document.createElement('div'); b.className='b'; b.style.cssText='padding:0;border:none;overflow:hidden;background:transparent'; b.innerHTML=html;
+  bs.appendChild(b); g.appendChild(bs); el.appendChild(g); scChat();
 }
 
-function buildSeance() {
-  var n=U.niv||'deb',l=U.lieu||'maison',t=U.tps||'30m',mode=U.mode||'glow',obj=U.obj||'perte';
-  if(mode==='hyrox') return {titre:'Séance Hyrox',duree:t,exos:[{n:'Cardio échauffement',d:'10 min',r:'--'},{n:'SkiErg',d:'3x1 min',r:'90s'},{n:'Squats',d:'3x20',r:'90s'},{n:'Burpees',d:'3x'+(n==='deb'?5:10),r:'60s'},{n:'Course Z2',d:'15 min',r:'--'}]};
-  if(mode==='bodybuilding'&&obj==='masse') return {titre:'Push Hypertrophie',duree:t,exos:[{n:'Développé couché',d:'5x8 70-80%',r:'2-3min'},{n:'Développé incliné',d:'4x10',r:'90s'},{n:'Écarté poulie',d:'3x12-15',r:'60s'},{n:'Développé militaire',d:'4x8-10',r:'90s'},{n:'Élévations lat.',d:'4x15',r:'45s'}]};
-  if(l==='salle'&&n!=='deb') return {titre:'Force Musculaire',duree:t,exos:[{n:'Cardio échauffement',d:'8 min',r:'--'},{n:'Squat barre',d:'4x10-12',r:'75s'},{n:'Développé militaire',d:'3x12',r:'60s'},{n:'Tirage horizontal',d:'3x12',r:'60s'},{n:'Fentes marchées',d:'3x10/j',r:'45s'},{n:'Gainage',d:'3x30s',r:'30s'}]};
-  return {titre:'Fitness Corps Entier',duree:t,exos:[{n:'Échauffement',d:'8 min',r:'--'},{n:'Squats complets',d:'3x15',r:'40s'},{n:'Pompes',d:'3x'+(n==='deb'?8:12),r:'40s'},{n:'Gainage frontal',d:'3x30s',r:'30s'},{n:'Pont fessier',d:'3x15',r:'30s'},{n:'Étirements',d:'6 min',r:'--'}]};
+function addUMsg(t) {
+  var el = document.getElementById('msgs'); if(!el) return;
+  var g = document.createElement('div'); g.className='mg u';
+  var av = document.createElement('div'); av.className='mav u'; av.textContent=(U.prenom||'U')[0].toUpperCase(); g.appendChild(av);
+  var bs = document.createElement('div'); bs.className='mbs';
+  var b = document.createElement('div'); b.className='b u'; b.textContent=t; bs.appendChild(b);
+  g.appendChild(bs); el.appendChild(g);
+  chatLog.push({role:'user',content:t}); scChat();
 }
 
-function renderCorps(el) {
-  var p = U.poids || 75;
-  el.innerHTML = '<div style="padding:16px">' +
-    '<div style="background:#264414;border-radius:22px;padding:22px;margin-bottom:14px">' +
-    '<div style="display:flex;align-items:flex-end;gap:8px;margin-bottom:4px">' +
-    '<div style="font-size:60px;font-weight:900;color:white;letter-spacing:-3px;line-height:1">' + p + '</div>' +
-    '<div style="font-size:16px;color:rgba(255,255,255,.4);padding-bottom:8px">kg</div>' +
-    '</div></div>' +
-    '<div style="background:white;border-radius:18px;padding:16px;margin-bottom:12px;border:2px solid rgba(38,68,20,.08)">' +
-    '<div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#888;margin-bottom:4px">Pesée</div>' +
-    '<div style="font-size:18px;font-weight:900;color:#0F0F0A;margin-bottom:12px">Enregistrer mon poids</div>' +
-    '<div style="display:flex;gap:9px;align-items:center">' +
-    '<input type="number" id="poids-inp" placeholder="' + p + '" step="0.1" style="flex:1;background:#F5F3EC;border:1.5px solid rgba(38,68,20,.1);border-radius:12px;padding:13px 14px;font-size:26px;font-weight:900;color:#0F0F0A;outline:none;text-align:center;-webkit-appearance:none">' +
-    '<button onclick="savePoids()" style="padding:13px 20px;border:none;border-radius:12px;background:#264414;color:#DDE255;font-size:16px;font-weight:700;cursor:pointer">OK</button>' +
-    '</div></div>' +
-    '<div style="background:white;border-radius:18px;padding:16px;border:2px solid rgba(38,68,20,.08)">' +
-    '<div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#888;margin-bottom:12px">Stats</div>' +
-    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:9px">' +
-    '<div style="background:#F5F3EC;border-radius:13px;padding:13px"><div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#888;margin-bottom:5px">Taille</div><div style="font-size:24px;font-weight:900;color:#0F0F0A">' + (U.taille||'--') + '<span style="font-size:12px;color:#888"> cm</span></div></div>' +
-    '<div style="background:#F5F3EC;border-radius:13px;padding:13px"><div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#888;margin-bottom:5px">IMC</div><div style="font-size:24px;font-weight:900;color:#0F0F0A">' + (U.poids&&U.taille?(U.poids/Math.pow(U.taille/100,2)).toFixed(1):'--') + '</div></div>' +
-    '<div style="background:#F5F3EC;border-radius:13px;padding:13px"><div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#888;margin-bottom:5px">Objectif</div><div style="font-size:24px;font-weight:900;color:#0F0F0A">' + (U.cible||'--') + '<span style="font-size:12px;color:#888">' + (U.cible?' kg':'') + '</span></div></div>' +
-    '<div style="background:#F5F3EC;border-radius:13px;padding:13px"><div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#888;margin-bottom:5px">Kcal/j</div><div style="font-size:24px;font-weight:900;color:#F35695">' + calcM().kcal.toLocaleString('fr') + '</div></div>' +
-    '</div></div></div>';
+function addTyping() {
+  var el = document.getElementById('msgs'); if(!el) return;
+  var g = document.createElement('div'); g.className='mg'; g.id='typ';
+  g.appendChild(mkAv());
+  var bs = document.createElement('div'); bs.className='mbs';
+  var b = document.createElement('div'); b.className='b'; b.style.padding='12px 18px';
+  b.innerHTML='<div style="display:flex;gap:6px"><span class="td"></span><span class="td" style="animation-delay:.15s"></span><span class="td" style="animation-delay:.3s"></span></div>';
+  bs.appendChild(b); g.appendChild(bs); el.appendChild(g); scChat();
 }
 
-window.savePoids = function() {
-  var v = parseFloat(document.getElementById('poids-inp').value);
-  if(!v||v<30||v>300) return;
-  U.poids = v;
-  localStorage.setItem('hima4', JSON.stringify(U));
-  switchTab('chat');
-  setTimeout(function() { chatSend(v + ' kg ce matin'); }, 300);
-};
+function scChat() { var m=document.getElementById('msgs'); if(m) setTimeout(function(){m.scrollTop=m.scrollHeight;},60); }
+function chatQ(t) { switchTab('t-chat'); addUMsg(t); callAI(t); }
+function chatSend() { var inp=document.getElementById('ci'); var t=(inp?inp.value:'').trim(); if(!t||chatBusy)return; inp.value=''; grow(inp); chatQ(t); }
+function onKey(e) { if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();chatSend();} }
+function grow(el) { el.style.height='auto'; el.style.height=Math.min(el.scrollHeight,90)+'px'; }
 
-function startChat() { /* called on app init */ }
-function buildProg() { /* called on app init */ }
-
-
-/* EYE TRACKING */
-(function() {
-  function track(px, py) {
-    var svg = document.getElementById('hima-eyes');
-    if (!svg) return;
-    var rect = svg.getBoundingClientRect();
-    if (!rect.width) return;
-    var scX = 90 / rect.width;
-    var scY = 90 / rect.height;
-    function mv(pid, gid, ox, oy) {
-      var sx = (px - rect.left) * scX;
-      var sy = (py - rect.top) * scY;
-      var dx = sx - ox, dy = sy - oy;
-      var dist = Math.sqrt(dx*dx + dy*dy);
-      var r = Math.min(dist / 10, 5);
-      var a = Math.atan2(dy, dx);
-      var ex = ox + r * Math.cos(a);
-      var ey = oy + r * Math.sin(a);
-      var p = document.getElementById(pid);
-      var g = document.getElementById(gid);
-      if (p) { p.setAttribute('cx', ex.toFixed(1)); p.setAttribute('cy', ey.toFixed(1)); }
-      if (g) { g.setAttribute('cx', (ex+2).toFixed(1)); g.setAttribute('cy', (ey-2).toFixed(1)); }
-    }
-    mv('el', 'elg', 33, 32);
-    mv('er', 'erg', 57, 32);
-    // Head tilt
-    var wrap = document.getElementById('hima-av-wrap');
-    if (wrap) {
-      var wr = wrap.getBoundingClientRect();
-      var cx = wr.left + wr.width / 2;
-      var cy = wr.top + wr.height / 2;
-      var hx = ((px - cx) * 0.02).toFixed(1);
-      var hy = ((py - cy) * 0.012).toFixed(1);
-      wrap.style.transform = 'rotate(' + hx + 'deg) translateY(' + hy + 'px)';
-    }
+async function callAI(msg) {
+  chatBusy=true; addTyping();
+  if(notSport(msg)) {
+    setTimeout(function() {
+      var t=document.getElementById('typ'); if(t)t.remove();
+      addHMsg(['Ce sujet sort de mon domaine. Je suis HIMA — coach sport et nutrition uniquement. Dis-moi ce que tu veux travailler aujourd\'hui ?']);
+      addCard('<div class="off-card"><div class="off-t">Hors de mon domaine 🎯</div><div class="off-s">Je me concentre sur ton sport et ton corps. Pour tout le reste, d\'autres experts sont bien mieux placés !</div></div>');
+      chatBusy=false;
+    },600); return;
   }
-  document.addEventListener('mousemove', function(e) { track(e.clientX, e.clientY); });
-  document.addEventListener('touchmove', function(e) {
-    if (e.touches && e.touches[0]) track(e.touches[0].clientX, e.touches[0].clientY);
-  }, { passive: true });
-})();
+  var m = U.macros||calcM();
+  var mode = {glow:'Glow Up',bodybuilding:'Bodybuilding',hyrox:'Hyrox'}[U.mode||'glow']||'Glow Up';
+  var sys = 'Tu es HIMA, coach sportif et nutritionnel IA de haut niveau. Tu reponds UNIQUEMENT sport, nutrition, recuperation, corps. Tutoie. Reponds conversationnellement, personnalise, vraiment adapte a la personne, jamais generique. 2-3 paragraphes max, question de suivi. Profil: '+(U.prenom||'')+' '+(U.age||25)+' ans '+(U.sexe==='f'?'F':'H')+' '+(U.poids||75)+'kg/'+(U.taille||170)+'cm. Mode: '+mode+'. Obj: '+(U.obj||'perte')+'. Niv: '+(U.niv||'deb')+'. Lieu: '+(U.lieu||'maison')+'. Sante: '+(U.sante||'aucune')+'. Macros: '+m.kcal+' kcal '+m.prot+'g prot '+m.gluc+'g gluc.';
+  try {
+    var key = U.apiKey || '';
+    if(!key) throw new Error('no key');
+    var r = await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:700,system:sys,messages:chatLog.slice(-12)})});
+    var typ=document.getElementById('typ'); if(typ)typ.remove();
+    var rep = r.ok ? ((await r.json()).content[0].text||'...') : localR(msg);
+    processMsg(msg,rep);
+  } catch(e) {
+    var typ2=document.getElementById('typ'); if(typ2)typ2.remove();
+    processMsg(msg,localR(msg));
+  }
+  chatBusy=false;
+}
 
+function processMsg(msg,rep) {
+  if(/seance|entrainement|exercice|programme/i.test(msg)){addHMsg([rep]);chatLog.push({role:'assistant',content:rep});setTimeout(function(){addSeanceCard();},300);}
+  else if(/recette|gourmand/i.test(msg)){addHMsg([rep]);chatLog.push({role:'assistant',content:rep});setTimeout(function(){addRecCard();},300);}
+  else if(/menu|manger|repas|diner/i.test(msg)){addHMsg([rep]);chatLog.push({role:'assistant',content:rep});setTimeout(function(){addMenuCard();},300);}
+  else{addHMsg([rep]);chatLog.push({role:'assistant',content:rep});}
+}
+
+function localR(msg) {
+  var l=msg.toLowerCase(); var m=U.macros||calcM(); var p=U.prenom||'';
+  if(/running|footing|course/i.test(l)) return 'Parfait '+p+' ! Running ce soir : 5 min échauffement marche, zone 2 25-35 min (tu peux parler normalement), 5 min retour calme. Zone 2 = 65-75% FC max. C\'est là que tu brûles le plus de graisses sans surmenage. Ton niveau en course actuellement ?';
+  if(/seance|entrainement|exercice|programme/i.test(l)) return 'Ta séance du jour est prête '+p+'. Construite selon ton profil exact. Respecte bien les temps de repos — ils font partie de la progression autant que les séries !';
+  if(/recette|gourmand/i.test(l)) return 'Voilà une recette gourmande et dans tes macros '+p+' ! Tu veux une autre option ou une idée pour un autre repas ?';
+  if(/menu|manger|repas|diner/i.test(l)) return 'Pour ce soir '+p+' avec tes '+m.kcal+' kcal : voilà ton menu. Simple, efficace, gourmand dans tes objectifs.';
+  if(/dormi|sommeil|fatigue/i.test(l)) return 'Je prends note '+p+'. Séance allégée aujourd\'hui — 20 min de mobilité. Couche-toi 30 min plus tôt ce soir. Qu\'est-ce qui perturbe ton sommeil en général ?';
+  if(/craque|pizza|burger|chips/i.test(l)) return 'Un écart ça arrive. Ce soir tu manges léger et demain tu reprends normalement. La vraie discipline c\'est de reprendre sans culpabilité. Comment tu te sens après ?';
+  if(/bilan|progression/i.test(l)) { var d=U.dep&&U.poids?(U.dep-U.poids).toFixed(1):null; return 'Bilan '+p+' : '+(U.poids||'--')+' kg'+(d?', '+Math.abs(d)+' kg '+(parseFloat(d)>0?'perdus':'pris')+' depuis le début':'')+' — '+m.kcal+' kcal/j — '+m.prot+'g protéines. Continue !'; }
+  if(/energie|\d+.*10/i.test(l)) { var mE=l.match(/(\d+)[\/\s]*10/); if(mE){U.le=parseInt(mE[1]);save();var sc=recov();var er=document.getElementById('st-r');if(er)er.textContent=sc+'/100'; return sc>=70?'Super forme '+p+' ! Score '+sc+'/100. On pousse fort aujourd\'hui.':sc>=40?p+', score '+sc+'/100 — forme correcte. Programme standard.':p+', score '+sc+'/100 — récupération faible. Séance allégée aujourd\'hui.'; } }
+  return 'Je suis là pour toi '+p+', 24h/24. Sport, nutrition, récupération — qu\'est-ce qui est le plus important pour toi maintenant ?';
+}
+
+// Cards
+var REC=[
+  {ico:'🥣',n:'Porridge protéiné fruits rouges',k:420,p:28,t:'8min',i:[['Flocons avoine','80g'],['Lait amande','250ml'],['Isolat vanille','30g'],['Fruits rouges','100g']],e:['Chauffer lait + flocons 4 min','Hors feu, ajouter protéine','Garnir fruits et miel']},
+  {ico:'🍗',n:'Bowl poulet riz basmati',k:580,p:48,t:'20min',i:[['Blanc poulet','180g'],['Riz basmati cuit','200g'],['Brocoli','150g'],['Sauce soja','2 c.s.']],e:['Mariner poulet sauce soja 10 min','Griller 4 min chaque côté','Assembler bowl, garnir sésame']},
+  {ico:'🐟',n:'Saumon teriyaki riz brun',k:620,p:42,t:'22min',i:[['Pavé saumon','180g'],['Riz brun cuit','200g'],['Sauce teriyaki','3 c.s.'],['Brocoli','150g']],e:['Mariner 15 min','Saisir 4+2 min','Dresser avec riz et légumes']},
+  {ico:'🥩',n:'Smash burger healthy',k:520,p:38,t:'15min',i:[['Steak haché 5%','150g'],['Pain complet','2 tr.'],['Salade, tomate','q.s.'],['Moutarde Dijon','1 c.c.']],e:['Poêle très chaude, écraser','Cuire 2-3 min, retourner 1 min','Assembler avec garnitures']},
+  {ico:'🥗',n:'Salade quinoa méditerranéenne',k:490,p:24,t:'15min',i:[['Quinoa cuit','180g'],['Pois chiches','100g'],['Tomates cerises','150g'],['Feta','50g']],e:['Couper les légumes','Tout mélanger','Assaisonner huile + citron']},
+  {ico:'🥤',n:'Shake protéiné banane cacao',k:280,p:30,t:'3min',i:[['Isolat chocolat','30g'],['Banane','1'],['Lait avoine','300ml'],['Cacao pur','1 c.c.']],e:['Tout dans le blender','Mixer 45 sec','Consommer post-séance']},
+];
+var ri=0;
+function addRecCard(){
+  var r=REC[ri%REC.length];ri++;
+  var ings=r.i.map(function(x){return '<div class="rec-ing"><span>'+x[0]+'</span><span style="font-weight:600">'+x[1]+'</span></div>';}).join('');
+  var steps=r.e.map(function(s,i){return '<div class="rec-step"><div class="rec-step-n">'+(i+1)+'</div><span>'+s+'</span></div>';}).join('');
+  addCard('<div class="rec-card"><div class="rec-hd"><div class="rec-ico">'+r.ico+'</div><div class="rec-nm">'+r.n+'</div><div class="rec-mac">'+r.k+' kcal · '+r.p+'g protéines · '+r.t+'</div></div><div class="rec-body">'+ings+'<div style="margin-top:10px">'+steps+'</div></div></div>');
+}
+function addMacroCard(m){
+  addCard('<div class="hcard"><div class="hc-hd"><div class="hc-badge">Nutrition du jour</div><div class="hc-title">'+m.kcal.toLocaleString('fr')+' kcal</div><div class="hc-sub">Calculé selon ton profil exact</div></div><div class="hcb"><div class="macro-g"><div class="mc"><div class="mcv">'+m.prot+'g</div><div class="mcl">Protéines</div></div><div class="mc"><div class="mcv">'+m.gluc+'g</div><div class="mcl">Glucides</div></div><div class="mc"><div class="mcv">'+m.lip+'g</div><div class="mcl">Lipides</div></div></div></div></div>');
+}
+function addSeanceCard(){
+  var s=buildS();
+  var exos=s.exos.map(function(e,i){return '<div class="exo-row"><div class="exo-n">'+(i+1)+'</div><div style="flex:1"><div class="exo-nm">'+e.n+'</div><div class="exo-dt">'+e.d+'</div></div><div class="exo-rest">'+e.r+'</div></div>';}).join('');
+  addCard('<div class="hcard"><div class="hc-hd"><div class="hc-badge">Séance · '+s.duree+'</div><div class="hc-title">'+s.titre+'</div><div class="hc-sub">'+s.sous+'</div></div><div class="hcb">'+exos+'</div></div>');
+}
+function addMenuCard(){
+  var m=U.macros||calcM();
+  addCard('<div class="hcard"><div class="hc-hd"><div class="hc-badge">Menu ce soir</div><div class="hc-title">~'+Math.round(m.kcal*.3)+' kcal</div></div><div class="hcb"><div class="exo-row"><div class="exo-n">1</div><div style="flex:1"><div class="exo-nm">Protéines 120-150g</div><div class="exo-dt">Poulet, saumon, steak ou 3 œufs</div></div><div class="exo-rest">'+m.prot+'g P</div></div><div class="exo-row"><div class="exo-n">2</div><div style="flex:1"><div class="exo-nm">Féculent 150g cuit</div><div class="exo-dt">Riz basmati, patate douce</div></div></div><div class="exo-row" style="border:none"><div class="exo-n">3</div><div style="flex:1"><div class="exo-nm">Légumes à volonté</div><div class="exo-dt">Brocoli, haricots, courgettes</div></div></div></div></div>');
+}
+
+// Programme
+function buildS(){
+  var n=U.niv||'deb',l=U.lieu||'maison',t=U.tps||'30m',mode=U.mode||'glow',obj=U.obj||'perte';
+  if(mode==='hyrox')return{titre:'Séance Hyrox',sous:'Endurance + Stations',duree:t,exos:[{n:'Cardio échauffement',d:'10 min zone 2',r:'--'},{n:'SkiErg',d:'3×1 min',r:'90s'},{n:'Squats',d:'3×20',r:'90s'},{n:'Burpees',d:'3×'+(n==='deb'?5:10),r:'60s'},{n:'Course Z2',d:'15 min',r:'--'}]};
+  if(mode==='bodybuilding'&&obj==='masse')return{titre:'Push Hypertrophie',sous:'Salle · Charges lourdes',duree:t,exos:[{n:'Développé couché',d:'5×8 70-80%',r:'2-3min'},{n:'Développé incliné',d:'4×10',r:'90s'},{n:'Écarté poulie',d:'3×12-15',r:'60s'},{n:'Développé militaire',d:'4×8-10',r:'90s'},{n:'Élévations latérales',d:'4×15',r:'45s'}]};
+  if(l==='salle'&&n!=='deb')return{titre:'Force Musculaire',sous:'Salle · Intermédiaire',duree:t,exos:[{n:'Cardio échauffement',d:'8 min',r:'--'},{n:'Squat barre',d:'4×10-12',r:'75s'},{n:'Développé militaire',d:'3×12',r:'60s'},{n:'Tirage horizontal',d:'3×12',r:'60s'},{n:'Fentes marchées',d:'3×10/j',r:'45s'},{n:'Gainage',d:'3×30s',r:'30s'}]};
+  return{titre:'Fitness Corps Entier',sous:'Maison · Progressif',duree:t,exos:[{n:'Échauffement',d:'8 min',r:'--'},{n:'Squats complets',d:'3×15',r:'40s'},{n:'Pompes',d:'3×'+(n==='deb'?8:12),r:'40s'},{n:'Gainage frontal',d:'3×30s',r:'30s'},{n:'Pont fessier',d:'3×15',r:'30s'},{n:'Étirements',d:'6 min',r:'--'}]};
+}
+
+var DAYS=['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
+var DAYSF=['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche'];
+
+function buildProg(){
+  var wk=document.getElementById('week-strip'); if(!wk||wk.children.length)return;
+  var mode=U.mode||'glow',obj=U.obj||'perte';
+  var ml2={glow:'Glow Up',bodybuilding:'À ton prime',hyrox:'Race Ready'};
+  var sub=document.getElementById('prog-sub'); if(sub)sub.textContent=ml2[mode]||'Glow Up';
+  var plans={glow:{perte:['Corps','Cardio','Repos','Upper','Cardio','Lower','Repos'],muscle:['Push','Pull','Repos','Jambes','Épaules','Full','Repos']},bodybuilding:{masse:['Push','Pull','Jambes','Repos','Push','Pull','Repos']},hyrox:['Endurance','Stations','Intervals','Repos','Long run','Endurance','Repos']};
+  var types=mode==='hyrox'?plans.hyrox:((plans[mode]||plans.glow)[obj]||plans.glow.perte);
+  var today=new Date().getDay()===0?6:new Date().getDay()-1;
+  var plan=DAYSF.map(function(d,i){return{day:d,type:types[i]||'Repos',isRest:(types[i]||'Repos')==='Repos'};});
+  plan.forEach(function(day,i){
+    var btn=document.createElement('div'); btn.className='wd'+(i===today?' on':'');
+    btn.innerHTML='<div class="wd-d">'+DAYS[i]+'</div><div class="wd-n">'+(i+1)+'</div><div class="wd-t">'+day.type.substring(0,6)+'</div>';
+    btn.onclick=(function(d){return function(){document.querySelectorAll('.wd').forEach(function(b){b.classList.remove('on')});btn.classList.add('on');renderDay(d);}})(day);
+    wk.appendChild(btn);
+  });
+  renderDay(plan[today]);
+}
+
+function renderDay(day){
+  var sc=document.getElementById('prog-sc'); if(!sc)return; sc.innerHTML='';
+  if(day.isRest){sc.innerHTML='<div class="rest-day"><div style="font-size:48px;margin-bottom:14px">🌿</div><div style="font-family:Bebas Neue,sans-serif;font-size:24px;color:var(--ink);margin-bottom:8px">RÉCUPÉRATION</div><div style="font-size:14px;color:var(--dim);line-height:1.6">Le repos fait partie du programme. Ton corps se reconstruit aujourd\'hui.</div></div>';return;}
+  var s=buildS();
+  sc.innerHTML='<div class="seance-hero"><div class="sh-eye">'+day.day+' — Séance</div><div class="sh-t">'+s.titre+'</div><div class="sh-pills"><div class="sh-pill">'+s.duree+'</div><div class="sh-pill">'+(U.lieu==='salle'?'Salle':'Maison')+'</div></div></div><button class="timer-btn" onclick="startTimer()">⏱ Démarrer avec le timer</button>';
+  window._CS=s;
+  s.exos.forEach(function(e,i){
+    var sets=e.d.split('×')[0]?e.d.split('×')[0].trim():'--';
+    var reps=e.d.includes('×')?(e.d.split('×')[1]?e.d.split('×')[1].split(' ')[0].trim():'--'):e.d;
+    var div=document.createElement('div'); div.className='exo-card';
+    div.innerHTML='<div class="ec-hd"><div class="ec-n">'+(i+1)+'</div><div class="ec-nm">'+e.n+'</div><div class="ec-demo" onclick="chatQ(\'Comment faire: '+e.n+'\')">Démo</div></div><div class="sets-row"><div class="setb"><div class="setb-v">'+sets+'</div><div class="setb-l">Séries</div></div><div class="setb"><div class="setb-v">'+reps+'</div><div class="setb-l">Reps</div></div><div class="setb"><div class="setb-v">'+e.r+'</div><div class="setb-l">Repos</div></div></div>';
+    sc.appendChild(div);
+  });
+}
+
+// Timer
+var TS={active:false,paused:false,phase:'work',ei:0,si:1,secs:0,tot:0,exos:[],iv:null};
+function startTimer(){
+  var s=window._CS||buildS();
+  TS.exos=s.exos.filter(function(e){return e.r!=='--';}).map(function(e){var m=e.d.match(/(\d+)[×x]/);return{n:e.n,r:e.r,sets:m?parseInt(m[1]):3};});
+  if(!TS.exos.length)TS.exos=s.exos.map(function(e){return{n:e.n,r:e.r,sets:3};});
+  TS.ei=0;TS.si=1;TS.phase='work';setWork();document.getElementById('timer-ov').classList.add('on');
+}
+function setWork(){clearInterval(TS.iv);var e=TS.exos[TS.ei];if(!e){closeTimer();return;}document.getElementById('t-label').textContent='Exercice '+(TS.ei+1)+'/'+TS.exos.length;document.getElementById('t-exo').textContent=e.n;document.getElementById('t-detail').textContent='Série '+TS.si+'/'+e.sets;document.getElementById('t-phase').textContent='GO';document.getElementById('t-sec').textContent='--';document.getElementById('t-main').textContent='Série finie ✓';document.getElementById('t-fg').style.strokeDashoffset='0';TS.phase='work';}
+function setRest(){clearInterval(TS.iv);var e=TS.exos[TS.ei];if(!e)return;var r=e.r.match(/(\d+)/);TS.secs=r?parseInt(r[1]):60;TS.tot=TS.secs;TS.phase='rest';TS.paused=false;document.getElementById('t-phase').textContent='REPOS';document.getElementById('t-main').textContent='Pause';dispT();TS.iv=setInterval(function(){if(!TS.paused){TS.secs--;dispT();if(TS.secs<=0){clearInterval(TS.iv);if(navigator.vibrate)navigator.vibrate([200,100,200]);advT();}}},1000);}
+function dispT(){document.getElementById('t-sec').textContent=String(TS.secs).padStart(2,'0');document.getElementById('t-fg').style.strokeDashoffset=565-(565*(TS.secs/(TS.tot||1)));}
+function advT(){var e=TS.exos[TS.ei];if(!e){closeTimer();return;}if(TS.si<e.sets){TS.si++;setWork();}else{TS.ei++;TS.si=1;if(TS.ei>=TS.exos.length){closeTimer();chatQ('Séance terminée ! Comment je me sens ?');}else setWork();}}
+function timerToggle(){if(TS.phase==='work')setRest();else{TS.paused=!TS.paused;document.getElementById('t-main').textContent=TS.paused?'Reprendre':'Pause';}}
+function timerSkip(){clearInterval(TS.iv);advT();}
+function closeTimer(){clearInterval(TS.iv);TS.active=false;document.getElementById('timer-ov').classList.remove('on');}
+
+// Corps
+function buildCorps(){
+  var sc=document.getElementById('corps-sc'); if(!sc)return;
+  var p=U.poids||U.dep||75; var delta=U.dep&&U.poids?(U.poids-U.dep).toFixed(1):null;
+  var bars=''; var h2=hist.length?hist:[U.dep||p]; var mx=Math.max.apply(null,h2),mn=Math.min.apply(null,h2),rng=mx-mn||1;
+  for(var i=0;i<Math.max(h2.length,8);i++){var v=h2[i];var pc=v?Math.max(10,100-((v-mn)/rng)*80):10;bars+='<div class="wbar'+(i===h2.length-1?' now':'')+'" style="height:'+pc+'%"></div>';}
+  var m=U.macros||calcM();
+  sc.innerHTML='<div class="weight-hero"><div style="display:flex;align-items:flex-end;gap:8px"><div class="wh-big">'+p+'</div><div class="wh-unit">kg</div></div>'+(delta!==null?'<div class="wh-delta">'+(parseFloat(delta)<0?Math.abs(delta)+' kg perdus ▼':parseFloat(delta)+' kg pris ▲')+'</div>':'')+'<div class="wh-bars">'+bars+'</div></div><div class="data-bloc"><div class="db-t">Pesée</div><div class="db-title">Enregistrer mon poids</div><div class="pesee-row"><input class="pesee-inp" type="number" id="pi" placeholder="'+p+'" step="0.1"><button class="pesee-btn" onclick="savePesee()">OK</button></div></div><div class="data-bloc"><div class="db-t">Composition corporelle</div><div class="db-title">Mensurations & Stats</div><div class="stats2"><div class="st2"><div class="st2-l">Taille</div><div class="st2-v">'+(U.taille||'--')+'<span class="st2-u"> cm</span></div></div><div class="st2"><div class="st2-l">IMC</div><div class="st2-v">'+(U.poids&&U.taille?(U.poids/Math.pow(U.taille/100,2)).toFixed(1):'--')+'</div></div><div class="st2"><div class="st2-l">Objectif</div><div class="st2-v">'+(U.cible||'--')+'<span class="st2-u">'+(U.cible?' kg':'')+'</span></div></div><div class="st2"><div class="st2-l">Protéines/j</div><div class="st2-v" style="color:var(--o)">'+m.prot+'<span class="st2-u"> g</span></div></div></div></div>';
+}
+
+function savePesee(){
+  var v=parseFloat((document.getElementById('pi')||{}).value); if(!v||v<30||v>300)return;
+  hist.push(v);U.poids=v;U.hist=hist;save();
+  document.getElementById('pi').value='';
+  var ep=document.getElementById('st-p'); if(ep)ep.textContent=v;
+  buildCorps(); updateRing();
+  switchTab('t-chat');
+  setTimeout(function(){chatQ(v+' kg ce matin');},300);
+}
+
+// Eye tracking
+(function(){
+  function mvE(svgId,plId,glId,prId,grId,ox1,oy1,ox2,oy2,mr,px,py){
+    var svg=document.getElementById(svgId); if(!svg)return;
+    var rect=svg.getBoundingClientRect(); if(!rect.width)return;
+    var vb=svg.getAttribute('viewBox').split(' ');
+    var scX=parseFloat(vb[2])/rect.width, scY=parseFloat(vb[3])/rect.height;
+    function mv(id,gid,ox,oy){
+      var sx=(px-rect.left)*scX, sy=(py-rect.top)*scY;
+      var dx=sx-ox, dy=sy-oy, dist=Math.sqrt(dx*dx+dy*dy);
+      var r=Math.min(dist/12,mr), a=Math.atan2(dy,dx);
+      var ex=ox+r*Math.cos(a), ey=oy+r*Math.sin(a);
+      var p2=document.getElementById(id), g=document.getElementById(gid);
+      if(p2){p2.setAttribute('cx',ex.toFixed(1));p2.setAttribute('cy',ey.toFixed(1));}
+      if(g){g.setAttribute('cx',(ex+2.5).toFixed(1));g.setAttribute('cy',(ey-2.5).toFixed(1));}
+    }
+    mv(plId,glId,ox1,oy1); mv(prId,grId,ox2,oy2);
+  }
+  function track(px,py){
+    mvE('auth-eyes','ae-l','ae-lg','ae-r','ae-rg',42,44,78,44,6,px,py);
+    mvE('app-eyes','ap-l','ap-lg','ap-r','ap-rg',31,30,57,30,5,px,py);
+    // Head tilt on auth
+    var w=document.getElementById('auth-av');
+    if(w){var rr=w.getBoundingClientRect();var hx=((px-(rr.left+rr.width/2))*0.02).toFixed(1);var hy=((py-(rr.top+rr.height/2))*0.012).toFixed(1);w.style.transform='rotate('+hx+'deg) translateY('+hy+'px)';}
+  }
+  document.addEventListener('mousemove',function(e){track(e.clientX,e.clientY);});
+  document.addEventListener('touchmove',function(e){if(e.touches&&e.touches[0])track(e.touches[0].clientX,e.touches[0].clientY);},{passive:true});
+})();
 </script>
 </body>
 </html>
