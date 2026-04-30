@@ -2342,13 +2342,12 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 24px;
 // ════════════════════════════════════════════════════
 
 var FIREBASE_CONFIG = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID",
-  measurementId: "YOUR_MEASUREMENT_ID"
+  apiKey: "AIzaSyDLjMuI13zrpN9Yd6G2z5Tb3vtOdZPLV7c",
+  authDomain: "hima-app-d241a.firebaseapp.com",
+  projectId: "hima-app-d241a",
+  storageBucket: "hima-app-d241a.firebasestorage.app",
+  messagingSenderId: "760623733182",
+  appId: "1:760623733182:web:674c00ea5fbba3a55001ef"
 };
 
 // Stripe config
@@ -2359,7 +2358,7 @@ var STRIPE_PRICES = {
 };
 
 // Firebase Functions URL (après déploiement)
-var FUNCTIONS_URL = "https://europe-west1-YOUR_PROJECT.cloudfunctions.net";
+var FUNCTIONS_URL = "https://europe-west1-hima-app-d241a.cloudfunctions.net";
 
 // ── INIT ──
 var firebaseReady = false;
@@ -2423,6 +2422,20 @@ window.addEventListener('DOMContentLoaded', function() {
   try { saved = localStorage.getItem('hima8'); } catch(e) {}
 
   initBackend();
+  // Handle Google redirect result on mobile
+  if (firebaseReady && auth) {
+    auth.getRedirectResult().then(function(result) {
+      if (result && result.user) {
+        U.email = result.user.email;
+        U.uid = result.user.uid;
+        if (result.user.displayName) U.prenom = result.user.displayName.split(' ')[0];
+        try { localStorage.removeItem('hima-pending-auth'); } catch(e) {}
+        afterAuth();
+      }
+    }).catch(function(e) {
+      console.warn('Redirect result:', e.message);
+    });
+  }
   setTimeout(function() {
     if (saved) {
       try { U = JSON.parse(saved); } catch(e) { U = {}; }
@@ -4949,7 +4962,6 @@ function patchPerfLogWithCloud() {
 
 function authGoogle() {
   if (!firebaseReady || !auth) {
-    // Demo mode
     U.email = 'demo@google.com';
     U.prenom = 'Demo';
     afterAuth();
@@ -4958,17 +4970,25 @@ function authGoogle() {
   var provider = new firebase.auth.GoogleAuthProvider();
   provider.addScope('profile');
   provider.addScope('email');
-  auth.signInWithPopup(provider)
-    .then(function(result) {
-      var user = result.user;
-      U.email = user.email;
-      U.uid = user.uid;
-      if (user.displayName) U.prenom = user.displayName.split(' ')[0];
-      afterAuth();
-    })
-    .catch(function(error) {
-      showAuthError(error.message);
-    });
+  // Use redirect on mobile, popup on desktop
+  var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+  if (isMobile) {
+    // Save pending auth flag
+    try { localStorage.setItem('hima-pending-auth', 'google'); } catch(e) {}
+    auth.signInWithRedirect(provider);
+  } else {
+    auth.signInWithPopup(provider)
+      .then(function(result) {
+        var user = result.user;
+        U.email = user.email;
+        U.uid = user.uid;
+        if (user.displayName) U.prenom = user.displayName.split(' ')[0];
+        afterAuth();
+      })
+      .catch(function(error) {
+        showAuthError(error.message);
+      });
+  }
 }
 
 function authApple() {
