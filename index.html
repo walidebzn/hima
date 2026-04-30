@@ -2422,15 +2422,38 @@ window.addEventListener('DOMContentLoaded', function() {
   try { saved = localStorage.getItem('hima8'); } catch(e) {}
 
   initBackend();
-  // Handle Google redirect result on mobile
+  // Handle Google redirect result on mobile — must run first
   if (firebaseReady && auth) {
     auth.getRedirectResult().then(function(result) {
       if (result && result.user) {
+        // Redirect auth successful
         U.email = result.user.email;
         U.uid = result.user.uid;
         if (result.user.displayName) U.prenom = result.user.displayName.split(' ')[0];
         try { localStorage.removeItem('hima-pending-auth'); } catch(e) {}
-        afterAuth();
+        // Load existing profile from localStorage
+        var saved = null;
+        try { saved = localStorage.getItem('hima8'); } catch(e) {}
+        if (saved) {
+          try {
+            var d = JSON.parse(saved);
+            if (d.onbDone) {
+              U = Object.assign(d, { email: U.email, uid: U.uid, prenom: U.prenom || d.prenom });
+              hist = U.hist || [];
+              streak = U.streak || 1;
+              score = U.score || 0;
+              seances = U.seances || 0;
+              initApp();
+              go('app');
+              return;
+            }
+          } catch(e) {}
+        }
+        // New user — go to onboarding
+        OSI = 0;
+        go('onb');
+        renderOnb();
+        return;
       }
     }).catch(function(e) {
       console.warn('Redirect result:', e.message);
