@@ -2422,43 +2422,6 @@ window.addEventListener('DOMContentLoaded', function() {
   try { saved = localStorage.getItem('hima8'); } catch(e) {}
 
   initBackend();
-  // Handle Google redirect result on mobile — must run first
-  if (firebaseReady && auth) {
-    auth.getRedirectResult().then(function(result) {
-      if (result && result.user) {
-        // Redirect auth successful
-        U.email = result.user.email;
-        U.uid = result.user.uid;
-        if (result.user.displayName) U.prenom = result.user.displayName.split(' ')[0];
-        try { localStorage.removeItem('hima-pending-auth'); } catch(e) {}
-        // Load existing profile from localStorage
-        var saved = null;
-        try { saved = localStorage.getItem('hima8'); } catch(e) {}
-        if (saved) {
-          try {
-            var d = JSON.parse(saved);
-            if (d.onbDone) {
-              U = Object.assign(d, { email: U.email, uid: U.uid, prenom: U.prenom || d.prenom });
-              hist = U.hist || [];
-              streak = U.streak || 1;
-              score = U.score || 0;
-              seances = U.seances || 0;
-              initApp();
-              go('app');
-              return;
-            }
-          } catch(e) {}
-        }
-        // New user — go to onboarding
-        OSI = 0;
-        go('onb');
-        renderOnb();
-        return;
-      }
-    }).catch(function(e) {
-      console.warn('Redirect result:', e.message);
-    });
-  }
   setTimeout(function() {
     if (saved) {
       try { U = JSON.parse(saved); } catch(e) { U = {}; }
@@ -4993,25 +4956,23 @@ function authGoogle() {
   var provider = new firebase.auth.GoogleAuthProvider();
   provider.addScope('profile');
   provider.addScope('email');
-  // Use redirect on mobile, popup on desktop
-  var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-  if (isMobile) {
-    // Save pending auth flag
-    try { localStorage.setItem('hima-pending-auth', 'google'); } catch(e) {}
-    auth.signInWithRedirect(provider);
-  } else {
-    auth.signInWithPopup(provider)
-      .then(function(result) {
-        var user = result.user;
-        U.email = user.email;
-        U.uid = user.uid;
-        if (user.displayName) U.prenom = user.displayName.split(' ')[0];
-        afterAuth();
-      })
-      .catch(function(error) {
+  // Always use popup — works on all devices including iOS Safari
+  auth.signInWithPopup(provider)
+    .then(function(result) {
+      var user = result.user;
+      U.email = user.email;
+      U.uid = user.uid;
+      if (user.displayName) U.prenom = user.displayName.split(' ')[0];
+      afterAuth();
+    })
+    .catch(function(error) {
+      // If popup blocked, show email/password form instead
+      if (error.code === 'auth/popup-blocked' || error.code === 'auth/popup-closed-by-user') {
+        showAuthError('Popup bloquée. Utilise Email/Mot de passe ci-dessous ou autorise les popups.');
+      } else {
         showAuthError(error.message);
-      });
-  }
+      }
+    });
 }
 
 function authApple() {
