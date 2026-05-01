@@ -3306,8 +3306,8 @@ function initApp() {
   set('hima-msg', msgs[new Date().getDay() % 3]);
   calcScore();
   var apiEl = document.getElementById('api-k'); if (apiEl && U.apiKey) apiEl.value = U.apiKey;
-  var msgsEl = document.getElementById('msgs'); if (msgsEl && !msgsEl.children.length) initChat();
-  buildProg(); buildCorps();
+  // NE PAS construire les tabs ici — ils sont display:none
+  // Chaque tab se construit au premier clic via switchTab()
   setTimeout(function() { var d = document.getElementById('nb-dot'); if (d) d.classList.add('show'); }, 2500);
   // Hide firebase notice if configured
   if (firebaseReady) { var n = document.getElementById('fb-notice'); if (n) n.style.display = 'none'; }
