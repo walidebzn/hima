@@ -2999,10 +2999,6 @@ function onbSelectPlan(plan) {
   save();
   initApp();
   go('app');
-  // Si plan payant, montrer paywall après
-  if (plan === 'pro' || plan === 'elite') {
-    setTimeout(function() { showPaywall(); }, 800);
-  }
 }
 
 function onbNext() {
@@ -3160,7 +3156,7 @@ function selectPlan(plan) {
 
 // ── TABS ──
 // Tabs premium — accessibles uniquement avec plan payant
-var PREMIUM_TABS = ['t-prog', 't-nutr', 't-corps', 't-prf'];
+var PREMIUM_TABS = ['t-prog', 't-nutr', 't-corps'];
 
 function switchTab(id) {
   // Vérifier si le tab est premium et si l utilisateur a un plan payant
@@ -5586,17 +5582,22 @@ async function startStripeCheckout(plan) {
 }
 
 function selPlan(plan) {
-  if (firebaseReady && stripe) {
-    startStripeCheckout(plan);
-  } else {
-    // Demo mode — just update local plan
-    U.plan = plan;
-    save();
-    var pw = document.getElementById('pw');
-    if (pw) pw.classList.remove('on');
-    var el = document.getElementById('ps-plan');
-    if (el) el.textContent = plan === 'pro' ? 'Coach Personnel' : 'Elite Compétition';
-  }
+  // Activer le plan directement (Stripe configuré plus tard)
+  U.plan = plan;
+  save();
+  // Fermer les modals
+  var pw = document.getElementById('pw'); if (pw) pw.classList.remove('on');
+  var pm = document.getElementById('paywall-modal'); if (pm) pm.classList.remove('on');
+  // Mettre à jour l affichage
+  var el = document.getElementById('ps-plan');
+  if (el) el.textContent = { free:'Découverte', pro:'Coach Personnel', elite:'Elite Compétition' }[plan] || plan;
+  // Afficher les tabs premium
+  updateNavForPlan();
+  // Message de confirmation
+  switchTab('t-chat');
+  setTimeout(function() {
+    addH(['Plan ' + ({free:'Découverte', pro:'Coach Personnel', elite:'Elite Compétition'}[plan]) + ' activé ! Toutes tes fonctionnalités sont débloquées. On commence ?']);
+  }, 400);
 }
 
 // Check payment success on load
