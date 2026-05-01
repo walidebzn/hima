@@ -2050,6 +2050,11 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 24px;
 
     <button onclick="go('auth')" style="width:100%;margin-top:20px;padding:15px;background:linear-gradient(135deg,#F98805,#F35695);border:none;border-radius:99px;color:#fff;font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:800;cursor:pointer;box-shadow:0 6px 20px rgba(249,136,5,.28);letter-spacing:-.2px">ESSAYER 7 JOURS GRATUITS →</button>
     <div style="text-align:center;margin-top:8px;font-size:11px;color:var(--t4)">Sans carte bancaire · Annulation en 1 clic</div>
+    <div style="text-align:center;margin-top:16px">
+      <button onclick="himaPro()" style="background:none;border:none;font-size:12px;color:rgba(255,255,255,.4);cursor:pointer;padding:8px">
+        🔧 Mode test développeur
+      </button>
+    </div>
   </div>
 
     <!-- SECTION 3 — PRICING -->
@@ -2180,13 +2185,14 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 24px;
         </div>
       </div>
       <!-- TEST MODE BUTTON - À supprimer après config Stripe -->
-    <div id="test-mode-banner" style="margin:10px 14px 0;background:rgba(249,136,5,.08);border:1.5px dashed rgba(249,136,5,.4);border-radius:14px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between">
-      <div>
-        <div style="font-family:Space Grotesk,sans-serif;font-size:13px;font-weight:800;color:#F98805">Mode test</div>
-        <div style="font-size:11px;color:var(--t3);margin-top:2px">Active toutes les fonctionnalités</div>
-      </div>
-      <button onclick="activateTestPro()" style="background:linear-gradient(135deg,#F98805,#F35695);border:none;border-radius:99px;color:#fff;font-family:Space Grotesk,sans-serif;font-size:13px;font-weight:700;padding:8px 16px;cursor:pointer">Activer Pro ✓</button>
-    </div>
+    <div style="margin:12px 14px 0;border-radius:16px;overflow:hidden">
+      <button onclick="activateTestPro()" id="btn-activate-pro" style="width:100%;padding:16px;background:linear-gradient(135deg,#F98805,#F35695);border:none;font-family:Space Grotesk,sans-serif;font-size:16px;font-weight:800;color:#fff;cursor:pointer;letter-spacing:-.3px">
+        🚀 Activer toutes les fonctionnalités
+      </button>
+      <button onclick="resetApp()" style="width:100%;padding:12px;background:rgba(0,0,0,.06);border:none;border-top:1px solid rgba(0,0,0,.08);font-family:Space Grotesk,sans-serif;font-size:13px;font-weight:600;color:var(--t3);cursor:pointer">
+        🔄 Réinitialiser l'application
+      </button>
+    </div></div>
     <div class="notif" onclick="switchTab('t-chat')" style="margin-top:10px;display:none" id="notif-bar">
         <span style="font-size:15px">🔔</span>
         <div class="notif-t" id="notif-txt">HIMA attend ton bilan du jour</div>
@@ -2835,6 +2841,56 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 24px;
 <script>
 
 
+// ═════════════════════════════
+
+
+// ══════════════════════════════════════════
+// HIMA DEBUG — Reset & Diagnostic
+// Appeler depuis la console : himaReset()
+// ══════════════════════════════════════════
+window.himaDebug = function() {
+  console.log('=== HIMA DEBUG ===');
+  console.log('U:', JSON.stringify(U));
+  console.log('streak:', streak, '| seances:', seances, '| score:', score);
+  console.log('firebaseReady:', firebaseReady);
+  console.log('tabs:', ['t-home','t-chat','t-prog','t-nutr','t-corps','t-prf'].map(function(id) {
+    var el = document.getElementById(id);
+    return id + ':' + (el ? (el.classList.contains('on') ? 'VISIBLE' : 'hidden') : 'MISSING');
+  }));
+  console.log('wstrip:', document.getElementById('wstrip'));
+  console.log('nutr-sc:', document.getElementById('nutr-sc'));
+  console.log('msgs:', document.getElementById('msgs'));
+};
+
+window.himaReset = function() {
+  try { localStorage.removeItem('hima8'); } catch(e) {}
+  window.location.reload();
+};
+
+window.himaPro = function() {
+  try {
+    var saved = localStorage.getItem('hima8');
+    var data = saved ? JSON.parse(saved) : {};
+    data.plan = 'pro';
+    data.onbDone = true;
+    data.prenom = data.prenom || 'Test';
+    data.mode = data.mode || 'glow';
+    data.poids = data.poids || 75;
+    data.taille = data.taille || 175;
+    data.niv = data.niv || 'int';
+    data.lieu = data.lieu || 'salle';
+    data.macros = data.macros || {kcal:2000,prot:150,gluc:220,lip:67};
+    localStorage.setItem('hima8', JSON.stringify(data));
+    window.location.reload();
+  } catch(e) { console.error(e); }
+};
+
+console.log('[HIMA] App chargée. Debug: himaDebug() | Reset: himaReset() | Pro: himaPro()');
+
+
+
+
+
 // ═══════════════════════════════════════════
 // HIMA 2026 — FULL JS
 // Firebase Auth + 10 Skills + All features
@@ -2915,6 +2971,28 @@ function go(id) {
 }
 
 // ── BOOT ──
+
+function resetApp() {
+  if (confirm('Réinitialiser HIMA ? Toutes tes données seront effacées.')) {
+    try { localStorage.removeItem('hima8'); } catch(e) {}
+    window.location.reload();
+  }
+}
+
+function activateTestPro() {
+  U.plan = 'pro';
+  save();
+  var btn = document.getElementById('btn-activate-pro');
+  if (btn) { btn.textContent = '✅ Fonctionnalités activées !'; btn.style.background = '#22C55E'; }
+  updateNavForPlan();
+  setTimeout(function() {
+    switchTab('t-chat');
+    if (document.getElementById('msgs') && document.getElementById('msgs').children.length === 0) {
+      initChat();
+    }
+  }, 200);
+}
+
 window.addEventListener('DOMContentLoaded', function() {
   // Listen to Firebase auth state
   if (firebaseReady && auth) {
@@ -2935,6 +3013,10 @@ window.addEventListener('DOMContentLoaded', function() {
 
   initBackend();
   setTimeout(function() {
+    // Cacher le splash
+    var sp = document.getElementById('splash');
+    if (sp) { sp.classList.remove('on'); sp.style.display = 'none'; }
+
     if (saved) {
       try { U = JSON.parse(saved); } catch(e) { U = {}; }
       hist = U.hist || [];
@@ -2950,7 +3032,7 @@ window.addEventListener('DOMContentLoaded', function() {
     } else {
       go('landing');
     }
-  }, 1200);
+  }, 400);
 });
 
 function loadProfile() {
@@ -3456,44 +3538,51 @@ var PREMIUM_TABS = ['t-prog', 't-nutr', 't-corps'];
 var TAB_BUILT = {};
 
 function switchTab(id) {
-  // 1. Switcher l'affichage
+  console.log('[HIMA TAB] switchTab(' + id + ')');
+  
+  // Switcher l'affichage
   document.querySelectorAll('.atab').forEach(function(t) { t.classList.remove('on'); });
   document.querySelectorAll('.nb').forEach(function(n) { n.classList.remove('on'); });
+  
   var el = document.getElementById(id);
-  if (!el) { console.warn('Tab introuvable:', id); return; }
+  if (!el) {
+    console.error('[HIMA TAB] ERREUR: div#' + id + ' introuvable dans le DOM!');
+    return;
+  }
   el.classList.add('on');
+  
   var nmap = {'t-home':'nb-home','t-chat':'nb-chat','t-prog':'nb-prog','t-nutr':'nb-nutr','t-corps':'nb-corps','t-prf':'nb-prf'};
   var nel = document.getElementById(nmap[id]); if (nel) nel.classList.add('on');
 
-  // 2. Rendre le contenu — toujours, sans condition sur children
+  // Rendre le contenu
   if (id === 't-chat') {
-    var d = document.getElementById('nb-dot'); if (d) d.classList.remove('show');
-    // Toujours init si msgs est vide
     var msgs = document.getElementById('msgs');
-    if (!msgs) return;
-    if (msgs.children.length === 0) {
-      initChat();
-    }
+    console.log('[HIMA TAB] msgs trouvé:', !!msgs, '| children:', msgs ? msgs.children.length : 'N/A');
+    if (msgs && msgs.children.length === 0) initChat();
   }
 
   if (id === 't-prog') {
-    ['wstrip','prog-sc'].forEach(function(cid) {
-      var c = document.getElementById(cid); if (c) c.innerHTML = '';
-    });
-    requestAnimationFrame(function() { buildProg(); });
+    var wk = document.getElementById('wstrip');
+    console.log('[HIMA TAB] wstrip trouvé:', !!wk);
+    if (wk) wk.innerHTML = '';
+    var ps = document.getElementById('prog-sc');
+    if (ps) ps.innerHTML = '';
+    requestAnimationFrame(buildProg);
   }
 
   if (id === 't-nutr') {
-    var sc = document.getElementById('nutr-sc'); if (sc) sc.innerHTML = '';
-    requestAnimationFrame(function() { buildNutr(); });
+    var ns = document.getElementById('nutr-sc');
+    console.log('[HIMA TAB] nutr-sc trouvé:', !!ns);
+    if (ns) ns.innerHTML = '';
+    requestAnimationFrame(buildNutr);
   }
 
   if (id === 't-corps') {
-    requestAnimationFrame(function() { buildCorps(); });
+    console.log('[HIMA TAB] buildCorps appelé');
+    requestAnimationFrame(buildCorps);
   }
 
   if (id === 't-prf') {
-    // Remplir les données du profil
     var s2 = function(eid, v) { var e2=document.getElementById(eid); if(e2) e2.textContent=v; };
     var m = U.macros || calcM();
     s2('pnm', U.prenom || 'Champion');
@@ -3505,7 +3594,7 @@ function switchTab(id) {
     s2('ps-mac', m.kcal+' kcal · '+m.prot+'g P');
     s2('prf-streak', 'J'+streak);
     s2('prf-seances', seances);
-    s2('prf-poids', (U.poids||'--'));
+    s2('prf-poids', U.poids||'--');
     s2('prf-score', score);
     var av = document.getElementById('prf-avatar-letter');
     if (av) av.textContent = (U.prenom||'C')[0].toUpperCase();
@@ -3549,7 +3638,9 @@ function detectState() {
 }
 
 function initChat() {
-  var el = document.getElementById('msgs'); if (!el) return;
+  console.log('[HIMA CHAT] initChat() appelé');
+  var el = document.getElementById('msgs');
+  if (!el) { console.error('[HIMA CHAT] msgs introuvable!'); return; }
   el.innerHTML = '';
   chatLog = [];
   var d = new Date(); var J = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
@@ -3799,11 +3890,20 @@ var DAYS = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
 var DAYSF = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
 
 function buildProg() {
+  console.log('[HIMA BUILD] buildProg() appelé | U.mode:', U.mode, '| U.prenom:', U.prenom);
   var wk = document.getElementById('wstrip');
-  if (!wk) return;
+  if (!wk) {
+    console.error('[HIMA BUILD] wstrip introuvable!');
+    return;
+  }
   wk.innerHTML = '';
   var sc = document.getElementById('prog-sc');
-  if (sc) sc.innerHTML = '';
+  if (!sc) {
+    console.error('[HIMA BUILD] prog-sc introuvable!');
+    return;
+  }
+  sc.innerHTML = '';
+
 
   var mode = U.mode || 'glow';
   var sub = document.getElementById('prog-sub');
@@ -3898,9 +3998,14 @@ function renderDay(day) {
 }
 
 function buildNutr() {
+  console.log('[HIMA BUILD] buildNutr() appelé | macros:', JSON.stringify(U.macros));
   var sc = document.getElementById('nutr-sc');
-  if (!sc) return;
+  if (!sc) {
+    console.error('[HIMA BUILD] nutr-sc introuvable!');
+    return;
+  }
   sc.innerHTML = '';
+
 
   var m = U.macros || calcM();
 
@@ -3999,6 +4104,9 @@ function showPeri(el, panel) {
 }
 
 function buildCorps() {
+  console.log('[HIMA BUILD] buildCorps() appelé | poids:', U.poids, '| streak:', streak);
+
+
   var p = U.poids || U.dep || 75;
   var delta = (U.dep && U.poids) ? (U.poids - U.dep).toFixed(1) : null;
 
@@ -6366,10 +6474,8 @@ function toggleBilling() {
   }
 }
 
-
 </script>
 
-<!-- PAYWALL MODAL -->
 <div class="paywall-overlay" id="paywall-modal" onclick="hidePaywall(event)">
   <div class="paywall-card">
     <div class="pw-handle"></div>
