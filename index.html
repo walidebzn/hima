@@ -1691,6 +1691,38 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 24px;
 .onb-pricing { display:flex; flex-direction:column; gap:10px; }
 .onb-multi-hint { font-size:12px; color:var(--t4); text-align:center; margin-top:8px; }
 
+
+/* ── PAYWALL ── */
+.paywall-overlay {
+  position: fixed; inset: 0; z-index: 500;
+  background: rgba(0,0,0,.6); backdrop-filter: blur(8px);
+  display: flex; align-items: flex-end;
+  opacity: 0; pointer-events: none; transition: opacity .3s;
+}
+.paywall-overlay.on { opacity: 1; pointer-events: all; }
+.paywall-card {
+  width: 100%; background: var(--bg);
+  border-radius: 24px 24px 0 0;
+  padding: 16px 20px 40px;
+  transform: translateY(100%);
+  transition: transform .35s cubic-bezier(.16,1,.3,1);
+}
+.paywall-overlay.on .paywall-card { transform: translateY(0); }
+.pw-handle { width: 36px; height: 4px; background: var(--gb); border-radius: 2px; margin: 0 auto 20px; }
+.pw-logo { font-family: 'Space Grotesk', sans-serif; font-size: 13px; font-weight: 900; color: #F98805; letter-spacing: 2px; text-align: center; margin-bottom: 10px; }
+.pw-title { font-family: 'Space Grotesk', sans-serif; font-size: 22px; font-weight: 900; color: var(--t1); text-align: center; letter-spacing: -.5px; margin-bottom: 8px; }
+.pw-desc { font-size: 14px; color: var(--t3); text-align: center; line-height: 1.5; margin-bottom: 20px; }
+.pw-compare { border: 1px solid var(--gb); border-radius: 14px; overflow: hidden; margin-bottom: 20px; }
+.pw-compare-row { display: grid; grid-template-columns: 1fr auto auto; gap: 0; padding: 10px 14px; border-bottom: 1px solid var(--gb); font-size: 13px; color: var(--t2); }
+.pw-compare-row:last-child { border: none; }
+.pw-compare-row > div:nth-child(2) { color: var(--t4); text-align: center; min-width: 52px; }
+.pw-compare-row > div:nth-child(3) { color: #F98805; font-weight: 700; text-align: center; min-width: 52px; }
+.pw-compare-head { background: var(--bg2); font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: .5px; }
+.pw-cta { width: 100%; padding: 16px; background: linear-gradient(135deg, #F98805, #F35695); border: none; border-radius: 99px; color: #fff; font-family: 'Space Grotesk', sans-serif; font-size: 16px; font-weight: 800; cursor: pointer; box-shadow: 0 6px 20px rgba(249,136,5,.3); margin-bottom: 10px; }
+.pw-sub { font-size: 11px; color: var(--t4); text-align: center; margin-bottom: 14px; }
+.pw-free { font-size: 13px; color: var(--t3); text-align: center; cursor: pointer; padding: 8px; font-weight: 600; }
+.pw-free:active { opacity: .7; }
+
 </style>
 </head>
 <body>
@@ -2902,19 +2934,43 @@ function renderOnb() {
     hist = [U.poids];
     var m = calcM();
     U.macros = m;
+    // Résumé profil
     html += '<div class="result-hero">' +
       '<div class="rh-badge">ANALYSE TERMINÉE ✅</div>' +
       '<div class="rh-big">' + m.kcal.toLocaleString('fr') + '<span style="font-size:16px;opacity:.4"> kcal/j</span></div>' +
-      '<div class="rh-sub">Mode : ' + (ML[U.mode || 'glow'] || 'Perdre du Gras 🔥') + ' · Profil analysé</div>' +
+      '<div class="rh-sub">Mode : ' + (ML[U.mode || 'glow'] || 'Je veux maigrir') + ' · Profil analysé</div>' +
       '<div class="rh-macros">' +
       '<div class="rm"><div class="rmv">' + m.prot + 'g</div><div class="rml">Protéines</div></div>' +
       '<div class="rm"><div class="rmv">' + m.gluc + 'g</div><div class="rml">Glucides</div></div>' +
       '<div class="rm"><div class="rmv">' + m.lip + 'g</div><div class="rml">Lipides</div></div>' +
       '</div></div>';
     html += '<div class="result-list">';
-    ['Programme sur mesure 7 jours', 'Macros + recettes quotidiennes', 'Score transformation quotidien', 'Check-in et adaptation IA', 'HIMA coach disponible 24h/24', 'Anti-abandon intelligent'].forEach(function(item) {
+    ['Programme sur mesure 7 jours', 'Macros + recettes quotidiennes', 'Coach HIMA 24h/24', 'Anti-abandon intelligent'].forEach(function(item) {
       html += '<div class="rl-item"><span class="rl-check">✓</span>' + item + '</div>';
     });
+    html += '</div>';
+    // PRICING — affiché directement dans l onboarding
+    html += '<div style="margin-top:20px">';
+    html += '<div style="font-family:Space Grotesk,sans-serif;font-size:16px;font-weight:900;color:var(--t1);text-align:center;margin-bottom:14px;letter-spacing:-.3px">Choisis ton accès HIMA</div>';
+    // Gratuit
+    html += '<div onclick="onbSelectPlan(&apos;free&apos;)" style="border:2px solid var(--gb);border-radius:16px;padding:14px 16px;margin-bottom:10px;cursor:pointer;background:var(--s0)">' +
+      '<div style="display:flex;justify-content:space-between;align-items:center">' +
+      '<div><div style="font-family:Space Grotesk,sans-serif;font-size:14px;font-weight:800;color:var(--t1)">Découverte</div>' +
+      '<div style="font-size:12px;color:var(--t4);margin-top:2px">5 messages/jour · Programme basique</div></div>' +
+      '<div style="font-family:Space Grotesk,sans-serif;font-size:20px;font-weight:900;color:var(--t3)">Gratuit</div></div></div>';
+    // Pro — featured
+    html += '<div onclick="onbSelectPlan(&apos;pro&apos;)" style="border:2px solid #F98805;border-radius:16px;padding:14px 16px;margin-bottom:10px;cursor:pointer;background:linear-gradient(135deg,#F98805,#F35695);position:relative">' +
+      '<div style="position:absolute;top:-10px;right:16px;background:#F98805;color:#fff;font-size:9px;font-weight:800;padding:3px 10px;border-radius:99px;letter-spacing:.5px">⭐ RECOMMANDÉ</div>' +
+      '<div style="display:flex;justify-content:space-between;align-items:center">' +
+      '<div><div style="font-family:Space Grotesk,sans-serif;font-size:14px;font-weight:800;color:#fff">Coach Personnel</div>' +
+      '<div style="font-size:12px;color:rgba(255,255,255,.75);margin-top:2px">HIMA illimité · Programme complet · 7j gratuits</div></div>' +
+      '<div><div style="font-family:Space Grotesk,sans-serif;font-size:20px;font-weight:900;color:#fff">24,99€</div><div style="font-size:10px;color:rgba(255,255,255,.6);text-align:right">/mois</div></div></div></div>';
+    // Elite
+    html += '<div onclick="onbSelectPlan(&apos;elite&apos;)" style="border:2px solid rgba(249,136,5,.3);border-radius:16px;padding:14px 16px;cursor:pointer;background:var(--s0)">' +
+      '<div style="display:flex;justify-content:space-between;align-items:center">' +
+      '<div><div style="font-family:Space Grotesk,sans-serif;font-size:14px;font-weight:800;color:var(--t1)">Elite Compétition</div>' +
+      '<div style="font-size:12px;color:var(--t4);margin-top:2px">Tout Coach + Compétition + Voix IA · 7j gratuits</div></div>' +
+      '<div><div style="font-family:Space Grotesk,sans-serif;font-size:20px;font-weight:900;color:#F98805">49,99€</div><div style="font-size:10px;color:var(--t4);text-align:right">/mois</div></div></div></div>';
     html += '</div>';
   }
   html += '</div></div>';
@@ -2935,14 +2991,28 @@ function selCh(el, key, val) {
   U[key] = val;
 }
 
+function onbSelectPlan(plan) {
+  U.plan = plan;
+  U.onbDone = true;
+  U.hist = hist;
+  save();
+  initApp();
+  go('app');
+  // Si plan payant, montrer paywall après
+  if (plan === 'pro' || plan === 'elite') {
+    setTimeout(function() { showPaywall(); }, 800);
+  }
+}
+
 function onbNext() {
   var s = OS[OSI];
   if (s.type === 'text') { var inp = document.getElementById('oi'); if (inp) U[s.key] = (inp.value || '').trim(); if (!U[s.key]) return; }
   if ((s.type === 'chips2' || s.type === 'chips3') && s.key && !U[s.key]) { return; } // require selection
   if (s.type === 'slider') { var slr = document.getElementById('sr-' + s.key); if (slr) U[s.key] = parseFloat(slr.value); }
   if (s.type === 'result') {
-    U.plan = 'free'; U.onbDone = true; U.hist = hist; save();
-    initApp(); go('app'); return;
+    // Le pricing s affiche dans la step — l utilisateur clique sur un plan
+    // Si il clique CONTINUER sans choisir, on met free par défaut
+    onbSelectPlan('free'); return;
   }
   OSI++; if (OSI >= OS.length) return;
   renderOnb();
@@ -3017,12 +3087,39 @@ function initApp() {
   calcScore();
   var apiEl = document.getElementById('api-k'); if (apiEl && U.apiKey) apiEl.value = U.apiKey;
   var msgsEl = document.getElementById('msgs'); if (msgsEl && !msgsEl.children.length) initChat();
-  buildProg(); buildCorps();
+  if (U.plan === 'pro' || U.plan === 'elite') { buildProg(); buildCorps(); buildNutr(); }
   setTimeout(function() { var d = document.getElementById('nb-dot'); if (d) d.classList.add('show'); }, 2500);
   // Hide firebase notice if configured
   if (firebaseReady) { var n = document.getElementById('fb-notice'); if (n) n.style.display = 'none'; }
+  // Mettre à jour l'état visuel des tabs selon le plan
+  updateNavForPlan();
   // Init new features
   setTimeout(initAllNewFeatures, 300);
+}
+
+function updateNavForPlan() {
+  var hasPlan = U.plan === 'pro' || U.plan === 'elite';
+  var premiumNavIds = ['nb-prog', 'nb-nutr', 'nb-corps', 'nb-prf'];
+  premiumNavIds.forEach(function(id) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    if (!hasPlan) {
+      el.style.opacity = '0.45';
+      // Ajouter icone cadenas sur les tabs premium
+      if (!el.querySelector('.nb-lock')) {
+        var lock = document.createElement('div');
+        lock.className = 'nb-lock';
+        lock.textContent = '🔒';
+        lock.style.cssText = 'position:absolute;top:4px;right:6px;font-size:8px;';
+        el.style.position = 'relative';
+        el.appendChild(lock);
+      }
+    } else {
+      el.style.opacity = '1';
+      var lock = el.querySelector('.nb-lock');
+      if (lock) lock.remove();
+    }
+  });
 }
 
 function setE(el, val) {
@@ -3041,13 +3138,20 @@ function setE(el, val) {
 
 // ── PAYWALL ──
 function showPaywall() {
+  // Utiliser le paywall-modal nouvellement ajouté
   var m = document.getElementById('paywall-modal');
-  if (m) m.classList.add('on');
+  if (m) { m.classList.add('on'); return; }
+  // Fallback sur l ancien paywall #pw
+  var pw = document.getElementById('pw');
+  if (pw) pw.classList.add('on');
 }
 function hidePaywall(e) {
-  if (e && e.target !== document.getElementById('paywall-modal')) return;
   var m = document.getElementById('paywall-modal');
-  if (m) m.classList.remove('on');
+  if (m) {
+    if (e && e.target !== m) return;
+    m.classList.remove('on'); return;
+  }
+  hidePw(e);
 }
 function selectPlan(plan) {
   U.plan = plan; save();
@@ -3059,7 +3163,20 @@ function selectPlan(plan) {
 }
 
 // ── TABS ──
+// Tabs premium — accessibles uniquement avec plan payant
+var PREMIUM_TABS = ['t-prog', 't-nutr', 't-corps', 't-prf'];
+
 function switchTab(id) {
+  // Vérifier si le tab est premium et si l utilisateur a un plan payant
+  var isPremium = PREMIUM_TABS.indexOf(id) > -1;
+  var hasPlan = U.plan === 'pro' || U.plan === 'elite';
+  
+  if (isPremium && !hasPlan) {
+    // Afficher le paywall au lieu du tab
+    showPremiumGate(id);
+    return;
+  }
+  
   document.querySelectorAll('.atab').forEach(function(t) { t.classList.remove('on'); });
   document.querySelectorAll('.nb').forEach(function(n) { n.classList.remove('on'); });
   var el = document.getElementById(id); if (el) el.classList.add('on');
@@ -3067,6 +3184,21 @@ function switchTab(id) {
   var nel = document.getElementById(nmap[id]); if (nel) nel.classList.add('on');
   if (id === 't-chat') { var d = document.getElementById('nb-dot'); if (d) d.classList.remove('show'); }
   if (id === 't-nutr') { var ns = document.getElementById('nutr-sc'); if (ns && !ns.children.length) setTimeout(buildNutr, 50); }
+}
+
+function showPremiumGate(targetTab) {
+  var tabNames = {
+    't-prog': 'Tes Séances sur mesure',
+    't-nutr': 'Ta Nutrition au gramme',
+    't-corps': 'Ton Suivi corps & progrès',
+    't-prf': 'Ton Profil complet'
+  };
+  var tabName = tabNames[targetTab] || 'cette fonctionnalité';
+  var pwTitle = document.getElementById('pw-title');
+  var pwDesc = document.getElementById('pw-desc');
+  if (pwTitle) pwTitle.textContent = tabName;
+  if (pwDesc) pwDesc.textContent = 'Débloque ' + tabName + ' + tout HIMA Coach pour 24,99€/mois. 7 jours gratuits, sans carte.';
+  showPaywall();
 }
 
 // ── CHAT + 10 SKILLS ──
@@ -5709,5 +5841,43 @@ function toggleBilling() {
 
 
 </script>
+
+<!-- PAYWALL MODAL -->
+<div class="paywall-overlay" id="paywall-modal" onclick="hidePaywall(event)">
+  <div class="paywall-card">
+    <div class="pw-handle"></div>
+    <div class="pw-logo">HIMA</div>
+    <div class="pw-title" id="pw-title">Fonctionnalité Premium</div>
+    <div class="pw-desc" id="pw-desc">Débloque toutes les fonctionnalités HIMA avec Coach Personnel.</div>
+    
+    <div class="pw-compare">
+      <div class="pw-compare-row pw-compare-head">
+        <div></div><div>Gratuit</div><div style="color:#F98805">Coach</div>
+      </div>
+      <div class="pw-compare-row">
+        <div>Messages/jour</div><div>5</div><div>Illimité</div>
+      </div>
+      <div class="pw-compare-row">
+        <div>Programme séances</div><div>✗</div><div>✓</div>
+      </div>
+      <div class="pw-compare-row">
+        <div>Nutrition au gramme</div><div>✗</div><div>✓</div>
+      </div>
+      <div class="pw-compare-row">
+        <div>Suivi corps & progrès</div><div>✗</div><div>✓</div>
+      </div>
+      <div class="pw-compare-row">
+        <div>Anti-abandon IA</div><div>✗</div><div>✓</div>
+      </div>
+    </div>
+
+    <button class="pw-cta" onclick="selPlan('pro')">
+      COMMENCER 7 JOURS GRATUITS →
+    </button>
+    <div class="pw-sub">24,99€/mois · Sans carte bancaire · Annulation 1 clic</div>
+    <div class="pw-free" onclick="hidePaywall(null)">Continuer avec le plan gratuit</div>
+  </div>
+</div>
+
 </body>
 </html>
