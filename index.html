@@ -3381,36 +3381,47 @@ function selectPlan(plan) {
 // Tabs premium — accessibles uniquement avec plan payant
 var PREMIUM_TABS = ['t-prog', 't-nutr', 't-corps'];
 
+// ── Tab renderer registry ──
+var TAB_BUILT = {};
+
 function switchTab(id) {
+  // 1. Switcher l'affichage
   document.querySelectorAll('.atab').forEach(function(t) { t.classList.remove('on'); });
   document.querySelectorAll('.nb').forEach(function(n) { n.classList.remove('on'); });
-  var el = document.getElementById(id); if (el) el.classList.add('on');
-  var nmap = { 't-home': 'nb-home', 't-chat': 'nb-chat', 't-prog': 'nb-prog', 't-nutr': 'nb-nutr', 't-corps': 'nb-corps', 't-prf': 'nb-prf' };
+  var el = document.getElementById(id);
+  if (!el) { console.warn('Tab introuvable:', id); return; }
+  el.classList.add('on');
+  var nmap = {'t-home':'nb-home','t-chat':'nb-chat','t-prog':'nb-prog','t-nutr':'nb-nutr','t-corps':'nb-corps','t-prf':'nb-prf'};
   var nel = document.getElementById(nmap[id]); if (nel) nel.classList.add('on');
 
-  // Charger le contenu de chaque tab au premier clic
+  // 2. Rendre le contenu — toujours, sans condition sur children
   if (id === 't-chat') {
     var d = document.getElementById('nb-dot'); if (d) d.classList.remove('show');
+    // Toujours init si msgs est vide
     var msgs = document.getElementById('msgs');
-    if (msgs && !msgs.children.length) initChat();
+    if (!msgs) return;
+    if (msgs.children.length === 0) {
+      initChat();
+    }
   }
+
   if (id === 't-prog') {
-    var wstrip = document.getElementById('wstrip');
-    if (wstrip) { wstrip.innerHTML = ''; }
-    var progSc = document.getElementById('prog-sc');
-    if (progSc) { progSc.innerHTML = ''; }
-    setTimeout(function() { buildProg(); }, 60);
+    ['wstrip','prog-sc'].forEach(function(cid) {
+      var c = document.getElementById(cid); if (c) c.innerHTML = '';
+    });
+    requestAnimationFrame(function() { buildProg(); });
   }
+
   if (id === 't-nutr') {
-    var nutrSc = document.getElementById('nutr-sc');
-    if (nutrSc) { nutrSc.innerHTML = ''; }
-    setTimeout(function() { buildNutr(); }, 60);
+    var sc = document.getElementById('nutr-sc'); if (sc) sc.innerHTML = '';
+    requestAnimationFrame(function() { buildNutr(); });
   }
+
   if (id === 't-corps') {
-    setTimeout(function() { buildCorps(); }, 60);
+    requestAnimationFrame(function() { buildCorps(); });
   }
+
   if (id === 't-prf') {
-    // Profil — déjà rempli par initApp, juste s assurer que l email est à jour
     var emailEl = document.getElementById('ps-email');
     if (emailEl && U.email) emailEl.textContent = U.email;
   }
@@ -3452,7 +3463,8 @@ function detectState() {
 
 function initChat() {
   var el = document.getElementById('msgs'); if (!el) return;
-  el.innerHTML = ''; chatLog = [];
+  el.innerHTML = '';
+  chatLog = [];
   var d = new Date(); var J = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
   addSep(J[d.getDay()] + ' ' + d.getDate());
   var h = d.getHours(), s = h < 12 ? 'Bonjour' : h < 18 ? 'Bon après-midi' : 'Bonsoir';
@@ -3900,6 +3912,9 @@ function showPeri(el, panel) {
 }
 
 function buildCorps() {
+  // Toujours vider avant de reconstruire
+  var corpsScEl = document.getElementById('corps-sc');
+  if (corpsScEl) corpsScEl.innerHTML = '';
   var p = U.poids || U.dep || 75;
   var delta = (U.dep && U.poids) ? (U.poids - U.dep).toFixed(1) : null;
 
