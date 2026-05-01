@@ -638,6 +638,7 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 24px;
 
 /* Nav */
 .nav {
+  display: none;
   position: fixed; bottom: 0; left: 0; right: 0;
   height: calc(68px + env(safe-area-inset-bottom,0px));
   padding-bottom: env(safe-area-inset-bottom,0px);
@@ -1567,7 +1568,7 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 24px;
 .nb { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 8px 2px 6px; cursor: pointer; transition: all .18s; }
 
 
-.nav { display:flex; background:var(--s0); border-top:1px solid var(--gb); padding-bottom:env(safe-area-inset-bottom,0); }
+.nav { display:none; background:var(--s0); border-top:1px solid var(--gb); padding-bottom:env(safe-area-inset-bottom,0); }
 .nb { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:10px 4px 8px; cursor:pointer; transition:all .18s; position:relative; }
 .nb svg { width:22px; height:22px; stroke:var(--t4); transition:stroke .18s; }
 .nb .nb-lbl { font-size:9px; font-weight:700; letter-spacing:.5px; text-transform:uppercase; color:var(--t4); margin-top:4px; transition:color .18s; }
@@ -3051,6 +3052,9 @@ function saveKey() { var k = document.getElementById('api-k'); if (k && k.value.
 
 // ── APP INIT ──
 function initApp() {
+  // Afficher la nav maintenant que l onboarding est terminé
+  var nav = document.querySelector('.nav');
+  if (nav) nav.style.display = 'flex';
   // Hide Firebase note if configured
   var fn = document.getElementById('fb-note');
   if (fn) fn.style.display = firebaseReady ? 'none' : 'block';
@@ -3087,7 +3091,7 @@ function initApp() {
   calcScore();
   var apiEl = document.getElementById('api-k'); if (apiEl && U.apiKey) apiEl.value = U.apiKey;
   var msgsEl = document.getElementById('msgs'); if (msgsEl && !msgsEl.children.length) initChat();
-  if (U.plan === 'pro' || U.plan === 'elite') { buildProg(); buildCorps(); buildNutr(); }
+  buildProg(); buildCorps();
   setTimeout(function() { var d = document.getElementById('nb-dot'); if (d) d.classList.add('show'); }, 2500);
   // Hide firebase notice if configured
   if (firebaseReady) { var n = document.getElementById('fb-notice'); if (n) n.style.display = 'none'; }
@@ -3103,21 +3107,13 @@ function updateNavForPlan() {
   premiumNavIds.forEach(function(id) {
     var el = document.getElementById(id);
     if (!el) return;
-    if (!hasPlan) {
-      el.style.opacity = '0.45';
-      // Ajouter icone cadenas sur les tabs premium
-      if (!el.querySelector('.nb-lock')) {
-        var lock = document.createElement('div');
-        lock.className = 'nb-lock';
-        lock.textContent = '🔒';
-        lock.style.cssText = 'position:absolute;top:4px;right:6px;font-size:8px;';
-        el.style.position = 'relative';
-        el.appendChild(lock);
-      }
-    } else {
+    if (hasPlan) {
+      el.style.display = 'flex';
       el.style.opacity = '1';
-      var lock = el.querySelector('.nb-lock');
-      if (lock) lock.remove();
+    } else {
+      // Griser légèrement pour indiquer le premium (mais visible)
+      el.style.display = 'flex';
+      el.style.opacity = '0.5';
     }
   });
 }
@@ -3172,7 +3168,6 @@ function switchTab(id) {
   var hasPlan = U.plan === 'pro' || U.plan === 'elite';
   
   if (isPremium && !hasPlan) {
-    // Afficher le paywall au lieu du tab
     showPremiumGate(id);
     return;
   }
@@ -3182,8 +3177,30 @@ function switchTab(id) {
   var el = document.getElementById(id); if (el) el.classList.add('on');
   var nmap = { 't-home': 'nb-home', 't-chat': 'nb-chat', 't-prog': 'nb-prog', 't-nutr': 'nb-nutr', 't-corps': 'nb-corps', 't-prf': 'nb-prf' };
   var nel = document.getElementById(nmap[id]); if (nel) nel.classList.add('on');
-  if (id === 't-chat') { var d = document.getElementById('nb-dot'); if (d) d.classList.remove('show'); }
-  if (id === 't-nutr') { var ns = document.getElementById('nutr-sc'); if (ns && !ns.children.length) setTimeout(buildNutr, 50); }
+
+  // Charger le contenu de chaque tab au premier clic
+  if (id === 't-chat') {
+    var d = document.getElementById('nb-dot'); if (d) d.classList.remove('show');
+    var msgs = document.getElementById('msgs');
+    if (msgs && !msgs.children.length) initChat();
+  }
+  if (id === 't-prog') {
+    var wstrip = document.getElementById('wstrip');
+    if (wstrip && !wstrip.children.length) setTimeout(function() { buildProg(); }, 50);
+  }
+  if (id === 't-nutr') {
+    var ns = document.getElementById('nutr-sc');
+    if (ns && !ns.children.length) setTimeout(function() { buildNutr(); }, 50);
+  }
+  if (id === 't-corps') {
+    var cs = document.getElementById('corps-sc');
+    if (cs && !cs.children.length) setTimeout(function() { buildCorps(); renderWeightChart(); renderPerfCharts(); renderPerfLog(); renderPhotos(); }, 50);
+  }
+  if (id === 't-prf') {
+    // Profil — déjà rempli par initApp, juste s assurer que l email est à jour
+    var emailEl = document.getElementById('ps-email');
+    if (emailEl && U.email) emailEl.textContent = U.email;
+  }
 }
 
 function showPremiumGate(targetTab) {
