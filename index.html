@@ -1434,15 +1434,16 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 24px;
 .predict-card {
   margin: 0 14px 9px;
   background: linear-gradient(145deg, #F98805, #F35695);
-  border-radius: var(--r4); padding: 16px;
+  border-radius: var(--r4); padding: 14px;
   position: relative; overflow: hidden;
-  box-shadow: 0 8px 28px rgba(249,136,5,.22);
+  box-shadow: 0 6px 20px rgba(249,136,5,.2);
+  max-height: none;
 }
 .predict-card::before { content:''; position:absolute; inset:0; background:linear-gradient(135deg,rgba(255,255,255,.12) 0%,transparent 60%); pointer-events:none; }
 .pc-top { display: flex; justify-content: space-between; align-items: flex-start; position: relative; z-index: 1; margin-bottom: 10px; }
 .pc-label { font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(255,255,255,.6); }
 .pc-badge { background: rgba(255,255,255,.2); border-radius: 99px; padding: 3px 10px; font-size: 10px; font-weight: 800; color: #fff; }
-.pc-score { font-family: 'Space Grotesk',sans-serif; font-size: 54px; font-weight: 900; color: #fff; letter-spacing: -3px; line-height: 1; position: relative; z-index: 1; margin-bottom: 3px; }
+.pc-score { font-family: 'Space Grotesk',sans-serif; font-size: 40px; font-weight: 900; color: #fff; letter-spacing: -2px; line-height: 1; position: relative; z-index: 1; margin-bottom: 3px; }
 .pc-desc { font-size: 13px; color: rgba(255,255,255,.7); position: relative; z-index: 1; margin-bottom: 12px; line-height: 1.5; }
 .pc-conditions { display: flex; flex-direction: column; gap: 4px; position: relative; z-index: 1; }
 .pc-cond { display: flex; align-items: center; gap: 7px; font-size: 12px; color: rgba(255,255,255,.75); }
@@ -1554,6 +1555,18 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 24px;
 .pat-txt { font-size: 13px; color: var(--t2); line-height: 1.5; }
 .pat-txt strong { color: var(--t1); font-weight: 700; }
 
+
+/* ── NAV SVG ICONS ── */
+.nb-svg {
+  width: 22px; height: 22px;
+  color: var(--t4);
+  stroke: currentColor;
+  margin-bottom: 3px;
+  transition: all .18s;
+}
+.nb.on .nb-svg { color: var(--o, #F98805); }
+.nb { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 8px 2px 6px; cursor: pointer; transition: all .18s; }
+
 </style>
 </head>
 <body>
@@ -1622,55 +1635,79 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 24px;
     <!-- 4 Pilliers visuels -->
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;text-align:left">
       <div style="background:var(--s0);border:1px solid var(--gb);border-radius:16px;padding:16px;box-shadow:var(--sh1)">
-        <div style="font-size:24px;margin-bottom:8px">🎯</div>
-        <div style="font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:800;color:var(--t1);margin-bottom:4px">Programme sur mesure</div>
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:11px;font-weight:800;color:#F98805;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px">Programme</div>
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:800;color:var(--t1);margin-bottom:4px">Sur mesure</div>
         <div style="font-size:12px;color:var(--t3);line-height:1.5">Adapté à toi, chaque semaine, selon ta progression réelle.</div>
       </div>
       <div style="background:var(--s0);border:1px solid var(--gb);border-radius:16px;padding:16px;box-shadow:var(--sh1)">
-        <div style="font-size:24px;margin-bottom:8px">🍽️</div>
-        <div style="font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:800;color:var(--t1);margin-bottom:4px">Nutrition précise</div>
-        <div style="font-size:12px;color:var(--t3);line-height:1.5">Macros calculées au gramme. 40 recettes. Péri-entraînement.</div>
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:11px;font-weight:800;color:#F98805;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px">Nutrition</div>
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:800;color:var(--t1);margin-bottom:4px">Au gramme près</div>
+        <div style="font-size:12px;color:var(--t3);line-height:1.5">Macros calculées. 40 recettes. Timing péri-entraînement.</div>
       </div>
       <div style="background:var(--s0);border:1px solid var(--gb);border-radius:16px;padding:16px;box-shadow:var(--sh1)">
-        <div style="font-size:24px;margin-bottom:8px">🧠</div>
-        <div style="font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:800;color:var(--t1);margin-bottom:4px">Coaching mental</div>
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:11px;font-weight:800;color:#F98805;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px">Coaching</div>
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:800;color:var(--t1);margin-bottom:4px">Anti-abandon IA</div>
         <div style="font-size:12px;color:var(--t3);line-height:1.5">Détecte quand tu décroches. Agit avant que tu lâches.</div>
       </div>
       <div style="background:var(--s0);border:1px solid var(--gb);border-radius:16px;padding:16px;box-shadow:var(--sh1)">
-        <div style="font-size:24px;margin-bottom:8px">📈</div>
-        <div style="font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:800;color:var(--t1);margin-bottom:4px">Résultats mesurés</div>
-        <div style="font-size:12px;color:var(--t3);line-height:1.5">Graphiques, scores, avant/après. Tu vois ta progression chaque jour.</div>
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:11px;font-weight:800;color:#F98805;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px">Progrès</div>
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:800;color:var(--t1);margin-bottom:4px">Mesuré chaque jour</div>
+        <div style="font-size:12px;color:var(--t3);line-height:1.5">Graphiques, scores, avant/après. Ta transformation visible.</div>
       </div>
     </div>
   </div>
 
-  <!-- SECTION 2 — SOCIAL PROOF MYSTÉRIEUX -->
-  <div class="lsec alt" style="text-align:center;padding:40px 22px">
-    <div style="font-size:11px;font-weight:800;letter-spacing:3px;color:#F35695;text-transform:uppercase;margin-bottom:14px">La différence</div>
-    <div style="font-family:'Space Grotesk',sans-serif;font-size:24px;font-weight:900;color:var(--t1);letter-spacing:-.5px;margin-bottom:20px">Un coach humain<br>à 200€/mois.<br><span style="color:#F98805">HIMA à 24,99€.</span></div>
-    <div style="display:flex;flex-direction:column;gap:8px;text-align:left;margin-bottom:24px">
-      <div style="display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--s0);border:1px solid var(--gb);border-radius:12px">
-        <span style="font-size:18px">⏰</span>
-        <div><div style="font-size:13px;font-weight:700;color:var(--t1)">Disponible à 3h du matin</div><div style="font-size:11px;color:var(--t3)">Ton coach humain dort. HIMA, jamais.</div></div>
+  <!-- SECTION 2 — DIFFÉRENCIATION -->
+  <div class="lsec alt" style="padding:40px 22px">
+    <div style="font-size:11px;font-weight:800;letter-spacing:3px;color:#F35695;text-transform:uppercase;margin-bottom:14px;text-align:center">La différence</div>
+    <div style="font-family:'Space Grotesk',sans-serif;font-size:24px;font-weight:900;color:var(--t1);letter-spacing:-.5px;margin-bottom:24px;text-align:center;line-height:1.2">Un coach humain<br>à 200€/mois.<br><span style="color:#F98805">HIMA à 24,99€.</span></div>
+
+    <!-- Tableau comparaison clean — sans emojis -->
+    <div style="border:1px solid var(--gb);border-radius:16px;overflow:hidden;background:var(--s0)">
+      <!-- Header -->
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;background:var(--bg2);padding:10px 0;border-bottom:1px solid var(--gb)">
+        <div style="font-size:11px;font-weight:700;color:var(--t4);text-align:center;padding:0 8px"></div>
+        <div style="font-size:11px;font-weight:800;color:var(--t3);text-align:center">Coach humain</div>
+        <div style="font-size:11px;font-weight:800;color:#F98805;text-align:center">HIMA</div>
       </div>
-      <div style="display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--s0);border:1px solid var(--gb);border-radius:12px">
-        <span style="font-size:18px">🧬</span>
-        <div><div style="font-size:13px;font-weight:700;color:var(--t1)">Mémoire de 6 mois</div><div style="font-size:11px;color:var(--t3)">Il se souvient de chaque séance, chaque charge, chaque résultat.</div></div>
+      <!-- Rows -->
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;padding:12px 0;border-bottom:1px solid var(--gb);align-items:center">
+        <div style="font-size:11px;font-weight:700;color:var(--t2);padding:0 10px">Disponibilité</div>
+        <div style="font-size:11px;color:var(--t4);text-align:center">2-3h/sem</div>
+        <div style="font-size:11px;font-weight:700;color:#F98805;text-align:center">24h/24</div>
       </div>
-      <div style="display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--s0);border:1px solid var(--gb);border-radius:12px">
-        <span style="font-size:18px">⚡</span>
-        <div><div style="font-size:13px;font-weight:700;color:var(--t1)">Adapte en temps réel</div><div style="font-size:11px;color:var(--t3)">Fatigué ? Il allège. En forme ? Il intensifie. Automatiquement.</div></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;padding:12px 0;border-bottom:1px solid var(--gb);align-items:center">
+        <div style="font-size:11px;font-weight:700;color:var(--t2);padding:0 10px">Prix</div>
+        <div style="font-size:11px;color:var(--t4);text-align:center">150-400€/mois</div>
+        <div style="font-size:11px;font-weight:700;color:#F98805;text-align:center">24,99€/mois</div>
       </div>
-      <div style="display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--s0);border:1px solid var(--gb);border-radius:12px">
-        <span style="font-size:18px">🎯</span>
-        <div><div style="font-size:13px;font-weight:700;color:var(--t1)">Anti-abandon IA</div><div style="font-size:11px;color:var(--t3)">Détecte quand tu vas lâcher — avant que ça arrive.</div></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;padding:12px 0;border-bottom:1px solid var(--gb);align-items:center">
+        <div style="font-size:11px;font-weight:700;color:var(--t2);padding:0 10px">Mémoire</div>
+        <div style="font-size:11px;color:var(--t4);text-align:center">Variable</div>
+        <div style="font-size:11px;font-weight:700;color:#F98805;text-align:center">6 mois complets</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;padding:12px 0;border-bottom:1px solid var(--gb);align-items:center">
+        <div style="font-size:11px;font-weight:700;color:var(--t2);padding:0 10px">Nutrition</div>
+        <div style="font-size:11px;color:var(--t4);text-align:center">Approximative</div>
+        <div style="font-size:11px;font-weight:700;color:#F98805;text-align:center">Au gramme près</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;padding:12px 0;border-bottom:1px solid var(--gb);align-items:center">
+        <div style="font-size:11px;font-weight:700;color:var(--t2);padding:0 10px">Adaptation</div>
+        <div style="font-size:11px;color:var(--t4);text-align:center">1x/semaine</div>
+        <div style="font-size:11px;font-weight:700;color:#F98805;text-align:center">Chaque séance</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;padding:12px 0;align-items:center">
+        <div style="font-size:11px;font-weight:700;color:var(--t2);padding:0 10px">Anti-abandon</div>
+        <div style="font-size:11px;color:var(--t4);text-align:center">Rarement</div>
+        <div style="font-size:11px;font-weight:700;color:#F98805;text-align:center">Détection IA</div>
       </div>
     </div>
-    <button class="l-cta-p" onclick="go('auth')" style="width:100%">ESSAYER 7 JOURS GRATUITS →</button>
-    <div style="font-size:11px;color:var(--t4);margin-top:8px">Sans carte bancaire · Annulation en 1 clic</div>
+
+    <button onclick="go('auth')" style="width:100%;margin-top:20px;padding:15px;background:linear-gradient(135deg,#F98805,#F35695);border:none;border-radius:99px;color:#fff;font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:800;cursor:pointer;box-shadow:0 6px 20px rgba(249,136,5,.28);letter-spacing:-.2px">ESSAYER 7 JOURS GRATUITS →</button>
+    <div style="text-align:center;margin-top:8px;font-size:11px;color:var(--t4)">Sans carte bancaire · Annulation en 1 clic</div>
   </div>
 
-  <!-- SECTION 3 — PRICING -->
+    <!-- SECTION 3 — PRICING -->
 
   <div class="lftr">
     <div class="lftr-logo">HIMA</div>
@@ -1688,7 +1725,7 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 24px;
   <div class="auth-body">
     <div class="auth-h">BIENVENUE<br>CHEZ <span class="grad">HIMA</span></div>
     <div class="auth-sub">Lance-toi. 7 jours gratuits, sans carte bancaire.</div>
-    <div class="fb-note" id="fb-note">
+    <div class="fb-note" id="fb-note" style="display:none">
       <div class="fb-note-t">⚙️ Firebase non configuré</div>
       <div class="fb-note-s">Mode démo actif. Ajoute ta config Firebase pour activer Google/Apple/Email.</div>
     </div>
@@ -1697,7 +1734,7 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 24px;
       <button class="auth-tab" onclick="setAuthTab('signin',this)">Se connecter</button>
     </div>
     <button class="a-btn a-apple" style="display:flex;align-items:center;justify-content:center;gap:10px" onclick="authApple()">
-      <div class="a-ico" style="display:flex;align-items:center;flex-shrink:0"><svg width="17" height="20" viewBox="0 0 18 22"><path d="M14.5 11.5c0-2.5 1.3-4.7 3.3-6-1.2-1.7-3-2.8-5-3-2-.2-4 1.2-5 1.2s-2.8-1.2-4.5-1.1C1.5 2.8 0 4.2 0 6c0 3.3 2.3 8.6 3.3 10.7 1 2 2 4.4 3.8 4.3 1.5 0 2-.9 3.9-.9 1.8 0 2.3.9 4 .9 1.7 0 2.8-2.3 3.7-4.3C20 15 19.8 13 18 11.5c-.5-.3-3.5-1-3.5-2zM12 3c.8-1 1.3-2.5 1-4-1.3.1-2.8.9-3.7 2-.8.9-1.4 2.3-1.1 3.7 1.4.1 2.8-.7 3.8-1.7z" fill="currentColor"/></svg></div>
+      <div class="a-ico" style="display:flex;align-items:center;flex-shrink:0;width:20px;height:20px;overflow:hidden"><svg width="15" height="18" viewBox="0 0 18 22"><path d="M14.5 11.5c0-2.5 1.3-4.7 3.3-6-1.2-1.7-3-2.8-5-3-2-.2-4 1.2-5 1.2s-2.8-1.2-4.5-1.1C1.5 2.8 0 4.2 0 6c0 3.3 2.3 8.6 3.3 10.7 1 2 2 4.4 3.8 4.3 1.5 0 2-.9 3.9-.9 1.8 0 2.3.9 4 .9 1.7 0 2.8-2.3 3.7-4.3C20 15 19.8 13 18 11.5c-.5-.3-3.5-1-3.5-2zM12 3c.8-1 1.3-2.5 1-4-1.3.1-2.8.9-3.7 2-.8.9-1.4 2.3-1.1 3.7 1.4.1 2.8-.7 3.8-1.7z" fill="currentColor"/></svg></div>
       Continuer avec Apple
     </button>
     <button class="a-btn" onclick="authGoogle()">
@@ -1797,7 +1834,7 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 24px;
           <button class="pb-btn" onclick="openProactiveChat()">Répondre à HIMA →</button>
         </div>
       </div>
-      <div class="notif" onclick="switchTab('t-chat')" style="margin-top:10px" id="notif-bar">
+      <div class="notif" onclick="switchTab('t-chat')" style="margin-top:10px;display:none" id="notif-bar">
         <span style="font-size:15px">🔔</span>
         <div class="notif-t" id="notif-txt">HIMA attend ton bilan du jour</div>
         <div class="notif-n">1</div>
@@ -1851,6 +1888,8 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 24px;
           <div class="sc-ac"><div class="sc-av" id="sc-sk">J1</div><div class="sc-al">Streak</div></div>
           <div class="sc-ac"><div class="sc-av" id="sc-p">0</div><div class="sc-al">kg perdus</div></div>
         </div>
+      </div>
+    </div>
       <!-- SCORE PRÉDICTIF -->
       <div class="predict-card" id="predict-card" style="display:none">
         <div class="pc-top">
@@ -2326,7 +2365,9 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 24px;
   </div>
 </div>
 
+
 <script>
+
 
 // ═══════════════════════════════════════════
 // HIMA 2026 — FULL JS
@@ -2443,7 +2484,7 @@ window.addEventListener('DOMContentLoaded', function() {
     } else {
       go('landing');
     }
-  }, 2200);
+  }, 1200);
 });
 
 function loadProfile() {
@@ -2591,16 +2632,32 @@ function showAuthError(msg) {
 function afterAuth() {
   var existing = document.getElementById('auth-err');
   if (existing) existing.remove();
+  // Hide fb-note
+  var fn = document.getElementById('fb-note');
+  if (fn) fn.style.display = 'none';
   var saved = null;
   try { saved = localStorage.getItem('hima8'); } catch(e) {}
   if (saved) {
     try {
       var d = JSON.parse(saved);
       if (d.onbDone) {
-        U = Object.assign(d, { email: U.email, uid: U.uid });
+        U = Object.assign(d, {
+          email: U.email || d.email,
+          uid: U.uid || d.uid,
+          prenom: U.prenom || d.prenom
+        });
         hist = U.hist || []; streak = U.streak || 1;
         score = U.score || 0; seances = U.seances || 0;
-        initApp(); go('app'); return;
+        initApp(); go('app');
+        // Sync en arrière plan sans bloquer
+        if (firebaseReady && auth && auth.currentUser) {
+          setTimeout(function() {
+            loadFromCloud().then(function(ok) {
+              if (ok) { initApp(); }
+            }).catch(function(){});
+          }, 2000);
+        }
+        return;
       }
     } catch(e) {}
   }
@@ -2630,23 +2687,22 @@ function doLogout() {
 var OSI = 0;
 var OS = [
   {pct:11,q:'Quel est ton prénom ?',qs:'Pour personnaliser chaque message.',type:'text',key:'prenom',ph:'Ton prénom...'},
-  {pct:22,q:'Quel est ton mode ?',qs:'Choisis honnêtement — ça détermine tout.',type:'bigopt',key:'mode',opts:[
-    {v:'glow',i:'✨',t:'Perdre du Gras 🔥',s:'Transformation corps et mental'},
-    {v:'bodybuilding',i:'💪',t:'💪 Je veux du muscle',s:'Hypertrophie, charges, périodisation — construis un physique solide'},
-    {v:'hyrox',i:'⚡',t:'🏃 Je veux performer',s:'Cardio, force fonctionnelle, compétition, endurance — performe sur tous les fronts'},
-    {v:'mindset',i:'🧠',t:'⚡ Me remettre en forme',s:'Bien-être, discipline, confiance — transforme ton corps ET ta tête'}
+  {pct:22,q:'Qu\'est-ce que tu veux vraiment ?',qs:'HIMA adapte tout selon ton choix — programme, nutrition, méthode.',type:'bigopt',key:'mode',opts:[
+    {v:'glow',i:'🔥',t:'Je veux maigrir',s:'Perte de gras, définition, silhouette affinée'},
+    {v:'bodybuilding',i:'💪',t:'Je veux du muscle',s:'Prise de masse, force, hypertrophie'},
+    {v:'hyrox',i:'🏃',t:'Je veux performer',s:'Endurance, cardio, dépasser mes limites'},
+    {v:'mindset',i:'⚡',t:'Me remettre en forme',s:'Reprendre de zéro, retrouver énergie et forme'}
   ]},
-  {pct:33,q:'Ton objectif principal ?',qs:null,type:'chips2',key:'obj',opts:[
-    {v:'perte',i:'⚖️',t:'Perdre du poids'},{v:'muscle',i:'💪',t:'Prendre du muscle'},
-    {v:'mixte',i:'🔄',t:'Rééquilibrage'},{v:'perf',i:'⚡',t:'Performance'}
+  {pct:33,q:'Tu es ?',qs:'Pour calibrer tes macros avec la formule Mifflin-St Jeor.',type:'chips2',key:'sexe',opts:[
+    {v:'h',i:'👨',t:'Un homme'},{v:'f',i:'👩',t:'Une femme'}
   ]},
   {pct:44,q:'Ton poids actuel ?',qs:'Indispensable pour tes macros exactes.',type:'slider',key:'poids',mn:40,mx:150,v:75,u:'kg'},
   {pct:55,q:'Ta taille ?',qs:null,type:'slider',key:'taille',mn:140,mx:220,v:175,u:'cm'},
   {pct:66,q:'Ton niveau sportif ?',qs:null,type:'chips3',key:'niv',opts:[
     {v:'deb',i:'🌱',t:'Débutant'},{v:'int',i:'🔥',t:'Intermédiaire'},{v:'av',i:'⚡',t:'Avancé'}
   ]},
-  {pct:74,q:'Temps dispo par séance ?',qs:null,type:'chips2',key:'tps',opts:[
-    {v:'20m',i:'⏱️',t:'20 min'},{v:'30m',i:'⏱️',t:'30 min'},{v:'45m',i:'⏱️',t:'45 min'},{v:'60m',i:'⏱️',t:'60 min+'}
+  {pct:74,q:'Temps disponible par séance ?',qs:'Sois réaliste — HIMA adapte l\'intensité.',type:'chips2',key:'tps',opts:[
+    {v:'20',i:'⏱️',t:'20 min'},{v:'30',i:'⏱️',t:'30 min'},{v:'45',i:'⏱️',t:'45 min'},{v:'60',i:'⏱️',t:'60 min+'}
   ]},
   {pct:83,q:'Où tu t\'entraînes ?',qs:null,type:'bigopt',key:'lieu',opts:[
     {v:'maison',i:'🏠',t:'À la maison',s:'Poids du corps, tapis'},
@@ -2740,6 +2796,7 @@ function selCh(el, key, val) {
 function onbNext() {
   var s = OS[OSI];
   if (s.type === 'text') { var inp = document.getElementById('oi'); if (inp) U[s.key] = (inp.value || '').trim(); if (!U[s.key]) return; }
+  if ((s.type === 'chips2' || s.type === 'chips3') && s.key && !U[s.key]) { return; } // require selection
   if (s.type === 'slider') { var slr = document.getElementById('sr-' + s.key); if (slr) U[s.key] = parseFloat(slr.value); }
   if (s.type === 'result') {
     U.plan = 'free'; U.onbDone = true; U.hist = hist; save();
@@ -2782,6 +2839,10 @@ function saveKey() { var k = document.getElementById('api-k'); if (k && k.value.
 
 // ── APP INIT ──
 function initApp() {
+  var fn=document.getElementById('fb-note'); if(fn) fn.style.display=firebaseReady?'none':'block';
+  // Hide Firebase note if configured
+  var fn = document.getElementById('fb-note');
+  if (fn) fn.style.display = firebaseReady ? 'none' : 'block';
   var m = U.macros || calcM();
   var h = new Date().getHours();
   var g = h < 12 ? 'Bonjour' : h < 18 ? 'Bon après-midi' : 'Bonsoir';
@@ -2981,7 +3042,9 @@ async function callAI(msg) {
   var ageStr = U.age ? U.age + ' ans' : '25 ans';
 
   var memCtx = (typeof buildMemoryContext === 'function') ? buildMemoryContext() : '';
-  var sys = 'Tu es HIMA, un coach sportif, préparateur physique et coach mental professionnel.\n'
+  var mCtx={glow:'MAIGRIR: circuit cardio+muscu, deficit -300 a -500kcal/j, HIIT 2x/sem, proteines 2g/kg, cible -0.5 a -1kg/sem, anti-effet yoyo',bodybuilding:'MUSCLE: split 4-5j, charges 6-12 reps, periodisation 12sem, surplus +200 a +300kcal, proteines 2.2g/kg, RPE 7-9, progressive overload',hyrox:'PERFORMANCE: Z2 60%/Z3 25%/Z4 15%, force fonctionnelle 2x/sem, glucides 5-7g/kg, simulation competition',mindset:'REMISE EN FORME: full body 3x/sem progressif, reequilibrage alimentaire sans frustration, victoires rapides, anti-abandon renforce'};
+  var memCtx=(typeof buildMemoryContext==='function')?buildMemoryContext():'';
+  var sys = 'Tu es HIMA, coach sportif, préparateur physique et coach mental professionnel.\n'
     + 'Tu fonctionnes comme un coach humain expérimenté qui suit ses clients sur plusieurs mois avec précision.\n\n'
     + '━━━ OBJECTIF ━━━\n'
     + 'Ton rôle : construire des programmes personnalisés, suivre la progression réelle, ajuster selon les résultats, accompagner mentalement, produire des résultats mesurables.\n'
@@ -4057,7 +4120,24 @@ function openProactiveChat() {
 // ── INIT ──
 function initAllNewFeatures() {
   setTimeout(initV2Features, 600);
-  if (firebaseReady && auth && auth.currentUser) { setTimeout(syncCloudData, 1000); }
+  if(streak>1){var nb=document.getElementById('notif-bar');if(nb)nb.style.display='flex';}
+  // Show notif bar only after J1
+  if (streak > 1) {
+    var nb = document.getElementById('notif-bar');
+    if (nb) nb.style.display = 'flex';
+  }
+  // Sync uniquement si Firebase actif et user authentifié
+  if (firebaseReady && auth && auth.currentUser) {
+    setTimeout(function() {
+      syncCloudData().then(function() {
+        showSyncIndicator(false);
+      }).catch(function() {
+        showSyncIndicator(false);
+      });
+    }, 1500);
+  } else {
+    showSyncIndicator(false);
+  }
   initVoice();
   patchAddHForVoice();
   if (!U.weightHistory && hist.length > 0) U.weightHistory = hist.slice();
@@ -4759,10 +4839,14 @@ function vocalCoachOnSeriesEnd(current, total) {
 function initV2Features() {
   loadXIKey();
   patchAddHForXI();
-  computePredictiveScore();
+  // Only show predict after 3 days
+  if (streak >= 3) if(streak>=3){computePredictiveScore();}else{var _pc=document.getElementById('predict-card');if(_pc)_pc.style.display='none';}
+  else { var pc = document.getElementById('predict-card'); if(pc) pc.style.display='none'; }
   detectPatterns();
   detectPlateau();
-  buildCommunityData();
+  // Only show community card after 7 days
+  if (streak >= 7) if(streak>=7){buildCommunityData();}else{var _cc=document.getElementById('community-card');if(_cc)_cc.style.display='none';}
+  else { var cc = document.getElementById('community-card'); if(cc) cc.style.display='none'; }
   buildRelationCard();
   updateMemoryCount();
   analyseLastSeanceAndAdapt();
@@ -4977,8 +5061,10 @@ function authGoogle() {
     })
     .catch(function(error) {
       // If popup blocked, show email/password form instead
-      if (error.code === 'auth/popup-blocked' || error.code === 'auth/popup-closed-by-user') {
-        showAuthError('Popup bloquée. Utilise Email/Mot de passe ci-dessous ou autorise les popups.');
+      if (error.code === 'auth/popup-blocked') {
+        showAuthError('Popup bloquée. Autorise les popups dans ton navigateur ou utilise Email ci-dessous.');
+      } else if (error.code === 'auth/popup-closed-by-user') {
+        // User closed popup — no error needed
       } else {
         showAuthError(error.message);
       }
@@ -5266,28 +5352,35 @@ async function callClaudeSecure(systemPrompt, messages) {
 // ── SYNC DONNÉES CLOUD AU DÉMARRAGE ──────────────
 
 async function syncCloudData() {
-  if (!firebaseReady || !auth.currentUser) return;
+  if (!firebaseReady || !auth || !auth.currentUser) return;
   showSyncIndicator(true);
   try {
     var cloudLoaded = await loadFromCloud();
     if (cloudLoaded) {
       await loadPerfsFromCloud();
       await loadChatHistoryFromCloud();
-      // Update UI with cloud data
-      initApp();
-      initAllNewFeatures();
     }
   } catch(e) {
     console.warn('Sync error:', e.message);
+  } finally {
+    showSyncIndicator(false);
   }
-  showSyncIndicator(false);
   startCloudAutoSave();
 }
 
 function showSyncIndicator(show) {
   var el = document.getElementById('sync-indicator');
   if (!el) return;
+  // N'affiche la sync que si Firebase actif ET user connecté
+  if (show && (!firebaseReady || !auth || !auth.currentUser)) return;
   el.style.display = show ? 'flex' : 'none';
+  // Auto-hide after 5s even if something goes wrong
+  if (show) {
+    clearTimeout(window._syncTimer);
+    window._syncTimer = setTimeout(function() {
+      el.style.display = 'none';
+    }, 5000);
+  }
 }
 
 // ── PWA — INSTALLABLE ─────────────────────────────
@@ -5476,82 +5569,7 @@ function toggleBilling() {
   }
 }
 
+
 </script>
-
-<!-- PERF LOG MODAL -->
-<div class="perf-modal-overlay" id="perf-modal-overlay" onclick="closePerfModal(event)">
-  <div class="perf-modal">
-    <div class="perf-modal-handle"></div>
-    <div class="perf-modal-title">📊 Logger une performance</div>
-    <div style="margin-bottom:8px">
-      <input class="perf-inp-full" id="pm-exo" type="text" placeholder="Exercice (ex: Squat, Développé couché...)">
-    </div>
-    <div class="perf-inp-row">
-      <div style="flex:1">
-        <div style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Charge (kg)</div>
-        <input class="perf-inp" id="pm-kg" type="number" placeholder="80" step="0.5">
-      </div>
-      <div style="flex:1">
-        <div style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Répétitions</div>
-        <input class="perf-inp" id="pm-reps" type="number" placeholder="8">
-      </div>
-      <div style="flex:1">
-        <div style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Séries</div>
-        <input class="perf-inp" id="pm-sets" type="number" placeholder="4">
-      </div>
-    </div>
-    <div style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">RPE — Difficulté perçue</div>
-    <div class="rpe-row">
-      <button class="rpe-btn" onclick="selRPE(this,6)">6<div style="font-size:9px;opacity:.6">Facile</div></button>
-      <button class="rpe-btn" onclick="selRPE(this,7)">7<div style="font-size:9px;opacity:.6">Modéré</div></button>
-      <button class="rpe-btn on" onclick="selRPE(this,8)">8<div style="font-size:9px;opacity:.6">Difficile</div></button>
-      <button class="rpe-btn" onclick="selRPE(this,9)">9<div style="font-size:9px;opacity:.6">Très dur</div></button>
-      <button class="rpe-btn" onclick="selRPE(this,10)">10<div style="font-size:9px;opacity:.6">Max</div></button>
-    </div>
-    <button class="perf-save-btn" onclick="savePerfEntry()">ENREGISTRER →</button>
-  </div>
-</div>
-
-<!-- PHOTO ANALYSE LOADING -->
-<div style="display:none" id="photo-analyse-overlay">
-  <div style="position:fixed;inset:0;z-index:500;background:rgba(15,15,20,.7);backdrop-filter:blur(8px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px">
-    <div style="width:56px;height:56px;border-radius:50%;border:3px solid rgba(249,136,5,.2);border-top-color:#F98805;animation:spin .8s linear infinite"></div>
-    <div style="font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:700;color:#fff">HIMA analyse ta photo...</div>
-    <div style="font-size:13px;color:rgba(255,255,255,.45)">Vision IA en cours</div>
-  </div>
-</div>
-
-<canvas id="share-canvas" style="display:none"></canvas>
-
-<!-- RGPD Banner -->
-<div id="rgpd-banner" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:1000;background:var(--k2,#141210);border-top:1px solid var(--b,rgba(245,243,238,.07));padding:14px 18px 28px;box-shadow:0 -4px 24px rgba(0,0,0,.3)">
-  <div style="font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:700;color:var(--t1,#F5F3EE);margin-bottom:5px">🍪 Données & Confidentialité</div>
-  <div style="font-size:12px;color:var(--t3,#6A6560);line-height:1.55;margin-bottom:12px">HIMA utilise des cookies pour mémoriser ta progression et personnaliser ton coaching. Tes données de santé sont chiffrées et stockées en Europe (RGPD).</div>
-  <div style="display:flex;gap:8px">
-    <button onclick="acceptRGPD()" style="flex:1;padding:10px;background:linear-gradient(135deg,#F98805,#F35695);border:none;border-radius:99px;color:#fff;font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:700;cursor:pointer">Accepter</button>
-    <button onclick="declineRGPD()" style="padding:10px 16px;background:transparent;border:1.5px solid var(--b2,rgba(245,243,238,.12));border-radius:99px;color:var(--t3,#6A6560);font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:600;cursor:pointer">Refuser</button>
-  </div>
-</div>
-
-<!-- Sync Cloud Indicator -->
-<div id="sync-indicator" style="display:none;position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:900;background:rgba(249,136,5,.9);backdrop-filter:blur(12px);border-radius:99px;padding:7px 16px;align-items:center;gap:7px;box-shadow:0 4px 16px rgba(249,136,5,.3)">
-  <div style="width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite"></div>
-  <div style="font-family:'Space Grotesk',sans-serif;font-size:12px;font-weight:700;color:#fff">Synchronisation...</div>
-</div>
-
-<!-- PWA Install Button -->
-<div id="pwa-install-btn" style="display:none;position:fixed;bottom:80px;right:14px;z-index:500">
-  <button onclick="installPWA()" style="display:flex;align-items:center;gap:7px;padding:10px 16px;background:linear-gradient(135deg,#F98805,#F35695);border:none;border-radius:99px;color:#fff;font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 4px 16px rgba(249,136,5,.3)">
-    📲 Installer l'app
-  </button>
-</div>
-
-<!-- PWA Manifest link -->
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#F98805">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="HIMA">
-
 </body>
 </html>
