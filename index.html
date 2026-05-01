@@ -3382,15 +3382,6 @@ function selectPlan(plan) {
 var PREMIUM_TABS = ['t-prog', 't-nutr', 't-corps'];
 
 function switchTab(id) {
-  // Vérifier si le tab est premium et si l utilisateur a un plan payant
-  var isPremium = PREMIUM_TABS.indexOf(id) > -1;
-  var hasPlan = U.plan === 'pro' || U.plan === 'elite';
-  
-  if (isPremium && !hasPlan) {
-    showPremiumGate(id);
-    return;
-  }
-  
   document.querySelectorAll('.atab').forEach(function(t) { t.classList.remove('on'); });
   document.querySelectorAll('.nb').forEach(function(n) { n.classList.remove('on'); });
   var el = document.getElementById(id); if (el) el.classList.add('on');
