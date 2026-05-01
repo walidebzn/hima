@@ -2654,6 +2654,77 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 24px;
 </div>
 
 
+  <div class="atab" id="t-prf">
+    <div class="tab-hd">
+      <div class="tab-hd-top">
+        <div>
+          <div class="tab-ey">MON COMPTE</div>
+          <div class="tab-title">Profil</div>
+        </div>
+      </div>
+    </div>
+    <div class="tsc" style="padding-bottom:88px">
+      <!-- Avatar & nom -->
+      <div style="display:flex;flex-direction:column;align-items:center;padding:24px 20px 16px">
+        <div style="width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#F98805,#F35695);display:flex;align-items:center;justify-content:center;font-family:Space Grotesk,sans-serif;font-size:28px;font-weight:900;color:#fff;margin-bottom:12px" id="prf-avatar-letter">W</div>
+        <div style="font-family:Space Grotesk,sans-serif;font-size:20px;font-weight:900;color:var(--t1)" id="pnm">Champion</div>
+        <div style="font-size:13px;color:var(--t3);margin-top:4px" id="ps-email">--</div>
+        <div style="background:linear-gradient(135deg,#F98805,#F35695);color:#fff;font-size:11px;font-weight:800;padding:4px 14px;border-radius:99px;margin-top:8px" id="ps-plan">Découverte</div>
+      </div>
+
+      <!-- Stats perso -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 14px 16px">
+        <div style="background:var(--s0);border:1px solid var(--gb);border-radius:14px;padding:14px;text-align:center">
+          <div style="font-family:Space Grotesk,sans-serif;font-size:22px;font-weight:900;color:var(--t1)" id="prf-streak">J1</div>
+          <div style="font-size:11px;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-top:4px">Streak</div>
+        </div>
+        <div style="background:var(--s0);border:1px solid var(--gb);border-radius:14px;padding:14px;text-align:center">
+          <div style="font-family:Space Grotesk,sans-serif;font-size:22px;font-weight:900;color:var(--t1)" id="prf-seances">0</div>
+          <div style="font-size:11px;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-top:4px">Séances</div>
+        </div>
+        <div style="background:var(--s0);border:1px solid var(--gb);border-radius:14px;padding:14px;text-align:center">
+          <div style="font-family:Space Grotesk,sans-serif;font-size:22px;font-weight:900;color:#F98805" id="prf-poids">--</div>
+          <div style="font-size:11px;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-top:4px">kg actuel</div>
+        </div>
+        <div style="background:var(--s0);border:1px solid var(--gb);border-radius:14px;padding:14px;text-align:center">
+          <div style="font-family:Space Grotesk,sans-serif;font-size:22px;font-weight:900;color:#F35695" id="prf-score">0</div>
+          <div style="font-size:11px;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-top:4px">Score</div>
+        </div>
+      </div>
+
+      <!-- Infos profil -->
+      <div style="margin:0 14px 16px;background:var(--s0);border:1px solid var(--gb);border-radius:16px;overflow:hidden">
+        <div style="padding:14px 16px;border-bottom:1px solid var(--gb)">
+          <div style="font-size:10px;font-weight:800;color:var(--t4);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Profil sportif</div>
+          <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--gb);font-size:13px"><span style="color:var(--t3)">Objectif</span><span style="font-weight:700;color:var(--t1)" id="ps-mode">--</span></div>
+          <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--gb);font-size:13px"><span style="color:var(--t3)">Niveau</span><span style="font-weight:700;color:var(--t1)" id="ps-niv">--</span></div>
+          <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--gb);font-size:13px"><span style="color:var(--t3)">Lieu</span><span style="font-weight:700;color:var(--t1)" id="ps-lieu">--</span></div>
+          <div style="display:flex;justify-content:space-between;padding:6px 0;font-size:13px"><span style="color:var(--t3)">Macros/jour</span><span style="font-weight:700;color:var(--t1);font-size:12px" id="ps-mac">--</span></div>
+        </div>
+      </div>
+
+      <!-- Clé API -->
+      <div style="margin:0 14px 16px;background:var(--s0);border:1px solid var(--gb);border-radius:16px;padding:14px 16px">
+        <div style="font-size:10px;font-weight:800;color:var(--t4);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">Clé API Claude</div>
+        <div style="font-size:12px;color:var(--t3);margin-bottom:10px;line-height:1.5">Nécessaire pour activer le coach IA. Obtiens-la sur console.anthropic.com</div>
+        <input id="api-k" type="password" placeholder="sk-ant-..." style="width:100%;padding:11px 12px;border:1.5px solid var(--gb);border-radius:10px;font-size:13px;color:var(--t1);background:var(--bg);outline:none;box-sizing:border-box;-webkit-appearance:none">
+        <button onclick="saveKey()" style="width:100%;margin-top:10px;padding:12px;background:linear-gradient(135deg,#F98805,#F35695);border:none;border-radius:99px;color:#fff;font-family:Space Grotesk,sans-serif;font-size:14px;font-weight:700;cursor:pointer">Sauvegarder</button>
+      </div>
+
+      <!-- Mode test -->
+      <div style="margin:0 14px 16px;background:rgba(249,136,5,.06);border:1.5px dashed rgba(249,136,5,.3);border-radius:16px;padding:14px 16px">
+        <div style="font-family:Space Grotesk,sans-serif;font-size:13px;font-weight:800;color:#F98805;margin-bottom:6px">Mode test développeur</div>
+        <div style="font-size:12px;color:var(--t3);margin-bottom:10px">Activer toutes les fonctionnalités sans paiement</div>
+        <button onclick="activateTestPro()" style="width:100%;padding:11px;background:#F98805;border:none;border-radius:99px;color:#fff;font-family:Space Grotesk,sans-serif;font-size:14px;font-weight:700;cursor:pointer">Activer Pro ✓</button>
+      </div>
+
+      <!-- Déconnexion -->
+      <div style="margin:0 14px 24px">
+        <button onclick="doLogout()" style="width:100%;padding:13px;background:var(--s0);border:1.5px solid var(--gb);border-radius:99px;font-family:Space Grotesk,sans-serif;font-size:14px;font-weight:700;color:var(--t3);cursor:pointer">Se déconnecter</button>
+      </div>
+    </div>
+  </div>
+
   <!-- NAV -->
   <div class="nav">
     <div class="nb on" id="nb-home" onclick="switchTab('t-home')">
@@ -3422,8 +3493,24 @@ function switchTab(id) {
   }
 
   if (id === 't-prf') {
-    var emailEl = document.getElementById('ps-email');
-    if (emailEl && U.email) emailEl.textContent = U.email;
+    // Remplir les données du profil
+    var s2 = function(eid, v) { var e2=document.getElementById(eid); if(e2) e2.textContent=v; };
+    var m = U.macros || calcM();
+    s2('pnm', U.prenom || 'Champion');
+    s2('ps-email', U.email || '--');
+    s2('ps-plan', {free:'Découverte',pro:'Coach Personnel',elite:'Elite'}[U.plan||'free']||'Découverte');
+    s2('ps-mode', ML[U.mode||'glow'] || '--');
+    s2('ps-niv', {deb:'Débutant',int:'Intermédiaire',av:'Avancé'}[U.niv||'deb']||'--');
+    s2('ps-lieu', {maison:'Maison',salle:'Salle',mixte:'Les deux'}[U.lieu||'maison']||'--');
+    s2('ps-mac', m.kcal+' kcal · '+m.prot+'g P');
+    s2('prf-streak', 'J'+streak);
+    s2('prf-seances', seances);
+    s2('prf-poids', (U.poids||'--'));
+    s2('prf-score', score);
+    var av = document.getElementById('prf-avatar-letter');
+    if (av) av.textContent = (U.prenom||'C')[0].toUpperCase();
+    var apiEl = document.getElementById('api-k');
+    if (apiEl && U.apiKey) apiEl.value = U.apiKey;
   }
 }
 
@@ -3912,9 +3999,6 @@ function showPeri(el, panel) {
 }
 
 function buildCorps() {
-  // Toujours vider avant de reconstruire
-  var corpsScEl = document.getElementById('corps-sc');
-  if (corpsScEl) corpsScEl.innerHTML = '';
   var p = U.poids || U.dep || 75;
   var delta = (U.dep && U.poids) ? (U.poids - U.dep).toFixed(1) : null;
 
