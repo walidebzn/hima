@@ -2179,7 +2179,15 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 24px;
           <button class="pb-btn" onclick="openProactiveChat()">Répondre à HIMA →</button>
         </div>
       </div>
-      <div class="notif" onclick="switchTab('t-chat')" style="margin-top:10px;display:none" id="notif-bar">
+      <!-- TEST MODE BUTTON - À supprimer après config Stripe -->
+    <div id="test-mode-banner" style="margin:10px 14px 0;background:rgba(249,136,5,.08);border:1.5px dashed rgba(249,136,5,.4);border-radius:14px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <div style="font-family:Space Grotesk,sans-serif;font-size:13px;font-weight:800;color:#F98805">Mode test</div>
+        <div style="font-size:11px;color:var(--t3);margin-top:2px">Active toutes les fonctionnalités</div>
+      </div>
+      <button onclick="activateTestPro()" style="background:linear-gradient(135deg,#F98805,#F35695);border:none;border-radius:99px;color:#fff;font-family:Space Grotesk,sans-serif;font-size:13px;font-weight:700;padding:8px 16px;cursor:pointer">Activer Pro ✓</button>
+    </div>
+    <div class="notif" onclick="switchTab('t-chat')" style="margin-top:10px;display:none" id="notif-bar">
         <span style="font-size:15px">🔔</span>
         <div class="notif-t" id="notif-txt">HIMA attend ton bilan du jour</div>
         <div class="notif-n">1</div>
@@ -3310,6 +3318,9 @@ function initApp() {
 }
 
 function updateNavForPlan() {
+  // Cacher le banner test si plan pro actif
+  var banner = document.getElementById('test-mode-banner');
+  if (banner) banner.style.display = (U.plan === 'pro' || U.plan === 'elite') ? 'none' : 'flex';
   var hasPlan = U.plan === 'pro' || U.plan === 'elite';
   var premiumNavIds = ['nb-prog', 'nb-nutr', 'nb-corps', 'nb-prf'];
   premiumNavIds.forEach(function(id) {
@@ -3394,15 +3405,18 @@ function switchTab(id) {
   }
   if (id === 't-prog') {
     var wstrip = document.getElementById('wstrip');
-    if (wstrip && !wstrip.children.length) setTimeout(function() { buildProg(); }, 50);
+    if (wstrip) { wstrip.innerHTML = ''; }
+    var progSc = document.getElementById('prog-sc');
+    if (progSc) { progSc.innerHTML = ''; }
+    setTimeout(function() { buildProg(); }, 60);
   }
   if (id === 't-nutr') {
-    var ns = document.getElementById('nutr-sc');
-    if (ns && !ns.children.length) setTimeout(function() { buildNutr(); }, 50);
+    var nutrSc = document.getElementById('nutr-sc');
+    if (nutrSc) { nutrSc.innerHTML = ''; }
+    setTimeout(function() { buildNutr(); }, 60);
   }
   if (id === 't-corps') {
-    var cs = document.getElementById('corps-sc');
-    if (cs && !cs.children.length) setTimeout(function() { buildCorps(); renderWeightChart(); renderPerfCharts(); renderPerfLog(); renderPhotos(); }, 50);
+    setTimeout(function() { buildCorps(); }, 60);
   }
   if (id === 't-prf') {
     // Profil — déjà rempli par initApp, juste s assurer que l email est à jour
@@ -3766,7 +3780,7 @@ function renderDay(day) {
 
 function buildNutr() {
   var sc = document.getElementById('nutr-sc');
-  if (!sc || sc.children.length) return;
+  if (!sc) return;
   var m = U.macros || calcM();
   var nutrTitle = document.getElementById('nutr-title');
   if (nutrTitle) nutrTitle.textContent = m.kcal.toLocaleString('fr') + ' kcal / jour';
@@ -5916,6 +5930,20 @@ async function startStripeCheckout(plan) {
     });
     if (r.error) alert(r.error.message);
   }
+}
+
+function activateTestPro() {
+  U.plan = 'pro';
+  save();
+  updateNavForPlan();
+  // Cacher le banner test
+  var banner = document.getElementById('test-mode-banner');
+  if (banner) banner.style.display = 'none';
+  // Message HIMA
+  switchTab('t-chat');
+  setTimeout(function() {
+    addH(['Plan Pro activé ! Toutes tes fonctionnalités sont débloquées. Explore Séances, Nutrition et Progrès — ton coach complet est prêt.']);
+  }, 300);
 }
 
 function selPlan(plan) {
