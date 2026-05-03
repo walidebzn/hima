@@ -2062,7 +2062,7 @@ function mkAv(isU) {
   if (isU) { av.textContent = (U.prenom || 'U')[0].toUpperCase(); return av; }
   var src = document.querySelector('.chd-av img');
   var img = document.createElement('img');
-  if (src) img.src = src.src;
+  img.src = '/avatar.jpg';
   img.style.cssText = 'width:100%;height:100%;object-fit:contain;object-position:top center';
   av.appendChild(img); return av;
 }
@@ -5369,12 +5369,6 @@ function bMoods(){
   var moods=['Pret a tout dechirer '+pn+' !','Ta transformation continue J'+jr,'Chaque rep compte '+pn,'Objectif '+pt+'kg en vue','Plus fort chaque jour '+pn];
   return moods[Math.floor(Math.random()*moods.length)];
 }
-var _oC2=callAI;
-callAI=function(msg){
-  var oF=window.fetch;
-  window.fetch=function(u,o){if(u&&u.indexOf('/api/chat')!==-1&&o&&o.body){try{var b=JSON.parse(o.body);b.system=bSP();o.body=JSON.stringify(b);}catch(e){}}window.fetch=oF;return oF.apply(this,arguments);};
-  _oC2(msg);
-};
 // HIMA v3 — Design parfait
 function cMac(){var w=parseFloat(U.poids||U.dep||80),h2=parseFloat(U.taille||178),ag=parseFloat(U.age||28),sx=U.sexe||'h',li=U.lieu||'salle';var bmr=sx==='h'?10*w+6.25*h2-5*ag+5:10*w+6.25*h2-5*ag-161;var mu={maison:1.375,salle:1.55,mixte:1.475}[li]||1.55;var td=Math.round(bmr*mu),pr=Math.round(w*2.2),lp=Math.round(w),gl=Math.round((td-pr*4-lp*9)/4);return{tdee:td,prot:pr,gluc:gl,lip:lp};}
 function cPhase(){var s=U.semaineCycle||1;return s<=4?'Fondation':s<=8?'Dev':s<=10?'Intensif':'Pic';}
