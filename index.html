@@ -5331,13 +5331,22 @@ function bPB(){
   row.innerHTML=its.map(function(it,i){return(i?'<div class="sp2"></div>':'')+'<div class="pc '+it.c+'"><div class="pv">'+it.v+'</div><div class="pk">'+it.k+'</div></div>';}).join('');
 }
 function bChips(){
-  var h=new Date().getHours(),qc=document.getElementById('quick-chips');if(!qc)return;
+  var h=new Date().getHours();
+  var qc=document.getElementById('quick-chips');
+  if(!qc) return;
   var mode=U.mode||'bodybuilding';
-  var c=h<13?['Ma seance du jour','Mes macros','Comment recuperer','Ma progression']:h<20?['Mon diner ce soir','Bilan journee','Seance demain','Correction alim']:['Seance demain','Snack dodo','Bilan semaine','Motivation'];
-  if(mode==='bodybuilding')c[0]='Push Pull du jour';
-  if(mode==='glow')c[0]='Cardio du jour';
-  if(mode==='hyrox')c[0]='WOD du jour';
-  qc.innerHTML=c.map(function(t){return '<div class="qchip" onclick="chatQ(''+t+'')">'+t+'</div>';}).join('');
+  var c;
+  if(h<13){ c=['Ma seance du jour','Mes macros','Comment recuperer','Ma progression']; }
+  else if(h<20){ c=['Mon diner ce soir','Bilan journee','Seance demain','Correction alim']; }
+  else{ c=['Seance demain','Snack dodo','Bilan semaine','Motivation']; }
+  if(mode==='bodybuilding') c[0]='Push Pull du jour';
+  if(mode==='glow') c[0]='Cardio du jour';
+  if(mode==='hyrox') c[0]='WOD du jour';
+  var html = '';
+  for(var i=0;i<c.length;i++){
+    html += '<div class="qchip" onclick="chatQ(this.textContent)">' + c[i] + '</div>';
+  }
+  qc.innerHTML = html;
 }
 function bSP(){
   var m=cMac(),jr=cJR(),pn=U.prenom||'Champion';
@@ -5387,13 +5396,22 @@ function bPB(){
   row.innerHTML=its.map(function(it,i){return(i?'<div class="sp2"></div>':'')+'<div class="pc '+it.c+'"><div class="pv">'+it.v+'</div><div class="pk">'+it.k+'</div></div>';}).join('');
 }
 function bChips(){
-  var h=new Date().getHours(),qc=document.getElementById('quick-chips');if(!qc)return;
+  var h=new Date().getHours();
+  var qc=document.getElementById('quick-chips');
+  if(!qc) return;
   var mode=U.mode||'bodybuilding';
-  var c=h<13?['Ma seance du jour','Mes macros','Comment recuperer','Ma progression']:h<20?['Mon diner ce soir','Bilan journee','Seance demain','Correction alim']:['Seance demain','Snack dodo','Bilan semaine','Motivation'];
-  if(mode==='bodybuilding')c[0]='Push Pull du jour';
-  if(mode==='glow')c[0]='Cardio du jour';
-  if(mode==='hyrox')c[0]='WOD du jour';
-  qc.innerHTML=c.map(function(t){return '<div class="qchip" onclick="chatQ(''+t+'')">'+t+'</div>';}).join('');
+  var c;
+  if(h<13){ c=['Ma seance du jour','Mes macros','Comment recuperer','Ma progression']; }
+  else if(h<20){ c=['Mon diner ce soir','Bilan journee','Seance demain','Correction alim']; }
+  else{ c=['Seance demain','Snack dodo','Bilan semaine','Motivation']; }
+  if(mode==='bodybuilding') c[0]='Push Pull du jour';
+  if(mode==='glow') c[0]='Cardio du jour';
+  if(mode==='hyrox') c[0]='WOD du jour';
+  var html = '';
+  for(var i=0;i<c.length;i++){
+    html += '<div class="qchip" onclick="chatQ(this.textContent)">' + c[i] + '</div>';
+  }
+  qc.innerHTML = html;
 }
 function bSP(){
   var m=cMac(),jr=cJR(),pn=U.prenom||'Champion';
