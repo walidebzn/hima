@@ -5243,29 +5243,109 @@ function toggleBilling() {
 
 
 // HIMA v3
-function calcMacros(){var w=parseFloat(U.poids||U.dep||80),h2=parseFloat(U.taille||178),a=parseFloat(U.age||28),s=U.sexe||'h',l=U.lieu||'salle';var bmr=s==='h'?10*w+6.25*h2-5*a+5:10*w+6.25*h2-5*a-161;var mult={maison:1.375,salle:1.55,mixte:1.475}[l]||1.55;var tdee=Math.round(bmr*mult),prot=Math.round(w*2.2),lip=Math.round(w),gluc=Math.round((tdee-prot*4-lip*9)/4);return{tdee:tdee,proteines:prot,glucides:gluc,lipides:lip};}
-function getPhase(){var s=U.semaineCycle||1;return s<=4?'Fondation':s<=8?'Dev':s<=10?'Intensif':s<=11?'Pic':'Decharge';}
-function getJR(){var d=U.dateDebut;if(!d)return 1;return Math.max(1,Math.floor((Date.now()-new Date(d).getTime())/864e5)+1);}
+function calcMacros(){
+  var w=parseFloat(U.poids||U.dep||80);
+  var h2=parseFloat(U.taille||178);
+  var a=parseFloat(U.age||28);
+  var s=U.sexe||'h';
+  var l=U.lieu||'salle';
+  var bmr=s==='h'?10*w+6.25*h2-5*a+5:10*w+6.25*h2-5*a-161;
+  var mult={maison:1.375,salle:1.55,mixte:1.475}[l]||1.55;
+  var tdee=Math.round(bmr*mult);
+  var prot=Math.round(w*2.2);
+  var lip=Math.round(w);
+  var gluc=Math.round((tdee-prot*4-lip*9)/4);
+  return {tdee:tdee,proteines:prot,glucides:gluc,lipides:lip};
+}
+function getPhase(){
+  var s=U.semaineCycle||1;
+  if(s<=4) return 'Fondation';
+  if(s<=8) return 'Dev';
+  if(s<=10) return 'Intensif';
+  return 'Pic';
+}
+function getJR(){
+  var d=U.dateDebut;
+  if(!d) return 1;
+  return Math.max(1,Math.floor((Date.now()-new Date(d).getTime())/864e5)+1);
+}
 function buildProfilBar(){
-  var m=calcMacros(),jr=getJR(),row=document.getElementById('profilRow');if(!row)return;
-  var its=[{k:'Streak',v:(U.streak||streak||0)+'j',c:'pcs2'},{k:'Poids',v:(U.poids||U.dep||80)+'kg',c:''},{k:'Cible',v:(U.poidsTarget||U.obj||'--')+'kg',c:''},{k:'TDEE',v:m.tdee+' kcal',c:''},{k:'Prot',v:m.proteines+'g',c:''},{k:'Gluc',v:m.glucides+'g',c:''},{k:'Lip',v:m.lipides+'g',c:''},{k:'Phase',v:getPhase(),c:'pcp2'},{k:'J-Rel',v:'J'+jr,c:''},{k:'Seances',v:(U.seancesFaites||seances||0)+'/'+(U.seancesTotal||12),c:''}];
-  row.innerHTML=its.map(function(it,i){return(i?'<div class="sep2"></div>':'')+'<div class="pc '+it.c+'"><div class="pv">'+it.v+'</div><div class="pk">'+it.k+'</div></div>';}).join('');
+  var m=calcMacros();
+  var jr=getJR();
+  var row=document.getElementById('profilRow');
+  if(!row) return;
+  var its=[
+    {k:'Streak',v:(U.streak||streak||0)+'j',c:'pcs2'},
+    {k:'Poids',v:(U.poids||U.dep||80)+'kg',c:''},
+    {k:'Cible',v:(U.poidsTarget||U.obj||'--')+'kg',c:''},
+    {k:'TDEE',v:m.tdee+' kcal',c:''},
+    {k:'Prot',v:m.proteines+'g',c:''},
+    {k:'Gluc',v:m.glucides+'g',c:''},
+    {k:'Lip',v:m.lipides+'g',c:''},
+    {k:'Phase',v:getPhase(),c:'pcp2'},
+    {k:'J-Rel',v:'J'+jr,c:''},
+    {k:'Seances',v:(U.seancesFaites||seances||0)+'/'+(U.seancesTotal||12),c:''}
+  ];
+  row.innerHTML=its.map(function(it,i){
+    return (i?'<div class="sep2"></div>':'')+
+      '<div class="pc '+it.c+'">'+
+      '<div class="pv">'+it.v+'</div>'+
+      '<div class="pk">'+it.k+'</div></div>';
+  }).join('');
 }
 function buildSP(){
-  var m=calcMacros(),jr=getJR(),pn=U.prenom||'Champion';
+  var m=calcMacros();
+  var jr=getJR();
+  var pn=U.prenom||'Champion';
+  var mode=U.mode||'bodybuilding';
+  var sexe=U.sexe==='h'?'H':'F';
+  var poids=U.poids||U.dep||80;
+  var cible=U.poidsTarget||U.obj||'--';
+  var lieu=U.lieu||'salle';
+  var tps=U.tps||60;
+  var reg=U.reg||'omni';
   var niv={deb:'Debutant',int:'Inter',av:'Avance'}[U.niv||'int']||'Inter';
   var ton=jr<=7?'direct':jr<=30?'chaleureux':'complice';
-  return['Tu es HIMA coach sportif IA expert. Tu remplaces un coach humain.','PROFIL: '+pn+' '+( U.mode||'bodybuilding')+' '+(U.sexe==='h'?'H':'F')+' '+(U.poids||80)+'kg -> '+(U.poidsTarget||'--')+'kg '+niv,'LIEU: '+(U.lieu||'salle')+' TEMPS: '+(U.tps||60)+'min REGIME: '+(U.reg||'omni'),'BLESSURE: '+((U.blessure&&U.blessure!=='aucune')?U.blessure:'aucune'),'MACROS: TDEE '+m.tdee+' Prot '+m.proteines+'g Gluc '+m.glucides+'g Lip '+m.lipides+'g','PROGRESSION: Streak '+(U.streak||streak||0)+'j Seances '+(U.seancesFaites||seances||0)+' Phase '+getPhase()+' J'+jr,buildMemoryContext(),'REGLES: 1.Sport nutrition recup seulement 2.Tutoyer appeler '+pn+' 3.Max 4 lignes+donnees concretes 4.Prose pas listes 5.Ton '+ton].join('
+  var bl=U.blessure&&U.blessure!=='aucune'?U.blessure:'aucune';
+  var strk=U.streak||streak||0;
+  var seancesF=U.seancesFaites||seances||0;
+  var phase=getPhase();
+  var mem=buildMemoryContext();
+  var lines=[];
+  lines.push('Tu es HIMA coach sportif IA expert. Tu remplaces un coach humain.');
+  lines.push('PROFIL: '+pn+' '+mode+' '+sexe+' '+poids+'kg -> '+cible+'kg '+niv);
+  lines.push('LIEU: '+lieu+' TEMPS: '+tps+'min REGIME: '+reg);
+  lines.push('BLESSURE: '+bl);
+  lines.push('MACROS: TDEE '+m.tdee+' Prot '+m.proteines+'g Gluc '+m.glucides+'g Lip '+m.lipides+'g');
+  lines.push('PROGRESSION: Streak '+strk+'j Seances '+seancesF+' Phase '+phase+' J'+jr);
+  lines.push(mem);
+  lines.push('REGLES: 1.Sport nutrition recup seulement 2.Tutoyer appeler '+pn+' par son prenom 3.Max 4 lignes+donnees concretes 4.Prose pas listes 5.Ton '+ton);
+  return lines.join('
 ');
 }
-var _oC=callAI;
+var _oC2=callAI;
 callAI=function(msg){
   var oF=window.fetch;
-  window.fetch=function(u,o){if(u&&u.indexOf('/api/chat')!==-1&&o&&o.body){try{var b=JSON.parse(o.body);b.system=buildSP();o.body=JSON.stringify(b);}catch(e){}}window.fetch=oF;return oF.apply(this,arguments);};
-  _oC(msg);
+  window.fetch=function(u,o){
+    if(u&&u.indexOf('/api/chat')!==-1&&o&&o.body){
+      try{var b=JSON.parse(o.body);b.system=buildSP();o.body=JSON.stringify(b);}catch(e){}
+    }
+    window.fetch=oF;
+    return oF.apply(this,arguments);
+  };
+  _oC2(msg);
 };
-var _oSW=switchTab;
-switchTab=function(id){_oSW(id);if(id==='t-chat'){setTimeout(function(){var mc=document.getElementById('mem-count');if(mc)mc.textContent=(U.memories||[]).length||0;buildProfilBar();},80);}};
+var _oSW2=switchTab;
+switchTab=function(id){
+  _oSW2(id);
+  if(id==='t-chat'){
+    setTimeout(function(){
+      var mc=document.getElementById('mem-count');
+      if(mc) mc.textContent=(U.memories||[]).length||0;
+      buildProfilBar();
+    },80);
+  }
+};
 
 </script>
 </html>
