@@ -736,6 +736,61 @@ canvas { display: none; }
 #t-chat .msgs{padding-bottom:120px!important;}
 #t-chat .quick-chips{position:fixed!important;bottom:calc(56px + env(safe-area-inset-bottom,0px) + 58px)!important;left:0!important;right:0!important;z-index:98!important;}
 #t-chat .msgs{padding-bottom:180px!important;}
+
+/* ═══ HIMA v3 — DESIGN PARFAIT ═══ */
+
+/* Animations */
+@keyframes avPulse{0%,100%{box-shadow:0 0 0 0 rgba(249,136,5,0.3);}50%{box-shadow:0 0 0 6px rgba(249,136,5,0);}}
+@keyframes dotBlink{0%,100%{opacity:1;}50%{opacity:0.4;}}
+@keyframes popIn{from{opacity:0;transform:scale(0.88) translateY(6px);}to{opacity:1;transform:scale(1) translateY(0);}}
+@keyframes tdB{0%,100%{transform:translateY(0);background:#3A3A60;}50%{transform:translateY(-5px);background:#F98805;}}
+
+/* Header chat */
+#chat-header{flex-shrink:0;background:rgba(8,8,16,0.97);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-bottom:1px solid rgba(240,240,255,0.06);padding:10px 14px 8px;}
+#chatAvatar{width:48px!important;height:48px!important;border-radius:50%!important;object-fit:cover!important;object-position:center top!important;border:2px solid transparent!important;background:linear-gradient(#080810,#080810) padding-box,linear-gradient(135deg,#F98805,#F35695) border-box!important;animation:avPulse 3s ease-in-out infinite!important;}
+
+/* Profil bar */
+#profil-bar{display:flex;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;background:#0D0D1A;border-bottom:1px solid rgba(240,240,255,0.06);padding:5px 12px;flex-shrink:0;}
+#profil-bar::-webkit-scrollbar{display:none;}
+.pc{display:flex;flex-direction:column;align-items:center;background:#0E0E1C;border:1px solid rgba(240,240,255,0.1);border-radius:9px;padding:4px 8px;min-width:48px;cursor:pointer;}
+.pv{font-family:"Space Grotesk",sans-serif;font-weight:700;font-size:12px;color:#F0F0FF;line-height:1;}
+.pk{font-size:9px;color:#3A3A60;margin-top:2px;text-transform:uppercase;}
+.sp2{width:1px;height:26px;background:rgba(240,240,255,0.06);flex-shrink:0;}
+.pcs2{background:rgba(249,136,5,0.08)!important;border-color:rgba(249,136,5,0.2)!important;}
+.pcs2 .pv{color:#F98805!important;}
+.pcp2{background:rgba(243,86,149,0.08)!important;border-color:rgba(243,86,149,0.2)!important;}
+.pcp2 .pv{color:#F35695!important;font-size:10px!important;}
+
+/* Messages — redesign complet */
+.mg{display:flex;gap:8px;margin-bottom:10px;align-items:flex-end;}
+.mg.u{flex-direction:row-reverse;}
+.mav{width:30px!important;height:30px!important;border-radius:50%!important;overflow:hidden!important;flex-shrink:0!important;border:1px solid rgba(249,136,5,0.3)!important;}
+.mav img{width:100%!important;height:100%!important;object-fit:cover!important;object-position:center top!important;}
+.mav.u{background:linear-gradient(135deg,#F98805,#F35695)!important;border:none!important;display:flex!important;align-items:center!important;justify-content:center!important;color:#fff!important;font-weight:700!important;font-size:13px!important;}
+.mbs{display:flex;flex-direction:column;gap:3px;max-width:78%;}
+.b{padding:9px 13px!important;font-size:14px!important;line-height:1.55!important;border-radius:18px!important;animation:popIn 0.22s cubic-bezier(0.34,1.56,0.64,1) forwards!important;background:#0E0E1C!important;border:1px solid rgba(240,240,255,0.1)!important;border-bottom-left-radius:4px!important;color:#F0F0FF!important;}
+.b.u{background:linear-gradient(135deg,#F98805,#F35695)!important;border:none!important;border-radius:18px!important;border-bottom-right-radius:4px!important;color:#fff!important;font-weight:500!important;}
+.b strong,.b b{color:#F98805!important;}
+.b.u strong,.b.u b{color:#fff!important;}
+
+/* Typing */
+.mg.typing .b{background:#0E0E1C!important;border:1px solid rgba(240,240,255,0.1)!important;}
+
+/* Chips */
+.quick-chips{display:flex!important;overflow-x:auto!important;-webkit-overflow-scrolling:touch!important;scrollbar-width:none!important;padding:7px 12px!important;gap:7px!important;border-top:1px solid rgba(240,240,255,0.06)!important;background:rgba(8,8,16,0.9)!important;flex-shrink:0!important;}
+.quick-chips::-webkit-scrollbar{display:none!important;}
+.qchip{flex-shrink:0!important;background:rgba(249,136,5,0.07)!important;border:1px solid rgba(249,136,5,0.22)!important;border-radius:20px!important;padding:6px 13px!important;font-size:12px!important;font-weight:500!important;color:#F0F0FF!important;white-space:nowrap!important;cursor:pointer!important;font-family:"Space Grotesk",sans-serif!important;}
+.qchip:active{background:rgba(249,136,5,0.2)!important;transform:scale(0.97)!important;}
+
+/* Input bar */
+#t-chat .cinpb{position:fixed!important;bottom:calc(56px + env(safe-area-inset-bottom,0px))!important;left:0!important;right:0!important;z-index:99!important;background:#080810!important;border-top:1px solid rgba(240,240,255,0.1)!important;}
+#t-chat .cinp{background:#0E0E1C!important;color:#F0F0FF!important;border:1px solid rgba(240,240,255,0.12)!important;border-radius:22px!important;}
+#t-chat .cinp::placeholder{color:#3A3A60!important;}
+#t-chat .cinp:focus{border-color:rgba(249,136,5,0.4)!important;}
+#t-chat .voice-btn,#t-chat .xi-btn{background:transparent!important;border:none!important;color:#9090B0!important;}
+#t-chat .csend{background:linear-gradient(135deg,#F98805,#F35695)!important;border:none!important;border-radius:50%!important;}
+#t-chat .msgs{padding-bottom:190px!important;}
+#t-chat .quick-chips{position:fixed!important;bottom:calc(56px + env(safe-area-inset-bottom,0px) + 60px)!important;left:0!important;right:0!important;z-index:98!important;}
 </style>
 </head>
 <body>
@@ -5317,6 +5372,59 @@ switchTab=function(id){
   if(id==='t-chat'){setTimeout(function(){
     var mc=document.getElementById('mem-count');if(mc)mc.textContent=(U.memories||[]).length||0;
     var mood=document.getElementById('chatMood');if(mood)mood.textContent=bMoods();
+    bPB();bChips();
+  },80);}
+};
+
+
+// HIMA v3 — Design parfait
+function cMac(){var w=parseFloat(U.poids||U.dep||80),h2=parseFloat(U.taille||178),ag=parseFloat(U.age||28),sx=U.sexe||'h',li=U.lieu||'salle';var bmr=sx==='h'?10*w+6.25*h2-5*ag+5:10*w+6.25*h2-5*ag-161;var mu={maison:1.375,salle:1.55,mixte:1.475}[li]||1.55;var td=Math.round(bmr*mu),pr=Math.round(w*2.2),lp=Math.round(w),gl=Math.round((td-pr*4-lp*9)/4);return{tdee:td,prot:pr,gluc:gl,lip:lp};}
+function cPhase(){var s=U.semaineCycle||1;return s<=4?'Fondation':s<=8?'Dev':s<=10?'Intensif':'Pic';}
+function cJR(){var d=U.dateDebut;if(!d)return 1;return Math.max(1,Math.floor((Date.now()-new Date(d).getTime())/864e5)+1);}
+function bPB(){
+  var m=cMac(),jr=cJR(),row=document.getElementById('profilRow');if(!row)return;
+  var its=[{k:'Streak',v:(U.streak||streak||0)+'j',c:'pcs2'},{k:'Poids',v:(U.poids||U.dep||80)+'kg',c:''},{k:'Cible',v:(U.poidsTarget||U.obj||'--')+'kg',c:''},{k:'TDEE',v:m.tdee+' kcal',c:''},{k:'Prot',v:m.prot+'g',c:''},{k:'Gluc',v:m.gluc+'g',c:''},{k:'Lip',v:m.lip+'g',c:''},{k:'Phase',v:cPhase(),c:'pcp2'},{k:'J-Rel',v:'J'+jr,c:''},{k:'Seances',v:(U.seancesFaites||seances||0)+'/'+(U.seancesTotal||12),c:''}];
+  row.innerHTML=its.map(function(it,i){return(i?'<div class="sp2"></div>':'')+'<div class="pc '+it.c+'"><div class="pv">'+it.v+'</div><div class="pk">'+it.k+'</div></div>';}).join('');
+}
+function bChips(){
+  var h=new Date().getHours(),qc=document.getElementById('quick-chips');if(!qc)return;
+  var mode=U.mode||'bodybuilding';
+  var c=h<13?['Ma seance du jour','Mes macros','Comment recuperer','Ma progression']:h<20?['Mon diner ce soir','Bilan journee','Seance demain','Correction alim']:['Seance demain','Snack dodo','Bilan semaine','Motivation'];
+  if(mode==='bodybuilding')c[0]='Push Pull du jour';
+  if(mode==='glow')c[0]='Cardio du jour';
+  if(mode==='hyrox')c[0]='WOD du jour';
+  qc.innerHTML=c.map(function(t){return '<div class="qchip" onclick="chatQ(''+t+'')">'+t+'</div>';}).join('');
+}
+function bSP(){
+  var m=cMac(),jr=cJR(),pn=U.prenom||'Champion';
+  var niv={deb:'Debutant',int:'Inter',av:'Avance'}[U.niv||'int']||'Inter';
+  var ton=jr<=7?'direct':jr<=30?'chaleureux':'complice';
+  var sep=String.fromCharCode(10);
+  var t='Tu es HIMA coach sportif IA expert. Tu remplaces un coach humain.'+sep;
+  t+='PROFIL: '+pn+' '+(U.mode||'bodybuilding')+' '+(U.sexe==='h'?'H':'F')+' '+(U.poids||U.dep||80)+'kg -> '+(U.poidsTarget||U.obj||'--')+'kg '+niv+sep;
+  t+='LIEU: '+(U.lieu||'salle')+' TEMPS: '+(U.tps||60)+'min REGIME: '+(U.reg||'omni')+sep;
+  t+='BLESSURE: '+(U.blessure&&U.blessure!=='aucune'?U.blessure:'aucune')+sep;
+  t+='MACROS: TDEE '+m.tdee+' Prot '+m.prot+'g Gluc '+m.gluc+'g Lip '+m.lip+'g'+sep;
+  t+='PROGRESSION: Streak '+(U.streak||streak||0)+'j Seances '+(U.seancesFaites||seances||0)+' Phase '+cPhase()+' J'+jr+sep;
+  t+=buildMemoryContext()+sep;
+  t+='REGLES: 1.Sport nutrition recup seulement 2.Tutoyer appeler '+pn+' par son prenom 3.Max 4 lignes+donnees concretes 4.Prose pas listes 5.Ton '+ton;
+  return t;
+}
+var _oC2=callAI;
+callAI=function(msg){
+  var oF=window.fetch;
+  window.fetch=function(u,o){if(u&&u.indexOf('/api/chat')!==-1&&o&&o.body){try{var b=JSON.parse(o.body);b.system=bSP();o.body=JSON.stringify(b);}catch(e){}}window.fetch=oF;return oF.apply(this,arguments);};
+  _oC2(msg);
+};
+var _oSW2=switchTab;
+switchTab=function(id){
+  _oSW2(id);
+  if(id==='t-chat'){setTimeout(function(){
+    var mc=document.getElementById('mem-count');if(mc)mc.textContent=(U.memories||[]).length||0;
+    var mood=document.getElementById('chatMood');
+    var jr=cJR(),pn=U.prenom||'Demo';
+    var moods=['Pret a tout dechirer '+pn,'Ta transformation continue J'+jr,'Chaque rep compte '+pn,'Plus fort chaque jour'];
+    if(mood)mood.textContent=moods[Math.floor(Math.random()*moods.length)];
     bPB();bChips();
   },80);}
 };
