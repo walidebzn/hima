@@ -814,6 +814,12 @@ canvas { display: none; }
 #t-chat .quick-chips { flex-shrink:0; }
 #t-chat .cinpb { flex-shrink:0; }
 #t-chat .voice-status { flex-shrink:0; }
+
+/* FIX LAYOUT T-CHAT */
+#t-chat.on { display:flex !important; flex-direction:column !important; }
+#msgs-wrap { flex:1 !important; min-height:0 !important; overflow:hidden; }
+#msgs-wrap .msgs { overflow-y:auto; -webkit-overflow-scrolling:touch; }
+#chat-cinpb { flex-shrink:0 !important; display:flex !important; }
 </style>
 </head>
 <body>
@@ -4770,13 +4776,7 @@ async function generateMonthlyPDF() {
       + 'h1{font-family:Arial,sans-serif;font-weight:900;color:#F98805;border-bottom:3px solid #F98805;padding-bottom:8px}'
       + 'h2{font-family:Arial,sans-serif;font-weight:800;color:#333;margin-top:24px}'
       + 'p{margin:8px 0}.badge{display:inline-block;background:#F98805;color:#fff;padding:4px 14px;border-radius:99px;font-size:12px;font-weight:700;font-family:Arial,sans-serif}'
-      + '@media print{button{display:none}}
-/* FIX LAYOUT T-CHAT */
-#t-chat.on { display:flex !important; flex-direction:column !important; }
-#msgs-wrap { flex:1 !important; min-height:0 !important; overflow:hidden; }
-#msgs-wrap .msgs { overflow-y:auto; -webkit-overflow-scrolling:touch; }
-#chat-cinpb { flex-shrink:0 !important; display:flex !important; }
-</style></head><body>'
+      + '@media print{button{display:none}}</style></head><body>'
       + '<div class="badge">👑 ELITE</div>'
       + '<h1>Rapport HIMA<br>' + prn + ' · ' + mois + ' ' + now.getFullYear() + '</h1>'
       + '<p style="color:#666;font-size:13px">Objectif: ' + mode + ' · Poids: ' + (U.poids||'?') + 'kg · Séances: ' + (U.monthSessions||0) + '</p>'
