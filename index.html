@@ -1089,7 +1089,7 @@ canvas { display: none; }
     <!-- HEADER COACH -->
     <div class="chat-hd">
       <div class="chd-av-wrap" onclick="toggleMemPanel()">
-        <img class="chd-av-img" id="chatAvatar" src="" alt="HIMA" style="width:46px;height:46px;border-radius:50%;object-fit:cover;object-position:center top;">
+        <img class="chd-av-img" id="chatAvatar" src="" data-av="1" alt="HIMA" onerror="this.style.display='none'" style="width:46px;height:46px;border-radius:50%;object-fit:cover;object-position:center top;">
         <div class="chd-dot"></div>
       </div>
       <div class="chd-info">
@@ -1118,7 +1118,7 @@ canvas { display: none; }
     <div class="quick-chips" id="quick-chips"></div>
 
     <!-- BARRE INPUT -->
-    <div class="cinpb">
+    <div class="cinpb" style="background:#080810 !important;border-top:1px solid rgba(240,240,255,0.1);">
       <button class="input-icon-btn" onclick="toggleVoice()" title="Coach vocal">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
           <rect x="9" y="2" width="6" height="11" rx="3"/>
@@ -1130,7 +1130,7 @@ canvas { display: none; }
           <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
         </svg>
       </button>
-      <textarea class="cinp" id="ci" placeholder="Parle à ton coach..." rows="1" onkeydown="onKey(event)" oninput="grow(this)"></textarea>
+      <textarea class="cinp" id="ci" style="background:#0E0E1C !important;color:#F0F0FF !important;border-color:rgba(240,240,255,0.15) !important;" placeholder="Parle à ton coach..." rows="1" onkeydown="onKey(event)" oninput="grow(this)"></textarea>
       <button class="csend" onclick="chatSend()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
           <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22,2 15,22 11,13 2,9"/>
