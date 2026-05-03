@@ -5375,17 +5375,6 @@ callAI=function(msg){
   window.fetch=function(u,o){if(u&&u.indexOf('/api/chat')!==-1&&o&&o.body){try{var b=JSON.parse(o.body);b.system=bSP();o.body=JSON.stringify(b);}catch(e){}}window.fetch=oF;return oF.apply(this,arguments);};
   _oC2(msg);
 };
-var _oSW2=switchTab;
-switchTab=function(id){
-  _oSW2(id);
-  if(id==='t-chat'){setTimeout(function(){
-    var mc=document.getElementById('mem-count');if(mc)mc.textContent=(U.memories||[]).length||0;
-    var mood=document.getElementById('chatMood');if(mood)mood.textContent=bMoods();
-    bPB();bChips();
-  },80);}
-};
-
-
 // HIMA v3 — Design parfait
 function cMac(){var w=parseFloat(U.poids||U.dep||80),h2=parseFloat(U.taille||178),ag=parseFloat(U.age||28),sx=U.sexe||'h',li=U.lieu||'salle';var bmr=sx==='h'?10*w+6.25*h2-5*ag+5:10*w+6.25*h2-5*ag-161;var mu={maison:1.375,salle:1.55,mixte:1.475}[li]||1.55;var td=Math.round(bmr*mu),pr=Math.round(w*2.2),lp=Math.round(w),gl=Math.round((td-pr*4-lp*9)/4);return{tdee:td,prot:pr,gluc:gl,lip:lp};}
 function cPhase(){var s=U.semaineCycle||1;return s<=4?'Fondation':s<=8?'Dev':s<=10?'Intensif':'Pic';}
@@ -5434,17 +5423,25 @@ callAI=function(msg){
   window.fetch=function(u,o){if(u&&u.indexOf('/api/chat')!==-1&&o&&o.body){try{var b=JSON.parse(o.body);b.system=bSP();o.body=JSON.stringify(b);}catch(e){}}window.fetch=oF;return oF.apply(this,arguments);};
   _oC2(msg);
 };
-var _oSW2=switchTab;
-switchTab=function(id){
-  _oSW2(id);
-  if(id==='t-chat'){setTimeout(function(){
-    var mc=document.getElementById('mem-count');if(mc)mc.textContent=(U.memories||[]).length||0;
-    var mood=document.getElementById('chatMood');
-    var jr=cJR(),pn=U.prenom||'Demo';
-    var moods=['Pret a tout dechirer '+pn,'Ta transformation continue J'+jr,'Chaque rep compte '+pn,'Plus fort chaque jour'];
-    if(mood)mood.textContent=moods[Math.floor(Math.random()*moods.length)];
-    bPB();bChips();
-  },80);}
+// HIMA v3 — switchTab unique
+var _HIMA_origSW = switchTab;
+switchTab = function(id) {
+  _HIMA_origSW(id);
+  if(id === 't-chat') {
+    setTimeout(function() {
+      var mc = document.getElementById('mem-count');
+      if(mc) mc.textContent = (U.memories||[]).length || 0;
+      var mood = document.getElementById('chatMood');
+      if(mood) {
+        var jr = cJR();
+        var pn = U.prenom || 'Demo';
+        var moods = ['Pret a tout dechirer !', 'Ta transformation continue J'+jr, 'Chaque rep compte', 'Plus fort chaque jour'];
+        mood.textContent = moods[Math.floor(Math.random()*moods.length)];
+      }
+      if(typeof bPB === 'function') bPB();
+      if(typeof bChips === 'function') bChips();
+    }, 80);
+  }
 };
 
 </script>
