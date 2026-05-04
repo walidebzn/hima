@@ -890,43 +890,35 @@ canvas { display: none; }
 .hm-insight-ico{font-size:24px;flex-shrink:0;}
 .hm-insight-text{font-size:14px;color:#F0F0FF;font-style:italic;line-height:1.5;}
 
-/* ═══ HIMA Chat v3 ═══ */
+/* HIMA Chat+Onb v3 */
 @keyframes dotBlink{0%,100%{opacity:1;}50%{opacity:0.4;}}
 @keyframes popIn{from{opacity:0;transform:scale(0.88) translateY(6px);}to{opacity:1;transform:scale(1) translateY(0);}}
 @keyframes tdBounce{0%,100%{transform:translateY(0);background:#3A3A60;}50%{transform:translateY(-6px);background:#F98805;}}
-/* Profil bar */
+.atab{display:none!important;}.atab.on{display:flex!important;flex-direction:column;height:100%;overflow:hidden;}
 #profil-bar::-webkit-scrollbar{display:none}
 .pc{display:flex;flex-direction:column;align-items:center;background:#0E0E1C;border:1px solid rgba(240,240,255,0.1);border-radius:9px;padding:4px 8px;min-width:48px;cursor:pointer;}
 .pv{font-family:"Space Grotesk",sans-serif;font-weight:700;font-size:12px;color:#F0F0FF;line-height:1;}
 .pk{font-size:9px;color:#3A3A60;margin-top:2px;text-transform:uppercase;}
 .sp2{width:1px;height:26px;background:rgba(240,240,255,0.06);flex-shrink:0;}
 .pcs2 .pv{color:#F98805!important;}.pcp2 .pv{color:#F35695!important;font-size:10px!important;}
-/* Bulles */
-.mg{display:flex;gap:8px;margin-bottom:10px;align-items:flex-end;}
-.mg.u{flex-direction:row-reverse;}
+.mg{display:flex;gap:8px;margin-bottom:10px;align-items:flex-end;}.mg.u{flex-direction:row-reverse;}
 .mav{width:30px!important;height:30px!important;border-radius:50%!important;overflow:hidden!important;flex-shrink:0!important;border:1px solid rgba(249,136,5,0.3)!important;}
 .mav img{width:100%!important;height:100%!important;object-fit:cover!important;object-position:center top!important;}
 .mav.u{background:linear-gradient(135deg,#F98805,#F35695)!important;border:none!important;display:flex!important;align-items:center!important;justify-content:center!important;color:#fff!important;font-weight:700!important;font-size:13px!important;}
 .mbs{display:flex;flex-direction:column;gap:3px;max-width:78%;}
 .b{padding:9px 13px!important;font-size:14px!important;line-height:1.55!important;border-radius:18px!important;animation:popIn 0.22s cubic-bezier(0.34,1.56,0.64,1) forwards!important;background:#0E0E1C!important;border:1px solid rgba(240,240,255,0.1)!important;border-bottom-left-radius:4px!important;color:#F0F0FF!important;}
 .b.u{background:linear-gradient(135deg,#F98805,#F35695)!important;border:none!important;border-radius:18px!important;border-bottom-right-radius:4px!important;color:#fff!important;}
-/* Typing dots */
 .td{display:inline-block!important;width:7px!important;height:7px!important;border-radius:50%!important;background:#9090B0!important;animation:tdBounce 1.2s ease-in-out infinite!important;}
 .td:nth-child(2){animation-delay:0.2s!important;}.td:nth-child(3){animation-delay:0.4s!important;}
-/* Chips */
 .quick-chips{display:flex!important;overflow-x:auto!important;scrollbar-width:none!important;padding:7px 12px!important;gap:7px!important;background:rgba(8,8,16,0.9)!important;flex-shrink:0!important;}
 .quick-chips::-webkit-scrollbar{display:none!important;}
 .qchip{flex-shrink:0!important;background:rgba(249,136,5,0.07)!important;border:1px solid rgba(249,136,5,0.22)!important;border-radius:20px!important;padding:6px 13px!important;font-size:12px!important;font-weight:500!important;color:#F0F0FF!important;white-space:nowrap!important;cursor:pointer!important;}
-/* Input */
 #t-chat .cinpb{position:fixed!important;bottom:calc(56px + env(safe-area-inset-bottom,0px))!important;left:0!important;right:0!important;z-index:99!important;background:#080810!important;border-top:1px solid rgba(240,240,255,0.1)!important;}
 #t-chat .cinp{background:#0E0E1C!important;color:#F0F0FF!important;border:1px solid rgba(240,240,255,0.12)!important;border-radius:22px!important;}
 #t-chat .cinp::placeholder{color:#3A3A60!important;}
 #t-chat .csend{background:linear-gradient(135deg,#F98805,#F35695)!important;border:none!important;border-radius:50%!important;}
 #t-chat .msgs{padding-bottom:190px!important;}
 #t-chat .quick-chips{position:fixed!important;bottom:calc(56px + env(safe-area-inset-bottom,0px) + 60px)!important;left:0!important;right:0!important;z-index:98!important;}
-/* Fix tabs */
-.atab{display:none!important;}
-.atab.on{display:flex!important;flex-direction:column;height:100%;overflow:hidden;}
 </style>
 </head>
 <body>
@@ -1345,15 +1337,10 @@ canvas { display: none; }
       <div style="height:90px"></div>
     </div>
   </div>
-  </div>
-
 
   <div class="atab" id="t-chat">
     <div class="chat-hd">
-      <div class="chd-av" style="position:relative;cursor:pointer;" onclick="toggleMemPanel()">
-          <img src="/avatar.jpg" id="chatAvatar" alt="HIMA" style="width:48px;height:48px;border-radius:50%;object-fit:cover;object-position:center top;border:2px solid transparent;background:linear-gradient(#080810,#080810) padding-box,linear-gradient(135deg,#F98805,#F35695) border-box;">
-          <div style="position:absolute;bottom:2px;right:2px;width:10px;height:10px;border-radius:50%;background:#22c55e;border:2px solid #080810;animation:dotBlink 2s ease-in-out infinite;"></div>
-        </div>
+      <div class="chd-av" style="position:relative;cursor:pointer;" onclick="toggleMemPanel()"><img src="/avatar.jpg" id="chatAvatar" alt="HIMA" style="width:48px;height:48px;border-radius:50%;object-fit:cover;object-position:center top;border:2px solid transparent;background:linear-gradient(#080810,#080810) padding-box,linear-gradient(135deg,#F98805,#F35695) border-box;"><div style="position:absolute;bottom:2px;right:2px;width:10px;height:10px;border-radius:50%;background:#22c55e;border:2px solid #080810;"></div></div>
       <div class="chd-info">
         <div class="chd-name">HIMA</div>
         <div class="chd-sub">Coach IA · Sport & Nutrition</div>
@@ -1900,41 +1887,149 @@ function loadProfile() {
 // ── ONBOARDING ──
 var OSI = 0;
 var OS = [
-  {pct:8,q:'Quel est ton prénom ?',qs:'Pour personnaliser chaque message.',type:'text',key:'prenom',ph:'Ton prénom...'},
-  {pct:16,q:'Qu\'est-ce que tu veux vraiment ?',qs:'HIMA adapte tout selon ton choix — programme, nutrition, méthode.',type:'bigopt',key:'mode',opts:[
-    {v:'glow',i:'🔥',t:'Je veux maigrir',s:'Perte de gras, définition, silhouette affinée'},
-    {v:'bodybuilding',i:'💪',t:'Je veux du muscle',s:'Prise de masse, force, hypertrophie'},
-    {v:'hyrox',i:'🏃',t:'Je veux performer',s:'Endurance, cardio, dépasser mes limites'},
-    {v:'mindset',i:'⚡',t:'Me remettre en forme',s:'Reprendre de zéro, retrouver énergie et forme'}
+  {pct:3,q:'Comment tu t\'appelles ?',type:'text',key:'prenom',ph:'Ton prénom...'},
+  {pct:6,q:'Ton objectif principal ?',type:'bigopt',key:'mode',opts:[
+    {v:'poids',i:'🔥',t:'Perdre du poids',s:'Brûler la graisse, affiner ma silhouette'},
+    {v:'muscle',i:'💪',t:'Prendre du muscle',s:'Corps sculpté, force, hypertrophie'},
+    {v:'toning',i:'✨',t:'Me tonifier',s:'Corps ferme et défini sans prise de masse'},
+    {v:'forme',i:'⚡',t:'Me remettre en forme',s:'Reprendre après arrêt, grossesse ou blessure'},
+    {v:'perf',i:'🏃',t:'Améliorer mes performances',s:'Courir plus vite, plus longtemps, plus fort'},
+    {v:'energie',i:'🌟',t:'Me sentir mieux au quotidien',s:'Énergie, vitalité, moins de stress'},
+    {v:'event',i:'🏆',t:'Préparer un événement',s:'Trail, marathon, match, compétition à venir'}
   ]},
-  {pct:24,q:'Tu es ?',qs:'Pour calibrer tes macros avec la formule Mifflin-St Jeor.',type:'chips2',key:'sexe',opts:[
+  {pct:9,q:'Tu es ?',type:'chips2',key:'sexe',opts:[
     {v:'h',i:'👨',t:'Un homme'},{v:'f',i:'👩',t:'Une femme'}
   ]},
-  {pct:32,q:'Ton poids actuel ?',qs:'Indispensable pour tes macros exactes.',type:'slider',key:'poids',mn:40,mx:150,v:75,u:'kg'},
-  {pct:40,q:'Ta taille et ton âge ?',qs:'Pour le calcul Mifflin-St Jeor — la formule utilisée par les nutritionnistes.',type:'slider',key:'taille',mn:140,mx:220,v:175,u:'cm'},
-  {pct:48,q:'Ton âge ?',qs:null,type:'slider',key:'age',mn:15,mx:70,v:28,u:'ans'},
-  {pct:56,q:'Ton poids cible ?',qs:'Sois réaliste — HIMA calcule un programme adapté à ton objectif.',type:'slider',key:'poidsTarget',mn:40,mx:150,v:70,u:'kg'},
-  {pct:64,q:'Ton niveau sportif ?',qs:null,type:'chips3',key:'niv',opts:[
-    {v:'deb',i:'🌱',t:'Débutant'},{v:'int',i:'🔥',t:'Intermédiaire'},{v:'av',i:'⚡',t:'Avancé'}
+  {pct:12,q:'Ton poids actuel ?',type:'slider',key:'poids',mn:35,mx:200,v:75,u:'kg'},
+  {pct:15,q:'Ta taille ?',type:'slider',key:'taille',mn:140,mx:220,v:175,u:'cm'},
+  {pct:18,q:'Ton âge ?',type:'slider',key:'age',mn:14,mx:80,v:28,u:'ans'},
+  {pct:21,q:'Ton poids cible ?',type:'slider',key:'poidsTarget',mn:35,mx:200,v:70,u:'kg'},
+  {pct:24,q:'Ta morphologie naturelle ?',type:'bigopt',key:'morpho',opts:[
+    {v:'ecto',i:'🦴',t:'Mince naturellement',s:'Difficile de prendre du poids ou du muscle'},
+    {v:'meso',i:'💪',t:'Athlétique naturellement',s:'Corps qui répond vite à l\'entraînement'},
+    {v:'endo',i:'🔄',t:'Tendance à stocker',s:'Prends du poids facilement'},
+    {v:'nsp',i:'❓',t:'Je ne sais pas',s:'HIMA analysera selon tes données'}
   ]},
-  {pct:72,q:'As-tu des blessures ou contraintes ?',qs:'HIMA adapte chaque exercice — ta sécurité est la priorité.',type:'bigopt',key:'blessure',opts:[
-    {v:'aucune',i:'✅',t:'Aucune',s:'Je peux tout faire'},
-    {v:'dos',i:'🔙',t:'Dos / lombaires',s:'HIMA évite les exercices risqués'},
-    {v:'genou',i:'🦵',t:'Genoux',s:'Adaptations spécifiques'},
-    {v:'epaule',i:'💪',t:'Épaules',s:'Mouvements protégés'}
+  {pct:27,q:'As-tu des blessures ou douleurs ?',type:'multisel',key:'blessures',opts:[
+    {v:'aucune',i:'✅',t:'Aucune'},{v:'cervicales',i:'🔝',t:'Nuque Cervicales'},
+    {v:'epaule_g',i:'💪',t:'Épaule gauche'},{v:'epaule_d',i:'💪',t:'Épaule droite'},
+    {v:'coude',i:'💪',t:'Coude Poignet'},{v:'dos_haut',i:'⬆️',t:'Dos haut'},
+    {v:'lombaires',i:'🔙',t:'Lombaires Bas du dos'},{v:'hanche',i:'🦵',t:'Hanche'},
+    {v:'genou_g',i:'🦵',t:'Genou gauche'},{v:'genou_d',i:'🦵',t:'Genou droit'},
+    {v:'cheville',i:'🦶',t:'Cheville Pied'},{v:'autre',i:'⚠️',t:'Autre zone'}
   ]},
-  {pct:80,q:'Temps disponible par séance ?',qs:'Sois réaliste — HIMA adapte l\'intensité.',type:'chips2',key:'tps',opts:[
-    {v:'20',i:'⏱️',t:'20 min'},{v:'30',i:'⏱️',t:'30 min'},{v:'45',i:'⏱️',t:'45 min'},{v:'60',i:'⏱️',t:'60 min+'}
+  {pct:30,q:'Niveau de la douleur ?',type:'slider',key:'douleurLevel',mn:0,mx:10,v:3,u:'/10',skipIf:'aucune'},
+  {pct:33,q:'Contraintes médicales ?',type:'multisel',key:'sante',opts:[
+    {v:'aucune',i:'✅',t:'Aucune'},{v:'diabete1',i:'💉',t:'Diabète type 1'},
+    {v:'diabete2',i:'🩸',t:'Diabète type 2'},{v:'hypertension',i:'❤️',t:'Hypertension'},
+    {v:'asthme',i:'💨',t:'Asthme'},{v:'thyroide',i:'🔬',t:'Thyroïde'},
+    {v:'arthrose',i:'🦴',t:'Arthrose'},{v:'autre',i:'⚠️',t:'Autre condition'}
   ]},
-  {pct:88,q:'Où tu t\'entraînes ?',qs:null,type:'bigopt',key:'lieu',opts:[
-    {v:'maison',i:'🏠',t:'À la maison',s:'Poids du corps, tapis'},
-    {v:'salle',i:'🏋️',t:'En salle',s:'Machines, haltères'},
-    {v:'mixte',i:'🔀',t:'Les deux',s:'Selon les jours'}
+  {pct:36,q:'Situation actuelle ?',type:'bigopt',key:'situation',opts:[
+    {v:'normal',i:'✅',t:'Aucune particularité',s:'Je peux m\'entraîner normalement'},
+    {v:'enceinte1',i:'🤰',t:'Enceinte 1er trimestre',s:'HIMA adapte les exercices et l\'intensité'},
+    {v:'enceinte2',i:'🤰',t:'Enceinte 2e trimestre',s:'Programme doux et sécurisé'},
+    {v:'enceinte3',i:'🤰',t:'Enceinte 3e trimestre',s:'Exercices adaptés et sûrs'},
+    {v:'postpartum',i:'👶',t:'Post-partum moins de 6 mois',s:'Reprise progressive et sécurisée'},
+    {v:'menopause',i:'🌸',t:'Ménopause',s:'Programme adapté aux changements hormonaux'},
+    {v:'chirurgie',i:'🏥',t:'Chirurgie récente',s:'HIMA sécurise chaque exercice'}
   ]},
-  {pct:94,q:'Régime alimentaire ?',qs:null,type:'chips3',key:'reg',opts:[
-    {v:'omni',i:'🍗',t:'Omnivore'},{v:'vege',i:'🥗',t:'Végétarien'},{v:'vegan',i:'🌱',t:'Vegan'}
+  {pct:39,q:'Ton niveau sportif actuel ?',type:'bigopt',key:'niv',opts:[
+    {v:'deb',i:'🌱',t:'Débutant complet',s:'Je débute ou je n\'ai pas pratiqué depuis longtemps'},
+    {v:'inter_low',i:'🔥',t:'Quelques séances par mois',s:'Je m\'entraîne de temps en temps'},
+    {v:'inter',i:'💪',t:'1 à 3 fois par semaine',s:'J\'ai une pratique régulière'},
+    {v:'av',i:'⚡',t:'4 fois et plus par semaine',s:'Pratique intensive et constante'},
+    {v:'athlete',i:'🏆',t:'Athlète ou compétiteur',s:'Niveau de compétition ou sport de haut niveau'}
   ]},
-  {pct:100,q:'Ton plan est prêt',qs:'Analyse complète. HIMA a généré ton programme personnalisé.',type:'result',key:null}
+  {pct:42,q:'Sports pratiqués actuellement ?',type:'multisel',key:'sports',opts:[
+    {v:'muscu',i:'🏋️',t:'Musculation'},{v:'course',i:'🏃',t:'Course à pied'},
+    {v:'velo',i:'🚴',t:'Vélo'},{v:'natation',i:'🏊',t:'Natation'},
+    {v:'yoga',i:'🧘',t:'Yoga Pilates'},{v:'arts_martiaux',i:'🥊',t:'Arts martiaux Boxe'},
+    {v:'football',i:'⚽',t:'Football Sports collectifs'},{v:'tennis',i:'🎾',t:'Tennis Padel'},
+    {v:'crossfit',i:'🔥',t:'CrossFit Fonctionnel'},{v:'aucun',i:'🛋️',t:'Aucun'},
+    {v:'autre',i:'➕',t:'Autre sport'}
+  ]},
+  {pct:45,q:'Jours disponibles par semaine ?',type:'slider',key:'joursParSemaine',mn:1,mx:7,v:3,u:'j/sem'},
+  {pct:48,q:'Temps disponible par séance ?',type:'chips2',key:'tps',opts:[
+    {v:'20',i:'⚡',t:'20 min'},{v:'30',i:'🕐',t:'30 min'},
+    {v:'45',i:'🕐',t:'45 min'},{v:'60',i:'🕐',t:'60 min'},
+    {v:'90',i:'🕐',t:'90 min+'}
+  ]},
+  {pct:51,q:'Où tu t\'entraînes ?',type:'bigopt',key:'lieu',opts:[
+    {v:'salle',i:'🏋️',t:'Salle complète',s:'Machines, haltères, barres, câbles'},
+    {v:'salle_cardio',i:'🚴',t:'Salle avec cardio uniquement',s:'Vélos, tapis, elliptiques'},
+    {v:'maison_mat',i:'🏠',t:'Maison avec matériel',s:'Haltères, bandes, kettlebell...'},
+    {v:'maison',i:'🛋️',t:'Maison sans matériel',s:'Poids du corps uniquement'},
+    {v:'exterieur',i:'🌳',t:'Extérieur Parc',s:'Course, street workout, escaliers'},
+    {v:'mixte',i:'🔀',t:'Mixte selon les jours',s:'Salle et maison ou extérieur'}
+  ]},
+  {pct:54,q:'Équipement dispo à la maison ?',type:'multisel',key:'equipement',skipIf:'pas_maison',opts:[
+    {v:'rien',i:'🚫',t:'Rien du tout'},{v:'tapis',i:'🧘',t:'Tapis de sport'},
+    {v:'halteres',i:'🏋️',t:'Haltères'},{v:'barre',i:'⚡',t:'Barre et disques'},
+    {v:'kettlebell',i:'🔔',t:'Kettlebell'},{v:'bandes',i:'🎗️',t:'Bandes élastiques'},
+    {v:'traction',i:'🔝',t:'Barre de traction'},{v:'velo_maison',i:'🚴',t:'Vélo Elliptique'},
+    {v:'banc',i:'🪑',t:'Banc de musculation'}
+  ]},
+  {pct:57,q:'Ton régime alimentaire ?',type:'multisel',key:'reg',opts:[
+    {v:'omni',i:'🍗',t:'Omnivore'},{v:'vege',i:'🥗',t:'Végétarien'},
+    {v:'vegan',i:'🌱',t:'Vegan'},{v:'pesc',i:'🐟',t:'Pescétarien'},
+    {v:'sans_gluten',i:'🌾',t:'Sans gluten'},{v:'sans_lactose',i:'🥛',t:'Sans lactose'},
+    {v:'halal',i:'☪️',t:'Halal'},{v:'casher',i:'✡️',t:'Casher'},
+    {v:'keto',i:'🥑',t:'Keto Low carb'},{v:'autre',i:'➕',t:'Autre'}
+  ]},
+  {pct:60,q:'Allergies alimentaires ?',type:'multisel',key:'allergies',opts:[
+    {v:'aucune',i:'✅',t:'Aucune allergie'},{v:'noix',i:'🥜',t:'Fruits à coque'},
+    {v:'gluten',i:'🌾',t:'Gluten'},{v:'lactose',i:'🥛',t:'Lactose'},
+    {v:'oeufs',i:'🥚',t:'Œufs'},{v:'soja',i:'🌿',t:'Soja'},
+    {v:'fruits_mer',i:'🦐',t:'Fruits de mer'},{v:'autre',i:'⚠️',t:'Autre allergie'}
+  ]},
+  {pct:63,q:'Repas par jour ?',type:'slider',key:'repasParJour',mn:2,mx:6,v:3,u:'repas'},
+  {pct:66,q:'Consommation d\'alcool ?',type:'chips3',key:'alcool',opts:[
+    {v:'jamais',i:'🚫',t:'Jamais'},{v:'occasionnel',i:'🥂',t:'Occasionnel'},{v:'regulier',i:'🍷',t:'Régulier'}
+  ]},
+  {pct:69,q:'Ton activité professionnelle ?',type:'bigopt',key:'activiteProf',opts:[
+    {v:'bureau',i:'💻',t:'Sédentaire Bureau',s:'Assis la majorité du temps'},
+    {v:'debout',i:'🏪',t:'Debout Commerce',s:'Beaucoup de déplacements légers'},
+    {v:'actif',i:'🚶',t:'Actif Livraison',s:'Marche régulière et effort modéré'},
+    {v:'physique',i:'🔨',t:'Physique Chantier',s:'Effort physique intense'}
+  ]},
+  {pct:72,q:'Hydratation quotidienne ?',type:'chips3',key:'hydratation',opts:[
+    {v:'moins1',i:'💧',t:'Moins d 1L'},{v:'1a15',i:'💧',t:'1 à 1,5L'},
+    {v:'15a2',i:'💧',t:'1,5 à 2L'},{v:'plus2',i:'💧',t:'Plus de 2L'}
+  ]},
+  {pct:75,q:'Compléments que tu prends déjà ?',type:'multisel',key:'complements',opts:[
+    {v:'aucun',i:'✅',t:'Aucun'},{v:'whey',i:'🥛',t:'Whey Protéine'},
+    {v:'creatine',i:'⚡',t:'Créatine'},{v:'bcaa',i:'💊',t:'BCAA Acides aminés'},
+    {v:'vitamines',i:'🌿',t:'Vitamines Minéraux'},{v:'omega3',i:'🐟',t:'Oméga 3'},
+    {v:'preworkout',i:'🔥',t:'Pré-workout'},{v:'autre',i:'➕',t:'Autre'}
+  ]},
+  {pct:78,q:'Pourquoi maintenant ?',type:'bigopt',key:'declic',opts:[
+    {v:'sante',i:'❤️',t:'Ma santé m inquiète',s:'Je veux agir avant qu il ne soit trop tard'},
+    {v:'evenement',i:'📅',t:'Un événement approche',s:'Mariage, vacances, compétition, date précise'},
+    {v:'lassitude',i:'😤',t:'J en ai assez de me voir comme ça',s:'Le déclic est maintenant'},
+    {v:'energie',i:'⚡',t:'Je manque d énergie',s:'Je veux retrouver ma vitalité'},
+    {v:'confiance',i:'💪',t:'Retrouver confiance en moi',s:'Le physique impacte mon mental'},
+    {v:'nouveau',i:'🌱',t:'Nouveau départ',s:'Séparation, déménagement, nouveau job'}
+  ]},
+  {pct:81,q:'Tes obstacles habituels ?',type:'multisel',key:'obstacles',opts:[
+    {v:'temps',i:'⏰',t:'Manque de temps'},{v:'motivation',i:'😔',t:'Manque de motivation'},
+    {v:'regularite',i:'🔄',t:'Difficile d être régulier'},{v:'alimentation',i:'🍕',t:'Craquages alimentaires'},
+    {v:'fatigue',i:'😴',t:'Trop fatigué après le travail'},{v:'social',i:'🎉',t:'Vie sociale Sorties'},
+    {v:'connaissance',i:'❓',t:'Ne sais pas quoi faire'},{v:'blessure_hist',i:'🤕',t:'Blessures à répétition'}
+  ]},
+  {pct:84,q:'Exercices que tu refuses ?',type:'multisel',key:'exoDetestes',opts:[
+    {v:'aucun',i:'✅',t:'Pas de préférence'},{v:'burpees',i:'😤',t:'Burpees'},
+    {v:'course',i:'🏃',t:'Course à pied'},{v:'squat',i:'🏋️',t:'Squat lourd'},
+    {v:'piscine',i:'🏊',t:'Natation Piscine'},{v:'saut',i:'⬆️',t:'Exercices avec sauts'},
+    {v:'gainage',i:'🧘',t:'Gainage Planche'},{v:'exterieur',i:'🌧️',t:'Extérieur intempéries'}
+  ]},
+  {pct:87,q:'Ton sommeil en moyenne ?',type:'slider',key:'heuresSommeil',mn:4,mx:10,v:7,u:'h/nuit'},
+  {pct:90,q:'Qualité de ton sommeil ?',type:'chips3',key:'sommeil',opts:[
+    {v:'excellent',i:'😴',t:'Excellent'},{v:'moyen',i:'😐',t:'Moyen'},{v:'mauvais',i:'😩',t:'Mauvais'}
+  ]},
+  {pct:93,q:'Ton niveau de stress ?',type:'stress',key:'stress',mn:1,mx:10,v:5},
+  {pct:96,q:'Ton niveau d engagement ?',type:'engagement',key:'engagement',mn:1,mx:10,v:7},
+  {pct:100,q:'',type:'scan',key:null}
 ];
 
 function renderOnb() {
@@ -6169,6 +6264,7 @@ function cJR(){var d=U.dateDebut;if(!d)return 1;return Math.max(1,Math.floor((Da
 function bPB(){var m=cMac(),jr=cJR(),row=document.getElementById('profilRow');if(!row)return;var its=[{k:'Streak',v:(U.streak||streak||0)+'j',c:'pcs2'},{k:'Poids',v:(U.poids||U.dep||80)+'kg',c:''},{k:'Cible',v:(U.poidsTarget||U.obj||'--')+'kg',c:''},{k:'TDEE',v:m.tdee+' kcal',c:''},{k:'Prot',v:m.prot+'g',c:''},{k:'Gluc',v:m.gluc+'g',c:''},{k:'Lip',v:m.lip+'g',c:''},{k:'Phase',v:cPhase(),c:'pcp2'},{k:'J-Rel',v:'J'+jr,c:''},{k:'Seances',v:(U.seancesFaites||seances||0)+'/'+(U.seancesTotal||12),c:''}];row.innerHTML=its.map(function(it,i){return(i?'<div class="sp2"></div>':'')+'<div class="pc '+it.c+'"><div class="pv">'+it.v+'</div><div class="pk">'+it.k+'</div></div>';}).join('');}
 function bChips(){var h=new Date().getHours(),qc=document.getElementById('quick-chips');if(!qc)return;var mode=U.mode||'bodybuilding';var c=h<13?['Ma seance du jour','Mes macros','Comment recuperer','Ma progression']:h<20?['Mon diner ce soir','Bilan journee','Seance demain','Correction alim']:['Seance demain','Snack dodo','Bilan semaine','Motivation'];if(mode==='muscle')c[0]='Push Pull du jour';if(mode==='glow'||mode==='toning')c[0]='Cardio du jour';if(mode==='event'||mode==='perf')c[0]='Seance perf';qc.innerHTML=c.map(function(t){return'<div class="qchip" onclick="chatQ(this.textContent)">'+t+'</div>';}).join('');}
 function bSP(){var m=cMac(),jr=cJR(),pn=U.prenom||'Champion';var niv={deb:'Debutant',int_low:'Debutant+',inter:'Inter',av:'Avance',athlete:'Athlete'}[U.niv||'inter']||'Inter';var ton=jr<=7?'direct':jr<=30?'chaleureux':'complice';var bl=U.blessure&&U.blessure!=='aucune'?U.blessure:'aucune';var sep=String.fromCharCode(10);var t='Tu es HIMA coach sportif IA expert. Tu remplaces un coach humain.'+sep;t+='PROFIL: '+pn+' '+(U.mode||'poids')+' '+(U.sexe==='h'?'H':'F')+' '+(U.poids||80)+'kg -> '+(U.poidsTarget||'--')+'kg '+niv+sep;t+='LIEU: '+(U.lieu||'salle')+' TEMPS: '+(U.tps||60)+'min REGIME: '+(Array.isArray(U.reg)?U.reg.join(','):U.reg||'omni')+sep;t+='BLESSURES: '+(Array.isArray(U.blessures)?U.blessures.join(','):bl)+sep;t+='SANTE: '+(Array.isArray(U.sante)?U.sante.join(','):'aucune')+sep;t+='SITUATION: '+(U.situation||'normal')+sep;t+='MACROS: TDEE '+m.tdee+' Prot '+m.prot+'g Gluc '+m.gluc+'g Lip '+m.lip+'g'+sep;t+='OBSTACLES: '+(Array.isArray(U.obstacles)?U.obstacles.join(','):'aucun')+sep;t+='EXO_REFUSES: '+(Array.isArray(U.exoDetestes)?U.exoDetestes.join(','):'aucun')+sep;t+='STRESS: '+(U.stress||5)+'/10 SOMMEIL: '+(U.heuresSommeil||7)+'h ENGAGEMENT: '+(U.engagement||7)+'/10'+sep;t+=buildMemoryContext()+sep;t+='REGLES: 1.UNIQUEMENT sport nutrition recup 2.Tutoyer appeler '+pn+' par prenom 3.Max 4 lignes+donnees concretes 4.Prose pas listes 5.Ton '+ton;return t;}
+var _p_callAI=callAI;callAI=function(msg){var oF=window.fetch;window.fetch=function(u,o){if(u&&u.indexOf('/api/chat')!==-1&&o&&o.body){try{var b=JSON.parse(o.body);b.system=bSP();o.body=JSON.stringify(b);}catch(e){}}window.fetch=oF;return oF.apply(this,arguments);};_p_callAI(msg);};
 var _p_switchTab=switchTab;switchTab=function(id){_p_switchTab(id);if(id==='t-chat'){setTimeout(function(){var mc=document.getElementById('mem-count');if(mc)mc.textContent=(U.memories||[]).length||0;var mood=document.getElementById('chatMood');if(mood){var jr=cJR(),pn=U.prenom||'Demo';var moods=['Pret a tout dechirer !','Ta transformation continue J'+jr,'Chaque rep compte','Plus fort chaque jour'];mood.textContent=moods[Math.floor(Math.random()*moods.length)];}bPB();bChips();},80);}};
 
 console.log('HIMA v3 complet charge ✓');
@@ -6487,6 +6583,8 @@ function bPB(){var m=cMac(),jr=cJR(),row=document.getElementById('profilRow');if
 function bChips(){var h=new Date().getHours(),qc=document.getElementById('quick-chips');if(!qc)return;var mode=U.mode||'muscle';var c=h<13?['Ma seance du jour','Mes macros','Comment recuperer','Ma progression']:h<20?['Mon diner ce soir','Bilan journee','Seance demain','Correction alim']:['Seance demain','Snack dodo','Bilan semaine','Motivation'];if(mode==='muscle')c[0]='Push Pull du jour';if(mode==='toning'||mode==='poids')c[0]='Cardio du jour';if(mode==='perf'||mode==='event')c[0]='Seance perf';qc.innerHTML=c.map(function(t){return'<div class="qchip" onclick="chatQ(this.textContent)">'+t+'</div>';}).join('');}
 function bSP(){var m=cMac(),jr=cJR(),pn=U.prenom||'Champion';var niv={deb:'Debutant',inter_low:'Debutant+',inter:'Inter',av:'Avance',athlete:'Athlete'}[U.niv||'inter']||'Inter';var ton=jr<=7?'direct':jr<=30?'chaleureux':'complice';var sep=String.fromCharCode(10);var t='Tu es HIMA coach sportif IA expert. Tu remplaces un coach humain.'+sep;t+='PROFIL: '+pn+' '+(U.mode||'muscle')+' '+(U.sexe==='h'?'H':'F')+' '+(U.poids||80)+'kg -> '+(U.poidsTarget||'--')+'kg '+niv+sep;t+='LIEU: '+(U.lieu||'salle')+' TEMPS: '+(U.tps||60)+'min'+sep;t+='REGIME: '+(Array.isArray(U.reg)?U.reg.join(','):U.reg||'omni')+sep;t+='BLESSURES: '+(Array.isArray(U.blessures)?U.blessures.join(','):'aucune')+sep;t+='SANTE: '+(Array.isArray(U.sante)?U.sante.join(','):'aucune')+sep;t+='OBSTACLES: '+(Array.isArray(U.obstacles)?U.obstacles.join(','):'aucun')+sep;t+='EXO_REFUSES: '+(Array.isArray(U.exoDetestes)?U.exoDetestes.join(','):'aucun')+sep;t+='STRESS: '+(U.stress||5)+'/10 SOMMEIL: '+(U.heuresSommeil||7)+'h ENGAGEMENT: '+(U.engagement||7)+'/10'+sep;t+='MACROS: TDEE '+m.tdee+' Prot '+m.prot+'g Gluc '+m.gluc+'g Lip '+m.lip+'g'+sep;t+='READINESS: '+calcReadiness()+'/100 BODY SCORE: '+calcBodyScore()+'/100'+sep;t+='PROGRESSION: Streak '+(U.streak||0)+'j Phase '+cPhase()+' J'+jr+sep;t+=buildMemoryContext()+sep;t+='REGLES: 1.UNIQUEMENT sport nutrition recup 2.Tutoyer appeler '+pn+' 3.Max 4 lignes+donnees concretes 4.Prose pas listes 5.Ton '+ton;return t;}
 
+var _h_callAI=callAI;callAI=function(msg){var oF=window.fetch;window.fetch=function(u,o){if(u&&u.indexOf('/api/chat')!==-1&&o&&o.body){try{var b=JSON.parse(o.body);b.system=bSP();o.body=JSON.stringify(b);}catch(e){}}window.fetch=oF;return oF.apply(this,arguments);};_h_callAI(msg);};
+
 var _h_switchTab=switchTab;
 switchTab=function(id){
   _h_switchTab(id);
@@ -6506,20 +6604,6 @@ document.addEventListener('DOMContentLoaded',function(){
 });
 
 console.log('HIMA Home v3 charge ✓');
-
-
-// HIMA Chat patches
-var _c_callAI = callAI;
-callAI = function(msg) {
-  var oF = window.fetch;
-  window.fetch = function(u, o) {
-    if(u && u.indexOf('/api/chat') !== -1 && o && o.body) {
-      try { var b=JSON.parse(o.body); b.system=bSP(); o.body=JSON.stringify(b); } catch(e) {}
-    }
-    window.fetch = oF; return oF.apply(this, arguments);
-  };
-  _c_callAI(msg);
-};
 
 </script>
 </html>
