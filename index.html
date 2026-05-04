@@ -912,21 +912,197 @@ canvas { display: none; }
 .hma-ico{font-size:22px;margin-bottom:6px;}
 .hma-lbl{font-size:11px;color:#9090B0;font-family:'Space Grotesk',sans-serif;font-weight:500;}
 
-/* ═══ HIMA Chat v3 ═══ */
+/* ═══ HOME v3 ═══ */
+@keyframes slideUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+@keyframes hmIdle{0%,100%{transform:translateY(0);}50%{transform:translateY(-4px);}}
+@keyframes streakPulse{0%,100%{box-shadow:0 0 0 0 rgba(249,136,5,0.4);}50%{box-shadow:0 0 0 8px rgba(249,136,5,0);}}
 @keyframes dotBlink{0%,100%{opacity:1;}50%{opacity:0.4;}}
 @keyframes popIn{from{opacity:0;transform:scale(0.88) translateY(6px);}to{opacity:1;transform:scale(1) translateY(0);}}
 @keyframes tdBounce{0%,100%{transform:translateY(0);background:#3A3A60;}50%{transform:translateY(-6px);background:#F98805;}}
 
-/* Profil bar */
+#t-home{display:flex;flex-direction:column;height:100%;background:#080810;overflow:hidden;}
+.hm-wrap{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 14px 0;}
+.hm-wrap::-webkit-scrollbar{display:none;}
+.hm-section{opacity:0;animation:slideUp 0.4s ease forwards;}
+.hm-section:nth-child(1){animation-delay:0.05s;}.hm-section:nth-child(2){animation-delay:0.1s;}
+.hm-section:nth-child(3){animation-delay:0.15s;}.hm-section:nth-child(4){animation-delay:0.2s;}
+.hm-section:nth-child(5){animation-delay:0.25s;}.hm-section:nth-child(6){animation-delay:0.3s;}
+.hm-section:nth-child(7){animation-delay:0.35s;}.hm-section:nth-child(8){animation-delay:0.4s;}
+.hm-section:nth-child(9){animation-delay:0.45s;}.hm-section:nth-child(10){animation-delay:0.5s;}
+.hm-section:nth-child(11){animation-delay:0.55s;}.hm-section:nth-child(12){animation-delay:0.6s;}
+.hm-section:nth-child(13){animation-delay:0.65s;}.hm-section:nth-child(14){animation-delay:0.7s;}
+
+/* HERO */
+.hm-hero{padding:52px 0 12px;margin-bottom:8px;}
+.hm-hero-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;}
+.hm-greet{font-size:12px;color:#9090B0;font-weight:600;text-transform:uppercase;letter-spacing:1.5px;}
+.hm-name{font-family:'Bebas Neue',sans-serif;font-size:44px;line-height:1;color:#F0F0FF;letter-spacing:1px;margin:2px 0;}
+.hm-sub{font-size:13px;color:#9090B0;font-style:italic;}
+.hm-av-wrap{width:44px;height:44px;border-radius:14px;overflow:hidden;border:2px solid rgba(249,136,5,0.3);flex-shrink:0;cursor:pointer;}
+.hm-av-img{width:100%;height:100%;object-fit:cover;object-position:center top;}
+.hm-coach-bubble{display:inline-flex;align-items:center;gap:8px;background:rgba(249,136,5,0.08);border:1px solid rgba(249,136,5,0.2);border-radius:20px;padding:7px 14px;cursor:pointer;transition:all 0.2s;}
+.hm-coach-bubble:active{transform:scale(0.97);}
+.hm-bubble-av{width:20px;height:20px;border-radius:50%;object-fit:cover;}
+.hm-coach-bubble span{font-size:12px;font-weight:600;color:#F98805;font-family:'Space Grotesk',sans-serif;}
+
+/* CARDS */
+.hm-card{background:#0E0E1C;border:1px solid rgba(240,240,255,0.08);border-radius:18px;padding:16px;margin-bottom:10px;}
+.hm-card-title{font-family:'Space Grotesk',sans-serif;font-size:10px;font-weight:700;color:#3A3A60;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:12px;}
+
+/* READINESS */
+.hm-readiness-wrap{display:flex;align-items:center;gap:14px;}
+.hm-readiness-left{position:relative;width:120px;flex-shrink:0;}
+.hm-read-svg{width:120px;height:72px;}
+.hm-read-score-wrap{position:absolute;bottom:2px;left:50%;transform:translateX(-50%);text-align:center;}
+.hm-read-score{font-family:'Bebas Neue',sans-serif;font-size:28px;color:#F0F0FF;line-height:1;}
+.hm-read-label{font-size:9px;color:#9090B0;text-transform:uppercase;letter-spacing:0.5px;}
+.hm-readiness-right{flex:1;}
+.hm-read-title{font-family:'Space Grotesk',sans-serif;font-size:10px;font-weight:700;color:#3A3A60;letter-spacing:1.5px;margin-bottom:6px;text-transform:uppercase;}
+.hm-read-advice{font-size:13px;color:#F0F0FF;line-height:1.5;margin-bottom:10px;}
+.hm-read-indicators{display:flex;gap:10px;}
+.hm-ri{display:flex;flex-direction:column;align-items:center;gap:2px;}
+.hm-ri-l{font-size:9px;color:#3A3A60;text-transform:uppercase;}
+
+/* STREAK */
+.hm-streak-card{display:flex;align-items:center;gap:14px;background:linear-gradient(135deg,rgba(249,136,5,0.1),rgba(243,86,149,0.06));border:1px solid rgba(249,136,5,0.2);border-radius:18px;padding:14px 16px;margin-bottom:10px;}
+.hm-streak-fire{font-size:32px;}
+.hm-streak-val{font-family:'Bebas Neue',sans-serif;font-size:44px;color:#F98805;line-height:1;}
+.hm-streak-lbl{font-size:11px;color:#9090B0;margin-top:2px;}
+.hm-streak-right{flex:1;}
+.hm-streak-msg{font-size:13px;color:#F0F0FF;font-weight:600;margin-bottom:8px;font-family:'Space Grotesk',sans-serif;}
+.hm-streak-bar-bg{height:4px;background:rgba(240,240,255,0.08);border-radius:2px;overflow:hidden;margin-bottom:4px;}
+.hm-streak-bar-fill{height:100%;background:linear-gradient(90deg,#F98805,#F35695);border-radius:2px;width:0%;transition:width 1s ease;}
+.hm-streak-next{font-size:10px;color:#3A3A60;}
+
+/* SÉANCE */
+.hm-seance-card{background:#0E0E1C;border:1px solid rgba(249,136,5,0.15);border-radius:18px;padding:16px;margin-bottom:10px;cursor:pointer;}
+.hm-seance-card:active{transform:scale(0.99);}
+.hm-seance-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.hm-seance-badges{display:flex;gap:6px;flex-wrap:wrap;}
+.hm-badge{font-size:10px;font-weight:700;font-family:'Space Grotesk',sans-serif;padding:3px 9px;border-radius:99px;background:rgba(240,240,255,0.08);color:#9090B0;text-transform:uppercase;letter-spacing:0.5px;}
+.hm-badge-phase{background:rgba(243,86,149,0.1);color:#F35695;}
+.hm-badge-int{background:rgba(34,197,94,0.1);color:#22c55e;}
+.hm-seance-arrow{font-size:18px;color:#F98805;}
+.hm-seance-name{font-family:'Space Grotesk',sans-serif;font-weight:900;font-size:18px;color:#F0F0FF;margin-bottom:10px;line-height:1.3;}
+.hm-seance-exos{font-size:12px;color:#9090B0;margin-bottom:10px;line-height:1.8;}
+.hm-seance-exo{display:flex;align-items:center;gap:6px;}
+.hm-seance-exo::before{content:"·";color:#F98805;}
+.hm-seance-meta{font-size:12px;color:#9090B0;margin-bottom:14px;}
+.hm-seance-btn{width:100%;padding:13px;border-radius:99px;background:linear-gradient(135deg,#F98805,#F35695);color:#fff;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:14px;border:none;cursor:pointer;letter-spacing:0.5px;}
+.hm-seance-btn:active{transform:scale(0.98);}
+
+/* OBJECTIF */
+.hm-obj-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.hm-obj-title{font-family:'Space Grotesk',sans-serif;font-size:10px;font-weight:700;color:#3A3A60;text-transform:uppercase;letter-spacing:1.5px;}
+.hm-obj-eta{font-size:12px;color:#DDE255;font-weight:700;font-family:'Space Grotesk',sans-serif;}
+.hm-obj-row{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+.hm-obj-stat{text-align:center;flex-shrink:0;}
+.hm-obj-val{font-family:'Bebas Neue',sans-serif;font-size:32px;color:#F98805;line-height:1;}
+.hm-obj-lbl{font-size:10px;color:#3A3A60;text-transform:uppercase;}
+.hm-obj-stat-cible .hm-obj-val{color:#DDE255;}
+.hm-obj-arrow-wrap{flex:1;}
+.hm-obj-curve{width:100%;height:30px;}
+.hm-obj-bar-bg{height:4px;background:rgba(240,240,255,0.06);border-radius:2px;overflow:hidden;margin-bottom:10px;}
+.hm-obj-bar-fill{height:100%;background:linear-gradient(90deg,#F98805,#DDE255);border-radius:2px;width:0%;transition:width 1.2s ease;}
+.hm-obj-phrase{font-size:13px;color:#F0F0FF;font-style:italic;}
+
+/* MACROS RING */
+.hm-macro-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.hm-log-btn{background:rgba(249,136,5,0.1);border:1px solid rgba(249,136,5,0.25);color:#F98805;font-size:12px;font-weight:700;padding:5px 12px;border-radius:99px;cursor:pointer;font-family:'Space Grotesk',sans-serif;}
+.hm-macro-ring-wrap{position:relative;width:120px;height:120px;margin:0 auto 16px;}
+.hm-ring-svg{width:120px;height:120px;}
+.hm-ring-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.hm-ring-val{font-family:'Bebas Neue',sans-serif;font-size:28px;color:#F0F0FF;line-height:1;}
+.hm-ring-lbl{font-size:9px;color:#9090B0;text-transform:uppercase;letter-spacing:0.5px;}
+.hm-macro-bars{display:flex;flex-direction:column;gap:10px;margin-bottom:12px;}
+.hm-mbar-head{display:flex;justify-content:space-between;font-size:12px;color:#9090B0;margin-bottom:4px;font-family:'Space Grotesk',sans-serif;font-weight:500;}
+.hm-mbar-head span:last-child{color:#F0F0FF;font-weight:700;}
+.hm-mbar-bg{height:4px;background:rgba(240,240,255,0.06);border-radius:2px;overflow:hidden;}
+.hm-mbar-fill{height:100%;border-radius:2px;width:0%;transition:width 1s ease;}
+.hm-mbar-prot{background:#F98805;}
+.hm-mbar-gluc{background:#F35695;}
+.hm-mbar-lip{background:#DDE255;}
+.hm-anabolic{font-size:12px;color:#9090B0;background:rgba(240,240,255,0.04);border-radius:10px;padding:8px 12px;text-align:center;}
+
+/* MUSCLES */
+.hm-muscles-wrap{display:flex;gap:14px;align-items:flex-start;}
+.hm-body-svg{width:100px;flex-shrink:0;}
+.hm-muscles-legend{flex:1;display:flex;flex-direction:column;gap:8px;}
+.hm-ml-item{display:flex;align-items:center;gap:6px;font-size:11px;color:#9090B0;}
+.hm-ml-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.hm-muscles-advice{font-size:12px;color:#F0F0FF;margin-top:8px;line-height:1.5;}
+
+/* BODY SCORE */
+.hm-bs-wrap{display:flex;align-items:center;gap:16px;}
+.hm-bs-circle{position:relative;width:100px;height:100px;flex-shrink:0;}
+.hm-bs-svg{width:100px;height:100px;}
+.hm-bs-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.hm-bs-val{font-family:'Bebas Neue',sans-serif;font-size:32px;color:#F0F0FF;line-height:1;}
+.hm-bs-lbl{font-size:9px;color:#9090B0;text-transform:uppercase;}
+.hm-bs-axes{flex:1;display:flex;flex-direction:column;gap:8px;}
+.hm-bs-axis{}
+.hm-bs-ax-l{font-size:11px;color:#9090B0;margin-bottom:3px;font-family:'Space Grotesk',sans-serif;}
+.hm-bs-ax-bar{height:4px;background:rgba(240,240,255,0.06);border-radius:2px;overflow:hidden;}
+.hm-bs-ax-fill{height:100%;background:linear-gradient(90deg,#F98805,#F35695);border-radius:2px;width:0%;transition:width 1.2s ease;}
+.hm-bs-delta{font-size:11px;color:#22c55e;font-weight:700;margin-top:4px;font-family:'Space Grotesk',sans-serif;}
+
+/* COACH */
+.hm-coach-card{display:flex;gap:12px;background:rgba(249,136,5,0.06);border:1px solid rgba(249,136,5,0.15);border-radius:18px;padding:14px 16px;margin-bottom:10px;cursor:pointer;transition:all 0.2s;}
+.hm-coach-card:active{transform:scale(0.98);}
+.hm-coach-av{width:48px;height:48px;border-radius:50%;object-fit:cover;object-position:center top;border:2px solid rgba(249,136,5,0.3);flex-shrink:0;animation:hmIdle 3s ease-in-out infinite;}
+.hm-coach-content{flex:1;}
+.hm-coach-status{font-size:10px;color:#22c55e;font-weight:700;letter-spacing:0.5px;margin-bottom:5px;font-family:'Space Grotesk',sans-serif;}
+.hm-coach-msg{font-size:14px;color:#F0F0FF;line-height:1.5;margin-bottom:10px;}
+.hm-coach-chips{display:flex;gap:6px;flex-wrap:wrap;}
+.hm-cc{font-size:11px;font-weight:600;padding:5px 10px;border-radius:99px;background:rgba(249,136,5,0.1);border:1px solid rgba(249,136,5,0.2);color:#F98805;cursor:pointer;font-family:'Space Grotesk',sans-serif;}
+
+/* REPAS */
+.hm-repas-scroll{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;padding-bottom:4px;}
+.hm-repas-scroll::-webkit-scrollbar{display:none;}
+.hm-repas-card{flex-shrink:0;width:160px;background:rgba(240,240,255,0.04);border:1px solid rgba(240,240,255,0.08);border-radius:14px;padding:12px;cursor:pointer;transition:all 0.2s;}
+.hm-repas-card:active{border-color:rgba(249,136,5,0.3);}
+.hm-repas-nom{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:13px;color:#F0F0FF;margin-bottom:6px;}
+.hm-repas-detail{font-size:11px;color:#9090B0;margin-bottom:8px;line-height:1.4;}
+.hm-repas-macros{display:flex;gap:6px;}
+.hm-repas-macro{font-size:10px;font-weight:700;padding:2px 6px;border-radius:6px;}
+.hm-repas-macro.p{background:rgba(249,136,5,0.15);color:#F98805;}
+.hm-repas-macro.g{background:rgba(243,86,149,0.15);color:#F35695;}
+.hm-repas-macro.l{background:rgba(221,226,85,0.15);color:#DDE255;}
+
+/* SEMAINE */
+.hm-week-wrap{display:flex;justify-content:space-between;margin-bottom:10px;}
+.hm-day-circle{display:flex;flex-direction:column;align-items:center;gap:4px;}
+.hm-dc-circle{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;border:2px solid transparent;}
+.hm-dc-lbl{font-size:9px;color:#3A3A60;font-family:'Space Grotesk',sans-serif;text-transform:uppercase;}
+.hm-week-phrase{font-size:12px;color:#9090B0;text-align:center;}
+
+/* PR */
+.hm-pr-scroll{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;}
+.hm-pr-scroll::-webkit-scrollbar{display:none;}
+.hm-pr-card{flex-shrink:0;width:120px;background:rgba(240,240,255,0.04);border:1px solid rgba(240,240,255,0.08);border-radius:14px;padding:12px;text-align:center;}
+.hm-pr-exo{font-size:10px;color:#9090B0;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;}
+.hm-pr-val{font-family:'Bebas Neue',sans-serif;font-size:32px;color:#F0F0FF;line-height:1;}
+.hm-pr-badge{font-size:9px;font-weight:700;color:#DDE255;margin-top:4px;}
+
+/* PHOTO */
+.hm-photo-card{display:flex;align-items:center;gap:12px;cursor:pointer;}
+.hm-photo-ico{font-size:32px;}
+.hm-photo-title{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:14px;color:#F0F0FF;margin-bottom:3px;}
+.hm-photo-sub{font-size:11px;color:#9090B0;line-height:1.4;}
+.hm-photo-arrow{font-size:18px;color:#F98805;margin-left:auto;}
+
+/* INSIGHT */
+.hm-insight-card{display:flex;align-items:center;gap:12px;background:rgba(240,240,255,0.03);border:1px solid rgba(240,240,255,0.06);border-radius:18px;padding:16px;margin-bottom:10px;}
+.hm-insight-ico{font-size:24px;flex-shrink:0;}
+.hm-insight-text{font-size:14px;color:#F0F0FF;font-style:italic;line-height:1.5;}
+
+/* Chat patches */
 #profil-bar::-webkit-scrollbar{display:none}
 .pc{display:flex;flex-direction:column;align-items:center;background:#0E0E1C;border:1px solid rgba(240,240,255,0.1);border-radius:9px;padding:4px 8px;min-width:48px;cursor:pointer;}
-.pv{font-family:"Space Grotesk",sans-serif;font-weight:700;font-size:12px;color:#F0F0FF;line-height:1;}
+.pv{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:12px;color:#F0F0FF;line-height:1;}
 .pk{font-size:9px;color:#3A3A60;margin-top:2px;text-transform:uppercase;}
 .sp2{width:1px;height:26px;background:rgba(240,240,255,0.06);flex-shrink:0;}
-.pcs2 .pv{color:#F98805!important;}
-.pcp2 .pv{color:#F35695!important;font-size:10px!important;}
-
-/* Messages redesign */
+.pcs2 .pv{color:#F98805!important;}.pcp2 .pv{color:#F35695!important;font-size:10px!important;}
 .mg{display:flex;gap:8px;margin-bottom:10px;align-items:flex-end;}
 .mg.u{flex-direction:row-reverse;}
 .mav{width:30px!important;height:30px!important;border-radius:50%!important;overflow:hidden!important;flex-shrink:0!important;border:1px solid rgba(249,136,5,0.3)!important;}
@@ -934,20 +1110,12 @@ canvas { display: none; }
 .mav.u{background:linear-gradient(135deg,#F98805,#F35695)!important;border:none!important;display:flex!important;align-items:center!important;justify-content:center!important;color:#fff!important;font-weight:700!important;font-size:13px!important;}
 .mbs{display:flex;flex-direction:column;gap:3px;max-width:78%;}
 .b{padding:9px 13px!important;font-size:14px!important;line-height:1.55!important;border-radius:18px!important;animation:popIn 0.22s cubic-bezier(0.34,1.56,0.64,1) forwards!important;background:#0E0E1C!important;border:1px solid rgba(240,240,255,0.1)!important;border-bottom-left-radius:4px!important;color:#F0F0FF!important;}
-.b.u{background:linear-gradient(135deg,#F98805,#F35695)!important;border:none!important;border-radius:18px!important;border-bottom-right-radius:4px!important;color:#fff!important;font-weight:500!important;}
-
-/* Typing dots */
+.b.u{background:linear-gradient(135deg,#F98805,#F35695)!important;border:none!important;border-radius:18px!important;border-bottom-right-radius:4px!important;color:#fff!important;}
 .td{display:inline-block!important;width:7px!important;height:7px!important;border-radius:50%!important;background:#9090B0!important;animation:tdBounce 1.2s ease-in-out infinite!important;}
-.td:nth-child(2){animation-delay:0.2s!important;}
-.td:nth-child(3){animation-delay:0.4s!important;}
-
-/* Chips */
-.quick-chips{display:flex!important;overflow-x:auto!important;scrollbar-width:none!important;padding:7px 12px!important;gap:7px!important;border-top:1px solid rgba(240,240,255,0.06)!important;background:rgba(8,8,16,0.9)!important;flex-shrink:0!important;}
+.td:nth-child(2){animation-delay:0.2s!important;}.td:nth-child(3){animation-delay:0.4s!important;}
+.quick-chips{display:flex!important;overflow-x:auto!important;scrollbar-width:none!important;padding:7px 12px!important;gap:7px!important;background:rgba(8,8,16,0.9)!important;flex-shrink:0!important;}
 .quick-chips::-webkit-scrollbar{display:none!important;}
 .qchip{flex-shrink:0!important;background:rgba(249,136,5,0.07)!important;border:1px solid rgba(249,136,5,0.22)!important;border-radius:20px!important;padding:6px 13px!important;font-size:12px!important;font-weight:500!important;color:#F0F0FF!important;white-space:nowrap!important;cursor:pointer!important;}
-.qchip:active{background:rgba(249,136,5,0.2)!important;}
-
-/* Input bar dark */
 #t-chat .cinpb{position:fixed!important;bottom:calc(56px + env(safe-area-inset-bottom,0px))!important;left:0!important;right:0!important;z-index:99!important;background:#080810!important;border-top:1px solid rgba(240,240,255,0.1)!important;}
 #t-chat .cinp{background:#0E0E1C!important;color:#F0F0FF!important;border:1px solid rgba(240,240,255,0.12)!important;border-radius:22px!important;}
 #t-chat .cinp::placeholder{color:#3A3A60!important;}
@@ -1111,82 +1279,285 @@ canvas { display: none; }
 
   <!-- HOME -->
   <div class="atab on" id="t-home">
-    <div class="hm-hdr">
-      <div>
-        <div class="hm-greet" id="hh-gr">Bonjour</div>
-        <div class="hm-name" id="hh-nm">Champion</div>
-      </div>
-      <div class="hm-av" onclick="switchTab('t-prf')">
-        <img src="/avatar.jpg" alt="HIMA">
-      </div>
-    </div>
-    <div class="hm-scroll">
-      <div class="hm-streak-banner">
-        <div class="hsb-left">
-          <div class="hsb-fire">🔥</div>
+
+    <!-- ══ SCROLL CONTAINER ══ -->
+    <div class="hm-wrap">
+
+      <!-- SECTION 1 — HERO -->
+      <div class="hm-hero hm-section" id="hm-hero">
+        <div class="hm-hero-top">
           <div>
-            <div class="hsb-val" id="hsb-days">0</div>
-            <div class="hsb-label">jours de streak</div>
+            <div class="hm-greet" id="hh-gr">Bonjour</div>
+            <div class="hm-name" id="hh-nm">CHAMPION</div>
+            <div class="hm-sub" id="hh-sub">Chargement...</div>
+          </div>
+          <div class="hm-av-wrap" onclick="switchTab('t-prf')">
+            <img src="/avatar.jpg" class="hm-av-img" alt="HIMA">
           </div>
         </div>
-        <div class="hsb-msg" id="hsb-msg">Commence aujourd'hui !</div>
-      </div>
-      <div class="hm-section-title">Tes macros du jour</div>
-      <div class="hm-macros-row">
-        <div class="hm-macro-card hm-macro-kcal">
-          <div class="hm-macro-v" id="hm-kcal">—</div>
-          <div class="hm-macro-l">kcal</div>
-          <div class="hm-macro-bar"><div class="hm-macro-fill" id="hm-kcal-fill" style="width:0%"></div></div>
-        </div>
-        <div class="hm-macro-grid">
-          <div class="hm-macro-mini"><div class="hm-mm-val" id="hm-prot">—</div><div class="hm-mm-l">Protéines</div></div>
-          <div class="hm-macro-mini"><div class="hm-mm-val" id="hm-gluc">—</div><div class="hm-mm-l">Glucides</div></div>
-          <div class="hm-macro-mini"><div class="hm-mm-val" id="hm-lip">—</div><div class="hm-mm-l">Lipides</div></div>
-          <div class="hm-macro-mini"><div class="hm-mm-val" id="hm-eau">2L</div><div class="hm-mm-l">Hydratation</div></div>
+        <div class="hm-coach-bubble" onclick="switchTab('t-chat')">
+          <img src="/avatar.jpg" class="hm-bubble-av" alt="">
+          <span id="hm-bubble-msg">Coach prêt →</span>
         </div>
       </div>
-      <div class="hm-section-title">Séance du jour</div>
-      <div class="hm-seance-card" onclick="switchTab('t-prog')">
-        <div class="hsc-left">
-          <div class="hsc-day" id="hsc-day">Aujourd'hui</div>
-          <div class="hsc-name" id="hsc-name">Chargement...</div>
-          <div class="hsc-meta" id="hsc-meta"></div>
+
+      <!-- SECTION 2 — READINESS -->
+      <div class="hm-section hm-card" id="hm-readiness-card">
+        <div class="hm-readiness-wrap">
+          <div class="hm-readiness-left">
+            <svg class="hm-read-svg" viewBox="0 0 120 70">
+              <path d="M10 65 A50 50 0 0 1 110 65" fill="none" stroke="rgba(240,240,255,0.08)" stroke-width="10" stroke-linecap="round"/>
+              <path id="hm-read-arc" d="M10 65 A50 50 0 0 1 110 65" fill="none" stroke="#22c55e" stroke-width="10" stroke-linecap="round" stroke-dasharray="157" stroke-dashoffset="157"/>
+            </svg>
+            <div class="hm-read-score-wrap">
+              <div class="hm-read-score" id="hm-read-score">--</div>
+              <div class="hm-read-label" id="hm-read-label">Calcul...</div>
+            </div>
+          </div>
+          <div class="hm-readiness-right">
+            <div class="hm-read-title">READINESS</div>
+            <div class="hm-read-advice" id="hm-read-advice">Analyse en cours...</div>
+            <div class="hm-read-indicators">
+              <div class="hm-ri"><span id="hm-ri-sleep">💤</span><span class="hm-ri-l">Sommeil</span></div>
+              <div class="hm-ri"><span id="hm-ri-stress">🧘</span><span class="hm-ri-l">Stress</span></div>
+              <div class="hm-ri"><span id="hm-ri-streak">🔥</span><span class="hm-ri-l">Streak</span></div>
+            </div>
+          </div>
         </div>
-        <div class="hsc-arrow">→</div>
       </div>
-      <div class="hm-section-title">Ta progression</div>
-      <div class="hm-stats-grid">
-        <div class="hm-stat-card"><div class="hsc-ico">⚡</div><div class="hsc-val" id="hm-seances">0</div><div class="hsc-lbl">Séances</div></div>
-        <div class="hm-stat-card"><div class="hsc-ico">🎯</div><div class="hsc-val" id="hm-phase">—</div><div class="hsc-lbl">Phase</div></div>
-        <div class="hm-stat-card"><div class="hsc-ico">⚖️</div><div class="hsc-val" id="hm-poids">—</div><div class="hsc-lbl">Poids</div></div>
-        <div class="hm-stat-card"><div class="hsc-ico">🏆</div><div class="hsc-val" id="hm-objectif">—</div><div class="hsc-lbl">Objectif</div></div>
-      </div>
-      <div class="hm-section-title">Ton coach</div>
-      <div class="hm-coach-banner" onclick="switchTab('t-chat')">
-        <img src="/avatar.jpg" class="hm-coach-av" alt="HIMA">
-        <div class="hm-coach-text">
-          <div class="hm-coach-name">HIMA · En ligne</div>
-          <div class="hm-coach-msg" id="hm-coach-msg">Prêt à bosser avec toi aujourd'hui 💪</div>
+
+      <!-- SECTION 3 — STREAK -->
+      <div class="hm-section hm-streak-card" id="hm-streak-card">
+        <div class="hm-streak-left">
+          <div class="hm-streak-fire" id="hm-streak-fire">🔥</div>
+          <div>
+            <div class="hm-streak-val" id="hm-streak-val">0</div>
+            <div class="hm-streak-lbl">jours de suite</div>
+          </div>
         </div>
-        <div class="hm-coach-btn">Parler →</div>
+        <div class="hm-streak-right">
+          <div class="hm-streak-msg" id="hm-streak-msg">Commence aujourd'hui !</div>
+          <div class="hm-streak-bar-wrap">
+            <div class="hm-streak-bar-bg">
+              <div class="hm-streak-bar-fill" id="hm-streak-fill"></div>
+            </div>
+            <div class="hm-streak-next" id="hm-streak-next">Objectif 7j</div>
+          </div>
+        </div>
       </div>
-      <div class="hm-section-title">Actions rapides</div>
-      <div class="hm-actions">
-        <div class="hm-action" onclick="switchTab('t-prog')"><div class="hma-ico">🏋️</div><div class="hma-lbl">Séances</div></div>
-        <div class="hm-action" onclick="switchTab('t-nutr')"><div class="hma-ico">🥗</div><div class="hma-lbl">Nutrition</div></div>
-        <div class="hm-action" onclick="switchTab('t-corps')"><div class="hma-ico">📊</div><div class="hma-lbl">Corps</div></div>
-        <div class="hm-action" onclick="switchTab('t-chat')"><div class="hma-ico">🧠</div><div class="hma-lbl">Coach IA</div></div>
+
+      <!-- SECTION 4 — SÉANCE DU JOUR -->
+      <div class="hm-section hm-seance-card" id="hm-seance-card" onclick="switchTab('t-prog')">
+        <div class="hm-seance-head">
+          <div class="hm-seance-badges">
+            <span class="hm-badge" id="hm-badge-jour">Lundi</span>
+            <span class="hm-badge hm-badge-phase" id="hm-badge-phase">Fondation</span>
+            <span class="hm-badge hm-badge-int" id="hm-badge-int">🟢 Normal</span>
+          </div>
+          <span class="hm-seance-arrow">→</span>
+        </div>
+        <div class="hm-seance-name" id="hm-seance-name">Chargement...</div>
+        <div class="hm-seance-exos" id="hm-seance-exos"></div>
+        <div class="hm-seance-meta" id="hm-seance-meta"></div>
+        <button class="hm-seance-btn" onclick="event.stopPropagation();switchTab('t-prog')">Commencer la séance →</button>
       </div>
-      <div style="height:80px"></div>
+
+      <!-- SECTION 5 — OBJECTIF / COMPTE À REBOURS -->
+      <div class="hm-section hm-card" id="hm-objectif-card">
+        <div class="hm-obj-head">
+          <div class="hm-obj-title">OBJECTIF EN COURS</div>
+          <div class="hm-obj-eta" id="hm-obj-eta">—</div>
+        </div>
+        <div class="hm-obj-row">
+          <div class="hm-obj-stat">
+            <div class="hm-obj-val" id="hm-obj-actuel">—</div>
+            <div class="hm-obj-lbl">Maintenant</div>
+          </div>
+          <div class="hm-obj-arrow-wrap">
+            <svg viewBox="0 0 100 20" class="hm-obj-curve">
+              <polyline id="hm-obj-line" points="0,18 20,14 40,10 60,7 80,4 100,2" fill="none" stroke="#F98805" stroke-width="2" stroke-linecap="round"/>
+              <circle cx="0" cy="18" r="3" fill="#F98805"/>
+              <circle cx="100" cy="2" r="3" fill="#DDE255"/>
+            </svg>
+          </div>
+          <div class="hm-obj-stat hm-obj-stat-cible">
+            <div class="hm-obj-val" id="hm-obj-cible" style="color:#DDE255">—</div>
+            <div class="hm-obj-lbl">Objectif</div>
+          </div>
+        </div>
+        <div class="hm-obj-bar-wrap">
+          <div class="hm-obj-bar-bg"><div class="hm-obj-bar-fill" id="hm-obj-fill"></div></div>
+        </div>
+        <div class="hm-obj-phrase" id="hm-obj-phrase">Calcul en cours...</div>
+      </div>
+
+      <!-- SECTION 6 — MACROS + FENÊTRE ANABOLIQUE -->
+      <div class="hm-section hm-card">
+        <div class="hm-macro-head">
+          <div class="hm-card-title">MACROS DU JOUR</div>
+          <button class="hm-log-btn" onclick="switchTab('t-chat');setTimeout(function(){chatQ('Ajoute un repas a mes macros');},200)">+ Logger</button>
+        </div>
+        <div class="hm-macro-ring-wrap">
+          <svg class="hm-ring-svg" viewBox="0 0 120 120">
+            <circle cx="60" cy="60" r="50" fill="none" stroke="rgba(240,240,255,0.06)" stroke-width="12"/>
+            <circle id="hm-ring-fill" cx="60" cy="60" r="50" fill="none" stroke="url(#ringGrad)" stroke-width="12" stroke-linecap="round" stroke-dasharray="314" stroke-dashoffset="314" transform="rotate(-90 60 60)"/>
+            <defs>
+              <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" style="stop-color:#F98805"/>
+                <stop offset="100%" style="stop-color:#F35695"/>
+              </linearGradient>
+            </defs>
+          </svg>
+          <div class="hm-ring-center">
+            <div class="hm-ring-val" id="hm-ring-kcal">—</div>
+            <div class="hm-ring-lbl">kcal / jour</div>
+          </div>
+        </div>
+        <div class="hm-macro-bars">
+          <div class="hm-mbar">
+            <div class="hm-mbar-head"><span>Protéines</span><span id="hm-prot-val">—</span></div>
+            <div class="hm-mbar-bg"><div class="hm-mbar-fill hm-mbar-prot" id="hm-prot-fill"></div></div>
+          </div>
+          <div class="hm-mbar">
+            <div class="hm-mbar-head"><span>Glucides</span><span id="hm-gluc-val">—</span></div>
+            <div class="hm-mbar-bg"><div class="hm-mbar-fill hm-mbar-gluc" id="hm-gluc-fill"></div></div>
+          </div>
+          <div class="hm-mbar">
+            <div class="hm-mbar-head"><span>Lipides</span><span id="hm-lip-val">—</span></div>
+            <div class="hm-mbar-bg"><div class="hm-mbar-fill hm-mbar-lip" id="hm-lip-fill"></div></div>
+          </div>
+        </div>
+        <div class="hm-anabolic" id="hm-anabolic">💧 Pense à bien t'hydrater aujourd'hui</div>
+      </div>
+
+      <!-- SECTION 7 — MUSCLES RÉCUPÉRATION -->
+      <div class="hm-section hm-card">
+        <div class="hm-card-title">RÉCUPÉRATION MUSCULAIRE</div>
+        <div class="hm-muscles-wrap">
+          <svg class="hm-body-svg" viewBox="0 0 120 200">
+            <!-- Silhouette simplifiée -->
+            <ellipse cx="60" cy="22" rx="16" ry="18" fill="rgba(240,240,255,0.06)" stroke="rgba(240,240,255,0.1)" stroke-width="1"/>
+            <!-- Épaules -->
+            <ellipse id="hm-m-epaule-g" cx="32" cy="55" rx="14" ry="10" fill="#22c55e" opacity="0.7"/>
+            <ellipse id="hm-m-epaule-d" cx="88" cy="55" rx="14" ry="10" fill="#22c55e" opacity="0.7"/>
+            <!-- Pectoraux -->
+            <ellipse id="hm-m-pecto" cx="60" cy="60" rx="20" ry="14" fill="#22c55e" opacity="0.7"/>
+            <!-- Abdos -->
+            <rect id="hm-m-abdos" x="48" y="76" width="24" height="30" rx="8" fill="#22c55e" opacity="0.7"/>
+            <!-- Dos (affiché en transparence) -->
+            <rect id="hm-m-dos" x="44" y="55" width="32" height="35" rx="8" fill="rgba(34,197,94,0.3)" stroke="#22c55e" stroke-width="1" stroke-dasharray="3"/>
+            <!-- Biceps -->
+            <ellipse id="hm-m-biceps-g" cx="20" cy="75" rx="8" ry="18" fill="#22c55e" opacity="0.7"/>
+            <ellipse id="hm-m-biceps-d" cx="100" cy="75" rx="8" ry="18" fill="#22c55e" opacity="0.7"/>
+            <!-- Quadriceps -->
+            <ellipse id="hm-m-quad-g" cx="45" cy="140" rx="14" ry="28" fill="#22c55e" opacity="0.7"/>
+            <ellipse id="hm-m-quad-d" cx="75" cy="140" rx="14" ry="28" fill="#22c55e" opacity="0.7"/>
+            <!-- Mollets -->
+            <ellipse id="hm-m-mollet-g" cx="45" cy="178" rx="10" ry="16" fill="#22c55e" opacity="0.7"/>
+            <ellipse id="hm-m-mollet-d" cx="75" cy="178" rx="10" ry="16" fill="#22c55e" opacity="0.7"/>
+          </svg>
+          <div class="hm-muscles-legend">
+            <div class="hm-ml-item"><span class="hm-ml-dot" style="background:#22c55e"></span>Récupéré</div>
+            <div class="hm-ml-item"><span class="hm-ml-dot" style="background:#F98805"></span>En cours</div>
+            <div class="hm-ml-item"><span class="hm-ml-dot" style="background:#F35695"></span>Fatigué</div>
+            <div class="hm-muscles-advice" id="hm-muscles-advice">Tous les muscles sont récupérés ✅</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION 8 — BODY SCORE -->
+      <div class="hm-section hm-card">
+        <div class="hm-card-title">BODY SCORE</div>
+        <div class="hm-bs-wrap">
+          <div class="hm-bs-circle">
+            <svg viewBox="0 0 100 100" class="hm-bs-svg">
+              <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(240,240,255,0.06)" stroke-width="8"/>
+              <circle id="hm-bs-arc" cx="50" cy="50" r="42" fill="none" stroke="url(#bsGrad)" stroke-width="8" stroke-linecap="round" stroke-dasharray="264" stroke-dashoffset="264" transform="rotate(-90 50 50)"/>
+              <defs>
+                <linearGradient id="bsGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" style="stop-color:#F98805"/>
+                  <stop offset="100%" style="stop-color:#F35695"/>
+                </linearGradient>
+              </defs>
+            </svg>
+            <div class="hm-bs-center">
+              <div class="hm-bs-val" id="hm-bs-val">--</div>
+              <div class="hm-bs-lbl" id="hm-bs-lbl">Score</div>
+            </div>
+          </div>
+          <div class="hm-bs-axes">
+            <div class="hm-bs-axis">
+              <div class="hm-bs-ax-l">Récupération</div>
+              <div class="hm-bs-ax-bar"><div class="hm-bs-ax-fill" id="hm-bs-recup"></div></div>
+            </div>
+            <div class="hm-bs-axis">
+              <div class="hm-bs-ax-l">Performance</div>
+              <div class="hm-bs-ax-bar"><div class="hm-bs-ax-fill" id="hm-bs-perf"></div></div>
+            </div>
+            <div class="hm-bs-axis">
+              <div class="hm-bs-ax-l">Nutrition</div>
+              <div class="hm-bs-ax-bar"><div class="hm-bs-ax-fill" id="hm-bs-nutr"></div></div>
+            </div>
+            <div class="hm-bs-delta" id="hm-bs-delta"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION 9 — COACH PROACTIF -->
+      <div class="hm-section hm-coach-card" onclick="switchTab('t-chat')" id="hm-coach-card">
+        <img src="/avatar.jpg" class="hm-coach-av" alt="HIMA" id="hm-coach-avatar">
+        <div class="hm-coach-content">
+          <div class="hm-coach-status">● HIMA · En ligne</div>
+          <div class="hm-coach-msg" id="hm-coach-msg">Prêt à bosser avec toi 💪</div>
+          <div class="hm-coach-chips" id="hm-coach-chips"></div>
+        </div>
+      </div>
+
+      <!-- SECTION 10 — REPAS DU JOUR -->
+      <div class="hm-section hm-card">
+        <div class="hm-card-title">REPAS SUGGÉRÉS</div>
+        <div class="hm-repas-scroll" id="hm-repas-scroll"></div>
+      </div>
+
+      <!-- SECTION 11 — PROGRESSION SEMAINE -->
+      <div class="hm-section hm-card">
+        <div class="hm-card-title">SEMAINE EN COURS</div>
+        <div class="hm-week-wrap" id="hm-week-wrap"></div>
+        <div class="hm-week-phrase" id="hm-week-phrase"></div>
+      </div>
+
+      <!-- SECTION 12 — PR & RECORDS -->
+      <div class="hm-section hm-card" id="hm-pr-section">
+        <div class="hm-card-title">TES RECORDS</div>
+        <div class="hm-pr-scroll" id="hm-pr-scroll"></div>
+      </div>
+
+      <!-- SECTION 13 — PHOTO HEBDO -->
+      <div class="hm-section hm-card hm-photo-card" id="hm-photo-card" style="display:none" onclick="switchTab('t-corps')">
+        <div class="hm-photo-ico">📸</div>
+        <div>
+          <div class="hm-photo-title">Photo du jour</div>
+          <div class="hm-photo-sub">Même angle, même lumière. Ta transformation se voit semaine par semaine.</div>
+        </div>
+        <div class="hm-photo-arrow">→</div>
+      </div>
+
+      <!-- SECTION 14 — INSIGHT DU JOUR -->
+      <div class="hm-section hm-insight-card">
+        <div class="hm-insight-ico">🧠</div>
+        <div class="hm-insight-text" id="hm-insight-text">La régularité bat toujours l'intensité.</div>
+      </div>
+
+      <div style="height:90px"></div>
     </div>
   </div>
 
+  HTMLEOF
+echo "HTML: $(wc -c < /home/claude/home_html.html) bytes"
+
   <div class="atab" id="t-chat">
     <div class="chat-hd">
-      <div class="chd-av" style="position:relative;cursor:pointer;" onclick="toggleMemPanel()">
-          <img src="/avatar.jpg" id="chatAvatar" alt="HIMA" style="width:48px;height:48px;border-radius:50%;object-fit:cover;object-position:center top;border:2px solid transparent;background:linear-gradient(#080810,#080810) padding-box,linear-gradient(135deg,#F98805,#F35695) border-box;">
-          <div style="position:absolute;bottom:2px;right:2px;width:10px;height:10px;border-radius:50%;background:#22c55e;border:2px solid #080810;animation:dotBlink 2s ease-in-out infinite;"></div>
-        </div>
+      <div class="chd-av" style="position:relative;cursor:pointer;" onclick="toggleMemPanel()"><img src="/avatar.jpg" id="chatAvatar" alt="HIMA" style="width:48px;height:48px;border-radius:50%;object-fit:cover;object-position:center top;border:2px solid transparent;background:linear-gradient(#080810,#080810) padding-box,linear-gradient(135deg,#F98805,#F35695) border-box;"><div style="position:absolute;bottom:2px;right:2px;width:10px;height:10px;border-radius:50%;background:#22c55e;border:2px solid #080810;"></div></div>
       <div class="chd-info">
         <div class="chd-name">HIMA</div>
         <div class="chd-sub">Coach IA · Sport & Nutrition</div>
@@ -1198,7 +1569,14 @@ canvas { display: none; }
     <div id="profil-bar" style="display:flex;overflow-x:auto;scrollbar-width:none;background:#0D0D1A;border-bottom:1px solid rgba(240,240,255,0.06);padding:5px 10px;flex-shrink:0;"><div id="profilRow" style="display:flex;gap:6px;align-items:center;min-width:max-content;"></div></div>
     <div class="msgs" id="msgs"></div>
     <div class="op-btns" id="opb"></div>
-    <div class="quick-chips" id="quick-chips"></div>
+    <div class="quick-chips" id="quick-chips">
+      <div class="qchip" onclick="chatQ('Ma séance 💪')">Ma séance 💪</div>
+      <div class="qchip" onclick="chatQ('Mon menu ce soir')">Mon menu ce soir</div>
+      <div class="qchip" onclick="chatQ('Une recette 🍽️')">Une recette 🍽️</div>
+      <div class="qchip" onclick="chatQ('Ma progression')">Ma progression</div>
+      <div class="qchip" onclick="chatQ('J'ai craqué')">J'ai craqué</div>
+      <div class="qchip" onclick="chatQ('Mal dormi')">Mal dormi</div>
+      <div class="qchip" onclick="chatQ('Je veux lâcher')">Je veux lâcher</div>
     </div>
     <div class="cinpb" style="background:#080810;border-top:1px solid rgba(240,240,255,0.1);">
       <button class="voice-btn" id="voice-btn" onclick="toggleVoice()" title="Mode vocal">🎙️</button>
@@ -6105,8 +6483,6 @@ function bPB(){var m=cMac(),jr=cJR(),row=document.getElementById('profilRow');if
 function bChips(){var h=new Date().getHours(),qc=document.getElementById('quick-chips');if(!qc)return;var mode=U.mode||'bodybuilding';var c=h<13?['Ma seance du jour','Mes macros','Comment recuperer','Ma progression']:h<20?['Mon diner ce soir','Bilan journee','Seance demain','Correction alim']:['Seance demain','Snack dodo','Bilan semaine','Motivation'];if(mode==='muscle')c[0]='Push Pull du jour';if(mode==='glow'||mode==='toning')c[0]='Cardio du jour';if(mode==='event'||mode==='perf')c[0]='Seance perf';qc.innerHTML=c.map(function(t){return'<div class="qchip" onclick="chatQ(this.textContent)">'+t+'</div>';}).join('');}
 function bSP(){var m=cMac(),jr=cJR(),pn=U.prenom||'Champion';var niv={deb:'Debutant',int_low:'Debutant+',inter:'Inter',av:'Avance',athlete:'Athlete'}[U.niv||'inter']||'Inter';var ton=jr<=7?'direct':jr<=30?'chaleureux':'complice';var bl=U.blessure&&U.blessure!=='aucune'?U.blessure:'aucune';var sep=String.fromCharCode(10);var t='Tu es HIMA coach sportif IA expert. Tu remplaces un coach humain.'+sep;t+='PROFIL: '+pn+' '+(U.mode||'poids')+' '+(U.sexe==='h'?'H':'F')+' '+(U.poids||80)+'kg -> '+(U.poidsTarget||'--')+'kg '+niv+sep;t+='LIEU: '+(U.lieu||'salle')+' TEMPS: '+(U.tps||60)+'min REGIME: '+(Array.isArray(U.reg)?U.reg.join(','):U.reg||'omni')+sep;t+='BLESSURES: '+(Array.isArray(U.blessures)?U.blessures.join(','):bl)+sep;t+='SANTE: '+(Array.isArray(U.sante)?U.sante.join(','):'aucune')+sep;t+='SITUATION: '+(U.situation||'normal')+sep;t+='MACROS: TDEE '+m.tdee+' Prot '+m.prot+'g Gluc '+m.gluc+'g Lip '+m.lip+'g'+sep;t+='OBSTACLES: '+(Array.isArray(U.obstacles)?U.obstacles.join(','):'aucun')+sep;t+='EXO_REFUSES: '+(Array.isArray(U.exoDetestes)?U.exoDetestes.join(','):'aucun')+sep;t+='STRESS: '+(U.stress||5)+'/10 SOMMEIL: '+(U.heuresSommeil||7)+'h ENGAGEMENT: '+(U.engagement||7)+'/10'+sep;t+=buildMemoryContext()+sep;t+='REGLES: 1.UNIQUEMENT sport nutrition recup 2.Tutoyer appeler '+pn+' par prenom 3.Max 4 lignes+donnees concretes 4.Prose pas listes 5.Ton '+ton;return t;}
 var _p_callAI=callAI;callAI=function(msg){var oF=window.fetch;window.fetch=function(u,o){if(u&&u.indexOf('/api/chat')!==-1&&o&&o.body){try{var b=JSON.parse(o.body);b.system=bSP();o.body=JSON.stringify(b);}catch(e){}}window.fetch=oF;return oF.apply(this,arguments);};_p_callAI(msg);};
-var _p_switchTab=switchTab;switchTab=function(id){_p_switchTab(id);if(id==='t-chat'){setTimeout(function(){var mc=document.getElementById('mem-count');if(mc)mc.textContent=(U.memories||[]).length||0;var mood=document.getElementById('chatMood');if(mood){var jr=cJR(),pn=U.prenom||'Demo';var moods=['Pret a tout dechirer !','Ta transformation continue J'+jr,'Chaque rep compte','Plus fort chaque jour'];mood.textContent=moods[Math.floor(Math.random()*moods.length)];}bPB();bChips();},80);}};
-
 console.log('HIMA v3 complet charge ✓');
 
 
@@ -6149,84 +6525,341 @@ switchTab=function(id){_p_st_home(id);if(id==='t-home')setTimeout(initHomeV3,80)
 document.addEventListener('DOMContentLoaded',function(){setTimeout(function(){var t=document.getElementById('t-home');if(t&&t.classList.contains('on'))initHomeV3();},600);});
 
 
-// ═══ HIMA Chat v3 ═══
+// ═══════════════════════════════════════════
+// HIMA HOME v3 — COMPLET
+// ═══════════════════════════════════════════
+
+// ── Données séances ──
+var HM_PLANS = {
+  poids: ['Push cardio — Pecto Epaules Triceps','Cardio HIIT 30min','Pull cardio — Dos Biceps','Repos actif','Legs — Cuisses Fessiers','Cardio steady state','Repos complet'],
+  muscle: ['Push lourd — Bench Press + Epaules','Pull lourd — Tractions + Rowing','Repos musculaire','Legs — Squat + Leg Press','Push volume — Isolation','Pull volume — Biceps + Dos','Repos complet'],
+  toning: ['Full body circuit A','Cardio 30min brule graisses','Full body circuit B','Repos actif','Lower body sculpt','Cardio + gainage','Repos complet'],
+  forme: ['Marche 30min + renfo leger','Yoga mobilite et etirements','Full body doux debutant','Repos complet','Cardio leger 20min','Stretching profond','Repos complet'],
+  perf: ['Interval run VMA','Force fonctionnelle','Long run endurance','Repos actif','Vitesse et sprint','Endurance specifique','Repos complet'],
+  energie: ['Full body energisant','Marche ou velo 45min','Renforcement leger','Yoga et respiration','Cardio doux 25min','Mobilite articulaire','Repos complet'],
+  event: ['Seance specifique A','Cardio specific evenement','Seance specifique B','Repos et recup','Seance performance','Recuperation active','Repos complet']
+};
+var HM_EXOS = {
+  poids: [['Developpe couche 4x12','Oiseau halteres 3x15','Triceps poulie 3x15'],['Burpees 5x10','Mountain climbers 4x20','Jumping jacks 3x30'],['Tractions 4x8','Rowing halteres 4x12','Curl biceps 3x15']],
+  muscle: [['Developpe couche 4x8','Presse epaules 4x8','Dips lestes 3x10'],['Tractions lestees 4x8','Rowing barre 4x8','Curl halteres 3x12']],
+  toning: [['Squat + press 4x15','Fentes 3x12','Gainage lateral 3x45s']]
+};
+var HM_JOURS = ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
+
+// ── Calculs ──
+function calcReadiness() {
+  var s = parseFloat(U.heuresSommeil||7);
+  var q = {excellent:100,moyen:60,mauvais:30}[U.sommeil||'moyen']||60;
+  var stress = 10 - parseFloat(U.stress||5);
+  var sk = Math.min(U.streak||0,10);
+  var eng = parseFloat(U.engagement||7);
+  return Math.round((s/10*25)+(q/100*25)+(stress/10*20)+(sk/10*15)+(eng/10*15));
+}
+
+function calcBodyScore() {
+  var sk = Math.min(U.streak||0,30)/30*20;
+  var se = Math.min(U.seancesFaites||0,4)/4*20;
+  var sl = (parseFloat(U.heuresSommeil)||7)/9*20;
+  var st = (10-(parseFloat(U.stress)||5))/10*20;
+  var en = (parseFloat(U.engagement)||7)/10*20;
+  return Math.round(sk+se+sl+st+en);
+}
+
+function getSeanceDuJour() {
+  var day = new Date().getDay();
+  var mode = U.mode||'muscle';
+  var plan = HM_PLANS[mode]||HM_PLANS.muscle;
+  return {nom:plan[day]||'Repos complet', jour:HM_JOURS[day], readiness:calcReadiness()};
+}
+
+function getInsightDuJour() {
+  var rd = calcReadiness();
+  var st = parseFloat(U.stress||5);
+  var sl = parseFloat(U.heuresSommeil||7);
+  var sk = U.streak||0;
+  if(rd<31) return 'Reduis l intensite aujourd hui. La recuperation est un entrainement a part entiere.';
+  if(st>7&&sl<6) return 'Stress eleve + manque de sommeil = cortisol eleve. Priorite absolue : recuperation.';
+  if(sk>6&&rd>80) return 'Tu es dans ta meilleure semaine. Chaque repetition compte double aujourd hui.';
+  if(sk===0) return 'Le premier jour est toujours le plus dur. Et le plus important de tous.';
+  if(sl>8&&rd>70) return 'Excellente nuit de sommeil. Ton corps est pret a tout. Ecrase cette seance.';
+  if(sk>=30) return '30 jours de suite. Ton cerveau a integre l habitude. Tu es transforme.';
+  if(sk>=7) return 'Une semaine complete. Tu es dans les 20% les plus reguliers. Continue.';
+  return 'La regularite bat toujours l intensite. Tu es exactement sur la bonne voie.';
+}
+
+function getCoachMsg() {
+  var h = new Date().getHours();
+  var rd = calcReadiness();
+  var sk = U.streak||0;
+  var pn = U.prenom||'Champion';
+  var mode = U.mode||'muscle';
+  if(rd<31) return 'Corps pas au top aujourd hui '+pn+'. On fait une seance legere ensemble ?';
+  if(sk===0) return 'Pret pour J1 '+pn+' ? Le plus dur c est de commencer. Allez !';
+  if(sk>=7) return sk+' jours de suite '+pn+' ! Tu es dans une autre dimension.';
+  if(h<12) return 'Ton '+getSeanceDuJour().nom+' t attend '+pn+'. On y va ?';
+  if(h<18) return 'Comment tu te sens ? On ajuste la seance si besoin.';
+  return 'Belle journee '+pn+' ? Dis-moi comment tu te sens avant la seance.';
+}
+
+function getRepasJour() {
+  var m = typeof calcMacrosV3==='function'?calcMacrosV3():{prot:150,gluc:200,lip:70,kcal:2000};
+  var reg = Array.isArray(U.reg)?U.reg[0]:U.reg||'omni';
+  var isVegan = reg==='vegan'||reg==='vege';
+  var isKeto = reg==='keto';
+  var p1 = isVegan?{n:'Petit-dej',d:'Tofu brouille + flocons avoine',p:35,g:50,l:12}:
+            isKeto?{n:'Petit-dej',d:'Oeufs brouilles + avocat + bacon',p:30,g:5,l:28}:
+            {n:'Petit-dej',d:'Omelette 3 oeufs + flocons avoine',p:40,g:55,l:14};
+  var p2 = isVegan?{n:'Dejeuner',d:'Pois chiches + quinoa + legumes',p:28,g:70,l:10}:
+            isKeto?{n:'Dejeuner',d:'Poulet + salade + huile olive',p:45,g:5,l:30}:
+            {n:'Dejeuner',d:'Poulet 200g + riz 100g + legumes',p:50,g:75,l:8};
+  var p3 = isVegan?{n:'Diner',d:'Lentilles + patate douce + tofu',p:30,g:65,l:8}:
+            isKeto?{n:'Diner',d:'Saumon + brocolis + beurre',p:40,g:8,l:35}:
+            {n:'Diner',d:'Saumon 180g + patate douce + brocolis',p:42,g:40,l:15};
+  return [p1,p2,p3];
+}
+
+function getCoachChips() {
+  var h = new Date().getHours();
+  var rd = calcReadiness();
+  if(rd<31) return ['Seance allégée','Conseils récup','Mon stress'];
+  if(h<12) return ['Séance du jour','Mes macros','Motivation'];
+  if(h<18) return ['Mon diner','Bilan macros','Conseils'];
+  return ['Snack soir','Récup muscu','Demain'];
+}
+
+function getMuscleState() {
+  var day = new Date().getDay();
+  var mode = U.mode||'muscle';
+  var states = {
+    pecto: {0:'vert',1:'orange',2:'vert',3:'vert',4:'rouge',5:'vert',6:'vert'}[day]||'vert',
+    dos:   {0:'vert',1:'rouge',2:'orange',3:'vert',4:'vert',5:'vert',6:'vert'}[day]||'vert',
+    jambes:{0:'vert',1:'vert',2:'vert',3:'rouge',4:'orange',5:'vert',6:'vert'}[day]||'vert',
+    epaules:{0:'orange',1:'rouge',2:'vert',3:'vert',4:'vert',5:'vert',6:'vert'}[day]||'vert'
+  };
+  return states;
+}
+
+// ── Animation helpers ──
+function animCircle(id, score, max, totalDash) {
+  var el = document.getElementById(id); if(!el) return;
+  var pct = Math.min(score,max)/max;
+  var offset = totalDash - (totalDash * pct);
+  setTimeout(function(){ el.style.strokeDashoffset = offset; el.style.transition = 'stroke-dashoffset 1.2s ease'; }, 100);
+}
+function animBar(id, pct) {
+  var el = document.getElementById(id); if(!el) return;
+  setTimeout(function(){ el.style.width = Math.min(pct,100)+'%'; }, 200);
+}
+function animCounter(id, target) {
+  var el = document.getElementById(id); if(!el) return;
+  var start=0; var step=Math.ceil(target/30);
+  var iv=setInterval(function(){ start=Math.min(start+step,target); el.textContent=start; if(start>=target)clearInterval(iv); },40);
+}
+function el(id){ return document.getElementById(id); }
+
+// ── INIT HOME v3 ──
+function initHomeV3() {
+  var h = new Date().getHours();
+  var pn = U.prenom||'Champion';
+  var mode = U.mode||'muscle';
+  var sk = U.streak||0;
+
+  // HERO
+  var greet = h<5?'Bonne nuit':h<12?'Bon matin':h<18?'En forme':h<22?'Bonsoir':'Repose-toi';
+  if(el('hh-gr')) el('hh-gr').textContent = greet;
+  if(el('hh-nm')) el('hh-nm').textContent = pn.toUpperCase();
+  var seance = getSeanceDuJour();
+  var sub = seance.nom.indexOf('Repos')!==-1 ? 'Jour de recuperation active' :
+            sk>0&&sk%7===0 ? '🔥 Nouveau record de streak !' : 'Jour d entrainement';
+  if(el('hh-sub')) el('hh-sub').textContent = sub;
+
+  // Bubble msg
+  var cMsg = getCoachMsg();
+  if(el('hm-bubble-msg')) el('hm-bubble-msg').textContent = cMsg.length>40?'Coach pret →':cMsg;
+
+  // READINESS
+  var rd = calcReadiness();
+  var rdColor = rd<31?'#F35695':rd<61?'#F98805':rd<86?'#22c55e':'#DDE255';
+  var rdLabel = rd<31?'Repos':rd<61?'Correct':rd<86?'Bien':'Elite';
+  var rdAdvice = rd<31?'Recupere. Corps pas pret aujourd hui.':rd<61?'Correct. Entraine-toi sans te forcer.':rd<86?'Bien. Seance normale recommandee.':'Journee pour battre tes records !';
+  if(el('hm-read-score')){ el('hm-read-score').textContent=rd; el('hm-read-score').style.color=rdColor; }
+  if(el('hm-read-label')){ el('hm-read-label').textContent=rdLabel; }
+  if(el('hm-read-advice')) el('hm-read-advice').textContent=rdAdvice;
+  if(el('hm-read-arc')) { el('hm-read-arc').style.stroke=rdColor; animCircle('hm-read-arc',rd,100,157); }
+  // Indicateurs
+  var slSt = parseFloat(U.heuresSommeil||7)>=7?'😴 ✅':parseFloat(U.heuresSommeil||7)>=6?'😴 🟡':'😴 🔴';
+  var stSt = parseFloat(U.stress||5)<=4?'🧘 ✅':parseFloat(U.stress||5)<=7?'🧘 🟡':'🧘 🔴';
+  var skSt = sk>=3?'🔥 ✅':sk>=1?'🔥 🟡':'🔥 ⚫';
+  if(el('hm-ri-sleep')) el('hm-ri-sleep').textContent=slSt;
+  if(el('hm-ri-stress')) el('hm-ri-stress').textContent=stSt;
+  if(el('hm-ri-streak')) el('hm-ri-streak').textContent=skSt;
+
+  // STREAK
+  if(el('hm-streak-val')) el('hm-streak-val').textContent=sk;
+  var streakMsgs = ['Commence aujourd hui !','Premier jour. Tu as fait le plus dur.','Deux jours. La regularite commence.','Trois jours. Excellent !','Quatre jours. Tu es sur la bonne voie.','Cinq jours. Presque une semaine !','Six jours. Serie incroyable !','🏆 Une semaine ! Tu es dans les 20% les plus reguliers.','Continue ! Les habitudes se creent maintenant.','Neuf jours. La machine est lancee !','Dix jours. Rien ne t arrete.'];
+  if(el('hm-streak-msg')) el('hm-streak-msg').textContent=streakMsgs[Math.min(sk,streakMsgs.length-1)];
+  var palier = sk<7?7:sk<14?14:sk<30?30:90;
+  var fillPct = (sk/palier)*100;
+  if(el('hm-streak-fill')) setTimeout(function(){el('hm-streak-fill').style.width=Math.min(fillPct,100)+'%';},300);
+  if(el('hm-streak-next')) el('hm-streak-next').textContent='Objectif '+palier+'j — '+Math.round(fillPct)+'%';
+  if(sk>=7&&el('hm-streak-card')) el('hm-streak-card').style.animation='streakPulse 2s ease-in-out infinite';
+
+  // SÉANCE
+  var intLabel = rd<31?'🔴 Allégée':rd<61?'🟡 Modérée':'🟢 Intense';
+  var intColor = rd<31?'rgba(243,86,149,0.1)':rd<61?'rgba(249,136,5,0.1)':'rgba(34,197,94,0.1)';
+  if(el('hm-badge-jour')) el('hm-badge-jour').textContent=seance.jour;
+  if(el('hm-badge-phase')) el('hm-badge-phase').textContent=typeof cPhase==='function'?cPhase():'Fondation';
+  if(el('hm-badge-int')){ el('hm-badge-int').textContent=intLabel; el('hm-badge-int').style.background=intColor; }
+  if(el('hm-seance-name')) el('hm-seance-name').textContent=seance.nom;
+  var exosList = (HM_EXOS[mode]||HM_EXOS.poids)[new Date().getDay()%3]||HM_EXOS.muscle[0];
+  if(el('hm-seance-exos')) el('hm-seance-exos').innerHTML=exosList.map(function(e){return'<div class="hm-seance-exo">'+e+'</div>';}).join('');
+  if(el('hm-seance-meta')) el('hm-seance-meta').textContent=(U.tps||60)+'min · '+(U.lieu||'salle');
+
+  // OBJECTIF
+  var pAct = parseFloat(U.poids||U.dep||80);
+  var pCible = parseFloat(U.poidsTarget||U.obj||pAct);
+  var diff = Math.abs(pAct-pCible);
+  var semaines = Math.max(1,Math.round(diff/0.5));
+  if(el('hm-obj-actuel')) el('hm-obj-actuel').textContent=pAct+'kg';
+  if(el('hm-obj-cible')) el('hm-obj-cible').textContent=pCible+'kg';
+  if(el('hm-obj-eta')) el('hm-obj-eta').textContent=diff<1?'Objectif atteint ✅':'Dans ~'+semaines+' semaines';
+  var objPct = diff<1?100:Math.round((1-diff/Math.max(diff,10))*100);
+  animBar('hm-obj-fill',Math.max(objPct,5));
+  var objPhrase = diff<1?'Objectif atteint ! Passons au prochain defi.':
+    mode==='muscle'?'En '+semaines+' semaines, +3 a 5kg de muscle propre.':
+    mode==='poids'?'A ce rythme, tu perds 0,5kg par semaine. Reste constant.':
+    'Programme calibre pour atteindre ton objectif en '+semaines+' semaines.';
+  if(el('hm-obj-phrase')) el('hm-obj-phrase').textContent=objPhrase;
+
+  // MACROS
+  var m = typeof calcMacrosV3==='function'?calcMacrosV3():{kcal:2000,prot:150,gluc:200,lip:70};
+  if(el('hm-ring-kcal')) el('hm-ring-kcal').textContent=m.kcal||m.tdee||'—';
+  animCircle('hm-ring-fill',72,100,314);
+  if(el('hm-prot-val')) el('hm-prot-val').textContent=(m.prot||'—')+'g';
+  if(el('hm-gluc-val')) el('hm-gluc-val').textContent=(m.gluc||'—')+'g';
+  if(el('hm-lip-val')) el('hm-lip-val').textContent=(m.lip||'—')+'g';
+  setTimeout(function(){ animBar('hm-prot-fill',75); animBar('hm-gluc-fill',60); animBar('hm-lip-fill',80); },400);
+  // Fenetre anabolique
+  var anabMsg = h>=6&&h<=9?'🥩 Mange tes proteines AVANT la seance ce matin':
+    h>=12&&h<=14?'⚡ Fenetre anabolique optimale. Mange maintenant.':
+    '💧 Pense a t hydrater tout au long de la journee';
+  if(el('hm-anabolic')) el('hm-anabolic').textContent=anabMsg;
+
+  // MUSCLES
+  var ms = getMuscleState();
+  var colors = {vert:'#22c55e',orange:'#F98805',rouge:'#F35695'};
+  var musclesMap = {pecto:'hm-m-pecto',dos:'hm-m-dos',jambes:'hm-m-quad-g',epaules:'hm-m-epaule-g'};
+  Object.keys(musclesMap).forEach(function(k){
+    var svgEl = document.getElementById(musclesMap[k]);
+    if(svgEl) svgEl.setAttribute('fill', colors[ms[k]]||'#22c55e');
+  });
+  var f = document.getElementById('hm-m-epaule-d'); if(f) f.setAttribute('fill',colors[ms.epaules]||'#22c55e');
+  var quad_d = document.getElementById('hm-m-quad-d'); if(quad_d) quad_d.setAttribute('fill',colors[ms.jambes]||'#22c55e');
+  var advice = Object.values(ms).every(function(v){return v==='vert';})?'Tous les muscles sont recuperes. Fonce !':
+    'Adapte ta seance selon les zones en recuperation.';
+  if(el('hm-muscles-advice')) el('hm-muscles-advice').textContent=advice;
+
+  // BODY SCORE
+  var bs = calcBodyScore();
+  var bsLabel = bs<31?'Faible':bs<61?'En progression':bs<86?'On Fire':'Elite';
+  if(el('hm-bs-val')){ el('hm-bs-val').textContent=bs; }
+  if(el('hm-bs-lbl')) el('hm-bs-lbl').textContent=bsLabel;
+  animCircle('hm-bs-arc',bs,100,264);
+  var recupScore = Math.round(((parseFloat(U.heuresSommeil)||7)/9)*100);
+  var perfScore = Math.round(((U.streak||0)/30)*100);
+  var nutrScore = 65;
+  setTimeout(function(){ animBar('hm-bs-recup',recupScore); animBar('hm-bs-perf',perfScore); animBar('hm-bs-nutr',nutrScore); },500);
+  if(el('hm-bs-delta')) el('hm-bs-delta').textContent = bs>50?'+'+Math.floor(Math.random()*5+1)+' pts vs hier':'Construis ton score';
+
+  // COACH
+  if(el('hm-coach-msg')) el('hm-coach-msg').textContent=getCoachMsg();
+  var chips = getCoachChips();
+  if(el('hm-coach-chips')) el('hm-coach-chips').innerHTML=chips.map(function(c){
+    return '<div class="hm-cc" onclick="event.stopPropagation();switchTab(\'t-chat\');setTimeout(function(){chatQ(\''+c+'\');},200)">'+c+'</div>';
+  }).join('');
+
+  // REPAS
+  var repas = getRepasJour();
+  if(el('hm-repas-scroll')) el('hm-repas-scroll').innerHTML=repas.map(function(r){
+    return '<div class="hm-repas-card" onclick="switchTab(\'t-chat\');setTimeout(function(){chatQ(\'Valide ce repas pour mes macros : '+r.n+'\');},200)">'+
+      '<div class="hm-repas-nom">'+r.n+'</div>'+
+      '<div class="hm-repas-detail">'+r.d+'</div>'+
+      '<div class="hm-repas-macros">'+
+      '<span class="hm-repas-macro p">'+r.p+'g P</span>'+
+      '<span class="hm-repas-macro g">'+r.g+'g G</span>'+
+      '<span class="hm-repas-macro l">'+r.l+'g L</span>'+
+      '</div></div>';
+  }).join('');
+
+  // SEMAINE
+  var dayNow = new Date().getDay();
+  var seances7 = HM_PLANS[mode]||HM_PLANS.muscle;
+  var icons = {Push:'🏋️',Pull:'🏋️',Legs:'🏃',Cardio:'🏃',Repos:'😴',Yoga:'🧘',Full:'💪',Marche:'🚶',Seance:'⚡'};
+  function getIcon(s){ var k=Object.keys(icons).find(function(k){return s.indexOf(k)!==-1;}); return icons[k]||'⚡'; }
+  if(el('hm-week-wrap')) el('hm-week-wrap').innerHTML=HM_JOURS.map(function(j,i){
+    var isToday=i===dayNow;
+    var isRepos=seances7[i]&&seances7[i].indexOf('Repos')!==-1;
+    var bg=isToday?'linear-gradient(135deg,#F98805,#F35695)':isRepos?'rgba(240,240,255,0.04)':'rgba(34,197,94,0.1)';
+    var border=isToday?'none':isRepos?'1px solid rgba(240,240,255,0.08)':'1px solid rgba(34,197,94,0.2)';
+    return '<div class="hm-day-circle">'+
+      '<div class="hm-dc-circle" style="background:'+bg+';border:'+border+'">'+getIcon(seances7[i]||'Repos')+'</div>'+
+      '<div class="hm-dc-lbl" style="color:'+(isToday?'#F98805':'#3A3A60')+'">'+j+'</div></div>';
+  }).join('');
+  var seancesOk = [0,1,2,3,4,5,6].filter(function(i){return seances7[i]&&seances7[i].indexOf('Repos')===-1;}).length;
+  if(el('hm-week-phrase')) el('hm-week-phrase').textContent=seancesOk+' seances prevues cette semaine. Reste constant.';
+
+  // PR CARDS
+  var prs = U.poids1RM||{};
+  var prEl = el('hm-pr-scroll');
+  if(prEl) {
+    if(Object.keys(prs).length===0) {
+      prEl.innerHTML='<div style="font-size:13px;color:#9090B0;padding:8px;">Dis a HIMA tes charges. Il suit tes records automatiquement.</div>';
+    } else {
+      prEl.innerHTML=Object.keys(prs).map(function(exo){
+        return '<div class="hm-pr-card"><div class="hm-pr-exo">'+exo+'</div><div class="hm-pr-val">'+prs[exo]+'kg</div><div class="hm-pr-badge">Record personnel</div></div>';
+      }).join('');
+    }
+  }
+
+  // PHOTO HEBDO — afficher si meme jour de semaine que debut
+  if(U.dateDebut) {
+    var debut = new Date(U.dateDebut).getDay();
+    if(debut===dayNow&&el('hm-photo-card')) el('hm-photo-card').style.display='flex';
+  }
+
+  // INSIGHT
+  if(el('hm-insight-text')) el('hm-insight-text').textContent=getInsightDuJour();
+}
+
+// ── Chat functions ──
 function cMac(){var w=parseFloat(U.poids||U.dep||80),h2=parseFloat(U.taille||178),ag=parseFloat(U.age||28),sx=U.sexe||'h',li=U.lieu||'salle';var bmr=sx==='h'?10*w+6.25*h2-5*ag+5:10*w+6.25*h2-5*ag-161;var mu={maison:1.375,salle:1.55,mixte:1.475}[li]||1.55;var td=Math.round(bmr*mu),pr=Math.round(w*2.2),lp=Math.round(w),gl=Math.round((td-pr*4-lp*9)/4);return{tdee:td,prot:pr,gluc:gl,lip:lp};}
 function cPhase(){var s=U.semaineCycle||1;return s<=4?'Fondation':s<=8?'Dev':s<=10?'Intensif':'Pic';}
 function cJR(){var d=U.dateDebut;if(!d)return 1;return Math.max(1,Math.floor((Date.now()-new Date(d).getTime())/864e5)+1);}
+function bPB(){var m=cMac(),jr=cJR(),row=document.getElementById('profilRow');if(!row)return;var its=[{k:'Streak',v:(U.streak||streak||0)+'j',c:'pcs2'},{k:'Poids',v:(U.poids||U.dep||80)+'kg',c:''},{k:'Cible',v:(U.poidsTarget||U.obj||'--')+'kg',c:''},{k:'TDEE',v:m.tdee+' kcal',c:''},{k:'Prot',v:m.prot+'g',c:''},{k:'Gluc',v:m.gluc+'g',c:''},{k:'Lip',v:m.lip+'g',c:''},{k:'Phase',v:cPhase(),c:'pcp2'},{k:'J-Rel',v:'J'+jr,c:''},{k:'Seances',v:(U.seancesFaites||seances||0)+'/'+(U.seancesTotal||12),c:''}];row.innerHTML=its.map(function(it,i){return(i?'<div class="sp2"></div>':'')+'<div class="pc '+it.c+'"><div class="pv">'+it.v+'</div><div class="pk">'+it.k+'</div></div>';}).join('');}
+function bChips(){var h=new Date().getHours(),qc=document.getElementById('quick-chips');if(!qc)return;var mode=U.mode||'muscle';var c=h<13?['Ma seance du jour','Mes macros','Comment recuperer','Ma progression']:h<20?['Mon diner ce soir','Bilan journee','Seance demain','Correction alim']:['Seance demain','Snack dodo','Bilan semaine','Motivation'];if(mode==='muscle')c[0]='Push Pull du jour';if(mode==='toning'||mode==='poids')c[0]='Cardio du jour';if(mode==='perf'||mode==='event')c[0]='Seance perf';qc.innerHTML=c.map(function(t){return'<div class="qchip" onclick="chatQ(this.textContent)">'+t+'</div>';}).join('');}
+function bSP(){var m=cMac(),jr=cJR(),pn=U.prenom||'Champion';var niv={deb:'Debutant',inter_low:'Debutant+',inter:'Inter',av:'Avance',athlete:'Athlete'}[U.niv||'inter']||'Inter';var ton=jr<=7?'direct':jr<=30?'chaleureux':'complice';var sep=String.fromCharCode(10);var t='Tu es HIMA coach sportif IA expert. Tu remplaces un coach humain.'+sep;t+='PROFIL: '+pn+' '+(U.mode||'muscle')+' '+(U.sexe==='h'?'H':'F')+' '+(U.poids||80)+'kg -> '+(U.poidsTarget||'--')+'kg '+niv+sep;t+='LIEU: '+(U.lieu||'salle')+' TEMPS: '+(U.tps||60)+'min'+sep;t+='REGIME: '+(Array.isArray(U.reg)?U.reg.join(','):U.reg||'omni')+sep;t+='BLESSURES: '+(Array.isArray(U.blessures)?U.blessures.join(','):'aucune')+sep;t+='SANTE: '+(Array.isArray(U.sante)?U.sante.join(','):'aucune')+sep;t+='OBSTACLES: '+(Array.isArray(U.obstacles)?U.obstacles.join(','):'aucun')+sep;t+='EXO_REFUSES: '+(Array.isArray(U.exoDetestes)?U.exoDetestes.join(','):'aucun')+sep;t+='STRESS: '+(U.stress||5)+'/10 SOMMEIL: '+(U.heuresSommeil||7)+'h ENGAGEMENT: '+(U.engagement||7)+'/10'+sep;t+='MACROS: TDEE '+m.tdee+' Prot '+m.prot+'g Gluc '+m.gluc+'g Lip '+m.lip+'g'+sep;t+='READINESS: '+calcReadiness()+'/100 BODY SCORE: '+calcBodyScore()+'/100'+sep;t+='PROGRESSION: Streak '+(U.streak||0)+'j Phase '+cPhase()+' J'+jr+sep;t+=buildMemoryContext()+sep;t+='REGLES: 1.UNIQUEMENT sport nutrition recup 2.Tutoyer appeler '+pn+' 3.Max 4 lignes+donnees concretes 4.Prose pas listes 5.Ton '+ton;return t;}
 
-function bPB(){
-  var m=cMac(),jr=cJR(),row=document.getElementById('profilRow');if(!row)return;
-  var its=[{k:'Streak',v:(U.streak||streak||0)+'j',c:'pcs2'},{k:'Poids',v:(U.poids||U.dep||80)+'kg',c:''},{k:'Cible',v:(U.poidsTarget||U.obj||'--')+'kg',c:''},{k:'TDEE',v:m.tdee+' kcal',c:''},{k:'Prot',v:m.prot+'g',c:''},{k:'Gluc',v:m.gluc+'g',c:''},{k:'Lip',v:m.lip+'g',c:''},{k:'Phase',v:cPhase(),c:'pcp2'},{k:'J-Rel',v:'J'+jr,c:''},{k:'Seances',v:(U.seancesFaites||seances||0)+'/'+(U.seancesTotal||12),c:''}];
-  row.innerHTML=its.map(function(it,i){return(i?'<div class="sp2"></div>':'')+'<div class="pc '+it.c+'"><div class="pv">'+it.v+'</div><div class="pk">'+it.k+'</div></div>';}).join('');
-}
+var _h_callAI=callAI;callAI=function(msg){var oF=window.fetch;window.fetch=function(u,o){if(u&&u.indexOf('/api/chat')!==-1&&o&&o.body){try{var b=JSON.parse(o.body);b.system=bSP();o.body=JSON.stringify(b);}catch(e){}}window.fetch=oF;return oF.apply(this,arguments);};_h_callAI(msg);};
 
-function bChips(){
-  var h=new Date().getHours(),qc=document.getElementById('quick-chips');if(!qc)return;
-  var mode=U.mode||'muscle';
-  var c=h<13?['Ma seance du jour','Mes macros','Comment recuperer','Ma progression']:h<20?['Mon diner ce soir','Bilan journee','Seance demain','Correction alim']:['Seance demain','Snack dodo','Bilan semaine','Motivation'];
-  if(mode==='muscle')c[0]='Push Pull du jour';
-  if(mode==='toning'||mode==='glow')c[0]='Cardio du jour';
-  if(mode==='perf'||mode==='event')c[0]='Seance perf';
-  qc.innerHTML=c.map(function(t){return'<div class="qchip" onclick="chatQ(this.textContent)">'+t+'</div>';}).join('');
-}
-
-function bSP(){
-  var m=cMac(),jr=cJR(),pn=U.prenom||'Champion';
-  var niv={deb:'Debutant',inter_low:'Debutant+',inter:'Inter',av:'Avance',athlete:'Athlete'}[U.niv||'inter']||'Inter';
-  var ton=jr<=7?'direct':jr<=30?'chaleureux':'complice';
-  var sep=String.fromCharCode(10);
-  var t='Tu es HIMA coach sportif IA expert. Tu remplaces un coach humain.'+sep;
-  t+='PROFIL: '+pn+' '+(U.mode||'muscle')+' '+(U.sexe==='h'?'H':'F')+' '+(U.poids||80)+'kg -> '+(U.poidsTarget||'--')+'kg '+niv+sep;
-  t+='LIEU: '+(U.lieu||'salle')+' TEMPS: '+(U.tps||60)+'min'+sep;
-  t+='REGIME: '+(Array.isArray(U.reg)?U.reg.join(','):U.reg||'omni')+sep;
-  t+='BLESSURES: '+(Array.isArray(U.blessures)?U.blessures.join(','):'aucune')+sep;
-  t+='SANTE: '+(Array.isArray(U.sante)?U.sante.join(','):'aucune')+sep;
-  t+='SITUATION: '+(U.situation||'normal')+sep;
-  t+='OBSTACLES: '+(Array.isArray(U.obstacles)?U.obstacles.join(','):'aucun')+sep;
-  t+='EXO_REFUSES: '+(Array.isArray(U.exoDetestes)?U.exoDetestes.join(','):'aucun')+sep;
-  t+='STRESS: '+(U.stress||5)+'/10 SOMMEIL: '+(U.heuresSommeil||7)+'h ENGAGEMENT: '+(U.engagement||7)+'/10'+sep;
-  t+='MACROS: TDEE '+m.tdee+' Prot '+m.prot+'g Gluc '+m.gluc+'g Lip '+m.lip+'g'+sep;
-  t+='PROGRESSION: Streak '+(U.streak||streak||0)+'j Seances '+(U.seancesFaites||seances||0)+' Phase '+cPhase()+' J'+jr+sep;
-  t+=buildMemoryContext()+sep;
-  t+='REGLES: 1.UNIQUEMENT sport nutrition recup 2.Tutoyer appeler '+pn+' par prenom 3.Max 4 lignes+donnees concretes 4.Prose pas listes 5.Ton '+ton;
-  return t;
-}
-
-// Override callAI avec system prompt complet
-var _c_callAI = callAI;
-callAI = function(msg) {
-  var oF = window.fetch;
-  window.fetch = function(u, o) {
-    if(u && u.indexOf('/api/chat') !== -1 && o && o.body) {
-      try { var b=JSON.parse(o.body); b.system=bSP(); o.body=JSON.stringify(b); } catch(e) {}
-    }
-    window.fetch = oF;
-    return oF.apply(this, arguments);
-  };
-  _c_callAI(msg);
+var _h_switchTab=switchTab;
+switchTab=function(id){
+  _h_switchTab(id);
+  if(id==='t-home') setTimeout(initHomeV3,80);
+  if(id==='t-chat'){setTimeout(function(){
+    var mc=document.getElementById('mem-count');if(mc)mc.textContent=(U.memories||[]).length||0;
+    var mood=document.getElementById('chatMood');if(mood){var jr=cJR(),pn=U.prenom||'Demo';var moods=['Pret a tout dechirer !','Ta transformation continue J'+jr,'Chaque rep compte','Plus fort chaque jour'];mood.textContent=moods[Math.floor(Math.random()*moods.length)];}
+    bPB();bChips();
+  },80);}
 };
 
-// Override switchTab pour init chat
-var _c_switchTab = switchTab;
-switchTab = function(id) {
-  _c_switchTab(id);
-  if(id === 't-chat') {
-    setTimeout(function() {
-      var mc=document.getElementById('mem-count');
-      if(mc) mc.textContent=(U.memories||[]).length||0;
-      var mood=document.getElementById('chatMood');
-      if(mood) {
-        var jr=cJR(),pn=U.prenom||'Champion';
-        var moods=['Pret a tout dechirer !','Ta transformation continue J'+jr,'Chaque rep compte','Plus fort chaque jour'];
-        mood.textContent=moods[Math.floor(Math.random()*moods.length)];
-      }
-      bPB();
-      bChips();
-    }, 80);
-  }
-};
+document.addEventListener('DOMContentLoaded',function(){
+  setTimeout(function(){
+    var t=document.getElementById('t-home');
+    if(t&&t.classList.contains('on')) initHomeV3();
+  },700);
+});
 
-console.log('HIMA Chat v3 charge ✓');
+console.log('HIMA Home v3 charge ✓');
 
 </script>
 </html>
