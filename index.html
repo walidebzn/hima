@@ -914,6 +914,56 @@ canvas { display: none; }
 .plan-btn-pro { background: linear-gradient(135deg, #F98805, #F35695); color: #fff; }
 .plan-btn-elite { background: transparent; color: #F35695; border: 1px solid #F35695; }
 .plan-btn:active { transform: scale(0.98); }
+
+/* ═══ ONBOARDING v3 — DESIGN PREMIUM ═══ */
+
+/* Header avatar permanent */
+.onb-hdr { display:flex; align-items:center; gap:12px; padding:10px 20px 8px; background:rgba(8,8,16,0.95); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border-bottom:1px solid rgba(240,240,255,0.06); flex-shrink:0; }
+.onb-av-wrap { position:relative; flex-shrink:0; }
+.onb-av { width:40px; height:40px; border-radius:50%; object-fit:cover; object-position:center top; border:2px solid transparent; background:linear-gradient(#080810,#080810) padding-box, linear-gradient(135deg,#F98805,#F35695) border-box; animation:onbAvPulse 3s ease-in-out infinite; }
+@keyframes onbAvPulse { 0%,100%{box-shadow:0 0 0 0 rgba(249,136,5,0.4);}50%{box-shadow:0 0 0 5px rgba(249,136,5,0);} }
+.onb-av-dot { position:absolute; bottom:1px; right:1px; width:9px; height:9px; border-radius:50%; background:#22c55e; border:2px solid #080810; }
+.onb-hdr-name { font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:14px; color:#F0F0FF; line-height:1; }
+.onb-hdr-msg { font-size:11px; color:#9090B0; margin-top:2px; font-style:italic; transition:all 0.4s ease; }
+.onb-hdr-text { flex:1; min-width:0; }
+.onb-step-info { font-family:'Space Grotesk',sans-serif; font-size:11px; color:#3A3A60; font-weight:600; }
+
+/* Bouton CTA contextuel */
+.onb-cta { transition: all 0.3s ease !important; }
+
+/* Transition écrans de bloc */
+.onb-bloc-transition { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:50vh; padding:40px 24px; text-align:center; }
+.obt-av { width:80px; height:80px; border-radius:50%; object-fit:cover; object-position:center top; border:3px solid transparent; background:linear-gradient(#080810,#080810) padding-box, linear-gradient(135deg,#F98805,#F35695) border-box; margin-bottom:20px; animation:onbAvPulse 2s ease-in-out infinite; }
+.obt-title { font-family:'Bebas Neue',sans-serif; font-size:32px; letter-spacing:1px; color:#F0F0FF; margin-bottom:8px; }
+.obt-sub { font-size:15px; color:#9090B0; line-height:1.6; max-width:280px; }
+.obt-emoji { font-size:48px; margin-bottom:16px; }
+
+/* Animations sélection bigopt */
+.bo { transition: all 0.2s cubic-bezier(0.34,1.56,0.64,1) !important; }
+.bo.on { transform: scale(1.02) !important; }
+.bo:active { transform: scale(0.97) !important; }
+
+/* Animations sélection chips */
+.ch { transition: all 0.2s cubic-bezier(0.34,1.56,0.64,1) !important; }
+.ch.on { transform: scale(1.05) !important; }
+.ms-chip { transition: all 0.2s cubic-bezier(0.34,1.56,0.64,1) !important; }
+.ms-chip.on { transform: scale(1.02) !important; }
+
+/* Particule animation sur sélection */
+@keyframes particlePop {
+  0% { transform:scale(0) translate(-50%,-50%); opacity:1; }
+  100% { transform:scale(2) translate(-50%,-50%); opacity:0; }
+}
+.particle { position:fixed; width:40px; height:40px; border-radius:50%; background:rgba(249,136,5,0.3); pointer-events:none; z-index:999; animation:particlePop 0.4s ease forwards; }
+
+/* Réponse HIMA après prénom */
+.hima-response { display:flex; align-items:flex-start; gap:10px; padding:16px; background:rgba(249,136,5,0.06); border:1px solid rgba(249,136,5,0.15); border-radius:16px; margin-top:20px; animation:slideUp 0.4s cubic-bezier(0.34,1.56,0.64,1) forwards; }
+.hr-av { width:32px; height:32px; border-radius:50%; object-fit:cover; object-position:center top; flex-shrink:0; }
+.hr-text { font-size:14px; color:#F0F0FF; line-height:1.5; }
+.hr-text strong { color:#F98805; }
+
+/* Back button visible */
+.onb-back { display:block !important; }
 </style>
 </head>
 <body>
@@ -1047,11 +1097,29 @@ canvas { display: none; }
 
 <!-- ONBOARDING -->
 <div class="sc" id="onb">
-  <div class="onb-prog"><div class="onb-bar" id="opb" style="width:11%"></div></div>
+  <!-- Barre progression -->
+  <div class="onb-prog"><div class="onb-bar" id="opb" style="width:4%"></div></div>
+
+  <!-- Header avatar permanent -->
+  <div class="onb-hdr" id="onb-hdr">
+    <div class="onb-av-wrap">
+      <img src="/avatar.jpg" class="onb-av" alt="HIMA" id="onb-avatar">
+      <div class="onb-av-dot"></div>
+    </div>
+    <div class="onb-hdr-text">
+      <div class="onb-hdr-name">HIMA</div>
+      <div class="onb-hdr-msg" id="onb-hdr-msg">Ton coach IA personnel</div>
+    </div>
+    <div class="onb-step-info" id="onb-step-info">1/33</div>
+  </div>
+
+  <!-- Contenu -->
   <div class="onb-sc"><div id="onb-ct"></div></div>
+
+  <!-- Pied de page -->
   <div class="onb-foot">
-    <button class="onb-cta" onclick="onbNext()">CONTINUER →</button>
-    <button class="onb-back" id="onb-bk" onclick="onbBack()" style="display:none">← Retour</button>
+    <button class="onb-cta" id="onb-cta-btn" onclick="onbNext()">C'est parti →</button>
+    <button class="onb-back" id="onb-bk" onclick="onbBack()">← Retour</button>
   </div>
 </div>
 
@@ -1840,6 +1908,70 @@ var OS = [
     {v:'mauvais',i:'😩',t:'Mauvais / Insomniaque'}
   ]},
   {pct:96,q:'Ton niveau de stress quotidien ?',type:'stress',key:'stress',mn:1,mx:10,v:5},
+,
+  {pct:64,q:'Ton activité professionnelle ?',type:'bigopt',key:'activiteProf',opts:[
+    {v:'bureau',i:'💻',t:'Sédentaire — Bureau / Télétravail',s:'Assis la majorite du temps'},
+    {v:'debout',i:'🏪',t:'Debout — Commerce / Enseignement',s:'Beaucoup de déplacements légers'},
+    {v:'actif',i:'🚶',t:'Actif — Livraison / Terrain',s:'Marche reguliere et effort modere'},
+    {v:'physique',i:'🔨',t:'Physique — Chantier / Manuel',s:'Effort physique intense'}
+  ]},
+  {pct:67,q:'Ton hydratation quotidienne ?',type:'chips3',key:'hydratation',opts:[
+    {v:'moins1',i:'💧',t:'Moins d\'1L'},
+    {v:'1a15',i:'💧',t:'1 a 1,5L'},
+    {v:'15a2',i:'💧',t:'1,5 a 2L'},
+    {v:'plus2',i:'💧',t:'Plus de 2L'}
+  ]},
+  {pct:70,q:'Compléments que tu prends déjà ?',type:'multisel',key:'complements',opts:[
+    {v:'aucun',i:'✅',t:'Aucun'},
+    {v:'whey',i:'🥛',t:'Whey / Protéine'},
+    {v:'creatine',i:'⚡',t:'Créatine'},
+    {v:'bcaa',i:'💊',t:'BCAA / Acides aminés'},
+    {v:'vitamines',i:'🌿',t:'Vitamines / Minéraux'},
+    {v:'omega3',i:'🐟',t:'Oméga 3'},
+    {v:'preworkout',i:'🔥',t:'Pré-workout'},
+    {v:'autre',i:'➕',t:'Autre'}
+  ]},
+  {pct:73,q:'Pourquoi maintenant ?',type:'bigopt',key:'declic',opts:[
+    {v:'sante',i:'❤️',t:'Ma sante m\'inquiete',s:'Je veux agir avant qu il ne soit trop tard'},
+    {v:'evenement',i:'📅',t:'Un événement approche',s:'Mariage vacances competition date'},
+    {v:'lassitude',i:'😤',t:'J\'en ai assez de me voir',s:'Le declic est maintenant'},
+    {v:'energie',i:'⚡',t:'Je manque d\'energie au quotidien',s:'Je veux retrouver ma vitalite'},
+    {v:'confiance',i:'💪',t:'Retrouver confiance en moi',s:'Le physique impacte mon mental'},
+    {v:'nouveau',i:'🌱',t:'Nouvelle vie Nouveau depart',s:'Separation demenagement nouveau job'}
+  ]},
+  {pct:76,q:'Tes obstacles habituels ?',type:'multisel',key:'obstacles',opts:[
+    {v:'temps',i:'⏰',t:'Manque de temps'},
+    {v:'motivation',i:'😔',t:'Manque de motivation'},
+    {v:'regularite',i:'🔄',t:'Difficulte a etre regulier'},
+    {v:'alimentation',i:'🍕',t:'Mauvaise alimentation'},
+    {v:'fatigue',i:'😴',t:'Trop fatigue apres le travail'},
+    {v:'social',i:'🎉',t:'Vie sociale / Sorties'},
+    {v:'connaissance',i:'❓',t:'Je ne sais pas quoi faire'},
+    {v:'blessure_hist',i:'🤕',t:'Blessures a repetition'}
+  ]},
+  {pct:79,q:'Equipement dispo a la maison ?',type:'multisel',key:'equipement',skipIf:'pas_maison',opts:[
+    {v:'rien',i:'🚫',t:'Rien du tout'},
+    {v:'tapis',i:'🧘',t:'Tapis de sport'},
+    {v:'halteres',i:'🏋️',t:'Halteres'},
+    {v:'barre',i:'⚡',t:'Barre + disques'},
+    {v:'kettlebell',i:'🔔',t:'Kettlebell'},
+    {v:'bandes',i:'🎗️',t:'Bandes elastiques'},
+    {v:'traction',i:'🔝',t:'Barre traction'},
+    {v:'velo',i:'🚴',t:'Velo Elliptique'},
+    {v:'banc',i:'🪑',t:'Banc de musculation'}
+  ]},
+  {pct:82,q:'Exercices que tu refuses ?',type:'multisel',key:'exoDetestes',opts:[
+    {v:'aucun',i:'✅',t:'Pas de preference'},
+    {v:'burpees',i:'😤',t:'Burpees'},
+    {v:'course',i:'🏃',t:'Course à pied'},
+    {v:'squat',i:'🏋️',t:'Squat lourd'},
+    {v:'piscine',i:'🏊',t:'Natation Piscine'},
+    {v:'saut',i:'⬆️',t:'Sauts impacts'},
+    {v:'gainage',i:'🧘',t:'Gainage Planche'},
+    {v:'spinning',i:'🚴',t:'Velo Spinning'},
+    {v:'exterieur',i:'🌧️',t:'Exterieur intemperies'}
+  ]},
+  {pct:85,q:'Ton niveau d\'engagement ?',type:'engagement',key:'engagement',mn:1,mx:10,v:7},
   {pct:100,q:'',type:'scan',key:null}
 ];
 
@@ -6002,6 +6134,10 @@ function shouldSkipStep(s) {
   if (typeof blessures === 'string') blessures = [blessures];
   if (s.skipIf === 'aucune' && blessures.indexOf('aucune') !== -1) return true;
   if (s.skipIf === 'not_femme' && U.sexe !== 'f') return true;
+  if (s.skipIf === 'pas_maison') {
+    var lieu = U.lieu || '';
+    return lieu !== 'maison' && lieu !== 'maison_mat' && lieu !== 'mixte';
+  }
   return false;
 }
 
@@ -6276,6 +6412,34 @@ function startFree() { U.plan='free'; save(); go('app'); }
 function startPro() { U.plan='pro'; save(); go('app'); }
 function startElite() { U.plan='elite'; save(); go('app'); }
 
+
+// Type engagement — slider avec étoiles
+function renderEngagement(s) {
+  var cur = U[s.key] || s.v || 7;
+  var pct = Math.round((cur - s.mn) / (s.mx - s.mn) * 100);
+  var labels = ['','',  'Je verrai...','Je verrai...','Assez motivé','Assez motivé','Motivé','Motivé','Très motivé','Déterminé','100% ENGAGÉ'];
+  var colors = ['','','#9090B0','#9090B0','#DDE255','#DDE255','#F98805','#F98805','#F98805','#F35695','#F35695'];
+  return '<div class="stress-wrap">' +
+    '<div class="stress-val" id="eng-val" style="color:'+colors[cur]+'">'+cur+'/10</div>' +
+    '<div class="stress-label" id="eng-lbl">'+labels[cur]+'</div>' +
+    '<div class="sl-lbl"><span>1 — Je verrai</span><span>10 — Tout donner</span></div>' +
+    '<input type="range" id="sr-'+s.key+'" min="'+s.mn+'" max="'+s.mx+'" value="'+cur+'" style="--pct:'+pct+'%" oninput="updateEngagement(this,\''+s.key+'\')">' +
+    '</div>';
+}
+
+function updateEngagement(inp, key) {
+  var v = parseInt(inp.value);
+  U[key] = v;
+  var pct = Math.round((v-1)/9*100);
+  inp.style.setProperty('--pct', pct+'%');
+  var labels = ['','','Je verrai...','Je verrai...','Assez motive','Assez motive','Motive','Motive','Tres motive','Determine','100% ENGAGE'];
+  var colors = ['','','#9090B0','#9090B0','#DDE255','#DDE255','#F98805','#F98805','#F98805','#F35695','#F35695'];
+  var val = document.getElementById('eng-val');
+  var lbl = document.getElementById('eng-lbl');
+  if(val){ val.textContent = v+'/10'; val.style.color = colors[v]||'#F98805'; }
+  if(lbl){ lbl.textContent = labels[v]||''; }
+}
+
 // ══ OVERRIDE renderOnb pour nouveaux types ══
 var _origRenderOnb = renderOnb;
 renderOnb = function() {
@@ -6312,6 +6476,13 @@ renderOnb = function() {
     return;
   }
 
+  // ENGAGEMENT — type spécial
+  if(s.type === 'engagement') {
+    var html = '<div class="onb-card"><div class="onb-q">'+s.q+'</div>' + renderEngagement(s) + '</div>';
+    ct.innerHTML = html;
+    return;
+  }
+
   // MULTISEL — type spécial
   if(s.type === 'multisel') {
     var html2 = '<div class="onb-card"><div class="onb-q">'+s.q+'</div>' + renderMultisel(s) + '</div>';
@@ -6331,7 +6502,7 @@ onbNext = function() {
 
   if(s.type === 'scan' || s.type === 'result') return;
 
-  if(s.type === 'stress') {
+  if(s.type === 'stress' || s.type === 'engagement') {
     var sr = document.getElementById('sr-'+s.key);
     if(sr) U[s.key] = parseInt(sr.value);
     OSI++;
@@ -6352,6 +6523,209 @@ onbNext = function() {
   // Original pour les autres types
   _origOnbNext();
 };
+
+
+// ═══════════════════════════════════════════
+// ONBOARDING v3 — DESIGN PREMIUM
+// ═══════════════════════════════════════════
+
+var himaMsgs = {
+  0:  'Bonjour ! Je suis ton coach perso.',
+  1:  'Super choix ! Je vais tout adapter.',
+  2:  'Parfait, je calibre tes macros.',
+  3:  'Formule Mifflin-St Jeor activee.',
+  4:  'Taille enregistree.',
+  5:  'Age enregistre. Plan ajuste.',
+  6:  'Objectif fixe. Programme en cours.',
+  7:  'Morphologie analysee.',
+  8:  'Ta securite est ma priorite absolue.',
+  9:  'Intensite notee. Tout adapte.',
+  10: 'Contraintes integrees au programme.',
+  11: 'Situation prise en compte.',
+  12: 'Niveau note. Programme calibre.',
+  13: 'Sports favoris integres.',
+  14: 'Frequence notee. Planning ajuste.',
+  15: 'Temps optimise pour toi.',
+  16: 'Equipement note. Exercices adaptes.',
+  17: 'Regime integre dans ta nutrition.',
+  18: 'Allergies notees. Zero risque.',
+  19: 'Rythme alimentaire note.',
+  20: 'Hydratation et recuperation.',
+  21: 'Sommeil note. Recuperation optimisee.',
+  22: 'Qualite analysee. Plan ajuste.',
+  23: 'Stress pris en compte. Programme adapte.',
+  24: 'Activite pro integree au TDEE reel.',
+  25: 'Hydratation cible calculee.',
+  26: 'Complements notes. Pas de doublons.',
+  27: 'Motivation identifiee. Je retiens.',
+  28: 'Obstacles notes. Je les anticipe.',
+  29: 'Equipement maison integre.',
+  30: 'Preferences notees. Programme adapte.',
+  31: 'Engagement note. Intensite calibree.'
+};
+
+var ctaBtnTexts = {
+  0:  "C'est parti !",
+  1:  'Voila mon objectif',
+  8:  'Compris, HIMA adaptera',
+  10: 'Contraintes prises en compte',
+  11: 'Situation confirmee',
+  27: "C'est mon declencheur",
+  28: 'Obstacles identifies',
+  31: 'Je suis pret !'
+};
+
+var blocTransitions = {
+  8:  {emoji:'💪', title:'SANTE ET SECURITE', sub:'Parlons de tes contraintes pour adapter chaque exercice.'},
+  12: {emoji:'🏃', title:'TA PRATIQUE SPORTIVE', sub:'Comment et ou tu veux t entrainer ?'},
+  17: {emoji:'🥗', title:'TA NUTRITION', sub:'On va construire ton plan alimentaire ideal.'},
+  23: {emoji:'🧠', title:'TON MODE DE VIE', sub:'Les derniers details pour un profil parfait.'}
+};
+
+function updateOnbHeader(osi) {
+  var msg = document.getElementById('onb-hdr-msg');
+  var info = document.getElementById('onb-step-info');
+  var cta = document.getElementById('onb-cta-btn');
+  var total = OS.length - 1;
+  if(msg && himaMsgs[osi] !== undefined) {
+    msg.style.opacity = '0';
+    setTimeout(function() {
+      msg.textContent = himaMsgs[osi];
+      msg.style.opacity = '1';
+    }, 150);
+  }
+  if(info) info.textContent = (osi+1) + '/' + total;
+  if(cta && ctaBtnTexts[osi]) cta.textContent = ctaBtnTexts[osi];
+  else if(cta && !ctaBtnTexts[osi]) cta.textContent = 'Continuer →';
+}
+
+function showBlocTransition(osi, callback) {
+  var bt = blocTransitions[osi];
+  if(!bt){ callback(); return; }
+  var ct = document.getElementById('onb-ct');
+  var foot = document.querySelector('.onb-foot');
+  if(!ct){ callback(); return; }
+  if(foot) foot.style.display = 'none';
+  ct.innerHTML = '<div class="onb-bloc-transition">' +
+    '<div class="obt-emoji">' + bt.emoji + '</div>' +
+    '<img src="/avatar.jpg" class="obt-av" alt="HIMA">' +
+    '<div class="obt-title">' + bt.title + '</div>' +
+    '<div class="obt-sub">' + bt.sub + '</div>' +
+    '</div>';
+  ct.style.animation = 'slideUp .35s cubic-bezier(.34,1.56,.64,1) forwards';
+  setTimeout(function(){
+    if(foot) foot.style.display = '';
+    callback();
+  }, 1800);
+}
+
+function spawnParticle(ex, ey) {
+  var p = document.createElement('div');
+  p.className = 'particle';
+  p.style.left = (ex || window.innerWidth/2) + 'px';
+  p.style.top = (ey || window.innerHeight/2) + 'px';
+  document.body.appendChild(p);
+  setTimeout(function(){ p.remove(); }, 450);
+}
+
+function showHimaResponse(prenom) {
+  var ct = document.getElementById('onb-ct');
+  if(!ct) return;
+  var old = ct.querySelector('.hima-response');
+  if(old) old.remove();
+  var resp = document.createElement('div');
+  resp.className = 'hima-response';
+  resp.innerHTML = '<img src="/avatar.jpg" class="hr-av" alt="HIMA">' +
+    '<div class="hr-text">Parfait <strong>' + prenom + '</strong> ! Je vais te construire quelque chose d exception. En route ! 🔥</div>';
+  var card = ct.querySelector('.onb-card');
+  if(card) card.appendChild(resp);
+}
+
+var _origSelBO_p = selBO;
+selBO = function(el, key, val) {
+  _origSelBO_p(el, key, val);
+  var rect = el.getBoundingClientRect();
+  spawnParticle(rect.left + rect.width/2, rect.top + rect.height/2);
+  if(key === 'mode') {
+    var modeLabels = {
+      poids:'Perte de poids ! Deficit calorique optimise !',
+      muscle:'Prise de muscle ! Push Pull Legs active !',
+      toning:'Tonification ! Circuit training optimal !',
+      forme:'Remise en forme ! Programme progressif !',
+      perf:'Performance ! Periodisation avancee !',
+      energie:'Vitalite ! Programme equilibre actif !',
+      event:'Evenement cible ! Compte a rebours lance !'
+    };
+    var msg = document.getElementById('onb-hdr-msg');
+    if(msg) {
+      msg.style.opacity = '0';
+      setTimeout(function() {
+        msg.textContent = modeLabels[val] || 'Super choix !';
+        msg.style.opacity = '1';
+      }, 150);
+    }
+  }
+};
+
+var _origSelCh_p = selCh;
+selCh = function(el, key, val) {
+  _origSelCh_p(el, key, val);
+  var rect = el.getBoundingClientRect();
+  spawnParticle(rect.left + rect.width/2, rect.top + rect.height/2);
+};
+
+var _origToggleMS_p = (typeof toggleMS === 'function') ? toggleMS : null;
+if(_origToggleMS_p) {
+  toggleMS = function(el, key, val) {
+    _origToggleMS_p(el, key, val);
+    if(el.classList.contains('on')) {
+      var rect = el.getBoundingClientRect();
+      spawnParticle(rect.left + rect.width/2, rect.top + rect.height/2);
+    }
+  };
+}
+
+var _origRenderOnb_p = renderOnb;
+renderOnb = function() {
+  _origRenderOnb_p();
+  updateOnbHeader(OSI);
+};
+
+var _origOnbNext_p = onbNext;
+onbNext = function() {
+  var s = OS[OSI];
+  if(!s || s.type === 'scan') return;
+
+  if(s.key === 'prenom') {
+    var inp = document.getElementById('oi');
+    var prenom = inp ? inp.value.trim() : '';
+    if(!prenom) return;
+    U.prenom = prenom;
+    showHimaResponse(prenom);
+    setTimeout(function() {
+      OSI++;
+      while(OSI < OS.length && shouldSkipStep(OS[OSI])) OSI++;
+      if(blocTransitions[OSI]) {
+        showBlocTransition(OSI, function(){ renderOnb(); });
+      } else {
+        renderOnb();
+      }
+    }, 1400);
+    return;
+  }
+
+  var prevOSI = OSI;
+  _origOnbNext_p();
+  if(OSI !== prevOSI && blocTransitions[OSI]) {
+    var nextOSI = OSI;
+    setTimeout(function(){
+      OSI = nextOSI;
+      showBlocTransition(OSI, function(){ renderOnb(); });
+    }, 50);
+  }
+};
+
+console.log('HIMA Onboarding v3 Premium charge ✓');
 
 </script>
 </html>
