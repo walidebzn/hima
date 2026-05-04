@@ -6495,36 +6495,6 @@ renderOnb = function() {
 };
 
 // ══ OVERRIDE onbNext pour nouveaux types ══
-var _origOnbNext = onbNext;
-onbNext = function() {
-  var s = OS[OSI];
-  if(!s) return;
-
-  if(s.type === 'scan' || s.type === 'result') return;
-
-  if(s.type === 'stress' || s.type === 'engagement') {
-    var sr = document.getElementById('sr-'+s.key);
-    if(sr) U[s.key] = parseInt(sr.value);
-    OSI++;
-    while(OSI < OS.length && OS[OSI] && shouldSkipStep(OS[OSI])) OSI++;
-    renderOnb();
-    return;
-  }
-
-  if(s.type === 'multisel') {
-    U[s.key] = msState[s.key] || [];
-    if(!U[s.key].length) return;
-    OSI++;
-    while(OSI < OS.length && OS[OSI] && shouldSkipStep(OS[OSI])) OSI++;
-    renderOnb();
-    return;
-  }
-
-  // Original pour les autres types
-  _origOnbNext();
-};
-
-
 // ═══════════════════════════════════════════
 // ONBOARDING v3 — DESIGN PREMIUM
 // ═══════════════════════════════════════════
@@ -6691,41 +6661,84 @@ renderOnb = function() {
   updateOnbHeader(OSI);
 };
 
-var _origOnbNext_p = onbNext;
+console.log('HIMA Onboarding v3 Premium charge ✓');
+
+
+// ═══ ONBOARDING v3 — onbNext UNIQUE ET COMPLET ═══
+var _onbNextOrig = onbNext;
 onbNext = function() {
   var s = OS[OSI];
   if(!s || s.type === 'scan') return;
 
+  // ── Type PRENOM — réponse HIMA avant de passer ──
   if(s.key === 'prenom') {
     var inp = document.getElementById('oi');
     var prenom = inp ? inp.value.trim() : '';
     if(!prenom) return;
     U.prenom = prenom;
-    showHimaResponse(prenom);
+    if(typeof showHimaResponse === 'function') showHimaResponse(prenom);
     setTimeout(function() {
       OSI++;
       while(OSI < OS.length && OS[OSI] && shouldSkipStep(OS[OSI])) OSI++;
-      if(blocTransitions[OSI]) {
+      if(OSI >= OS.length) return;
+      if(typeof blocTransitions !== 'undefined' && blocTransitions[OSI]) {
         showBlocTransition(OSI, function(){ renderOnb(); });
-      } else {
-        renderOnb();
-      }
+      } else { renderOnb(); }
     }, 1400);
     return;
   }
 
-  var prevOSI = OSI;
-  _origOnbNext_p();
-  if(OSI !== prevOSI && blocTransitions[OSI]) {
-    var nextOSI = OSI;
-    setTimeout(function(){
-      OSI = nextOSI;
+  // ── Type STRESS ou ENGAGEMENT ──
+  if(s.type === 'stress' || s.type === 'engagement') {
+    var sr = document.getElementById('sr-' + s.key);
+    if(sr) U[s.key] = parseInt(sr.value);
+    OSI++;
+    while(OSI < OS.length && OS[OSI] && shouldSkipStep(OS[OSI])) OSI++;
+    if(OSI >= OS.length) return;
+    if(typeof blocTransitions !== 'undefined' && blocTransitions[OSI]) {
       showBlocTransition(OSI, function(){ renderOnb(); });
-    }, 50);
+    } else { renderOnb(); }
+    return;
+  }
+
+  // ── Type MULTISEL ──
+  if(s.type === 'multisel') {
+    U[s.key] = msState[s.key] || [];
+    if(!U[s.key].length) return;
+    OSI++;
+    while(OSI < OS.length && OS[OSI] && shouldSkipStep(OS[OSI])) OSI++;
+    if(OSI >= OS.length) return;
+    if(typeof blocTransitions !== 'undefined' && blocTransitions[OSI]) {
+      showBlocTransition(OSI, function(){ renderOnb(); });
+    } else { renderOnb(); }
+    return;
+  }
+
+  // ── Types originaux (text, slider, bigopt, chips2, chips3, result) ──
+  if(s.type === 'text') {
+    var inp2 = document.getElementById('oi');
+    if(inp2) U[s.key] = (inp2.value || '').trim();
+    if(!U[s.key]) return;
+  }
+  if((s.type === 'chips2' || s.type === 'chips3') && s.key && !U[s.key]) return;
+  if(s.type === 'slider') {
+    var slr = document.getElementById('sr-' + s.key);
+    if(slr) U[s.key] = parseFloat(slr.value);
+  }
+  if(s.type === 'bigopt' && s.key && !U[s.key]) return;
+  if(s.type === 'result') { return; }
+
+  save();
+  var prevOSI = OSI;
+  OSI++;
+  while(OSI < OS.length && OS[OSI] && shouldSkipStep(OS[OSI])) OSI++;
+  if(OSI >= OS.length) return;
+  if(typeof blocTransitions !== 'undefined' && blocTransitions[OSI] && OSI !== prevOSI + 1) {
+    showBlocTransition(OSI, function(){ renderOnb(); });
+  } else {
+    renderOnb();
   }
 };
-
-console.log('HIMA Onboarding v3 Premium charge ✓');
 
 </script>
 </html>
