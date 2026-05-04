@@ -6129,7 +6129,7 @@ function calcMacrosV3() {
 
 // Vérifier si on doit passer une étape
 function shouldSkipStep(s) {
-  if (!s.skipIf) return false;
+  if (!s || !s.skipIf) return false;
   var blessures = U.blessures || [];
   if (typeof blessures === 'string') blessures = [blessures];
   if (s.skipIf === 'aucune' && blessures.indexOf('aucune') !== -1) return true;
@@ -6506,7 +6506,7 @@ onbNext = function() {
     var sr = document.getElementById('sr-'+s.key);
     if(sr) U[s.key] = parseInt(sr.value);
     OSI++;
-    while(OSI < OS.length && shouldSkipStep(OS[OSI])) OSI++;
+    while(OSI < OS.length && OS[OSI] && shouldSkipStep(OS[OSI])) OSI++;
     renderOnb();
     return;
   }
@@ -6515,7 +6515,7 @@ onbNext = function() {
     U[s.key] = msState[s.key] || [];
     if(!U[s.key].length) return;
     OSI++;
-    while(OSI < OS.length && shouldSkipStep(OS[OSI])) OSI++;
+    while(OSI < OS.length && OS[OSI] && shouldSkipStep(OS[OSI])) OSI++;
     renderOnb();
     return;
   }
@@ -6704,7 +6704,7 @@ onbNext = function() {
     showHimaResponse(prenom);
     setTimeout(function() {
       OSI++;
-      while(OSI < OS.length && shouldSkipStep(OS[OSI])) OSI++;
+      while(OSI < OS.length && OS[OSI] && shouldSkipStep(OS[OSI])) OSI++;
       if(blocTransitions[OSI]) {
         showBlocTransition(OSI, function(){ renderOnb(); });
       } else {
