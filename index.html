@@ -3434,7 +3434,7 @@ function initAllNewFeatures() {
 // ════════════════════════════════════════════════════
 
 // ── ELEVENLABS VOIX PREMIUM ──
-var xiKey = '';
+var xiKey = (typeof ELEVENLABS_KEY !== 'undefined' && ELEVENLABS_KEY) ? ELEVENLABS_KEY : 'sk_5f11b4d6f5116d1d00ea9416e9a0a7acc2dd0f32c406d1a4';
 var xiVoiceId = 'pNInz6obpgDQGcFmaJgB'; // Default Adam voice
 
 function saveXIKey() {
@@ -5459,6 +5459,307 @@ switchTab = function(id) {
     }, 80);
   }
 };
+
+
+// HIMA v3 — Camera + ElevenLabs activés
+function toggleCamera() {
+  openPosture('Squat');
+}
+
+
+// ════════════════════════════════════════════════════
+// HIMA v3 — FONCTIONNALITÉS COMPLÈTES
+// ════════════════════════════════════════════════════
+
+// ── 1. FIRESTORE SYNC COMPLET ──────────────────────
+
+// Charger depuis Firestore au login (memories + hist + 1RM)
+function loadFromFirestore(uid) {
+  if (!window.db || !uid) return;
+  try {
+    db.collection('users').doc(uid).get().then(function(doc) {
+      if (doc.exists) {
+        var data = doc.data();
+        // Fusionner avec localStorage
+        var local = {};
+        try { local = JSON.parse(localStorage.getItem('hima8') || '{}'); } catch(e) {}
+        // Firestore prioritaire pour les données cross-device
+        if (data.memories && data.memories.length > (local.memories||[]).length) {
+          U.memories = data.memories;
+        }
+        if (data.chatHistory) U.chatHistory = data.chatHistory.slice(-20);
+        if (data.poids1RM) U.poids1RM = Object.assign(U.poids1RM||{}, data.poids1RM);
+        if (data.streak > (U.streak||0)) { U.streak = data.streak; streak = data.streak; }
+        if (data.seancesFaites) { U.seancesFaites = data.seancesFaites; seances = data.seancesFaites; }
+        if (data.semaineCycle) U.semaineCycle = data.semaineCycle;
+        if (data.programme) U.programme = data.programme;
+        save();
+        // Refresh UI
+        if (typeof bPB === 'function') bPB();
+        var mc = document.getElementById('mem-count');
+        if (mc) mc.textContent = (U.memories||[]).length;
+        console.log('Firestore data loaded ✓');
+      }
+    }).catch(function(e) { console.warn('Firestore load error:', e.message); });
+  } catch(e) {}
+}
+
+// Sauvegarder memories + hist + 1RM dans Firestore
+function saveMemoriesToCloud() {
+  if (!window.db || !window.auth || !auth.currentUser) return;
+  try {
+    var uid = auth.currentUser.uid;
+    var chatHist = [];
+    try { chatHist = (U.chatHistory||[]).slice(-30); } catch(e) {}
+    db.collection('users').doc(uid).set({
+      memories: U.memories || [],
+      chatHistory: chatHist,
+      poids1RM: U.poids1RM || {},
+      streak: U.streak || streak || 0,
+      seancesFaites: U.seancesFaites || seances || 0,
+      semaineCycle: U.semaineCycle || 1,
+      programme: U.programme || null,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
+  } catch(e) { console.warn('Memories cloud save error:', e); }
+}
+
+// Patch loadProfile pour charger depuis Firestore après auth
+var _origLoadProfile = (typeof loadProfile === 'function') ? loadProfile : null;
+function loadProfile() {
+  if (_origLoadProfile) _origLoadProfile();
+  if (U && U.uid) loadFromFirestore(U.uid);
+}
+
+// Patch save() pour aussi sauvegarder les memories
+var _origSaveV3 = window.save;
+window.save = function() {
+  if (_origSaveV3) _origSaveV3();
+  saveMemoriesToCloud();
+};
+
+// ── 2. HISTORIQUE CONVERSATION PERSISTANT ──────────
+
+// Sauvegarder l'historique du chat dans U
+var _origAddH_v3 = (typeof addH === 'function') ? addH : null;
+addH = function(txts) {
+  if (_origAddH_v3) _origAddH_v3(txts);
+  // Sauvegarder dans U.chatHistory
+  if (!U.chatHistory) U.chatHistory = [];
+  txts.forEach(function(t) {
+    U.chatHistory.push({ role: 'assistant', content: t, ts: Date.now() });
+  });
+  U.chatHistory = U.chatHistory.slice(-50);
+  // Auto-save toutes les 3 messages
+  if (U.chatHistory.length % 3 === 0) save();
+};
+
+// ── 3. 1RM AUTO-UPDATE DEPUIS LE CHAT ──────────────
+
+function update1RMFromChat(userMsg, aiReply) {
+  var combined = userMsg + ' ' + (aiReply||'');
+  // Patterns: "130kg au squat", "bench 100kg", "deadlift 150 kg"
+  var patterns = [
+    /(\d+)\s*kg\s*(au|en|de|pour)?\s*(squat|bench|deadlift|développé|soulevé de terre|curl|press|tirage)/gi,
+    /(squat|bench|deadlift|développé|soulevé de terre|curl|press|tirage)[^0-9]*(\d+)\s*kg/gi
+  ];
+  if (!U.poids1RM) U.poids1RM = {};
+  var updated = false;
+  patterns.forEach(function(re) {
+    var m;
+    while ((m = re.exec(combined)) !== null) {
+      var kg = parseInt(m[1]) || parseInt(m[2]);
+      var exo = (m[3]||m[1]||'').toLowerCase().trim();
+      if (kg > 0 && exo && kg < 500) {
+        if (!U.poids1RM[exo] || kg > U.poids1RM[exo]) {
+          U.poids1RM[exo] = kg;
+          updated = true;
+          // Notifier dans le chat
+          if (kg > (U.poids1RM[exo]||0)) {
+            console.log('Nouveau PR:', exo, kg + 'kg');
+          }
+        }
+      }
+    }
+  });
+  if (updated) save();
+}
+
+// ── 4. PROGRAMME HEBDOMADAIRE AUTO ─────────────────
+
+function generateWeeklyPlan() {
+  var mode = U.mode || 'bodybuilding';
+  var niv = U.niv || 'int';
+  var tps = U.tps || 60;
+  var lieu = U.lieu || 'salle';
+  var sem = U.semaineCycle || 1;
+  var phase = typeof cPhase === 'function' ? cPhase() : 'Fondation';
+
+  var plans = {
+    bodybuilding: {
+      J1: 'Push (Pectoraux / Épaules / Triceps)',
+      J2: 'Pull (Dos / Biceps)',
+      J3: 'Legs (Quadriceps / Ischio / Mollets)',
+      J4: 'Repos actif',
+      J5: 'Push lourd',
+      J6: 'Pull léger + Core',
+      J7: 'Repos'
+    },
+    glow: {
+      J1: 'Full body cardio-muscu',
+      J2: 'Cardio HIIT 30 min',
+      J3: 'Lower body tonique',
+      J4: 'Yoga / Mobilité',
+      J5: 'Upper body léger',
+      J6: 'Cardio steady state',
+      J7: 'Repos'
+    },
+    hyrox: {
+      J1: 'Run 5km + Sled push',
+      J2: 'Force fonctionnelle',
+      J3: 'WOD simulation',
+      J4: 'Récup active',
+      J5: 'Run long 10km',
+      J6: 'Burpees + Wall balls',
+      J7: 'Repos'
+    },
+    mindset: {
+      J1: 'Marche 45min + méditation',
+      J2: 'Full body doux',
+      J3: 'Yoga flow 45min',
+      J4: 'Marche + respiration',
+      J5: 'Renfo léger',
+      J6: 'Stretching profond',
+      J7: 'Repos complet'
+    }
+  };
+
+  U.programme = {
+    semaine: sem,
+    phase: phase,
+    plan: plans[mode] || plans.bodybuilding,
+    generatedAt: Date.now()
+  };
+  save();
+  return U.programme;
+}
+
+// Générer le programme si pas encore fait
+if (!U.programme) generateWeeklyPlan();
+
+// ── 5. NOTIFICATIONS PUSH (FCM) ────────────────────
+
+function requestPushPermission() {
+  if (!window.Notification) return;
+  Notification.requestPermission().then(function(permission) {
+    if (permission === 'granted') {
+      console.log('Notifications activées ✓');
+      if (window.messaging) {
+        messaging.getToken({ vapidKey: FCM_VAPID_KEY }).then(function(token) {
+          if (token && auth.currentUser && db) {
+            db.collection('users').doc(auth.currentUser.uid).update({
+              fcmToken: token,
+              notificationsEnabled: true
+            });
+          }
+        }).catch(function(e) { console.warn('FCM token error:', e.message); });
+      }
+    }
+  });
+}
+
+// Demander la permission après 30 secondes
+setTimeout(function() {
+  if (auth && auth.currentUser) requestPushPermission();
+}, 30000);
+
+// ── 6. ANTI-ABANDON AMÉLIORÉ ───────────────────────
+
+function checkAbandonV3() {
+  if (!U.dateDebut) return;
+  var lastSeen = U.lastSeen || U.dateDebut;
+  var daysSince = Math.floor((Date.now() - new Date(lastSeen).getTime()) / 864e5);
+
+  if (daysSince >= 2 && daysSince < 7) {
+    // Message de relance subtil
+    setTimeout(function() {
+      if (document.getElementById('msgs')) {
+        var msg = daysSince === 2 ? 
+          'Content de te revoir ' + (U.prenom||'') + ' ! On reprend ou on ajuste le programme ?' :
+          (U.prenom||'') + ', ' + daysSince + ' jours sans séance. Ton corps attend. On repart ?';
+        if (typeof addH === 'function') addH([msg]);
+      }
+    }, 2000);
+  }
+
+  // Mettre à jour lastSeen
+  U.lastSeen = new Date().toISOString();
+  save();
+}
+
+// ── 7. INTÉGRATION DANS LE CALL AI ─────────────────
+
+// Patcher callAI pour capturer les 1RM et sauvegarder l'historique
+var _origCallAI_complete = callAI;
+callAI = function(msg) {
+  // Sauvegarder le message dans l'historique
+  if (!U.chatHistory) U.chatHistory = [];
+  U.chatHistory.push({ role: 'user', content: msg, ts: Date.now() });
+  U.chatHistory = U.chatHistory.slice(-50);
+
+  // Appeler l'original (qui inclut déjà notre system prompt)
+  _origCallAI_complete(msg);
+
+  // Après la réponse, extraire les 1RM (via MutationObserver sur msgs)
+  var msgs = document.getElementById('msgs');
+  if (msgs) {
+    var observer = new MutationObserver(function(mutations) {
+      mutations.forEach(function(m) {
+        m.addedNodes.forEach(function(node) {
+          if (node.classList && node.classList.contains('mg') && !node.classList.contains('u')) {
+            var txt = node.textContent || '';
+            update1RMFromChat(msg, txt);
+            observer.disconnect();
+          }
+        });
+      });
+    });
+    observer.observe(msgs, { childList: true });
+    // Arrêter après 10 secondes
+    setTimeout(function() { observer.disconnect(); }, 10000);
+  }
+};
+
+// ── 8. INIT AU DÉMARRAGE ───────────────────────────
+
+// Appeler checkAbandon quand l'user arrive sur le chat
+var _origSW_complete = switchTab;
+switchTab = function(id) {
+  _origSW_complete(id);
+  if (id === 't-chat') {
+    setTimeout(function() {
+      var mc = document.getElementById('mem-count');
+      if (mc) mc.textContent = (U.memories||[]).length || 0;
+      var mood = document.getElementById('chatMood');
+      if (mood) {
+        var jr = typeof cJR === 'function' ? cJR() : 1;
+        var pn = U.prenom || 'Demo';
+        var moods = [
+          'Pret a tout dechirer !',
+          'Ta transformation continue J' + jr,
+          'Chaque rep compte',
+          'Plus fort chaque jour'
+        ];
+        mood.textContent = moods[Math.floor(Math.random() * moods.length)];
+      }
+      if (typeof bPB === 'function') bPB();
+      if (typeof bChips === 'function') bChips();
+      checkAbandonV3();
+    }, 80);
+  }
+};
+
+console.log('HIMA v3 — Fonctionnalites completes chargees ✓');
 
 </script>
 </html>
