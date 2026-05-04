@@ -5670,6 +5670,7 @@ function renderMultisel(s) {
   var saved=U[s.key]||[];
   if(typeof saved==='string') saved=[saved];
   msState[s.key]=saved.slice();
+  if(!msState[s.key]) msState[s.key]=[];
   var html='<div class="ms-grid">';
   s.opts.forEach(function(o){
     var on=saved.indexOf(o.v)!==-1?' on':'';
@@ -5999,8 +6000,8 @@ onbNext = function() {
 
   // Multisel
   if(s.type==='multisel') {
-    U[s.key]=msState[s.key]||[];
-    if(!U[s.key].length) return;
+    if(!msState[s.key]) msState[s.key]=[];
+    U[s.key]=msState[s.key].length>0 ? msState[s.key] : ['aucun'];
     OSI++;
     while(OSI<OS.length&&OS[OSI]&&shouldSkipStep(OS[OSI])) OSI++;
     if(OSI>=OS.length) return;
