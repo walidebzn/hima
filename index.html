@@ -5944,9 +5944,9 @@ function buildPricingCards() {
     '</div>';
 }
 
-function startFree(){U.plan='free';save();go('app');}
-function startPro(){U.plan='pro';save();go('app');}
-function startElite(){U.plan='elite';save();go('app');}
+function startFree(){U.plan='free';U.onbDone=true;U.dateDebut=U.dateDebut||new Date().toISOString();save();initApp();go('app');}
+function startPro(){U.plan='pro';U.onbDone=true;U.dateDebut=U.dateDebut||new Date().toISOString();save();initApp();go('app');}
+function startElite(){U.plan='elite';U.onbDone=true;U.dateDebut=U.dateDebut||new Date().toISOString();save();initApp();go('app');}
 
 // ── Patch selBO pour particules + mode label ──
 var _p_selBO = selBO;
