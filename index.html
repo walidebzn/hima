@@ -813,6 +813,107 @@ canvas { display: none; }
   border-bottom-left-radius: 4px !important;
 }
 #typ .mav img { border-radius: 50% !important; }
+
+/* ═══ ONBOARDING v3 ═══ */
+
+/* Supprimer les petites phrases (onb-qs) */
+.onb-qs { display: none !important; }
+.onb-reassu { display: none !important; }
+
+/* Progress bar */
+.onb-prog { height: 5px !important; }
+.onb-bar { border-radius: 99px !important; }
+
+/* Question title plus grande */
+.onb-q { font-size: 26px !important; margin-bottom: 28px !important; }
+
+/* Bigopt amélioré */
+.bo { border-radius: 16px !important; padding: 16px !important; transition: all 0.2s !important; }
+.bo.on { border-color: #F98805 !important; background: rgba(249,136,5,0.08) !important; }
+.bo-ico { font-size: 24px !important; min-width: 36px !important; }
+.bo-t { font-size: 15px !important; font-weight: 700 !important; font-family: 'Space Grotesk', sans-serif !important; }
+.bo-s { font-size: 12px !important; color: #9090B0 !important; margin-top: 2px !important; }
+.bo-chk { width: 24px !important; height: 24px !important; border-radius: 50% !important; border: 1.5px solid rgba(249,136,5,0.4) !important; display: flex !important; align-items: center !important; justify-content: center !important; margin-left: auto !important; flex-shrink: 0 !important; font-size: 13px !important; color: #F98805 !important; }
+.bo.on .bo-chk { background: #F98805 !important; border-color: #F98805 !important; color: #fff !important; }
+
+/* MultiSelect chips */
+.ms-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.ms-chip { display: flex; align-items: center; gap: 8px; padding: 12px 14px; border: 1.5px solid rgba(240,240,255,0.1); border-radius: 14px; background: rgba(240,240,255,0.04); cursor: pointer; transition: all 0.15s; }
+.ms-chip.on { border-color: #F98805; background: rgba(249,136,5,0.1); }
+.ms-chip .ms-ico { font-size: 18px; flex-shrink: 0; }
+.ms-chip .ms-t { font-size: 13px; font-weight: 500; color: #F0F0FF; font-family: 'Space Grotesk', sans-serif; }
+.ms-chip:active { transform: scale(0.97); }
+
+/* Stress slider avec emoji */
+.stress-wrap { text-align: center; padding: 20px 0; }
+.stress-emoji { font-size: 64px; transition: all 0.3s; line-height: 1; margin-bottom: 16px; }
+.stress-label { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 18px; color: #F0F0FF; margin-bottom: 20px; }
+.stress-val { font-family: 'Bebas Neue', sans-serif; font-size: 72px; color: #F98805; line-height: 1; margin-bottom: 8px; }
+
+/* Écran SCAN */
+.scan-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 70vh; padding: 40px 24px; }
+.scan-avatar-wrap { position: relative; width: 120px; height: 120px; margin: 0 auto 32px; }
+.scan-avatar { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; object-position: center top; }
+.scan-ring { position: absolute; inset: -8px; border-radius: 50%; border: 2px solid transparent; border-top-color: #F98805; border-right-color: #F35695; animation: scanSpin 1.5s linear infinite; }
+.scan-ring2 { position: absolute; inset: -16px; border-radius: 50%; border: 1px solid rgba(249,136,5,0.2); border-bottom-color: #F98805; animation: scanSpin 3s linear infinite reverse; }
+@keyframes scanSpin { to { transform: rotate(360deg); } }
+.scan-title { font-family: 'Bebas Neue', sans-serif; font-size: 28px; letter-spacing: 2px; color: #F0F0FF; margin-bottom: 8px; text-align: center; }
+.scan-sub { font-size: 14px; color: #9090B0; margin-bottom: 32px; text-align: center; }
+.scan-checks { width: 100%; max-width: 320px; display: flex; flex-direction: column; gap: 8px; margin-bottom: 28px; }
+.scan-check { display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: rgba(240,240,255,0.04); border-radius: 10px; font-size: 13px; color: #9090B0; transition: all 0.4s; }
+.scan-check.done { color: #F0F0FF; background: rgba(249,136,5,0.08); }
+.scan-check.done .sc-ico { color: #22c55e; }
+.sc-ico { font-size: 14px; width: 20px; text-align: center; }
+.scan-bar-wrap { width: 100%; max-width: 320px; }
+.scan-bar-bg { height: 4px; background: rgba(240,240,255,0.1); border-radius: 2px; overflow: hidden; margin-bottom: 8px; }
+.scan-bar-fill { height: 100%; background: linear-gradient(90deg, #F98805, #F35695); border-radius: 2px; width: 0%; transition: width 0.1s; }
+.scan-pct { font-family: 'Space Grotesk', sans-serif; font-size: 13px; color: #9090B0; text-align: center; }
+
+/* Résultat macros */
+.result-scan { text-align: center; padding: 0 24px; }
+.rs-badge { display: inline-block; background: rgba(34,197,94,0.15); border: 1px solid rgba(34,197,94,0.3); border-radius: 20px; padding: 6px 16px; font-size: 12px; font-weight: 700; color: #22c55e; letter-spacing: 1px; margin-bottom: 20px; font-family: 'Space Grotesk', sans-serif; }
+.rs-kcal { font-family: 'Bebas Neue', sans-serif; font-size: 80px; line-height: 1; background: linear-gradient(135deg, #F98805, #F35695); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 4px; }
+.rs-kcal-label { font-size: 14px; color: #9090B0; margin-bottom: 28px; }
+.rs-macros { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 28px; }
+.rs-macro { background: rgba(240,240,255,0.04); border: 1px solid rgba(240,240,255,0.08); border-radius: 14px; padding: 16px 8px; }
+.rs-macro-v { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 22px; color: #F0F0FF; }
+.rs-macro-l { font-size: 11px; color: #9090B0; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+.rs-phrase { font-size: 15px; color: #F0F0FF; line-height: 1.6; margin-bottom: 28px; padding: 16px; background: rgba(249,136,5,0.06); border-radius: 14px; border: 1px solid rgba(249,136,5,0.15); }
+.rs-features { display: flex; flex-direction: column; gap: 8px; margin-bottom: 32px; }
+.rs-feat { display: flex; align-items: center; gap: 10px; font-size: 14px; color: #9090B0; }
+.rs-feat-ico { color: #F98805; font-size: 16px; }
+
+/* PRICING */
+.pricing-screen { padding: 24px 20px 120px; }
+.pricing-title { font-family: 'Bebas Neue', sans-serif; font-size: 36px; color: #F0F0FF; text-align: center; margin-bottom: 6px; letter-spacing: 1px; }
+.pricing-sub { font-size: 14px; color: #9090B0; text-align: center; margin-bottom: 24px; }
+.billing-toggle { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 24px; }
+.bt-label { font-size: 13px; color: #9090B0; font-family: 'Space Grotesk', sans-serif; }
+.bt-label.active { color: #F0F0FF; font-weight: 600; }
+.bt-switch { width: 48px; height: 26px; background: #1A1A30; border-radius: 99px; cursor: pointer; position: relative; transition: background 0.3s; }
+.bt-switch.on { background: linear-gradient(135deg, #F98805, #F35695); }
+.bt-knob { width: 20px; height: 20px; background: #fff; border-radius: 50%; position: absolute; top: 3px; left: 3px; transition: left 0.3s; }
+.bt-switch.on .bt-knob { left: 25px; }
+.save-badge { background: #DDE255; color: #080810; font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 99px; font-family: 'Space Grotesk', sans-serif; }
+.plan-card { border: 1px solid rgba(240,240,255,0.08); border-radius: 20px; padding: 22px; margin-bottom: 14px; background: rgba(240,240,255,0.03); position: relative; overflow: hidden; animation: planIn 0.5s cubic-bezier(0.34,1.56,0.64,1) forwards; opacity: 0; transform: translateY(30px); }
+.plan-card.featured { border-color: #F98805; background: rgba(249,136,5,0.05); }
+@keyframes planIn { to { opacity: 1; transform: translateY(0); } }
+.plan-badge { position: absolute; top: 14px; right: 14px; background: linear-gradient(135deg, #F98805, #F35695); color: #fff; font-size: 10px; font-weight: 700; padding: 4px 10px; border-radius: 99px; font-family: 'Space Grotesk', sans-serif; }
+.plan-name { font-family: 'Space Grotesk', sans-serif; font-size: 11px; font-weight: 700; color: #9090B0; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 8px; }
+.plan-price { font-family: 'Bebas Neue', sans-serif; font-size: 52px; color: #F0F0FF; line-height: 1; }
+.plan-price-free { color: #DDE255; }
+.plan-per { font-size: 14px; color: #9090B0; margin-bottom: 4px; }
+.plan-old { font-size: 12px; color: #9090B0; text-decoration: line-through; margin-bottom: 14px; }
+.plan-desc { font-size: 13px; color: #9090B0; margin-bottom: 16px; line-height: 1.5; }
+.plan-feats { display: flex; flex-direction: column; gap: 7px; margin-bottom: 20px; }
+.plan-feat { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #9090B0; }
+.plan-feat.yes { color: #F0F0FF; }
+.plan-feat-ico { font-size: 14px; }
+.plan-btn { width: 100%; padding: 15px; border-radius: 99px; font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 14px; cursor: pointer; border: none; transition: all 0.2s; letter-spacing: 0.5px; }
+.plan-btn-free { background: rgba(240,240,255,0.06); color: #9090B0; border: 1px solid rgba(240,240,255,0.1); }
+.plan-btn-pro { background: linear-gradient(135deg, #F98805, #F35695); color: #fff; }
+.plan-btn-elite { background: transparent; color: #F35695; border: 1px solid #F35695; }
+.plan-btn:active { transform: scale(0.98); }
 </style>
 </head>
 <body>
@@ -1613,41 +1714,133 @@ function loadProfile() {
 // ── ONBOARDING ──
 var OSI = 0;
 var OS = [
-  {pct:8,q:'Quel est ton prénom ?',qs:'Pour personnaliser chaque message.',type:'text',key:'prenom',ph:'Ton prénom...'},
-  {pct:16,q:'Qu\'est-ce que tu veux vraiment ?',qs:'HIMA adapte tout selon ton choix — programme, nutrition, méthode.',type:'bigopt',key:'mode',opts:[
-    {v:'glow',i:'🔥',t:'Je veux maigrir',s:'Perte de gras, définition, silhouette affinée'},
-    {v:'bodybuilding',i:'💪',t:'Je veux du muscle',s:'Prise de masse, force, hypertrophie'},
-    {v:'hyrox',i:'🏃',t:'Je veux performer',s:'Endurance, cardio, dépasser mes limites'},
-    {v:'mindset',i:'⚡',t:'Me remettre en forme',s:'Reprendre de zéro, retrouver énergie et forme'}
+  {pct:4,q:'Comment tu t\'appelles ?',type:'text',key:'prenom',ph:'Ton prénom...'},
+  {pct:8,q:'Ton objectif principal ?',type:'bigopt',key:'mode',opts:[
+    {v:'poids',i:'🔥',t:'Perdre du poids',s:'Brûler la graisse, affiner ma silhouette'},
+    {v:'muscle',i:'💪',t:'Prendre du muscle',s:'Corps sculpté, force, hypertrophie'},
+    {v:'toning',i:'✨',t:'Me tonifier',s:'Corps ferme et défini, sans prise de masse'},
+    {v:'forme',i:'⚡',t:'Me remettre en forme',s:'Reprendre après arrêt, grossesse ou blessure'},
+    {v:'perf',i:'🏃',t:'Améliorer mes performances',s:'Courir plus vite, plus longtemps, plus fort'},
+    {v:'energie',i:'🌟',t:'Me sentir mieux au quotidien',s:'Énergie, vitalité, moins de stress'},
+    {v:'event',i:'🏆',t:'Préparer un événement',s:'Trail, marathon, match, compétition à venir'}
   ]},
-  {pct:24,q:'Tu es ?',qs:'Pour calibrer tes macros avec la formule Mifflin-St Jeor.',type:'chips2',key:'sexe',opts:[
+  {pct:12,q:'Tu es ?',type:'chips2',key:'sexe',opts:[
     {v:'h',i:'👨',t:'Un homme'},{v:'f',i:'👩',t:'Une femme'}
   ]},
-  {pct:32,q:'Ton poids actuel ?',qs:'Indispensable pour tes macros exactes.',type:'slider',key:'poids',mn:40,mx:150,v:75,u:'kg'},
-  {pct:40,q:'Ta taille et ton âge ?',qs:'Pour le calcul Mifflin-St Jeor — la formule utilisée par les nutritionnistes.',type:'slider',key:'taille',mn:140,mx:220,v:175,u:'cm'},
-  {pct:48,q:'Ton âge ?',qs:null,type:'slider',key:'age',mn:15,mx:70,v:28,u:'ans'},
-  {pct:56,q:'Ton poids cible ?',qs:'Sois réaliste — HIMA calcule un programme adapté à ton objectif.',type:'slider',key:'poidsTarget',mn:40,mx:150,v:70,u:'kg'},
-  {pct:64,q:'Ton niveau sportif ?',qs:null,type:'chips3',key:'niv',opts:[
-    {v:'deb',i:'🌱',t:'Débutant'},{v:'int',i:'🔥',t:'Intermédiaire'},{v:'av',i:'⚡',t:'Avancé'}
+  {pct:16,q:'Ton poids actuel ?',type:'slider',key:'poids',mn:35,mx:200,v:75,u:'kg'},
+  {pct:20,q:'Ta taille ?',type:'slider',key:'taille',mn:140,mx:220,v:175,u:'cm'},
+  {pct:24,q:'Ton âge ?',type:'slider',key:'age',mn:14,mx:80,v:28,u:'ans'},
+  {pct:28,q:'Ton poids cible ?',type:'slider',key:'poidsTarget',mn:35,mx:200,v:70,u:'kg'},
+  {pct:32,q:'Ta morphologie naturelle ?',type:'bigopt',key:'morpho',opts:[
+    {v:'ecto',i:'🦴',t:'Mince naturellement',s:'Difficile de prendre du poids ou du muscle'},
+    {v:'meso',i:'💪',t:'Athlétique naturellement',s:'Corps qui répond vite à l\'entraînement'},
+    {v:'endo',i:'🔄',t:'Tendance à stocker',s:'Prends du poids facilement'},
+    {v:'nsp',i:'❓',t:'Je ne sais pas',s:'HIMA déterminera selon tes données'}
   ]},
-  {pct:72,q:'As-tu des blessures ou contraintes ?',qs:'HIMA adapte chaque exercice — ta sécurité est la priorité.',type:'bigopt',key:'blessure',opts:[
-    {v:'aucune',i:'✅',t:'Aucune',s:'Je peux tout faire'},
-    {v:'dos',i:'🔙',t:'Dos / lombaires',s:'HIMA évite les exercices risqués'},
-    {v:'genou',i:'🦵',t:'Genoux',s:'Adaptations spécifiques'},
-    {v:'epaule',i:'💪',t:'Épaules',s:'Mouvements protégés'}
+  {pct:36,q:'As-tu des blessures ou douleurs ?',type:'multisel',key:'blessures',opts:[
+    {v:'aucune',i:'✅',t:'Aucune'},
+    {v:'cervicales',i:'🔝',t:'Nuque / Cervicales'},
+    {v:'epaule_g',i:'↖️',t:'Épaule gauche'},
+    {v:'epaule_d',i:'↗️',t:'Épaule droite'},
+    {v:'coude',i:'💪',t:'Coude / Poignet'},
+    {v:'dos_haut',i:'⬆️',t:'Dos haut'},
+    {v:'lombaires',i:'🔙',t:'Lombaires / Bas du dos'},
+    {v:'hanche',i:'🦵',t:'Hanche'},
+    {v:'genou_g',i:'🦵',t:'Genou gauche'},
+    {v:'genou_d',i:'🦵',t:'Genou droit'},
+    {v:'cheville',i:'🦶',t:'Cheville / Pied'},
+    {v:'autre',i:'⚠️',t:'Autre zone'}
   ]},
-  {pct:80,q:'Temps disponible par séance ?',qs:'Sois réaliste — HIMA adapte l\'intensité.',type:'chips2',key:'tps',opts:[
-    {v:'20',i:'⏱️',t:'20 min'},{v:'30',i:'⏱️',t:'30 min'},{v:'45',i:'⏱️',t:'45 min'},{v:'60',i:'⏱️',t:'60 min+'}
+  {pct:40,q:'Niveau de la douleur ?',type:'slider',key:'douleurLevel',mn:0,mx:10,v:3,u:'/10',skipIf:'aucune'},
+  {pct:44,q:'Contraintes médicales à prendre en compte ?',type:'multisel',key:'sante',opts:[
+    {v:'aucune',i:'✅',t:'Aucune'},
+    {v:'diabete1',i:'💉',t:'Diabète type 1'},
+    {v:'diabete2',i:'🩸',t:'Diabète type 2'},
+    {v:'hypertension',i:'❤️',t:'Hypertension'},
+    {v:'asthme',i:'💨',t:'Asthme'},
+    {v:'thyroide',i:'🔬',t:'Thyroïde'},
+    {v:'arthrose',i:'🦴',t:'Arthrose'},
+    {v:'autre',i:'⚠️',t:'Autre condition'}
   ]},
-  {pct:88,q:'Où tu t\'entraînes ?',qs:null,type:'bigopt',key:'lieu',opts:[
-    {v:'maison',i:'🏠',t:'À la maison',s:'Poids du corps, tapis'},
-    {v:'salle',i:'🏋️',t:'En salle',s:'Machines, haltères'},
-    {v:'mixte',i:'🔀',t:'Les deux',s:'Selon les jours'}
+  {pct:48,q:'Situation actuelle ?',type:'bigopt',key:'situation',opts:[
+    {v:'normal',i:'✅',t:'Aucune particularité',s:'Je peux m\'entraîner normalement'},
+    {v:'enceinte1',i:'🤰',t:'Enceinte — 1er trimestre',s:'HIMA adapte les exercices et l\'intensité'},
+    {v:'enceinte2',i:'🤰',t:'Enceinte — 2e trimestre',s:'Programme doux et sécurisé'},
+    {v:'enceinte3',i:'🤰',t:'Enceinte — 3e trimestre',s:'Exercices adaptés et sûrs'},
+    {v:'postpartum',i:'👶',t:'Post-partum (moins de 6 mois)',s:'Reprise progressive et sécurisée'},
+    {v:'menopause',i:'🌸',t:'Ménopause',s:'Programme adapté aux changements hormonaux'},
+    {v:'chirurgie',i:'🏥',t:'Chirurgie récente',s:'HIMA sécurise chaque exercice'}
   ]},
-  {pct:94,q:'Régime alimentaire ?',qs:null,type:'chips3',key:'reg',opts:[
-    {v:'omni',i:'🍗',t:'Omnivore'},{v:'vege',i:'🥗',t:'Végétarien'},{v:'vegan',i:'🌱',t:'Vegan'}
+  {pct:52,q:'Ton niveau sportif actuel ?',type:'bigopt',key:'niv',opts:[
+    {v:'deb',i:'🌱',t:'Débutant complet',s:'Je débute ou je n\'ai pas pratiqué depuis longtemps'},
+    {v:'inter_low',i:'🔥',t:'Quelques séances par mois',s:'Je m\'entraîne de temps en temps'},
+    {v:'inter',i:'💪',t:'1 à 3 fois par semaine',s:'J\'ai une pratique régulière'},
+    {v:'av',i:'⚡',t:'4 fois et plus par semaine',s:'Pratique intensive et constante'},
+    {v:'athlete',i:'🏆',t:'Athlète ou compétiteur',s:'Niveau de compétition ou sport de haut niveau'}
   ]},
-  {pct:100,q:'Ton plan est prêt',qs:'Analyse complète. HIMA a généré ton programme personnalisé.',type:'result',key:null}
+  {pct:56,q:'Sports pratiqués actuellement ?',type:'multisel',key:'sports',opts:[
+    {v:'muscu',i:'🏋️',t:'Musculation'},
+    {v:'course',i:'🏃',t:'Course à pied'},
+    {v:'velo',i:'🚴',t:'Vélo'},
+    {v:'natation',i:'🏊',t:'Natation'},
+    {v:'yoga',i:'🧘',t:'Yoga / Pilates'},
+    {v:'arts_martiaux',i:'🥊',t:'Arts martiaux / Boxe'},
+    {v:'football',i:'⚽',t:'Football / Sports collectifs'},
+    {v:'tennis',i:'🎾',t:'Tennis / Padel / Squash'},
+    {v:'crossfit',i:'🔥',t:'CrossFit / Fonctionnel'},
+    {v:'aucun',i:'🛋️',t:'Aucun pour l\'instant'},
+    {v:'autre',i:'➕',t:'Autre sport'}
+  ]},
+  {pct:60,q:'Combien de jours par semaine ?',type:'slider',key:'joursParSemaine',mn:1,mx:7,v:3,u:'j/sem'},
+  {pct:64,q:'Temps disponible par séance ?',type:'chips2',key:'tps',opts:[
+    {v:'20',i:'⚡',t:'20 min'},{v:'30',i:'🕐',t:'30 min'},
+    {v:'45',i:'🕐',t:'45 min'},{v:'60',i:'🕐',t:'60 min'},
+    {v:'90',i:'🕐',t:'90 min+'}
+  ]},
+  {pct:68,q:'Où tu t\'entraînes ?',type:'bigopt',key:'lieu',opts:[
+    {v:'salle',i:'🏋️',t:'Salle complète',s:'Machines, haltères, barres, câbles'},
+    {v:'salle_cardio',i:'🚴',t:'Salle avec cardio uniquement',s:'Vélos, tapis, elliptiques'},
+    {v:'maison_mat',i:'🏠',t:'Maison avec matériel',s:'Haltères, bandes, kettlebell...'},
+    {v:'maison',i:'🛋️',t:'Maison sans matériel',s:'Poids du corps uniquement'},
+    {v:'exterieur',i:'🌳',t:'Extérieur / Parc',s:'Course, street workout, escaliers'},
+    {v:'mixte',i:'🔀',t:'Mixte selon les jours',s:'Salle + maison ou extérieur'}
+  ]},
+  {pct:72,q:'Ton régime alimentaire ?',type:'multisel',key:'reg',opts:[
+    {v:'omni',i:'🍗',t:'Omnivore'},
+    {v:'vege',i:'🥗',t:'Végétarien'},
+    {v:'vegan',i:'🌱',t:'Vegan'},
+    {v:'pesc',i:'🐟',t:'Pescétarien'},
+    {v:'sans_gluten',i:'🌾',t:'Sans gluten'},
+    {v:'sans_lactose',i:'🥛',t:'Sans lactose'},
+    {v:'halal',i:'☪️',t:'Halal'},
+    {v:'casher',i:'✡️',t:'Casher'},
+    {v:'keto',i:'🥑',t:'Keto / Low carb'},
+    {v:'autre',i:'➕',t:'Autre'}
+  ]},
+  {pct:76,q:'Allergies alimentaires ?',type:'multisel',key:'allergies',opts:[
+    {v:'aucune',i:'✅',t:'Aucune allergie'},
+    {v:'noix',i:'🥜',t:'Fruits à coque / Noix'},
+    {v:'gluten',i:'🌾',t:'Gluten'},
+    {v:'lactose',i:'🥛',t:'Lactose'},
+    {v:'oeufs',i:'🥚',t:'Œufs'},
+    {v:'soja',i:'🌿',t:'Soja'},
+    {v:'fruits_mer',i:'🦐',t:'Fruits de mer'},
+    {v:'autre',i:'⚠️',t:'Autre allergie'}
+  ]},
+  {pct:80,q:'Combien de repas par jour ?',type:'slider',key:'repasParJour',mn:2,mx:6,v:3,u:'repas'},
+  {pct:84,q:'Ta consommation d\'alcool ?',type:'chips3',key:'alcool',opts:[
+    {v:'jamais',i:'🚫',t:'Jamais'},
+    {v:'occasionnel',i:'🥂',t:'Occasionnel'},
+    {v:'regulier',i:'🍷',t:'Régulier'}
+  ]},
+  {pct:88,q:'Ton sommeil en moyenne ?',type:'slider',key:'heuresSommeil',mn:4,mx:10,v:7,u:'h/nuit'},
+  {pct:92,q:'Qualité de ton sommeil ?',type:'chips3',key:'sommeil',opts:[
+    {v:'excellent',i:'😴',t:'Excellent'},
+    {v:'moyen',i:'😐',t:'Moyen'},
+    {v:'mauvais',i:'😩',t:'Mauvais / Insomniaque'}
+  ]},
+  {pct:96,q:'Ton niveau de stress quotidien ?',type:'stress',key:'stress',mn:1,mx:10,v:5},
+  {pct:100,q:'',type:'scan',key:null}
 ];
 
 function renderOnb() {
@@ -5760,6 +5953,405 @@ switchTab = function(id) {
 };
 
 console.log('HIMA v3 — Fonctionnalites completes chargees ✓');
+
+
+// ═══════════════════════════════════════════
+// ONBOARDING v3 — COMPLET
+// ═══════════════════════════════════════════
+
+// MultiSelect state
+var msState = {};
+
+// Stress emojis
+var stressEmojis = ['','😌','😊','🙂','😐','😑','😟','😰','😤','🤯','💀'];
+var stressLabels = ['','Zen total','Très calme','Calme','Équilibré','Légèrement stressé','Assez stressé','Stressé','Très stressé','Épuisé','Surmenage total'];
+
+// Phrases résultat selon objectif
+var resultPhrases = {
+  poids: 'À ce rythme et avec ton déficit calorique personnalisé, tu peux perdre 1kg par semaine en toute sécurité.',
+  muscle: 'Avec ton programme Push/Pull/Legs calibré et tes macros optimisées, attends-toi à +3 à 5kg de muscle propre en 12 semaines.',
+  toning: 'Ton programme circuit training personnalisé va sculpter ton corps en 8 semaines. Corps ferme et défini garanti.',
+  forme: 'Programme progressif sur mesure pour un retour en douceur. Ton corps va retrouver sa forme en 6 semaines.',
+  perf: 'Programme de périodisation avancée adapté à tes objectifs de performance. Tes records vont tomber.',
+  energie: 'Programme équilibré 3x/semaine. En 4 semaines, ton énergie et ta vitalité au quotidien seront transformées.',
+  event: 'Programme spécifique compte à rebours vers ton événement. Chaque séance compte.'
+};
+
+// Calculer les macros v3
+function calcMacrosV3() {
+  var poids = parseFloat(U.poids || 75);
+  var taille = parseFloat(U.taille || 175);
+  var age = parseFloat(U.age || 28);
+  var sexe = U.sexe || 'h';
+  var lieu = U.lieu || 'salle';
+  var mode = U.mode || 'poids';
+  var bmr = sexe === 'h' ? 10*poids+6.25*taille-5*age+5 : 10*poids+6.25*taille-5*age-161;
+  var mult = {maison:1.375,maison_mat:1.375,salle_cardio:1.55,salle:1.55,exterieur:1.375,mixte:1.55}[lieu]||1.55;
+  var tdee = Math.round(bmr * mult);
+  var kcal = mode==='poids'||mode==='toning' ? Math.round(tdee*0.82) : mode==='muscle' ? Math.round(tdee*1.1) : tdee;
+  var prot = Math.round(poids * 2.2);
+  var lip = Math.round(poids * 1.0);
+  var gluc = Math.max(50, Math.round((kcal - prot*4 - lip*9) / 4));
+  return {kcal:kcal, tdee:tdee, prot:prot, gluc:gluc, lip:lip};
+}
+
+// Vérifier si on doit passer une étape
+function shouldSkipStep(s) {
+  if (!s.skipIf) return false;
+  var blessures = U.blessures || [];
+  if (typeof blessures === 'string') blessures = [blessures];
+  if (s.skipIf === 'aucune' && blessures.indexOf('aucune') !== -1) return true;
+  if (s.skipIf === 'not_femme' && U.sexe !== 'f') return true;
+  return false;
+}
+
+// Render multiselect
+function renderMultisel(s) {
+  var saved = U[s.key] || [];
+  if (typeof saved === 'string') saved = [saved];
+  msState[s.key] = saved.slice();
+  var html = '<div class="ms-grid">';
+  s.opts.forEach(function(o) {
+    var on = saved.indexOf(o.v) !== -1 ? ' on' : '';
+    html += '<div class="ms-chip'+on+'" onclick="toggleMS(this,\''+s.key+'\',\''+o.v+'\')">' +
+      '<span class="ms-ico">'+o.i+'</span>' +
+      '<span class="ms-t">'+o.t+'</span></div>';
+  });
+  html += '</div>';
+  return html;
+}
+
+function toggleMS(el, key, val) {
+  if (!msState[key]) msState[key] = [];
+  var idx = msState[key].indexOf(val);
+  var isExcl = val === 'aucune' || val === 'normal' || val === 'omni';
+  if (isExcl) {
+    msState[key] = [val];
+    el.closest('.ms-grid').querySelectorAll('.ms-chip').forEach(function(c){ c.classList.remove('on'); });
+    el.classList.add('on');
+  } else {
+    msState[key] = msState[key].filter(function(v){ return v!=='aucune'&&v!=='normal'&&v!=='omni'; });
+    el.closest('.ms-grid').querySelectorAll('.ms-chip').forEach(function(c){
+      if(c.querySelector('.ms-t').textContent==='Aucune'||c.querySelector('.ms-t').textContent==='Aucune allergie'||c.querySelector('.ms-t').textContent==='Aucune particularité') c.classList.remove('on');
+    });
+    if (idx !== -1) { msState[key].splice(msState[key].indexOf(val),1); el.classList.remove('on'); }
+    else { msState[key].push(val); el.classList.add('on'); }
+  }
+  U[key] = msState[key];
+}
+
+// Render stress
+function renderStress(s) {
+  var cur = U[s.key] || s.v || 5;
+  var emoji = stressEmojis[cur] || '';
+  var label = stressLabels[cur] || '';
+  var pct = Math.round((cur - s.mn) / (s.mx - s.mn) * 100);
+  return '<div class="stress-wrap">' +
+    '<div class="stress-emoji" id="stress-emo">'+emoji+'</div>' +
+    '<div class="stress-val" id="stress-val">'+cur+'</div>' +
+    '<div class="stress-label" id="stress-lbl">'+label+'</div>' +
+    '<div class="sl-lbl"><span>'+s.mn+' — Zen</span><span>'+s.mx+' — Burnout</span></div>' +
+    '<input type="range" id="sr-'+s.key+'" min="'+s.mn+'" max="'+s.mx+'" value="'+cur+'" style="--pct:'+pct+'%" oninput="updateStress(this,\''+s.key+'\')">' +
+    '</div>';
+}
+
+function updateStress(inp, key) {
+  var v = parseInt(inp.value);
+  U[key] = v;
+  var pct = Math.round((v-1)/9*100);
+  inp.style.setProperty('--pct', pct+'%');
+  var emo = document.getElementById('stress-emo');
+  var val = document.getElementById('stress-val');
+  var lbl = document.getElementById('stress-lbl');
+  if(emo) emo.textContent = stressEmojis[v]||'';
+  if(val) val.textContent = v;
+  if(lbl) lbl.textContent = stressLabels[v]||'';
+}
+
+// Render SCAN animé
+function renderScan() {
+  var checks = [
+    'Calcul Mifflin-St Jeor...',
+    'Analyse des contraintes...',
+    'Construction du programme...',
+    'Calibration nutritionnelle...',
+    'Activation du coach HIMA...'
+  ];
+  var checksHtml = checks.map(function(c,i) {
+    return '<div class="scan-check" id="sc'+i+'"><span class="sc-ico">⏳</span>'+c+'</div>';
+  }).join('');
+  return '<div class="scan-screen">' +
+    '<div class="scan-avatar-wrap">' +
+    '<img src="/avatar.jpg" class="scan-avatar" alt="HIMA">' +
+    '<div class="scan-ring"></div>' +
+    '<div class="scan-ring2"></div>' +
+    '</div>' +
+    '<div class="scan-title">ANALYSE EN COURS</div>' +
+    '<div class="scan-sub">Construction de ton profil complet...</div>' +
+    '<div class="scan-checks">'+checksHtml+'</div>' +
+    '<div class="scan-bar-wrap">' +
+    '<div class="scan-bar-bg"><div class="scan-bar-fill" id="scan-fill"></div></div>' +
+    '<div class="scan-pct" id="scan-pct">0%</div>' +
+    '</div></div>';
+}
+
+// Animation scan → résultat
+function runScanAnimation() {
+  var fill = document.getElementById('scan-fill');
+  var pct = document.getElementById('scan-pct');
+  var checks = document.querySelectorAll('.scan-check');
+  var progress = 0;
+  var checkTimes = [600, 1200, 1800, 2400, 3000];
+
+  checkTimes.forEach(function(t, i) {
+    setTimeout(function() {
+      if(checks[i]) {
+        checks[i].classList.add('done');
+        checks[i].querySelector('.sc-ico').textContent = '✅';
+      }
+    }, t);
+  });
+
+  var interval = setInterval(function() {
+    progress += 1.5;
+    if(progress >= 100) {
+      progress = 100;
+      clearInterval(interval);
+      setTimeout(showScanResult, 400);
+    }
+    if(fill) fill.style.width = progress + '%';
+    if(pct) pct.textContent = Math.round(progress) + '%';
+  }, 50);
+}
+
+function showScanResult() {
+  var ct = document.getElementById('onb-ct'); if(!ct) return;
+  var m = calcMacrosV3();
+  U.macros = m;
+  U.poids = parseFloat(U.poids)||75;
+  U.taille = parseInt(U.taille)||175;
+  U.dep = U.poids;
+  save();
+
+  var phrase = resultPhrases[U.mode||'poids'] || resultPhrases.poids;
+
+  // Animation compteur
+  function animCounter(el, target, suffix) {
+    var start = 0; var step = Math.ceil(target/30);
+    var iv = setInterval(function() {
+      start = Math.min(start+step, target);
+      if(el) el.textContent = start + (suffix||'');
+      if(start >= target) clearInterval(iv);
+    }, 40);
+  }
+
+  var html = '<div class="result-scan" style="padding-bottom:32px;">' +
+    '<div class="rs-badge">PROFIL ANALYSÉ ✓</div>' +
+    '<div class="rs-kcal" id="rs-kcal">0</div>' +
+    '<div class="rs-kcal-label">kcal / jour · TDEE personnalisé</div>' +
+    '<div class="rs-macros">' +
+    '<div class="rs-macro"><div class="rs-macro-v" id="rs-prot">0g</div><div class="rs-macro-l">Protéines</div></div>' +
+    '<div class="rs-macro"><div class="rs-macro-v" id="rs-gluc">0g</div><div class="rs-macro-l">Glucides</div></div>' +
+    '<div class="rs-macro"><div class="rs-macro-v" id="rs-lip">0g</div><div class="rs-macro-l">Lipides</div></div>' +
+    '</div>' +
+    '<div class="rs-phrase">'+phrase+'</div>' +
+    '<div class="rs-features">' +
+    '<div class="rs-feat"><span class="rs-feat-ico">📋</span>Programme personnalisé semaine par semaine</div>' +
+    '<div class="rs-feat"><span class="rs-feat-ico">🥗</span>Plan nutrition avec grammes exacts</div>' +
+    '<div class="rs-feat"><span class="rs-feat-ico">🧠</span>Coach IA disponible 24h/24</div>' +
+    '<div class="rs-feat"><span class="rs-feat-ico">📸</span>Analyse posturale en temps réel</div>' +
+    '<div class="rs-feat"><span class="rs-feat-ico">🔥</span>Anti-abandon et motivation continue</div>' +
+    '</div>' +
+    '<button class="onb-cta" onclick="showPricingOnb()" style="margin-top:8px;">Voir mon programme complet →</button>' +
+    '</div>';
+
+  ct.innerHTML = html;
+  ct.style.animation = 'slideUp .35s cubic-bezier(.34,1.56,.64,1) forwards';
+
+  // Cacher le bouton continuer
+  var foot = document.querySelector('.onb-foot');
+  if(foot) foot.style.display = 'none';
+
+  setTimeout(function() {
+    animCounter(document.getElementById('rs-kcal'), m.kcal, '');
+    animCounter(document.getElementById('rs-prot'), m.prot, 'g');
+    animCounter(document.getElementById('rs-gluc'), m.gluc, 'g');
+    animCounter(document.getElementById('rs-lip'), m.lip, 'g');
+  }, 100);
+}
+
+// Pricing onboarding
+var billingAnnual = false;
+var prices = { pro_m:24.99, pro_y:14.99, elite_m:49.99, elite_y:29.99 };
+
+function showPricingOnb() {
+  var sc = document.getElementById('onb');
+  if(!sc) return;
+  var prenom = U.prenom || 'Champion';
+  sc.innerHTML = '<div class="pricing-screen">' +
+    '<div class="pricing-title">CHOISIS TON PLAN</div>' +
+    '<div class="pricing-sub">'+prenom+', ton programme est prêt. Accède-y maintenant.</div>' +
+    '<div class="billing-toggle">' +
+    '<span class="bt-label active" id="bt-m">Mensuel</span>' +
+    '<div class="bt-switch" id="bt-sw" onclick="toggleBillingOnb()"><div class="bt-knob"></div></div>' +
+    '<span class="bt-label" id="bt-y">Annuel</span>' +
+    '<span class="save-badge">-40%</span>' +
+    '</div>' +
+    buildPricingCards() +
+    '</div>';
+
+  setTimeout(function(){
+    var cards = sc.querySelectorAll('.plan-card');
+    cards.forEach(function(c,i){ c.style.animationDelay = (i*0.1)+'s'; });
+  }, 50);
+}
+
+function toggleBillingOnb() {
+  billingAnnual = !billingAnnual;
+  var sw = document.getElementById('bt-sw');
+  var lbm = document.getElementById('bt-m');
+  var lby = document.getElementById('bt-y');
+  if(sw) { if(billingAnnual) sw.classList.add('on'); else sw.classList.remove('on'); }
+  if(lbm) { lbm.className = 'bt-label'+(billingAnnual?'':' active'); }
+  if(lby) { lby.className = 'bt-label'+(billingAnnual?' active':''); }
+  var cont = document.querySelector('.pricing-screen');
+  if(cont) {
+    var old = cont.querySelectorAll('.plan-card');
+    var wrap = document.createElement('div');
+    wrap.innerHTML = buildPricingCards();
+    old.forEach(function(c){ c.remove(); });
+    Array.from(wrap.children).forEach(function(c){ cont.appendChild(c); });
+  }
+}
+
+function buildPricingCards() {
+  var pro = billingAnnual ? prices.pro_y : prices.pro_m;
+  var elite = billingAnnual ? prices.elite_y : prices.elite_m;
+  var per = billingAnnual ? '/mois, facturé annuellement' : '/mois';
+
+  return '<div class="plan-card" style="animation-delay:0s;">' +
+    '<div class="plan-name">DÉCOUVERTE</div>' +
+    '<div class="plan-price plan-price-free">0€</div>' +
+    '<div class="plan-per">pour toujours</div>' +
+    '<div class="plan-desc">5 messages par jour avec ton coach IA.</div>' +
+    '<div class="plan-feats">' +
+    '<div class="plan-feat yes"><span class="plan-feat-ico">✓</span>Chat coach limité (5/jour)</div>' +
+    '<div class="plan-feat yes"><span class="plan-feat-ico">✓</span>Profil et macros calculés</div>' +
+    '<div class="plan-feat"><span class="plan-feat-ico">✗</span>Programme semaine</div>' +
+    '<div class="plan-feat"><span class="plan-feat-ico">✗</span>Nutrition détaillée</div>' +
+    '</div>' +
+    '<button class="plan-btn plan-btn-free" onclick="startFree()">Commencer gratuitement</button>' +
+    '</div>' +
+    '<div class="plan-card featured" style="animation-delay:0.1s;">' +
+    '<div class="plan-badge">⭐ POPULAIRE</div>' +
+    '<div class="plan-name">COACH PERSONNEL</div>' +
+    '<div class="plan-price">'+pro.toFixed(2).replace('.',',')+'€</div>' +
+    '<div class="plan-per">'+per+'</div>' +
+    '<div class="plan-desc">Ton coach IA illimité. Remplace un coach à 300€/mois.</div>' +
+    '<div class="plan-feats">' +
+    '<div class="plan-feat yes"><span class="plan-feat-ico">✓</span>Chat coach illimité</div>' +
+    '<div class="plan-feat yes"><span class="plan-feat-ico">✓</span>Programme sur mesure</div>' +
+    '<div class="plan-feat yes"><span class="plan-feat-ico">✓</span>Nutrition au gramme</div>' +
+    '<div class="plan-feat yes"><span class="plan-feat-ico">✓</span>7 jours gratuits</div>' +
+    '<div class="plan-feat"><span class="plan-feat-ico">✗</span>Analyse posturale</div>' +
+    '</div>' +
+    '<button class="plan-btn plan-btn-pro" onclick="startPro()">Essayer 7 jours gratuit →</button>' +
+    '</div>' +
+    '<div class="plan-card" style="animation-delay:0.2s;">' +
+    '<div class="plan-name">ELITE</div>' +
+    '<div class="plan-price" style="background:linear-gradient(135deg,#F35695,#8B5CF6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">'+elite.toFixed(2).replace('.',',')+'€</div>' +
+    '<div class="plan-per">'+per+'</div>' +
+    '<div class="plan-desc">L\'expérience ultime. Tout ce qu\'un coach humain ne peut pas faire.</div>' +
+    '<div class="plan-feats">' +
+    '<div class="plan-feat yes"><span class="plan-feat-ico">✓</span>Tout Coach Personnel</div>' +
+    '<div class="plan-feat yes"><span class="plan-feat-ico">✓</span>Analyse posturale IA</div>' +
+    '<div class="plan-feat yes"><span class="plan-feat-ico">✓</span>Coach vocal ElevenLabs</div>' +
+    '<div class="plan-feat yes"><span class="plan-feat-ico">✓</span>7 jours gratuits</div>' +
+    '</div>' +
+    '<button class="plan-btn plan-btn-elite" onclick="startElite()">Essayer 7 jours gratuit →</button>' +
+    '</div>';
+}
+
+function startFree() { U.plan='free'; save(); go('app'); }
+function startPro() { U.plan='pro'; save(); go('app'); }
+function startElite() { U.plan='elite'; save(); go('app'); }
+
+// ══ OVERRIDE renderOnb pour nouveaux types ══
+var _origRenderOnb = renderOnb;
+renderOnb = function() {
+  var s = OS[OSI];
+  if(!s) return;
+
+  // Skip conditionnels
+  if(shouldSkipStep(s)) { OSI++; renderOnb(); return; }
+
+  // Progress bar
+  var bar = document.getElementById('opb');
+  if(bar) bar.style.width = s.pct + '%';
+  var bk = document.getElementById('onb-bk');
+  if(bk) bk.style.display = OSI > 0 ? 'block' : 'none';
+
+  var ct = document.getElementById('onb-ct'); if(!ct) return;
+  ct.style.animation = 'none';
+  ct.offsetHeight;
+  ct.style.animation = 'slideUp .35s cubic-bezier(.34,1.56,.64,1) forwards';
+
+  // SCAN — type spécial
+  if(s.type === 'scan') {
+    var foot = document.querySelector('.onb-foot');
+    if(foot) foot.style.display = 'none';
+    ct.innerHTML = '<div class="onb-card">' + renderScan() + '</div>';
+    setTimeout(runScanAnimation, 300);
+    return;
+  }
+
+  // STRESS — type spécial
+  if(s.type === 'stress') {
+    var html = '<div class="onb-card"><div class="onb-q">'+s.q+'</div>' + renderStress(s) + '</div>';
+    ct.innerHTML = html;
+    return;
+  }
+
+  // MULTISEL — type spécial
+  if(s.type === 'multisel') {
+    var html2 = '<div class="onb-card"><div class="onb-q">'+s.q+'</div>' + renderMultisel(s) + '</div>';
+    ct.innerHTML = html2;
+    return;
+  }
+
+  // Autres types — déléguer à l'original
+  _origRenderOnb();
+};
+
+// ══ OVERRIDE onbNext pour nouveaux types ══
+var _origOnbNext = onbNext;
+onbNext = function() {
+  var s = OS[OSI];
+  if(!s) return;
+
+  if(s.type === 'scan' || s.type === 'result') return;
+
+  if(s.type === 'stress') {
+    var sr = document.getElementById('sr-'+s.key);
+    if(sr) U[s.key] = parseInt(sr.value);
+    OSI++;
+    while(OSI < OS.length && shouldSkipStep(OS[OSI])) OSI++;
+    renderOnb();
+    return;
+  }
+
+  if(s.type === 'multisel') {
+    U[s.key] = msState[s.key] || [];
+    if(!U[s.key].length) return;
+    OSI++;
+    while(OSI < OS.length && shouldSkipStep(OS[OSI])) OSI++;
+    renderOnb();
+    return;
+  }
+
+  // Original pour les autres types
+  _origOnbNext();
+};
 
 </script>
 </html>
