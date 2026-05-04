@@ -1077,6 +1077,77 @@ body::after { display:none !important; }
 #t-chat .msgs {
   padding-bottom: 200px !important;
 }
+
+/* ═══ CINPB FINAL FIX ═══ */
+#t-chat { display:flex; flex-direction:column; height:100%; position:relative; }
+.cinpb {
+  position: fixed !important;
+  bottom: calc(56px + env(safe-area-inset-bottom, 0px)) !important;
+  left: 0 !important;
+  right: 0 !important;
+  z-index: 9999 !important;
+  background: #080810 !important;
+  border-top: 1px solid rgba(240,240,255,0.15) !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  padding: 8px 12px !important;
+  min-height: 56px !important;
+}
+.cinpb .voice-btn, .cinpb .xi-btn {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 36px !important;
+  height: 36px !important;
+  border-radius: 50% !important;
+  background: rgba(240,240,255,0.06) !important;
+  border: none !important;
+  font-size: 18px !important;
+  cursor: pointer !important;
+  flex-shrink: 0 !important;
+}
+.cinpb .cinp {
+  flex: 1 !important;
+  background: #0E0E1C !important;
+  color: #F0F0FF !important;
+  border: 1px solid rgba(240,240,255,0.12) !important;
+  border-radius: 22px !important;
+  padding: 10px 16px !important;
+  font-size: 14px !important;
+  resize: none !important;
+  font-family: 'DM Sans', sans-serif !important;
+}
+.cinpb .cinp::placeholder { color: #3A3A60 !important; }
+.cinpb .csend {
+  width: 40px !important;
+  height: 40px !important;
+  border-radius: 50% !important;
+  background: linear-gradient(135deg, #F98805, #F35695) !important;
+  border: none !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  flex-shrink: 0 !important;
+}
+.cinpb .csend svg { width: 18px !important; height: 18px !important; stroke: white !important; fill: none !important; }
+.quick-chips {
+  position: fixed !important;
+  bottom: calc(56px + env(safe-area-inset-bottom, 0px) + 58px) !important;
+  left: 0 !important;
+  right: 0 !important;
+  z-index: 9998 !important;
+  background: #080810 !important;
+  border-top: 1px solid rgba(240,240,255,0.06) !important;
+  padding: 8px 12px !important;
+  display: flex !important;
+  overflow-x: auto !important;
+  gap: 8px !important;
+  scrollbar-width: none !important;
+}
+.quick-chips::-webkit-scrollbar { display: none !important; }
+#t-chat .msgs { padding-bottom: 210px !important; }
 </style>
 </head>
 <body>
