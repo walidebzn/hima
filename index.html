@@ -1016,6 +1016,13 @@ canvas { display: none; }
 .plan-btn:active{transform:scale(0.98);}
 /* Supprimer les petites phrases */
 .onb-qs{display:none!important;}.onb-reassu{display:none!important;}
+
+/* Fix barre blanche bas */
+body { background: #080810 !important; }
+html { background: #080810 !important; }
+.sc { background: #080810; }
+#app { background: #080810; }
+.cinpb { background: #080810 !important; }
 </style>
 </head>
 <body>
@@ -2529,10 +2536,10 @@ function initChat() {
       addH(['Comment tu te sens aujourd\'hui ?']);
     }, 1800);
   }
-  buildSuggestions();
+  // buildSuggestions(); // remplacé par bChips()
 }
 
-function buildSuggestions() {
+function buildSuggestions() { return; // désactivé - bChips() utilisé
   var h = new Date().getHours();
   var sugg;
   if(h<12) sugg=['Mon petit-déj','Ma séance du matin','Mon énergie'];
