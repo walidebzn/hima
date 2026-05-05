@@ -2313,15 +2313,308 @@ body:not([data-tab="chat"]) .voice-status { display: none !important; }
   cursor: pointer;
   font-weight: 600;
 }
-.sv2-lib-chip.on {
-  background: linear-gradient(135deg, rgba(249,136,5,0.2), rgba(243,86,149,0.1));
-  border-color: #F98805;
-  color: #F0F0FF;
+/* ════════════════════════════════════════════════════════
+   PATCH HIMA v3.3 — RÉVOLUTION TAB SÉANCES (4 features)
+   Vidéos exos · Coach proactif · Rep counter · Autopilot IA
+   ════════════════════════════════════════════════════════ */
+
+/* === VIDÉO EXO — remplace le SVG anatomique quand dispo === */
+.sv2-video-wrap {
+  width: 100%;
+  height: 0;
+  padding-bottom: 75%;
+  position: relative;
+  border-radius: 18px;
+  overflow: hidden;
+  background: #ffffff;
+  margin-bottom: 18px;
+}
+.sv2-video-wrap video {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain;
+}
+.sv2-video-wrap.loading::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(249,136,5,0.1), rgba(243,86,149,0.05));
+  z-index: 1;
+}
+.sv2-video-wrap.loading::after {
+  content: '⟳';
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 28px;
+  color: rgba(240,240,255,0.5);
+  z-index: 2;
+  animation: sv2spin 1s linear infinite;
+}
+@keyframes sv2spin { to { transform: translate(-50%, -50%) rotate(360deg); } }
+.sv2-video-fallback-svg {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, rgba(249,136,5,0.12), rgba(243,86,149,0.06));
+}
+.sv2-video-fallback-svg svg { width: 70%; height: 70%; }
+
+/* Mini-vidéo dans la liste détail */
+.sv2-exo-card .sv2-mini-video {
+  width: 64px; height: 64px;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #fff;
+  flex-shrink: 0;
+  position: relative;
+}
+.sv2-exo-card .sv2-mini-video video {
+  width: 100%; height: 100%;
+  object-fit: cover;
+}
+.sv2-exo-card .sv2-mini-video::after {
+  content: '▶';
+  position: absolute;
+  bottom: 4px; right: 4px;
+  font-size: 9px;
+  color: #fff;
+  background: rgba(0,0,0,0.5);
+  border-radius: 4px;
+  padding: 1px 4px;
 }
 
-/* Cache le footer "Démarrer maintenant" en mode bibliothèque */
-#sv2-detail[data-mode="lib"] #sv2-detail-footer { display: none !important; }
-#sv2-detail[data-mode="lib"] .sv2-overlay-body { padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px)); }
+/* === COACH PROACTIF — bulle qui pop entre sets === */
+.sv2-coach-bubble {
+  position: fixed;
+  bottom: calc(100px + env(safe-area-inset-bottom, 0px));
+  left: 16px;
+  right: 16px;
+  background: linear-gradient(135deg, rgba(249,136,5,0.95), rgba(243,86,149,0.95));
+  border-radius: 20px;
+  padding: 14px 16px 14px 60px;
+  box-shadow: 0 12px 40px rgba(249,136,5,0.4);
+  z-index: 750;
+  transform: translateY(140%);
+  opacity: 0;
+  transition: transform 0.4s cubic-bezier(0.34, 1.4, 0.64, 1), opacity 0.3s;
+  pointer-events: none;
+}
+.sv2-coach-bubble.on {
+  transform: translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+.sv2-coach-bubble-avatar {
+  position: absolute;
+  left: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid rgba(255,255,255,0.6);
+}
+.sv2-coach-bubble-avatar img {
+  width: 100%; height: 100%; object-fit: cover;
+}
+.sv2-coach-bubble-text {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  color: #fff;
+  font-weight: 500;
+  line-height: 1.35;
+  margin-bottom: 10px;
+}
+.sv2-coach-bubble-actions {
+  display: flex;
+  gap: 8px;
+}
+.sv2-coach-bubble-btn {
+  flex: 1;
+  background: rgba(255,255,255,0.18);
+  border: 1px solid rgba(255,255,255,0.3);
+  border-radius: 99px;
+  padding: 8px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+  cursor: pointer;
+  font-family: 'Space Grotesk', sans-serif;
+}
+.sv2-coach-bubble-btn.primary {
+  background: rgba(255,255,255,0.95);
+  color: #F98805;
+}
+.sv2-coach-bubble-close {
+  position: absolute;
+  top: 6px; right: 8px;
+  background: transparent;
+  border: none;
+  color: rgba(255,255,255,0.7);
+  font-size: 16px;
+  cursor: pointer;
+  width: 24px; height: 24px;
+}
+
+/* === REP COUNTER CAMERA === */
+.sv2-cam-overlay {
+  position: fixed;
+  inset: 0;
+  background: #000;
+  z-index: 850;
+  display: none;
+  flex-direction: column;
+}
+.sv2-cam-overlay.on { display: flex; }
+.sv2-cam-video-wrap {
+  position: relative;
+  flex: 1;
+  overflow: hidden;
+}
+.sv2-cam-video-wrap video,
+.sv2-cam-video-wrap canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.sv2-cam-video-wrap canvas { z-index: 2; pointer-events: none; }
+.sv2-cam-counter {
+  position: absolute;
+  top: calc(20px + env(safe-area-inset-top, 0px));
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0,0,0,0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 24px;
+  padding: 12px 24px;
+  z-index: 3;
+  text-align: center;
+  min-width: 160px;
+}
+.sv2-cam-counter-num {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 56px;
+  color: #DDE255;
+  line-height: 1;
+}
+.sv2-cam-counter-target {
+  font-size: 13px;
+  color: rgba(240,240,255,0.7);
+  margin-top: 2px;
+}
+.sv2-cam-controls {
+  position: absolute;
+  bottom: calc(30px + env(safe-area-inset-bottom, 0px));
+  left: 16px; right: 16px;
+  display: flex;
+  gap: 10px;
+  z-index: 3;
+}
+.sv2-cam-btn {
+  flex: 1;
+  background: rgba(255,255,255,0.15);
+  border: 1px solid rgba(255,255,255,0.25);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 99px;
+  padding: 16px;
+  color: #fff;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.sv2-cam-btn.primary {
+  background: linear-gradient(135deg, #F98805, #F35695);
+  border-color: transparent;
+}
+.sv2-cam-status {
+  position: absolute;
+  top: calc(110px + env(safe-area-inset-top, 0px));
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0,0,0,0.65);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-radius: 16px;
+  padding: 8px 14px;
+  font-size: 12px;
+  color: #fff;
+  z-index: 3;
+  font-weight: 500;
+}
+.sv2-cam-status.feedback-good { background: rgba(34, 197, 94, 0.85); }
+.sv2-cam-status.feedback-bad { background: rgba(239, 68, 68, 0.85); }
+
+/* Bouton activer caméra (dans le mode actif) */
+.sv2-cam-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(221, 226, 85, 0.15);
+  border: 1px solid rgba(221, 226, 85, 0.4);
+  border-radius: 99px;
+  padding: 8px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #DDE255;
+  cursor: pointer;
+  margin-bottom: 14px;
+  font-family: 'Space Grotesk', sans-serif;
+}
+
+/* === AUTOPILOT IA — banner au-dessus du hero === */
+.sv2-autopilot-banner {
+  background: linear-gradient(135deg, rgba(221, 226, 85, 0.12), rgba(249, 136, 5, 0.06));
+  border: 1px solid rgba(221, 226, 85, 0.25);
+  border-radius: 16px;
+  padding: 12px 14px;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+  color: rgba(240,240,255,0.85);
+  line-height: 1.4;
+}
+.sv2-autopilot-banner-icon {
+  font-size: 22px;
+  flex-shrink: 0;
+}
+.sv2-autopilot-banner-text { flex: 1; }
+.sv2-autopilot-banner strong {
+  color: #DDE255;
+  font-weight: 700;
+}
+.sv2-autopilot-thinking {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: rgba(221, 226, 85, 0.8);
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+.sv2-autopilot-thinking::after {
+  content: '';
+  width: 4px; height: 4px;
+  border-radius: 50%;
+  background: #DDE255;
+  animation: sv2dotpulse 1.5s ease-in-out infinite;
+}
+@keyframes sv2dotpulse {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
+}
 
 </style>
 
@@ -3160,6 +3453,35 @@ body:not([data-tab="chat"]) .voice-status { display: none !important; }
   <div class="sv2-rest-next" id="sv2-rest-next-wrap" style="display:none;">
     <div class="sv2-rest-next-lbl">PROCHAIN</div>
     <div class="sv2-rest-next-name" id="sv2-rest-next-name">—</div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════
+     SÉANCES V3.3 — OVERLAYS BONUS (coach proactif, caméra)
+     ════════════════════════════════════════════════════════ -->
+
+<!-- Bulle coach proactif -->
+<div class="sv2-coach-bubble" id="sv2-coach-bubble">
+  <div class="sv2-coach-bubble-avatar"><img src="/avatar.jpg" alt="HIMA"></div>
+  <button class="sv2-coach-bubble-close" onclick="sv2CoachBubbleHide()">✕</button>
+  <div class="sv2-coach-bubble-text" id="sv2-coach-bubble-text">—</div>
+  <div class="sv2-coach-bubble-actions" id="sv2-coach-bubble-actions"></div>
+</div>
+
+<!-- Overlay caméra rep counter -->
+<div class="sv2-cam-overlay" id="sv2-cam-overlay">
+  <div class="sv2-cam-video-wrap">
+    <video id="sv2-cam-video" autoplay playsinline muted></video>
+    <canvas id="sv2-cam-canvas"></canvas>
+    <div class="sv2-cam-counter">
+      <div class="sv2-cam-counter-num" id="sv2-cam-num">0</div>
+      <div class="sv2-cam-counter-target" id="sv2-cam-target">/ 10 reps</div>
+    </div>
+    <div class="sv2-cam-status" id="sv2-cam-status">Mets-toi en position</div>
+    <div class="sv2-cam-controls">
+      <button class="sv2-cam-btn" onclick="sv2CamClose()">Fermer</button>
+      <button class="sv2-cam-btn primary" onclick="sv2CamValidate()">✓ Valider set</button>
+    </div>
   </div>
 </div>
 
@@ -9105,6 +9427,518 @@ if (document.readyState !== 'loading') {
 
 console.log('HIMA Tab Séances v3.2 chargé ✓ — '+Object.keys(EXOS_LIB).length+' exos disponibles');
 _sv2_log('SV2 script loaded OK, ' + Object.keys(EXOS_LIB).length + ' exos');
+
+})();
+
+/* ════════════════════════════════════════════════════════
+   PATCH HIMA v3.3 — RÉVOLUTION (4 features indépendantes)
+   IIFE séparées : si une crashe les autres tournent
+   ════════════════════════════════════════════════════════ */
+
+/* ─────────────────────────────────────────────
+   FEATURE 1/4 — VIDÉOS EXOS YMOVE (libre droit)
+   ───────────────────────────────────────────── */
+(function(){
+'use strict';
+
+window.EXOS_VIDEOS = {
+  'squat':            'd65feff4-9891-4ff8-a9f9-64965da7b69c',
+  'bench_press':      'd09e0ed7-21dd-4f1c-b5cf-3e345e9304ec',
+  'soulever_terre':   'f96d5f24-c9b0-4782-bbd9-41d383a6b633',
+  'rowing_barre':     'ae1f15b4-61f9-4da7-9ffe-0d8e72e6f097',
+  'developpe_militaire': 'd725ad5a-e0dd-4fca-8b9e-0016aaa757a0',
+  'tirage_vertical':  'ed1ca95e-2642-4551-a477-17485e486bfc',
+  'leg_press':        '3dabdcc0-8639-4868-9e57-5afc621ed50d',
+  'curl_barre':       '998e8f21-2bda-49d8-a773-b59c316d022d',
+  'extension_tri':    '9a550e2c-c55e-495d-b59e-b676c3d48a41',
+  'arnold':           'fb62140e-87c2-41f0-ada2-1d9be58664cf',
+  'leg_curl':         '34a512bf-baa1-48ac-a5b9-132073166018',
+  'eleve_lat':        '1cce8f37-dd9f-442f-995e-be02b98a35ad',
+  'oiseau':           '0f7cf0c4-34fe-4cb3-993e-469be8004c2c',
+  'tirage_horiz':     '499ccaa4-719d-40bd-b441-511291482471',
+  'incline_bench':    'ece55528-9855-49cf-a970-cf47c662e45d',
+  'tractions':        'c17e320f-7c96-4385-b8d7-f307ed4bae2e',
+  'fentes':           '166bf038-1670-4c52-9f32-cf6463556d99',
+  'gainage':          'be8f26b0-4948-4f48-b851-1a9d2cfd953c',
+  'mollets':          '94b73c60-81d0-4522-964e-ceacf89129cf',
+  'curl_haltere':     '2a0529a0-be74-4b88-bf1c-6b67c8f12ef8'
+};
+
+window.sv2GetVideoURL = function(exoId) {
+  var uuid = EXOS_VIDEOS[exoId];
+  if (!uuid) return null;
+  return 'https://ymove.app/api/free/' + uuid + '?type=video';
+};
+window.sv2GetThumbURL = function(exoId) {
+  var uuid = EXOS_VIDEOS[exoId];
+  if (!uuid) return null;
+  return 'https://ymove.app/api/free/' + uuid + '?type=thumbnail';
+};
+
+(function patchActive(){
+  if (!window.sv2RenderActive) { setTimeout(patchActive, 200); return; }
+  var _orig = window.sv2RenderActive;
+  window.sv2RenderActive = function() {
+    _orig.apply(this, arguments);
+    try {
+      var exo = SV2.current && SV2.current.exos[SV2.exoIdx];
+      if (!exo) return;
+      var url = sv2GetVideoURL(exo.id);
+      if (!url) return;
+      var wrap = document.querySelector('#sv2-active-body .sv2-active-svg-wrap');
+      if (wrap) {
+        wrap.outerHTML = '<div class="sv2-video-wrap"><video src="'+url+'" autoplay muted loop playsinline preload="auto" poster="'+sv2GetThumbURL(exo.id)+'"></video></div>';
+      }
+    } catch(e) { console.error('[SV2.video] active patch err:', e); }
+  };
+})();
+
+(function patchDetail(){
+  if (!window.sv2OpenDetail) { setTimeout(patchDetail, 200); return; }
+  var _orig = window.sv2OpenDetail;
+  window.sv2OpenDetail = function() {
+    _orig.apply(this, arguments);
+    try {
+      var cards = document.querySelectorAll('#sv2-detail-body .sv2-exo-card');
+      cards.forEach(function(card, i){
+        var exo = SV2.current && SV2.current.exos[i];
+        if (!exo) return;
+        var url = sv2GetVideoURL(exo.id);
+        if (!url) return;
+        var svg = card.querySelector('.sv2-exo-svg');
+        if (svg) {
+          svg.outerHTML = '<div class="sv2-mini-video"><video src="'+url+'" muted loop playsinline preload="metadata" poster="'+sv2GetThumbURL(exo.id)+'" autoplay></video></div>';
+        }
+      });
+    } catch(e) { console.error('[SV2.video] detail patch err:', e); }
+  };
+})();
+
+console.log('[SV2.video] vidéos exos initialisées : ' + Object.keys(EXOS_VIDEOS).length + ' disponibles');
+
+})();
+
+/* ─────────────────────────────────────────────
+   FEATURE 2/4 — COACH PROACTIF (bulles auto)
+   ───────────────────────────────────────────── */
+(function(){
+'use strict';
+
+window.SV2_PROACTIVE = {
+  lastBubble: 0,
+  cooldown: 60000,
+  setStartTime: 0,
+  shown: {}
+};
+
+window.sv2CoachBubbleShow = function(text, actions) {
+  var now = Date.now();
+  if (now - SV2_PROACTIVE.lastBubble < SV2_PROACTIVE.cooldown) return;
+  SV2_PROACTIVE.lastBubble = now;
+  var bubble = document.getElementById('sv2-coach-bubble');
+  if (!bubble) return;
+  document.getElementById('sv2-coach-bubble-text').textContent = text;
+  var actionsWrap = document.getElementById('sv2-coach-bubble-actions');
+  actionsWrap.innerHTML = '';
+  (actions || [{label:'OK', primary:true}]).forEach(function(a){
+    var btn = document.createElement('button');
+    btn.className = 'sv2-coach-bubble-btn' + (a.primary ? ' primary' : '');
+    btn.textContent = a.label;
+    btn.onclick = function() {
+      if (a.fn) try { a.fn(); } catch(e) {}
+      sv2CoachBubbleHide();
+    };
+    actionsWrap.appendChild(btn);
+  });
+  bubble.classList.add('on');
+  if (navigator.vibrate) try { navigator.vibrate([60, 40, 60]); } catch(e) {}
+  setTimeout(function(){ sv2CoachBubbleHide(); }, 12000);
+};
+
+window.sv2CoachBubbleHide = function() {
+  var bubble = document.getElementById('sv2-coach-bubble');
+  if (bubble) bubble.classList.remove('on');
+};
+
+(function hookValidate(){
+  if (!window.sv2ValidateSet) { setTimeout(hookValidate, 200); return; }
+  var _orig = window.sv2ValidateSet;
+  window.sv2ValidateSet = function() {
+    var exo = SV2.current && SV2.current.exos[SV2.exoIdx];
+    var setDone = exo && exo.logs[SV2.setIdx];
+    var wasReps = setDone ? setDone.reps : 0;
+    var wasCharge = setDone ? setDone.charge : 0;
+    var targetReps = exo ? exo.reps : 0;
+    var exoIdxBefore = SV2.exoIdx;
+    _orig.apply(this, arguments);
+    try {
+      if (wasReps < targetReps * 0.7 && wasReps > 0 && !SV2_PROACTIVE.shown['lowreps_'+exoIdxBefore]) {
+        SV2_PROACTIVE.shown['lowreps_'+exoIdxBefore] = true;
+        setTimeout(function(){
+          sv2CoachBubbleShow(
+            "T'as fait " + wasReps + " au lieu de " + targetReps + ". On baisse la charge de 2.5kg pour finir propre ?",
+            [
+              { label: 'Garder', fn: null },
+              { label: 'Baisser', primary: true, fn: function(){
+                if (exo && SV2.setIdx < exo.sets) {
+                  for (var k = SV2.setIdx; k < exo.sets; k++) {
+                    if (exo.logs[k] && !exo.logs[k].done) exo.logs[k].charge = Math.max(0, exo.logs[k].charge - 2.5);
+                  }
+                  if (typeof sv2RenderActive === 'function') sv2RenderActive();
+                }
+              }}
+            ]
+          );
+        }, 800);
+      } else if (wasReps > targetReps * 1.2 && wasCharge > 0 && !SV2_PROACTIVE.shown['easy_'+exoIdxBefore]) {
+        SV2_PROACTIVE.shown['easy_'+exoIdxBefore] = true;
+        setTimeout(function(){
+          sv2CoachBubbleShow(
+            "Trop facile ! " + wasReps + " reps c'est plus que prévu. On monte de 2.5kg pour le prochain set ?",
+            [
+              { label: 'Non', fn: null },
+              { label: 'Monter', primary: true, fn: function(){
+                if (exo && SV2.setIdx < exo.sets) {
+                  for (var k = SV2.setIdx; k < exo.sets; k++) {
+                    if (exo.logs[k] && !exo.logs[k].done) exo.logs[k].charge += 2.5;
+                  }
+                  if (typeof sv2RenderActive === 'function') sv2RenderActive();
+                }
+              }}
+            ]
+          );
+        }, 800);
+      }
+      SV2_PROACTIVE.setStartTime = Date.now();
+    } catch(e) { console.error('[SV2.proactive] err:', e); }
+  };
+})();
+
+(function hookEndRest(){
+  if (!window.sv2EndRest) { setTimeout(hookEndRest, 200); return; }
+  var _orig = window.sv2EndRest;
+  window.sv2EndRest = function() {
+    SV2_PROACTIVE.setStartTime = Date.now();
+    return _orig.apply(this, arguments);
+  };
+})();
+
+(function hookStart(){
+  if (!window.sv2StartActive) { setTimeout(hookStart, 200); return; }
+  var _orig = window.sv2StartActive;
+  window.sv2StartActive = function() {
+    SV2_PROACTIVE.setStartTime = Date.now();
+    SV2_PROACTIVE.shown = {};
+    SV2_PROACTIVE.lastBubble = 0;
+    return _orig.apply(this, arguments);
+  };
+})();
+
+setInterval(function(){
+  if (!window.SV2 || !SV2.current) return;
+  var activeOverlay = document.getElementById('sv2-active');
+  if (!activeOverlay || !activeOverlay.classList.contains('on')) return;
+  var now = Date.now();
+  if (SV2_PROACTIVE.setStartTime && now - SV2_PROACTIVE.setStartTime > 180000 && !SV2_PROACTIVE.shown['inactive_'+SV2.exoIdx+'_'+SV2.setIdx]) {
+    SV2_PROACTIVE.shown['inactive_'+SV2.exoIdx+'_'+SV2.setIdx] = true;
+    sv2CoachBubbleShow(
+      "T'as l'air bloqué. On passe à l'exo suivant ou je t'aide ?",
+      [
+        { label: 'Skip exo', fn: function(){ if (window.sv2SkipExo) sv2SkipExo(); }},
+        { label: 'Aide', primary: true, fn: function(){ if (window.sv2OpenCoach) sv2OpenCoach(); }}
+      ]
+    );
+  }
+}, 30000);
+
+console.log('[SV2.proactive] coach IA proactif initialisé ✓');
+
+})();
+
+/* ─────────────────────────────────────────────
+   FEATURE 3/4 — REP COUNTER CAMÉRA
+   ───────────────────────────────────────────── */
+(function(){
+'use strict';
+
+window.SV2_CAM = {
+  active: false,
+  stream: null,
+  reps: 0,
+  target: 10,
+  state: 'up',
+  rafId: null
+};
+
+window.sv2DetectExoType = function(exoId) {
+  if (!exoId) return 'generic';
+  var e = (window.EXOS_LIB || {})[exoId];
+  if (!e) return 'generic';
+  if (e.cat === 'jambes' || /squat|fentes|leg_press/.test(exoId)) return 'squat';
+  if (/pompe|pomp|bench|incline/.test(exoId)) return 'pushup';
+  if (/curl/.test(exoId)) return 'curl';
+  if (/traction|tirage/.test(exoId)) return 'pullup';
+  if (/militaire|arnold|developpe_m/.test(exoId)) return 'shoulderpress';
+  return 'generic';
+};
+
+window.sv2CamOpen = function(exoId, target) {
+  var overlay = document.getElementById('sv2-cam-overlay');
+  if (!overlay) return;
+  SV2_CAM.target = target || 10;
+  SV2_CAM.reps = 0;
+  SV2_CAM.state = 'up';
+  document.getElementById('sv2-cam-num').textContent = '0';
+  document.getElementById('sv2-cam-target').textContent = '/ ' + SV2_CAM.target + ' reps';
+  document.getElementById('sv2-cam-status').textContent = 'Démarrage caméra...';
+  document.getElementById('sv2-cam-status').className = 'sv2-cam-status';
+  overlay.classList.add('on');
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    document.getElementById('sv2-cam-status').textContent = 'Caméra non supportée';
+    document.getElementById('sv2-cam-status').classList.add('feedback-bad');
+    return;
+  }
+  navigator.mediaDevices.getUserMedia({
+    video: { facingMode: 'user', width: { ideal: 720 }, height: { ideal: 1280 } },
+    audio: false
+  }).then(function(stream){
+    SV2_CAM.stream = stream;
+    var video = document.getElementById('sv2-cam-video');
+    video.srcObject = stream;
+    video.onloadedmetadata = function() {
+      video.play();
+      document.getElementById('sv2-cam-status').textContent = 'Place-toi en position de départ';
+      sv2CamStartLoop();
+    };
+  }).catch(function(err){
+    document.getElementById('sv2-cam-status').textContent = 'Caméra refusée. Autorise dans les réglages.';
+    document.getElementById('sv2-cam-status').classList.add('feedback-bad');
+    console.error('[SV2.cam] err:', err);
+  });
+};
+
+window.sv2CamStartLoop = function() {
+  var video = document.getElementById('sv2-cam-video');
+  var canvas = document.getElementById('sv2-cam-canvas');
+  if (!canvas || !video) return;
+  var ctx = canvas.getContext('2d');
+  canvas.width = video.videoWidth || 640;
+  canvas.height = video.videoHeight || 480;
+  var motionHistory = [];
+  var lastRepTime = 0;
+  function loop() {
+    if (!SV2_CAM.active) return;
+    try {
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      var sx = canvas.width * 0.3, sy = canvas.height * 0.3;
+      var sw = canvas.width * 0.4, sh = canvas.height * 0.4;
+      var imgData = ctx.getImageData(sx, sy, sw, sh);
+      var pixels = imgData.data;
+      var sumBrightness = 0, weightedY = 0;
+      for (var i = 0; i < pixels.length; i += 16) {
+        var brightness = (pixels[i] + pixels[i+1] + pixels[i+2]) / 3;
+        var pIdx = i / 4;
+        var py = Math.floor(pIdx / sw);
+        sumBrightness += brightness;
+        weightedY += brightness * py;
+      }
+      var centroidY = sumBrightness > 0 ? weightedY / sumBrightness : 0;
+      motionHistory.push(centroidY);
+      if (motionHistory.length > 30) motionHistory.shift();
+      if (motionHistory.length >= 20) {
+        var min = Math.min.apply(null, motionHistory);
+        var max = Math.max.apply(null, motionHistory);
+        var range = max - min;
+        var current = motionHistory[motionHistory.length - 1];
+        if (range > 8) {
+          var pctPos = (current - min) / range;
+          var now = Date.now();
+          if (SV2_CAM.state === 'up' && pctPos > 0.7) {
+            SV2_CAM.state = 'down';
+          } else if (SV2_CAM.state === 'down' && pctPos < 0.3 && now - lastRepTime > 800) {
+            SV2_CAM.state = 'up';
+            SV2_CAM.reps++;
+            lastRepTime = now;
+            document.getElementById('sv2-cam-num').textContent = SV2_CAM.reps;
+            if (navigator.vibrate) try { navigator.vibrate(50); } catch(e) {}
+            var s = document.getElementById('sv2-cam-status');
+            s.textContent = 'Rep ' + SV2_CAM.reps + ' validée 🔥';
+            s.className = 'sv2-cam-status feedback-good';
+            (function(captured){
+              setTimeout(function(){
+                if (s.textContent.indexOf('Rep ' + captured) === 0) {
+                  s.textContent = SV2_CAM.reps + ' / ' + SV2_CAM.target;
+                  s.className = 'sv2-cam-status';
+                }
+              }, 1200);
+            })(SV2_CAM.reps);
+            if (SV2_CAM.reps >= SV2_CAM.target) {
+              setTimeout(function(){ sv2CamValidate(); }, 800);
+            }
+          }
+        } else {
+          var s = document.getElementById('sv2-cam-status');
+          if (!s.classList.contains('feedback-good') && !s.classList.contains('feedback-bad')) {
+            s.textContent = 'Bouge un peu plus pour que je détecte';
+          }
+        }
+      }
+    } catch(e) {}
+    SV2_CAM.rafId = requestAnimationFrame(loop);
+  }
+  SV2_CAM.active = true;
+  loop();
+};
+
+window.sv2CamValidate = function() {
+  if (window.SV2 && SV2.current) {
+    var exo = SV2.current.exos[SV2.exoIdx];
+    if (exo && exo.logs[SV2.setIdx]) {
+      exo.logs[SV2.setIdx].reps = SV2_CAM.reps;
+    }
+  }
+  sv2CamClose();
+  if (window.sv2ValidateSet) sv2ValidateSet();
+};
+
+window.sv2CamClose = function() {
+  SV2_CAM.active = false;
+  if (SV2_CAM.rafId) cancelAnimationFrame(SV2_CAM.rafId);
+  SV2_CAM.rafId = null;
+  if (SV2_CAM.stream) {
+    SV2_CAM.stream.getTracks().forEach(function(t){ t.stop(); });
+    SV2_CAM.stream = null;
+  }
+  document.getElementById('sv2-cam-overlay').classList.remove('on');
+};
+
+(function patchActiveForCam(){
+  if (!window.sv2RenderActive) { setTimeout(patchActiveForCam, 250); return; }
+  var _orig = window.sv2RenderActive;
+  window.sv2RenderActive = function() {
+    _orig.apply(this, arguments);
+    try {
+      var exo = SV2.current && SV2.current.exos[SV2.exoIdx];
+      if (!exo) return;
+      var type = sv2DetectExoType(exo.id);
+      if (type === 'generic' || type === 'curl') return;
+      var body = document.getElementById('sv2-active-body');
+      if (!body) return;
+      var existing = body.querySelector('.sv2-cam-toggle');
+      if (existing) existing.remove();
+      var btn = document.createElement('button');
+      btn.className = 'sv2-cam-toggle';
+      btn.innerHTML = '📷 Compter mes reps automatiquement';
+      btn.onclick = function() { sv2CamOpen(exo.id, exo.reps); };
+      var grid = body.querySelector('.sv2-sets-grid');
+      if (grid) grid.parentNode.insertBefore(btn, grid);
+    } catch(e) { console.error('[SV2.cam] patch err:', e); }
+  };
+})();
+
+console.log('[SV2.cam] rep counter caméra initialisé ✓');
+
+})();
+
+/* ─────────────────────────────────────────────
+   FEATURE 4/4 — AUTOPILOT IA INTER-SÉANCE
+   ───────────────────────────────────────────── */
+(function(){
+'use strict';
+
+window.SV2_AUTOPILOT = { enabled: true };
+
+window.sv2AutopilotCompute = function() {
+  if (!window.U || !U.sessions || U.sessions.length === 0) return null;
+  var recent = U.sessions.slice(-5);
+  var avgFelt = 0, feltCount = 0;
+  recent.forEach(function(s){
+    if (s.felt) { avgFelt += s.felt; feltCount++; }
+  });
+  if (feltCount > 0) avgFelt = avgFelt / feltCount;
+  var readiness = (typeof calcReadiness === 'function') ? calcReadiness() : 70;
+  var streak = U.streak || 0;
+  var decision = { volume: 1.0, intensity: 1.0, reason: '', icon: '⚡', show: false };
+  if (avgFelt >= 4.5) {
+    decision.volume = 1.10; decision.intensity = 1.05;
+    decision.reason = "T'es au top sur les dernières séances. <strong>+10% volume</strong> aujourd'hui.";
+    decision.icon = '🔥';
+    decision.show = true;
+  } else if (avgFelt > 0 && avgFelt <= 2.5) {
+    decision.volume = 0.85; decision.intensity = 0.90;
+    decision.reason = "Tu galères ces derniers jours. <strong>−15% volume</strong> pour bien récupérer.";
+    decision.icon = '🌿';
+    decision.show = true;
+  } else if (readiness < 50) {
+    decision.volume = 0.90; decision.intensity = 0.95;
+    decision.reason = "Readiness à <strong>" + Math.round(readiness) + "%</strong>. Version allégée aujourd'hui.";
+    decision.icon = '⚖️';
+    decision.show = true;
+  } else if (streak >= 5) {
+    decision.reason = "Streak de <strong>" + streak + " jours</strong>. Maintien de l'intensité.";
+    decision.icon = '🎯';
+    decision.show = true;
+  }
+  return decision;
+};
+
+(function patchGen(){
+  if (!window.sv2GenSeance) { setTimeout(patchGen, 200); return; }
+  var _orig = window.sv2GenSeance;
+  window.sv2GenSeance = function(jourIdx) {
+    var seance = _orig.apply(this, arguments);
+    if (!SV2_AUTOPILOT.enabled || seance.rest) return seance;
+    var dec = sv2AutopilotCompute();
+    if (!dec || !dec.show) return seance;
+    seance.exos.forEach(function(exo){
+      if (dec.volume !== 1.0) {
+        var newSets = Math.max(2, Math.round(exo.sets * dec.volume));
+        if (newSets !== exo.sets) {
+          exo.sets = newSets;
+          var arr = [];
+          for (var k = 0; k < newSets; k++) arr.push({ reps: exo.reps, charge: exo.charge, done: false });
+          exo.logs = arr;
+        }
+      }
+      if (dec.intensity !== 1.0 && exo.charge > 0) {
+        exo.charge = Math.round(exo.charge * dec.intensity / 2.5) * 2.5;
+        exo.logs.forEach(function(l){ l.charge = exo.charge; });
+      }
+    });
+    seance.duree = Math.round(seance.exos.length * (seance.exos[0].sets * (45 + (seance.exos[0].rest || 75)) / 60));
+    seance._autopilot = dec;
+    return seance;
+  };
+})();
+
+(function patchBuild(){
+  if (!window.buildSeancesV2) { setTimeout(patchBuild, 200); return; }
+  var _orig = window.buildSeancesV2;
+  window.buildSeancesV2 = function() {
+    _orig.apply(this, arguments);
+    try {
+      var sc = document.querySelector('.seances-v2-root');
+      if (!sc) return;
+      var seance = sv2GenSeance();
+      if (!seance || !seance._autopilot) return;
+      var dec = seance._autopilot;
+      var hero = sc.querySelector('.sv2-hero');
+      if (!hero) return;
+      var existing = sc.querySelector('.sv2-autopilot-banner');
+      if (existing) existing.remove();
+      var banner = document.createElement('div');
+      banner.className = 'sv2-autopilot-banner';
+      banner.innerHTML = '<div class="sv2-autopilot-banner-icon">' + dec.icon + '</div>'
+        + '<div class="sv2-autopilot-banner-text">'
+        +   '<div class="sv2-autopilot-thinking">AUTOPILOT HIMA</div>'
+        +   '<div style="margin-top:2px;">' + dec.reason + '</div>'
+        + '</div>';
+      hero.parentNode.insertBefore(banner, hero);
+    } catch(e) { console.error('[SV2.autopilot] build err:', e); }
+  };
+})();
+
+console.log('[SV2.autopilot] adaptation IA inter-séance initialisée ✓');
 
 })();
 
