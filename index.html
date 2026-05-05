@@ -1449,8 +1449,8 @@ body:not([data-tab="chat"]) .voice-status { display: none !important; }
    + Programme hebdo + Bibliothèque exos + SVG anatomiques animés
    ════════════════════════════════════════════════════════ */
 
-/* === RESET du tab t-prog (SV2) — spécificité maximale === */
-body #t-prog { background: #080810 !important; padding: 0 !important; }
+/* === RESET du tab t-prog (SV2) — iOS Safari friendly === */
+body #t-prog { background: #080810 !important; padding: 0 !important; position: relative !important; }
 body #t-prog > .tab-hd,
 body #t-prog > .week-strip,
 body #t-prog > .tsc,
@@ -1461,15 +1461,37 @@ body #t-prog .adapt-banner,
 body #t-prog #prog-ia-result,
 body #t-prog #wstrip,
 body #t-prog #prog-sc { display: none !important; visibility: hidden !important; height: 0 !important; overflow: hidden !important; }
-body #t-prog .seances-v2-root { display: flex !important; flex-direction: column !important; height: 100% !important; visibility: visible !important; }
-body #t-prog .seances-v2-scroll {
-  flex: 1 !important; overflow-y: auto !important; -webkit-overflow-scrolling: touch !important;
-  padding: 0 16px calc(100px + env(safe-area-inset-bottom, 0px)) 16px !important;
+
+/* iOS Safari: au lieu de flex+height:100% (qui collapse), on positionne en absolu */
+body #t-prog .seances-v2-root {
+  display: block !important;
+  position: absolute !important;
+  top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important;
   visibility: visible !important;
+  overflow: hidden !important;
+}
+body #t-prog .seances-v2-scroll {
+  position: absolute !important;
+  top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+  padding: calc(20px + env(safe-area-inset-top, 0px)) 16px calc(100px + env(safe-area-inset-bottom, 0px)) 16px !important;
+  visibility: visible !important;
+  background: #080810 !important;
 }
 body #t-prog .seances-v2-scroll * { visibility: visible !important; }
 body #t-prog .seances-v2-scroll::-webkit-scrollbar { display: none; }
-body #t-prog .seances-v2-scroll { padding-top: calc(20px + env(safe-area-inset-top, 0px)) !important; }
+
+/* FALLBACK iOS : avant que sv2-ready soit set, on garde l'ancien tab visible */
+body:not([data-sv2="ready"]) #t-prog .tab-hd,
+body:not([data-sv2="ready"]) #t-prog .tsc,
+body:not([data-sv2="ready"]) #t-prog #wstrip,
+body:not([data-sv2="ready"]) #t-prog #prog-sc {
+  display: flex !important; visibility: visible !important; height: auto !important; overflow: visible !important;
+}
+body:not([data-sv2="ready"]) #t-prog .week-strip {
+  display: flex !important; visibility: visible !important; height: auto !important;
+}
 
 /* === HERO séance du jour === */
 .sv2-hero {
@@ -1844,20 +1866,21 @@ body #t-prog .seances-v2-scroll { padding-top: calc(20px + env(safe-area-inset-t
 
 .sv2-active-svg-wrap {
   width: 100%;
-  aspect-ratio: 16/10;
+  /* aspect-ratio fallback : padding-bottom hack pour iOS Safari < 15 */
+  height: 0;
+  padding-bottom: 62.5%; /* = 10/16 */
+  position: relative;
   background: linear-gradient(135deg, rgba(249,136,5,0.12), rgba(243,86,149,0.06));
   border: 1px solid rgba(240,240,255,0.06);
   border-radius: 24px;
   margin-bottom: 22px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   overflow: hidden;
-  position: relative;
 }
-.sv2-active-svg-wrap svg {
-  width: 80%;
-  height: 80%;
+.sv2-active-svg-wrap > svg {
+  position: absolute;
+  top: 10%; left: 10%;
+  width: 80% !important;
+  height: 80% !important;
 }
 
 .sv2-active-name {
@@ -8492,7 +8515,7 @@ window.sv2GenSeance = function(jourIdx) {
       id: id, n: e.n, m: e.m, m2: e.m2 || '',
       sets: sets, reps: reps, rest: rest, charge: charge,
       tip: e.tip, cat: e.cat, isCardio: isCardio,
-      logs: Array(sets).fill(null).map(function(){ return { reps: reps, charge: charge, done: false }; })
+      logs: (function(){ var arr=[]; for(var k=0;k<sets;k++) arr.push({ reps: reps, charge: charge, done: false }); return arr; })()
     };
   });
   var dureeEst = Math.round(exos.length * (sn[0] * (45 + (exos[0].rest || 75)) / 60));
@@ -8585,6 +8608,8 @@ window.buildSeancesV2 = function() {
   html += '<div class="sv2-sec-title">EXPLORE</div>'
     + '<button class="sv2-hero-cta-secondary" onclick="sv2OpenLib()" style="margin-top:0;">📚 Bibliothèque · '+Object.keys(EXOS_LIB).length+' exercices</button>';
   sc.innerHTML = html;
+  // Marque le body comme prêt → cache l'ancien tab via CSS
+  document.body.setAttribute('data-sv2', 'ready');
 };
 
 // ─── DÉTAIL SÉANCE ───
@@ -8642,7 +8667,7 @@ window.sv2SwapExo = function(idx) {
     charge: sv2EstimateCharge(nextId),
     tip: newE.tip, cat: newE.cat,
     isCardio: newE.cat === 'cardio' || newE.cat === 'core',
-    logs: Array(exo.sets).fill(null).map(function(){ return { reps: exo.reps, charge: sv2EstimateCharge(nextId), done: false }; })
+    logs: (function(){ var arr=[],ch=sv2EstimateCharge(nextId); for(var k=0;k<exo.sets;k++) arr.push({ reps: exo.reps, charge: ch, done: false }); return arr; })()
   };
   sv2OpenDetail();
 };
