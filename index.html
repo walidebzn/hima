@@ -8783,23 +8783,27 @@ console.log('HIMA Conversion Engine v3.1 chargé ✓ — pricing 14,99/24,99 act
 })();
 
 /* ════════════════════════════════════════════════════════
-   PATCH HIMA v3.2 — TAB SÉANCES RÉVOLUTION (JS Engine)
+   HIMA TAB SÉANCES v4.0 — REFACTOR PROPRE
+   ────────────────────────────────────────────────────────
+   Méga refactor : 1 seule définition par fonction.
+   Plus aucun wrapper cascade. Plus aucun double observer.
+   Scope : Vidéos ymove + Cam dorsale + Autopilot + Voix coach.
+   Supprimé : score forme, smart notifs, Apple Health, mode rapide.
    ════════════════════════════════════════════════════════ */
 (function(){
 'use strict';
 
-// ─── DEBUG OVERLAY iOS — désactivé une fois bug fixé ───
-// Pour réactiver : remplacer le body de _sv2_log par le code original
+// Logger silencieux (console.log + console.error)
 window._sv2_log = function(msg, isErr) {
-  // Désactivé — garde juste console.log pour le dev
   try { (isErr ? console.error : console.log)('[SV2]', msg); } catch(e) {}
 };
 
-// On garde quand même les error handlers globaux pour ne pas perdre les crashes
+// Capture des erreurs globales pour debug iOS
 window.addEventListener('error', function(e){
   console.error('[SV2] global error:', e.message, '@', e.filename, ':', e.lineno);
 });
 
+// ─── ÉTAT GLOBAL ───
 window.SV2 = window.SV2 || {
   current: null, exoIdx: 0, setIdx: 0,
   startTime: null, paused: false, pausedTotal: 0, pauseStart: null,
@@ -8807,7 +8811,12 @@ window.SV2 = window.SV2 || {
   felt: null, log: []
 };
 
-// ─── BIBLIOTHÈQUE EXOS (43 exercices) ───
+window.SV2_CAM = { stream: null, target: 10, reps: 0, state: 'up', exoId: null, raf: null, motion: [] };
+window.SV2_VOICE = { enabled: (window.U && U.sv2VoiceOn) || false, lastSpoke: 0 };
+window.SV2_AUTOPILOT = { enabled: true };
+window.SV2_PROACTIVE = { lastShown: 0 };
+
+// ─── BIBLIOTHÈQUE 43 EXOS ───
 window.EXOS_LIB = {
   'bench_press':    { n:'Développé couché barre', m:'Pectoraux', m2:'Triceps', l:'salle', niv:'int', cat:'pousser', tip:'Dos plaqué, omoplates serrées. Barre touche le sternum.' },
   'incline_bench':  { n:'Développé incliné haltères', m:'Haut pectoraux', m2:'Épaules', l:'salle', niv:'int', cat:'pousser', tip:'Banc à 30°. Coudes 45° du buste.' },
@@ -8854,7 +8863,47 @@ window.EXOS_LIB = {
   'world_greatest': { n:'World greatest stretch', m:'Full mobility', l:'both', niv:'deb', cat:'mobilite', tip:'Étirement complet, à faire avant chaque séance.' }
 };
 
-// ─── SVG ANATOMIQUE animé ───
+// ─── BIBLIOTHÈQUE VIDÉOS ymove.app ───
+// Format URL : https://ymove.app/api/free/{uuid}?type=video|thumbnail
+window.EXOS_VIDEOS = {
+  // Muscu — 25 UUIDs ymove
+  'squat':            'd65feff4-9891-4ff8-a9f9-64965da7b69c',
+  'bench_press':      'd09e0ed7-21dd-4f1c-b5cf-3e345e9304ec',
+  'soulever_terre':   'f96d5f24-c9b0-4782-bbd9-41d383a6b633',
+  'rowing_barre':     'ae1f15b4-61f9-4da7-9ffe-0d8e72e6f097',
+  'rowing_haltere':   'ae1f15b4-61f9-4da7-9ffe-0d8e72e6f097',
+  'developpe_militaire': 'd725ad5a-e0dd-4fca-8b9e-0016aaa757a0',
+  'tirage_vertical':  'ed1ca95e-2642-4551-a477-17485e486bfc',
+  'leg_press':        '3dabdcc0-8639-4868-9e57-5afc621ed50d',
+  'curl_barre':       '998e8f21-2bda-49d8-a773-b59c316d022d',
+  'extension_tri':    '9a550e2c-c55e-495d-b59e-b676c3d48a41',
+  'arnold':           'fb62140e-87c2-41f0-ada2-1d9be58664cf',
+  'leg_curl':         '34a512bf-baa1-48ac-a5b9-132073166018',
+  'eleve_lat':        '1cce8f37-dd9f-442f-995e-be02b98a35ad',
+  'oiseau':           '0f7cf0c4-34fe-4cb3-993e-469be8004c2c',
+  'tirage_horiz':     '499ccaa4-719d-40bd-b441-511291482471',
+  'incline_bench':    'ece55528-9855-49cf-a970-cf47c662e45d',
+  'tractions':        'c17e320f-7c96-4385-b8d7-f307ed4bae2e',
+  'fentes':           '166bf038-1670-4c52-9f32-cf6463556d99',
+  'gainage':          'be8f26b0-4948-4f48-b851-1a9d2cfd953c',
+  'mollets':          '94b73c60-81d0-4522-964e-ceacf89129cf',
+  'curl_haltere':     '2a0529a0-be74-4b88-bf1c-6b67c8f12ef8',
+  'curl_marteau':     '2a0529a0-be74-4b88-bf1c-6b67c8f12ef8',
+  'ecarte_haltere':   '82760b28-30e2-4311-a4c5-42da40082079',
+  'squat_pdc':        'd65feff4-9891-4ff8-a9f9-64965da7b69c',
+  'squat_bulgare':    '166bf038-1670-4c52-9f32-cf6463556d99'
+};
+
+window.sv2GetVideoURL = function(exoId) {
+  var uuid = window.EXOS_VIDEOS[exoId];
+  return uuid ? 'https://ymove.app/api/free/' + uuid + '?type=video' : null;
+};
+window.sv2GetThumbURL = function(exoId) {
+  var uuid = window.EXOS_VIDEOS[exoId];
+  return uuid ? 'https://ymove.app/api/free/' + uuid + '?type=thumbnail' : null;
+};
+
+// ─── SVG ANATOMIQUE animé (fallback) ───
 window.sv2BodySVG = function(muscleKey) {
   var zones = {
     'Pectoraux':       { c:'#F98805', parts:['chest'] },
@@ -8923,22 +8972,68 @@ window.sv2BodySVG = function(muscleKey) {
     + '</svg>';
 };
 
-// ─── ESTIMATION CHARGE ───
-window.sv2EstimateCharge = function(exoId) {
-  if (U.PRs && U.PRs[exoId]) return Math.round(U.PRs[exoId].oneRM * 0.70 / 2.5) * 2.5;
-  var poids = U.poids || 70;
-  var niv = U.niv || 'deb';
-  var coef = { deb: 0.5, int: 0.8, av: 1.1 }[niv] || 0.5;
-  var defaults = { bench_press: poids*coef*0.8, squat: poids*coef*1.0, soulever_terre: poids*coef*1.2, rowing_barre: poids*coef*0.7, developpe_militaire: poids*coef*0.5, curl_barre: poids*coef*0.3 };
-  var v = defaults[exoId] || 20;
-  return Math.round(v / 2.5) * 2.5;
+// ─── HELPER MEDIA : vidéo ymove > SVG cardio > SVG anatomique ───
+// Renvoie le HTML du visuel à afficher pour un exo (priorité vidéo)
+window.sv2ExoMedia = function(exo, big) {
+  var url = sv2GetVideoURL(exo.id);
+  if (url) {
+    var poster = sv2GetThumbURL(exo.id) || '';
+    var posterAttr = poster ? ' poster="'+poster+'"' : '';
+    var styleVid = big
+      ? 'width:100%;height:100%;object-fit:contain;pointer-events:none;border-radius:18px;background:#000;'
+      : 'width:100%;height:100%;object-fit:cover;pointer-events:none;border-radius:14px;';
+    return '<video src="'+url+'"'+posterAttr+' autoplay muted loop playsinline preload="metadata" disablePictureInPicture x-webkit-airplay="deny" controlslist="nodownload nofullscreen noremoteplayback noplaybackrate" style="'+styleVid+'"></video>';
+  }
+  // Fallback SVG anatomique (cardio inclus via le pattern 'heart' / 'full')
+  return sv2BodySVG(exo.m);
 };
 
-// ─── GÉNÉRATION SÉANCE ───
+// ─── ESTIMATION CHARGE ───
+window.sv2EstimateCharge = function(exoId) {
+  if (window.U && U.PRs && U.PRs[exoId]) return Math.round(U.PRs[exoId].oneRM * 0.70 / 2.5) * 2.5;
+  var poids = (window.U && U.poids) || 70;
+  var niv = (window.U && U.niv) || 'deb';
+  var coefs = {
+    'bench_press': { deb:0.5, int:0.8, av:1.1 }, 'squat': { deb:0.7, int:1.1, av:1.5 },
+    'soulever_terre': { deb:0.9, int:1.3, av:1.8 }, 'developpe_militaire': { deb:0.3, int:0.5, av:0.7 },
+    'rowing_barre': { deb:0.5, int:0.8, av:1.0 }, 'leg_press': { deb:1.0, int:1.5, av:2.0 },
+    'tirage_vertical': { deb:0.5, int:0.7, av:0.9 }, 'tirage_horiz': { deb:0.4, int:0.6, av:0.8 },
+    'curl_barre': { deb:0.2, int:0.35, av:0.5 }, 'curl_haltere': { deb:0.1, int:0.18, av:0.25 },
+    'curl_marteau': { deb:0.1, int:0.18, av:0.25 }, 'extension_tri': { deb:0.1, int:0.2, av:0.3 },
+    'kickback': { deb:0.05, int:0.1, av:0.15 }, 'arnold': { deb:0.1, int:0.18, av:0.28 },
+    'eleve_lat': { deb:0.05, int:0.1, av:0.15 }, 'oiseau': { deb:0.05, int:0.1, av:0.15 },
+    'incline_bench': { deb:0.1, int:0.18, av:0.28 }, 'rowing_haltere': { deb:0.15, int:0.25, av:0.35 },
+    'leg_curl': { deb:0.3, int:0.5, av:0.7 }, 'mollets': { deb:0.5, int:1.0, av:1.5 },
+    'fentes': { deb:0.1, int:0.2, av:0.35 }, 'squat_bulgare': { deb:0.1, int:0.2, av:0.35 },
+    'ecarte_haltere': { deb:0.1, int:0.15, av:0.22 }
+  };
+  var c = coefs[exoId];
+  if (!c) return 0;
+  var charge = poids * c[niv];
+  return Math.round(charge / 2.5) * 2.5;
+};
+
+// ─── AUTOPILOT : ajuste sets/charges selon 5 dernières séances ───
+window.sv2AutopilotCompute = function() {
+  if (!window.U || !U.sessions || U.sessions.length < 2) return { mode: 'normal', mult: 1 };
+  var last5 = U.sessions.slice(-5);
+  var feltAvg = last5.reduce(function(s, x){ return s + (x.felt || 3); }, 0) / last5.length;
+  var streak = U.streak || 1;
+  var readiness = (typeof calcReadiness === 'function') ? calcReadiness() : 70;
+  // Logique simple : si feltAvg >= 4 et readiness > 75 → push +10%
+  if (feltAvg >= 4 && readiness >= 75 && streak >= 3) return { mode: 'push', mult: 1.10, label: '🔥 Tu pousses fort — +10%' };
+  // Si feltAvg <= 2 → -15%
+  if (feltAvg <= 2) return { mode: 'recovery', mult: 0.85, label: '🌿 Récupération — −15%' };
+  // Si readiness < 50 → -10%
+  if (readiness < 50) return { mode: 'easy', mult: 0.90, label: '⚖️ Allégé — −10%' };
+  return { mode: 'normal', mult: 1, label: '🎯 Niveau optimal' };
+};
+
+// ─── GÉNÉRATION SÉANCE (avec autopilot intégré) ───
 window.sv2GenSeance = function(jourIdx) {
-  // Le mode est dérivé de l'objectif si pas explicitement défini
-  // perte → glow (cardio dominant) | muscle → bodybuilding | mixte → mindset (équilibré) | perf → hyrox
+  // Mode dérivé de l'objectif (perte→glow, muscle→bodybuilding, mixte→mindset, perf→hyrox)
   var goalToMode = { perte: 'glow', muscle: 'bodybuilding', mixte: 'mindset', perf: 'hyrox' };
+  var U = window.U || {};
   var mode = U.mode || goalToMode[U.obj] || 'bodybuilding';
   var lieu = U.lieu || 'maison';
   var niv = U.niv || 'deb';
@@ -8968,7 +9063,7 @@ window.sv2GenSeance = function(jourIdx) {
   };
   var tpl = templates[typeJour] || templates.fullbody;
   var available = tpl.exos.filter(function(id){
-    var e = EXOS_LIB[id];
+    var e = window.EXOS_LIB[id];
     if (!e) return false;
     if (lieu === 'maison' && e.l === 'salle') return false;
     return true;
@@ -8976,12 +9071,16 @@ window.sv2GenSeance = function(jourIdx) {
   if (available.length < 4) available = tpl.exos;
   var setsByNiv = { deb: [3, 10], int: [4, 10], av: [4, 8] };
   var sn = setsByNiv[niv] || setsByNiv.deb;
+  // Autopilot : ajuste charges
+  var ap = sv2AutopilotCompute();
   var exos = available.slice(0, 6).map(function(id){
-    var e = EXOS_LIB[id];
+    var e = window.EXOS_LIB[id];
     var sets = sn[0], reps = sn[1];
     var isCardio = e.cat === 'cardio' || e.cat === 'core';
     var rest = isCardio ? 30 : (niv === 'av' ? 90 : 75);
-    var charge = (lieu === 'salle' && e.l !== 'maison' && e.cat !== 'cardio' && e.cat !== 'core' && e.cat !== 'mobilite') ? sv2EstimateCharge(id) : 0;
+    var charge = (lieu === 'salle' && e.l !== 'maison' && e.cat !== 'cardio' && e.cat !== 'core' && e.cat !== 'mobilite')
+      ? Math.round(sv2EstimateCharge(id) * ap.mult / 2.5) * 2.5
+      : 0;
     return {
       id: id, n: e.n, m: e.m, m2: e.m2 || '',
       sets: sets, reps: reps, rest: rest, charge: charge,
@@ -8992,7 +9091,7 @@ window.sv2GenSeance = function(jourIdx) {
   var dureeEst = Math.round(exos.length * (sn[0] * (45 + (exos[0].rest || 75)) / 60));
   return {
     rest: false, day: d, type: typeJour, titre: tpl.titre, duree: dureeEst,
-    niv: niv, lieu: lieu, mode: mode, exos: exos,
+    niv: niv, lieu: lieu, mode: mode, exos: exos, autopilot: ap,
     sub: 'Adapté à ton niveau ' + ({deb:'débutant', int:'intermédiaire', av:'avancé'}[niv] || 'débutant') + (lieu==='salle'?' · salle':' · maison')
   };
 };
@@ -9004,13 +9103,12 @@ window.sv2WeekKey = function(dayIdx) {
   return d.toISOString().slice(0,10);
 };
 
-// ─── BUILD LANDING ───
+// ─── BUILD LANDING (1 seule définition, pas de wrapper) ───
 window.buildSeancesV2 = function() {
   _sv2_log('buildSeancesV2 called');
   var tab = document.getElementById('t-prog');
   if (!tab) { _sv2_log('ERR: t-prog not found', true); return; }
-  _sv2_log('t-prog found, classes: ' + tab.className);
-  // Vider le tab et insérer le root SV2
+  // Insérer le root SV2 si absent
   var existing = tab.querySelector('.seances-v2-root');
   if (!existing) {
     if (!tab._sv2_origHTML) tab._sv2_origHTML = tab.innerHTML;
@@ -9019,11 +9117,10 @@ window.buildSeancesV2 = function() {
   }
   var sc = tab.querySelector('.seances-v2-root');
   if (!sc) { _sv2_log('ERR: root not findable after insert', true); return; }
-  _sv2_log('root OK, building html...');
   var seance = sv2GenSeance();
+  var U = window.U || {};
   var prenom = U.prenom || 'Champion';
   var readiness = (typeof calcReadiness === 'function') ? calcReadiness() : 70;
-  var phase = (typeof cPhase === 'function') ? cPhase() : 'Fondation';
   var streak = U.streak || 1;
   var sessionsWeek = (U.sessions || []).filter(function(s){
     var diff = (Date.now() - new Date(s.date).getTime()) / (1000*60*60*24);
@@ -9036,11 +9133,11 @@ window.buildSeancesV2 = function() {
       + '<div class="sv2-hero-eyebrow">JOUR DE REPOS</div>'
       + '<div class="sv2-hero-title">RÉCUPÉRATION</div>'
       + '<div class="sv2-hero-sub">Le repos fait progresser. Tes muscles se reconstruisent aujourd\'hui.</div>'
-      + '<div class="sv2-hero-meta"><div class="sv2-meta-pill">🌿 Repos actif possible</div><div class="sv2-meta-pill">📊 Phase '+phase+'</div></div>'
+      + '<div class="sv2-hero-meta"><div class="sv2-meta-pill">🌿 Repos actif possible</div></div>'
       + '<button class="sv2-hero-cta-secondary" onclick="sv2OpenLib()">Voir la bibliothèque d\'exos</button>'
       + '</div></div>';
   } else {
-    var difficulte = readiness >= 75 ? 'Niveau optimal' : readiness >= 50 ? 'Adapté à ton état' : 'Version allégée';
+    var ap = seance.autopilot || { label: '⚡ Adapté à ton état' };
     html += '<div class="sv2-hero"><div class="sv2-hero-content">'
       + '<div class="sv2-hero-eyebrow">AUJOURD\'HUI · '+prenom.toUpperCase()+'</div>'
       + '<div class="sv2-hero-title">'+seance.titre.split(' — ')[0].toUpperCase()+'</div>'
@@ -9048,7 +9145,7 @@ window.buildSeancesV2 = function() {
       + '<div class="sv2-hero-meta">'
       +   '<div class="sv2-meta-pill">⏱ '+seance.duree+' min</div>'
       +   '<div class="sv2-meta-pill">💪 '+seance.exos.length+' exos</div>'
-      +   '<div class="sv2-meta-pill sv2-meta-pill-readiness">⚡ '+difficulte+'</div>'
+      +   '<div class="sv2-meta-pill sv2-meta-pill-readiness">'+ap.label+'</div>'
       + '</div>'
       + '<button class="sv2-hero-cta" onclick="sv2OpenDetail()">⚡ Démarrer ma séance</button>'
       + '<button class="sv2-hero-cta-secondary" onclick="sv2OpenDetail()">Voir le détail</button>'
@@ -9080,10 +9177,9 @@ window.buildSeancesV2 = function() {
     +   '<div class="sv2-stat-card"><div class="sv2-stat-val sv2-stat-val-lime">'+streak+'</div><div class="sv2-stat-lbl">Streak</div></div>'
     + '</div>';
   html += '<div class="sv2-sec-title">EXPLORE</div>'
-    + '<button class="sv2-hero-cta-secondary" onclick="sv2OpenLib()" style="margin-top:0;">📚 Bibliothèque · '+Object.keys(EXOS_LIB).length+' exercices</button>';
+    + '<button class="sv2-hero-cta-secondary" onclick="sv2OpenLib()" style="margin-top:0;">📚 Bibliothèque · '+Object.keys(window.EXOS_LIB).length+' exercices</button>';
   sc.innerHTML = html;
-  _sv2_log('innerHTML set OK, length=' + html.length);
-  // iOS Safari fix : force la hauteur en pixels pour éviter le collapse
+  // iOS Safari fix : force la hauteur en pixels
   try {
     var vh = window.innerHeight || document.documentElement.clientHeight;
     var navH = 70;
@@ -9094,11 +9190,10 @@ window.buildSeancesV2 = function() {
     tab.style.overflow = 'hidden';
     tab.style.display = 'block';
   } catch(e) {}
-  // Marque le body comme prêt
   document.body.setAttribute('data-sv2', 'ready');
 };
 
-// ─── DÉTAIL SÉANCE ───
+// ─── DÉTAIL SÉANCE (vidéos ymove intégrées directement) ───
 window.sv2OpenDetail = function(jourIdx) {
   var seance = sv2GenSeance(jourIdx);
   if (seance.rest) { sv2OpenLib(); return; }
@@ -9120,8 +9215,10 @@ window.sv2OpenDetail = function(jourIdx) {
     meta.push(e.sets+' × '+e.reps+(e.isCardio?'s':''));
     if (e.charge > 0) meta.push(e.charge+' kg');
     meta.push(e.rest+'s repos');
+    // PRIORITÉ vidéo ymove, sinon SVG anatomique
+    var media = sv2ExoMedia(e, false);
     html += '<div class="sv2-exo-card">'
-      + '<div class="sv2-exo-svg">'+sv2BodySVG(e.m)+'</div>'
+      + '<div class="sv2-exo-svg" style="overflow:hidden;background:#000;">'+media+'</div>'
       + '<div class="sv2-exo-info">'
       +   '<div class="sv2-exo-name">'+(i+1)+'. '+e.n+'</div>'
       +   '<div class="sv2-exo-meta">'+meta.map(function(m){return '<span>'+m+'</span>';}).join('')+'</div>'
@@ -9143,10 +9240,10 @@ window.sv2OpenDay = function(dayIdx) { sv2OpenDetail(dayIdx); };
 window.sv2SwapExo = function(idx) {
   if (!SV2.current) return;
   var exo = SV2.current.exos[idx];
-  var alts = Object.keys(EXOS_LIB).filter(function(k){ return EXOS_LIB[k].cat === exo.cat && k !== exo.id; });
+  var alts = Object.keys(window.EXOS_LIB).filter(function(k){ return window.EXOS_LIB[k].cat === exo.cat && k !== exo.id; });
   if (alts.length === 0) return;
   var nextId = alts[Math.floor(Math.random() * alts.length)];
-  var newE = EXOS_LIB[nextId];
+  var newE = window.EXOS_LIB[nextId];
   SV2.current.exos[idx] = {
     id: nextId, n: newE.n, m: newE.m, m2: newE.m2 || '',
     sets: exo.sets, reps: exo.reps, rest: exo.rest,
@@ -9163,11 +9260,8 @@ window.sv2AskCoach = function() {
     if (typeof switchTab === 'function') switchTab('t-chat');
     return;
   }
-  // Ferme l'overlay détail
   if (typeof sv2CloseDetail === 'function') sv2CloseDetail();
-  // Bascule sur Chat
   if (typeof switchTab === 'function') switchTab('t-chat');
-  // Prefill le contexte complet de la séance dans l'input
   setTimeout(function() {
     var ci = document.getElementById('ci');
     if (!ci) return;
@@ -9178,12 +9272,10 @@ window.sv2AskCoach = function() {
     var prefill = 'Voici ma séance "' + s.titre + '" (' + s.duree + ' min, niveau ' + ({deb:'débutant',int:'intermédiaire',av:'avancé'}[s.niv] || 'débutant') + ') :\n\n' + exosListe + '\n\nAdapte-la pour : ';
     ci.value = prefill;
     ci.focus();
-    // Place le curseur à la fin
     if (ci.setSelectionRange) {
       var len = prefill.length;
       ci.setSelectionRange(len, len);
     }
-    // Scroll vers l'input
     ci.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }, 350);
 };
@@ -9198,11 +9290,16 @@ window.sv2StartActive = function() {
   document.getElementById('sv2-coach-fab').classList.add('on');
   var nav = document.querySelector('.nav');
   if (nav) nav.style.display = 'none';
+  // Voix : annonce le début si activée
+  if (window.SV2_VOICE.enabled && typeof speakXI === 'function') {
+    setTimeout(function(){ try { speakXI('C\'est parti, on y va.'); } catch(e){} }, 500);
+  }
   sv2RenderActive();
 };
 
+// ─── RENDER ACTIF (1 seule définition, vidéo + cam button intégrés) ───
 window.sv2RenderActive = function() {
-  var exo = SV2.current.exos[SV2.exoIdx];
+  var exo = SV2.current && SV2.current.exos[SV2.exoIdx];
   if (!exo) return sv2FinishSession();
   var setData = exo.logs[SV2.setIdx];
   document.getElementById('sv2-active-counter').textContent = 'EXO ' + (SV2.exoIdx+1) + '/' + SV2.current.exos.length;
@@ -9212,7 +9309,11 @@ window.sv2RenderActive = function() {
   doneSets += SV2.setIdx;
   document.getElementById('sv2-active-bar').style.width = ((doneSets / totalSets) * 100) + '%';
   var body = document.getElementById('sv2-active-body');
-  var html = '<div class="sv2-active-svg-wrap">'+sv2BodySVG(exo.m)+'</div>'
+  // PRIORITÉ vidéo ymove, sinon SVG anatomique animé
+  var media = sv2ExoMedia(exo, true);
+  var hasVideo = !!sv2GetVideoURL(exo.id);
+  var mediaCls = hasVideo ? 'sv2-active-video-wrap' : 'sv2-active-svg-wrap';
+  var html = '<div class="'+mediaCls+'">'+media+'</div>'
     + '<div class="sv2-active-name">'+exo.n+'</div>'
     + '<div class="sv2-active-tip">💡 '+exo.tip+'</div>'
     + '<div class="sv2-sets-grid">';
@@ -9228,14 +9329,24 @@ window.sv2RenderActive = function() {
   if (!exo.isCardio) {
     html += '<div class="sv2-input-row">'
       + '<div class="sv2-input-group"><div class="sv2-input-lbl">Reps</div><div class="sv2-input-ctrl"><button class="sv2-input-btn" onclick="sv2AdjustRep(-1)">−</button><div class="sv2-input-val" id="sv2-cur-reps">'+setData.reps+'</div><button class="sv2-input-btn" onclick="sv2AdjustRep(1)">+</button></div></div>';
-    if (exo.charge > 0 || (U.lieu === 'salle')) {
+    if (exo.charge > 0 || ((window.U && U.lieu === 'salle'))) {
       html += '<div class="sv2-input-group"><div class="sv2-input-lbl">Charge</div><div class="sv2-input-ctrl"><button class="sv2-input-btn" onclick="sv2AdjustCharge(-2.5)">−</button><div class="sv2-input-val" id="sv2-cur-charge">'+setData.charge+'<span style="font-size:11px;color:rgba(240,240,255,0.5);"> kg</span></div><button class="sv2-input-btn" onclick="sv2AdjustCharge(2.5)">+</button></div></div>';
     }
     html += '</div>';
   }
-  html += '<button class="sv2-validate-btn" onclick="sv2ValidateSet()">✓ Valider set '+(SV2.setIdx+1)+'</button>'
-    + '<button class="sv2-validate-btn skip" onclick="sv2SkipExo()">Sauter cet exercice →</button>';
+  html += '<button class="sv2-validate-btn" onclick="sv2ValidateSet()">✓ Valider set '+(SV2.setIdx+1)+'</button>';
+  // Bouton cam DORSALE (uniquement pour exos non-cardio avec compteur reps)
+  if (!exo.isCardio) {
+    html += '<button class="sv2-validate-btn skip" onclick="sv2CamOpen(\''+exo.id+'\','+exo.reps+')" style="background:linear-gradient(135deg,rgba(249,136,5,0.18),rgba(243,86,149,0.18));border:1px solid rgba(249,136,5,0.35);color:#F98805;">📷 Compter avec la caméra (dorsale)</button>';
+  }
+  html += '<button class="sv2-validate-btn skip" onclick="sv2SkipExo()">Sauter cet exercice →</button>';
   body.innerHTML = html;
+  // Voix : annonce nouvel exo (cooldown 4s)
+  var now = Date.now();
+  if (window.SV2_VOICE.enabled && SV2.setIdx === 0 && (now - window.SV2_VOICE.lastSpoke) > 4000 && typeof speakXI === 'function') {
+    window.SV2_VOICE.lastSpoke = now;
+    try { speakXI(exo.n + '. Tu es prêt ?'); } catch(e){}
+  }
 };
 
 window.sv2AdjustRep = function(delta) {
@@ -9255,18 +9366,49 @@ window.sv2AdjustCharge = function(delta) {
 
 window.sv2JumpToSet = function(idx) { SV2.setIdx = idx; sv2RenderActive(); };
 
+// ─── VALIDATE SET (1 seule définition, coach proactif intégré) ───
 window.sv2ValidateSet = function() {
   var exo = SV2.current.exos[SV2.exoIdx];
-  exo.logs[SV2.setIdx].done = true;
-  SV2.log.push({ t: Date.now(), exo: exo.n, set: SV2.setIdx + 1, reps: exo.logs[SV2.setIdx].reps, charge: exo.logs[SV2.setIdx].charge });
-  if (exo.logs[SV2.setIdx].charge > 0) {
-    var oneRM = exo.logs[SV2.setIdx].charge * (1 + exo.logs[SV2.setIdx].reps / 30);
+  var set = exo.logs[SV2.setIdx];
+  set.done = true;
+  SV2.log.push({ t: Date.now(), exo: exo.n, set: SV2.setIdx + 1, reps: set.reps, charge: set.charge });
+  // Update PR
+  if (set.charge > 0) {
+    var oneRM = set.charge * (1 + set.reps / 30);
+    if (!window.U) window.U = {};
     if (!U.PRs) U.PRs = {};
     if (!U.PRs[exo.id] || oneRM > U.PRs[exo.id].oneRM) {
-      U.PRs[exo.id] = { oneRM: Math.round(oneRM*10)/10, charge: exo.logs[SV2.setIdx].charge, reps: exo.logs[SV2.setIdx].reps, date: new Date().toISOString() };
+      U.PRs[exo.id] = { oneRM: Math.round(oneRM*10)/10, charge: set.charge, reps: set.reps, date: new Date().toISOString() };
     }
   }
   if (navigator.vibrate) navigator.vibrate([30, 30, 50]);
+  // Coach proactif : si reps < 70% target → suggère -2.5kg, si > 120% → +2.5kg
+  // Cooldown 60s
+  var now = Date.now();
+  if ((now - window.SV2_PROACTIVE.lastShown) > 60000 && set.charge > 0) {
+    var target = exo.reps;
+    var ratio = set.reps / target;
+    if (ratio < 0.7) {
+      window.SV2_PROACTIVE.lastShown = now;
+      sv2CoachBubbleShow(target+' visés, '+set.reps+' faits. Trop lourd. −2.5kg au prochain set ?', [
+        { label: 'OK, baisse', primary: true, fn: function(){ sv2AdjustCharge(-2.5); sv2CoachBubbleHide(); }},
+        { label: 'Je garde', fn: function(){ sv2CoachBubbleHide(); }}
+      ]);
+    } else if (ratio > 1.2 && SV2.setIdx >= 1) {
+      window.SV2_PROACTIVE.lastShown = now;
+      sv2CoachBubbleShow('Tu déchires. +2.5kg au prochain set pour challenger ?', [
+        { label: '+2.5kg', primary: true, fn: function(){ sv2AdjustCharge(2.5); sv2CoachBubbleHide(); }},
+        { label: 'Pas encore', fn: function(){ sv2CoachBubbleHide(); }}
+      ]);
+    }
+  }
+  // Voix : encourage
+  if (window.SV2_VOICE.enabled && (now - window.SV2_VOICE.lastSpoke) > 4000 && typeof speakXI === 'function') {
+    window.SV2_VOICE.lastSpoke = now;
+    var phrases = ['Set bouclé.', 'Bien joué.', 'Continue.', 'Set validé.'];
+    try { speakXI(phrases[Math.floor(Math.random()*phrases.length)]); } catch(e){}
+  }
+  // Next
   if (SV2.setIdx + 1 < exo.sets) { SV2.setIdx++; sv2StartRest(exo.rest); }
   else if (SV2.exoIdx + 1 < SV2.current.exos.length) sv2StartRest(exo.rest, true);
   else sv2FinishSession();
@@ -9308,11 +9450,13 @@ window.sv2StartRest = function(seconds, isExoEnd) {
   }, 1000);
 };
 
+// ─── END REST (1 seule définition, voix intégrée) ───
 window.sv2EndRest = function(isExoEnd) {
   if (SV2.restTimer) clearInterval(SV2.restTimer);
   SV2.restTimer = null;
   document.getElementById('sv2-rest').classList.remove('on');
   if (navigator.vibrate) navigator.vibrate([200, 100, 200, 100, 300]);
+  // Bip Web Audio
   try {
     var ctx = new (window.AudioContext || window.webkitAudioContext)();
     var osc = ctx.createOscillator();
@@ -9323,6 +9467,12 @@ window.sv2EndRest = function(isExoEnd) {
     osc.start();
     setTimeout(function(){ osc.stop(); ctx.close(); }, 200);
   } catch(e) {}
+  // Voix : annonce reprise
+  var now = Date.now();
+  if (window.SV2_VOICE.enabled && (now - window.SV2_VOICE.lastSpoke) > 4000 && typeof speakXI === 'function') {
+    window.SV2_VOICE.lastSpoke = now;
+    try { speakXI('Allez, on enchaîne.'); } catch(e){}
+  }
   if (isExoEnd) { SV2.exoIdx++; SV2.setIdx = 0; sv2RenderActive(); }
   else sv2RenderActive();
 };
@@ -9361,7 +9511,171 @@ window.sv2OpenCoach = function() {
   }
 };
 
-// ─── RÉCAP ───
+// ─── BULLE COACH PROACTIF ───
+window.sv2CoachBubbleShow = function(text, actions) {
+  var bubble = document.getElementById('sv2-coach-bubble');
+  if (!bubble) return;
+  document.getElementById('sv2-coach-bubble-text').textContent = text;
+  var actWrap = document.getElementById('sv2-coach-bubble-actions');
+  actWrap.innerHTML = '';
+  (actions || []).forEach(function(a){
+    var btn = document.createElement('button');
+    btn.className = 'sv2-coach-bubble-btn' + (a.primary ? ' primary' : '');
+    btn.textContent = a.label;
+    btn.onclick = a.fn;
+    actWrap.appendChild(btn);
+  });
+  bubble.classList.add('on');
+  // Auto-hide après 8s si pas d'action
+  setTimeout(function(){ sv2CoachBubbleHide(); }, 8000);
+};
+window.sv2CoachBubbleHide = function() {
+  var bubble = document.getElementById('sv2-coach-bubble');
+  if (bubble) bubble.classList.remove('on');
+};
+
+// ─── VOIX COACH ELEVENLABS (toggle) ───
+window.sv2VoiceToggle = function() {
+  window.SV2_VOICE.enabled = !window.SV2_VOICE.enabled;
+  if (window.U) { U.sv2VoiceOn = window.SV2_VOICE.enabled; if (typeof save === 'function') save(); }
+  var btn = document.getElementById('sv2-voice-toggle');
+  if (btn) btn.textContent = window.SV2_VOICE.enabled ? '🔊 Voix ON' : '🔇 Voix OFF';
+  if (window.SV2_VOICE.enabled && typeof speakXI === 'function') {
+    try { speakXI('Voix activée.'); } catch(e){}
+  }
+};
+
+// ─── CAMÉRA DORSALE (1 seule définition, environment exact en priorité) ───
+window.sv2CamOpen = function(exoId, target) {
+  var overlay = document.getElementById('sv2-cam-overlay');
+  if (!overlay) return;
+  window.SV2_CAM.target = target || 10;
+  window.SV2_CAM.reps = 0;
+  window.SV2_CAM.state = 'up';
+  window.SV2_CAM.exoId = exoId;
+  window.SV2_CAM.motion = [];
+  document.getElementById('sv2-cam-num').textContent = '0';
+  document.getElementById('sv2-cam-target').textContent = '/ ' + window.SV2_CAM.target + ' reps';
+  document.getElementById('sv2-cam-status').textContent = 'Démarrage caméra dorsale...';
+  document.getElementById('sv2-cam-status').className = 'sv2-cam-status';
+  overlay.classList.add('on');
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    document.getElementById('sv2-cam-status').textContent = 'Caméra non supportée';
+    document.getElementById('sv2-cam-status').classList.add('feedback-bad');
+    return;
+  }
+  // Caméra DORSALE EXACT > IDEAL > fallback frontale (avec warning)
+  var tryConstraints = [
+    { video: { facingMode: { exact: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false },
+    { video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false },
+    { video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false },
+    { video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false }
+  ];
+  function tryNext(idx) {
+    if (idx >= tryConstraints.length) {
+      document.getElementById('sv2-cam-status').textContent = 'Caméra refusée. Autorise dans les réglages Safari.';
+      document.getElementById('sv2-cam-status').classList.add('feedback-bad');
+      return;
+    }
+    navigator.mediaDevices.getUserMedia(tryConstraints[idx]).then(function(stream) {
+      window.SV2_CAM.stream = stream;
+      var video = document.getElementById('sv2-cam-video');
+      video.srcObject = stream;
+      // Si on est tombé sur 'user' (frontale), prévient l'user
+      if (idx === 3) {
+        document.getElementById('sv2-cam-status').textContent = '⚠️ Caméra frontale (dorsale indispo). Pose le téléphone.';
+      } else {
+        document.getElementById('sv2-cam-status').textContent = 'Pose le téléphone face à toi, démarre l\'exo.';
+      }
+      video.onloadedmetadata = function() {
+        video.play();
+        sv2CamStartLoop();
+      };
+    }).catch(function(err) {
+      console.warn('[SV2.cam] try ' + idx + ' failed:', err && err.name, err && err.message);
+      tryNext(idx + 1);
+    });
+  }
+  tryNext(0);
+};
+
+// ─── CAM LOOP : détection mouvement par luminosité ───
+window.sv2CamStartLoop = function() {
+  var video = document.getElementById('sv2-cam-video');
+  var canvas = document.getElementById('sv2-cam-canvas');
+  if (!video || !canvas) return;
+  var ctx = canvas.getContext('2d');
+  var lastDetect = 0;
+  function frame() {
+    if (!window.SV2_CAM.stream) return;
+    canvas.width = video.videoWidth || 640;
+    canvas.height = video.videoHeight || 480;
+    if (canvas.width === 0) { window.SV2_CAM.raf = requestAnimationFrame(frame); return; }
+    try {
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      // Échantillonne luminosité au centre
+      var sample = ctx.getImageData(canvas.width*0.25, canvas.height*0.25, canvas.width*0.5, canvas.height*0.5);
+      var sum = 0, count = 0;
+      for (var i = 0; i < sample.data.length; i += 16) {
+        sum += (sample.data[i] + sample.data[i+1] + sample.data[i+2]) / 3;
+        count++;
+      }
+      var avg = sum / count;
+      window.SV2_CAM.motion.push(avg);
+      if (window.SV2_CAM.motion.length > 30) window.SV2_CAM.motion.shift();
+      // Détection : range > 8 sur 30 frames
+      if (window.SV2_CAM.motion.length >= 30) {
+        var min = Math.min.apply(null, window.SV2_CAM.motion);
+        var max = Math.max.apply(null, window.SV2_CAM.motion);
+        var range = max - min;
+        if (range > 8) {
+          var threshold = (min + max) / 2;
+          var now = Date.now();
+          if (now - lastDetect > 800) {
+            if (window.SV2_CAM.state === 'up' && avg < threshold - range*0.2) {
+              window.SV2_CAM.state = 'down';
+            } else if (window.SV2_CAM.state === 'down' && avg > threshold + range*0.2) {
+              window.SV2_CAM.state = 'up';
+              window.SV2_CAM.reps++;
+              document.getElementById('sv2-cam-num').textContent = window.SV2_CAM.reps;
+              if (navigator.vibrate) navigator.vibrate(40);
+              lastDetect = now;
+              // Auto-validate à target
+              if (window.SV2_CAM.reps >= window.SV2_CAM.target) {
+                document.getElementById('sv2-cam-status').textContent = '✓ Cible atteinte !';
+                document.getElementById('sv2-cam-status').classList.add('feedback-good');
+                setTimeout(sv2CamValidate, 1200);
+              }
+            }
+          }
+        }
+      }
+    } catch(e) {}
+    window.SV2_CAM.raf = requestAnimationFrame(frame);
+  }
+  frame();
+};
+
+window.sv2CamValidate = function() {
+  // Reporte les reps détectés dans le set actuel
+  if (SV2.current) {
+    var exo = SV2.current.exos[SV2.exoIdx];
+    if (exo && exo.logs[SV2.setIdx]) exo.logs[SV2.setIdx].reps = window.SV2_CAM.reps;
+  }
+  sv2CamClose();
+  if (window.sv2ValidateSet) sv2ValidateSet();
+};
+
+window.sv2CamClose = function() {
+  if (window.SV2_CAM.raf) { cancelAnimationFrame(window.SV2_CAM.raf); window.SV2_CAM.raf = null; }
+  if (window.SV2_CAM.stream) {
+    try { window.SV2_CAM.stream.getTracks().forEach(function(t){ t.stop(); }); } catch(e){}
+    window.SV2_CAM.stream = null;
+  }
+  document.getElementById('sv2-cam-overlay').classList.remove('on');
+};
+
+// ─── RÉCAP FIN SÉANCE ───
 window.sv2FinishSession = function() {
   if (SV2.restTimer) { clearInterval(SV2.restTimer); SV2.restTimer = null; }
   var duree = Math.round((Date.now() - SV2.startTime) / 60000);
@@ -9370,12 +9684,13 @@ window.sv2FinishSession = function() {
     e.logs.forEach(function(s){
       if (s.done) { setsCount++; if (s.charge > 0) tonnage += s.charge * s.reps; }
     });
-    if (U.PRs && U.PRs[e.id]) {
+    if (window.U && U.PRs && U.PRs[e.id]) {
       var pr = U.PRs[e.id];
       if (new Date(pr.date) > new Date(SV2.startTime)) newPRs.push({ exo: e.n, charge: pr.charge, reps: pr.reps, oneRM: pr.oneRM });
     }
   });
   var kcal = Math.round(duree * 7.5);
+  if (!window.U) window.U = {};
   if (!U.sessions) U.sessions = [];
   if (!U.sessionsByDay) U.sessionsByDay = {};
   var session = {
@@ -9414,6 +9729,11 @@ window.sv2FinishSession = function() {
   document.getElementById('sv2-recap').classList.add('on');
   var nav = document.querySelector('.nav');
   if (nav) nav.style.display = 'flex';
+  // Voix fin
+  if (window.SV2_VOICE.enabled && typeof speakXI === 'function') {
+    setTimeout(function(){ try { speakXI('Séance terminée. Bravo champion.'); } catch(e){} }, 600);
+  }
+  // Streak
   var lastDate = U.lastSeanceDate;
   var todayStr = new Date().toISOString().slice(0,10);
   if (lastDate !== todayStr) {
@@ -9428,7 +9748,7 @@ window.sv2SetFelt = function(btn, val) {
   document.querySelectorAll('.sv2-felt-btn').forEach(function(b){ b.classList.remove('selected'); });
   btn.classList.add('selected');
   SV2.felt = val;
-  if (U.sessions && U.sessions.length > 0) {
+  if (window.U && U.sessions && U.sessions.length > 0) {
     U.sessions[U.sessions.length - 1].felt = val;
     if (!U.feltAfter) U.feltAfter = [];
     U.feltAfter.push({ date: new Date().toISOString(), val: val });
@@ -9440,7 +9760,7 @@ window.sv2DebriefHIMA = function() {
   sv2CloseRecap();
   if (typeof switchTab === 'function') switchTab('t-chat');
   setTimeout(function(){
-    if (typeof chatQ === 'function' && U.sessions && U.sessions.length > 0) {
+    if (typeof chatQ === 'function' && window.U && U.sessions && U.sessions.length > 0) {
       var s = U.sessions[U.sessions.length - 1];
       var msg = 'Je viens de faire ma séance "'+s.titre+'" ('+s.duree+' min, '+s.setsCount+' sets'+(s.tonnage>0?', '+Math.round(s.tonnage)+'kg de tonnage':'')+')'+(SV2.felt?', je me sens '+['épuisé','fatigué','correct','bien','en feu'][SV2.felt-1]:'')+'. Ton avis ?';
       chatQ(msg);
@@ -9473,7 +9793,7 @@ window.sv2Confetti = function() {
   setTimeout(function(){ wrap.remove(); }, 4000);
 };
 
-// ─── BIBLIOTHÈQUE ───
+// ─── BIBLIOTHÈQUE EXOS ───
 window.sv2OpenLib = function() {
   document.getElementById('sv2-detail-title').textContent = 'Bibliothèque d\'exercices';
   document.getElementById('sv2-detail').setAttribute('data-mode', 'lib');
@@ -9488,9 +9808,9 @@ window.sv2OpenLib = function() {
 };
 
 window.sv2RenderLibList = function(cat, search) {
-  var keys = Object.keys(EXOS_LIB);
+  var keys = Object.keys(window.EXOS_LIB);
   var filtered = keys.filter(function(k){
-    var e = EXOS_LIB[k];
+    var e = window.EXOS_LIB[k];
     if (cat !== 'all' && e.cat !== cat) return false;
     if (search && search.length > 1) {
       var s = search.toLowerCase();
@@ -9501,9 +9821,11 @@ window.sv2RenderLibList = function(cat, search) {
   if (filtered.length === 0) return '<div style="text-align:center;color:rgba(240,240,255,0.4);padding:40px 20px;">Aucun exercice trouvé</div>';
   var html = '';
   filtered.forEach(function(k){
-    var e = EXOS_LIB[k];
+    var e = window.EXOS_LIB[k];
+    // Vidéo si dispo, sinon SVG anatomique
+    var media = sv2ExoMedia({ id: k, m: e.m }, false);
     html += '<div class="sv2-exo-card" onclick="sv2ShowExoInfo(\''+k+'\')">'
-      + '<div class="sv2-exo-svg">'+sv2BodySVG(e.m)+'</div>'
+      + '<div class="sv2-exo-svg" style="overflow:hidden;background:#000;">'+media+'</div>'
       + '<div class="sv2-exo-info"><div class="sv2-exo-name">'+e.n+'</div><div class="sv2-exo-meta"><span>'+e.m+'</span><span>'+({deb:'Débutant',int:'Intermédiaire',av:'Avancé'}[e.niv])+'</span><span>'+({salle:'Salle',maison:'Maison',both:'Partout'}[e.l])+'</span></div></div>'
       + '<div class="sv2-exo-action">›</div>'
       + '</div>';
@@ -9527,7 +9849,7 @@ window.sv2FilterCat = function(cat) {
 };
 
 window.sv2ShowExoInfo = function(exoId) {
-  var e = EXOS_LIB[exoId];
+  var e = window.EXOS_LIB[exoId];
   if (!e) return;
   if (typeof switchTab === 'function') {
     switchTab('t-chat');
@@ -9538,37 +9860,28 @@ window.sv2ShowExoInfo = function(exoId) {
   sv2CloseDetail();
 };
 
-// ─── OVERRIDE buildProg (forcé, retry, et auto-build) ───
+// ─── HOOK : 1 SEUL OBSERVER, 1 SEUL HOOK buildProg ───
+// Override buildProg (legacy) → délègue à buildSeancesV2
 function _sv2InstallOverride() {
-  if (window.buildProg && window.buildProg._sv2 === true) return; // déjà installé
-  var _orig_buildProg = (typeof window.buildProg === 'function') ? window.buildProg : null;
-  var newFn = function() {
-    try {
-      buildSeancesV2();
-    } catch(e) {
-      console.error('[SV2] erreur buildSeancesV2, fallback ancien:', e);
-      if (_orig_buildProg) try { _orig_buildProg(); } catch(e2) {}
-    }
+  if (window.buildProg && window.buildProg._sv2 === true) return;
+  window.buildProg = function() {
+    try { buildSeancesV2(); }
+    catch(e) { console.error('[SV2] buildSeancesV2 err:', e); }
   };
-  newFn._sv2 = true;
-  window.buildProg = newFn;
-  console.log('[SV2] override buildProg installé');
+  window.buildProg._sv2 = true;
 }
 
-// Installer immédiatement + retry au cas où buildProg défini plus tard
-_sv2InstallOverride();
-setTimeout(_sv2InstallOverride, 500);
-setTimeout(_sv2InstallOverride, 1500);
-setTimeout(_sv2InstallOverride, 3000);
-
-// MutationObserver : si t-prog devient .on, force buildSeancesV2
+// 1 SEUL MutationObserver (pas 2)
 function _sv2WatchTab() {
   var t = document.getElementById('t-prog');
   if (!t) { setTimeout(_sv2WatchTab, 300); return; }
+  if (t._sv2_observed) return; // déjà observé, on s'arrête
+  t._sv2_observed = true;
   var obs = new MutationObserver(function(){
     if (t.classList.contains('on')) {
-      // Build si la div root sv2 n'existe pas encore
-      if (!t.querySelector('.seances-v2-root') || !t.querySelector('.seances-v2-root .sv2-hero, .seances-v2-root .sv2-week')) {
+      // Build uniquement si root absent OU vide
+      var root = t.querySelector('.seances-v2-root');
+      if (!root || !root.querySelector('.sv2-hero, .sv2-week')) {
         try { buildSeancesV2(); } catch(e) { console.error('[SV2] build err:', e); }
       }
     }
@@ -9578,1618 +9891,19 @@ function _sv2WatchTab() {
   if (t.classList.contains('on')) {
     try { buildSeancesV2(); } catch(e) { console.error('[SV2] init build err:', e); }
   }
-  console.log('[SV2] watcher tab t-prog actif');
+  console.log('[SV2] watcher tab t-prog actif (1x)');
 }
 
-document.addEventListener('DOMContentLoaded', function(){
-  setTimeout(_sv2WatchTab, 500);
-  setTimeout(_sv2WatchTab, 2000);
-  // Force build si tab déjà actif
-  setTimeout(function(){
-    var t = document.getElementById('t-prog');
-    if (t && t.classList.contains('on')) {
-      try { buildSeancesV2(); } catch(e) {}
-    }
-  }, 1500);
-});
-
-// Aussi déclencher si déjà chargé
+// Init : install override + observer une fois prêt
+_sv2InstallOverride();
 if (document.readyState !== 'loading') {
   setTimeout(_sv2WatchTab, 100);
-  setTimeout(function(){
-    var t = document.getElementById('t-prog');
-    if (t && t.classList.contains('on')) {
-      try { buildSeancesV2(); } catch(e) {}
-    }
-  }, 800);
+} else {
+  document.addEventListener('DOMContentLoaded', function(){ setTimeout(_sv2WatchTab, 100); });
 }
 
-console.log('HIMA Tab Séances v3.2 chargé ✓ — '+Object.keys(EXOS_LIB).length+' exos disponibles');
-_sv2_log('SV2 script loaded OK, ' + Object.keys(EXOS_LIB).length + ' exos');
+console.log('HIMA Tab Séances v4.0 (refactor propre) ✓ — '+Object.keys(window.EXOS_LIB).length+' exos · '+Object.keys(window.EXOS_VIDEOS).length+' vidéos');
 
 })();
-
-/* ════════════════════════════════════════════════════════
-   PATCH HIMA v3.3 — RÉVOLUTION (4 features indépendantes)
-   IIFE séparées : si une crashe les autres tournent
-   ════════════════════════════════════════════════════════ */
-
-// KILL SWITCH — toutes activées (test confirmé OK)
-window.SV2_FLAGS = {
-  videos: true,
-  proactive: true,
-  camera: true,
-  autopilot: true
-};
-
-// HELPER DEBUG : change le mode de l'app pour tester les vidéos de muscu
-// Tape dans la console iOS : sv2DebugBodybuilding()
-window.sv2DebugBodybuilding = function() {
-  if (!window.U) return;
-  U.mode = 'bodybuilding';
-  if (typeof save === 'function') save();
-  if (typeof buildSeancesV2 === 'function') buildSeancesV2();
-  _sv2_log('mode = bodybuilding (push/pull/legs)');
-};
-window.sv2DebugGlow = function() {
-  if (!window.U) return;
-  U.mode = 'glow';
-  if (typeof save === 'function') save();
-  if (typeof buildSeancesV2 === 'function') buildSeancesV2();
-  _sv2_log('mode = glow (cardio dominante)');
-};
-
-// HELPER : change le mode (utilisé par les boutons du tab Séances)
-window.sv2SetMode = function(mode) {
-  if (!window.U) return;
-  U.mode = mode;
-  if (typeof save === 'function') save();
-  if (typeof buildSeancesV2 === 'function') buildSeancesV2();
-  // Vibration de confirmation
-  if (navigator.vibrate) try { navigator.vibrate(30); } catch(e) {}
-};
-
-// === TAB PROFIL : rendre Objectif/Niveau/Lieu éditables ===
-window.sv2ProfileEditable = function() {
-  // Mappings affichage ↔ valeurs internes
-  var goalLabels = {
-    perte: { label: 'Perdre du poids', icon: '🌱', mode: 'glow' },
-    muscle: { label: 'Prendre du muscle', icon: '💪', mode: 'bodybuilding' },
-    mixte: { label: 'Rééquilibrage', icon: '⚖️', mode: 'mindset' },
-    perf: { label: 'Performance', icon: '🏆', mode: 'hyrox' }
-  };
-  var nivLabels = {
-    deb: { label: 'Débutant', icon: '🌱', sub: '0-6 mois' },
-    int: { label: 'Intermédiaire', icon: '🔥', sub: '6 mois - 2 ans' },
-    av: { label: 'Avancé', icon: '⚡', sub: '2 ans et +' }
-  };
-  var lieuLabels = {
-    maison: { label: 'À la maison', icon: '🏠', sub: 'Bodyweight + petit matos' },
-    salle: { label: 'En salle', icon: '🏋️', sub: 'Tout le matériel' }
-  };
-
-  function makeEditable(rowId, valueKey, optionsMap, onChange) {
-    var valEl = document.getElementById(rowId);
-    if (!valEl) return;
-    var row = valEl.closest('.prf-row');
-    if (!row || row._editable) return;
-    row._editable = true;
-    row.style.cursor = 'pointer';
-    // Indicateur ›
-    if (!row.querySelector('.prf-row-arrow')) {
-      var arrow = document.createElement('span');
-      arrow.className = 'prf-row-arrow';
-      arrow.textContent = '›';
-      arrow.style.cssText = 'color:rgba(240,240,255,0.4);margin-left:6px;font-size:18px;';
-      valEl.appendChild(arrow);
-    }
-    row.onclick = function() {
-      sv2OpenProfilePicker(rowId, optionsMap, valueKey, onChange);
-    };
-  }
-  setTimeout(function() {
-    makeEditable('ps-mode', 'obj', goalLabels, function(newVal) {
-      U.obj = newVal;
-      // Auto-set le mode aussi
-      U.mode = goalLabels[newVal].mode;
-    });
-    makeEditable('ps-niv', 'niv', nivLabels);
-    makeEditable('ps-lieu', 'lieu', lieuLabels);
-  }, 600);
-};
-
-window.sv2OpenProfilePicker = function(rowId, options, key, onChange) {
-  // Crée un overlay modal
-  var existing = document.getElementById('sv2-profile-picker');
-  if (existing) existing.remove();
-  var overlay = document.createElement('div');
-  overlay.id = 'sv2-profile-picker';
-  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(8,8,16,0.85);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);z-index:900;display:flex;flex-direction:column;justify-content:flex-end;animation:sv2pickerFadeIn 0.25s ease-out;';
-  var titles = { 'ps-mode': 'Quel est ton objectif ?', 'ps-niv': 'Quel est ton niveau ?', 'ps-lieu': 'Où tu t\'entraînes ?' };
-  var subs = { 'ps-mode': 'Ça change ton programme entier', 'ps-niv': 'On adapte sets, reps et charges', 'ps-lieu': 'On filtre les exercices possibles' };
-  var html = '<div style="background:#080810;border-radius:24px 24px 0 0;padding:28px 20px calc(28px + env(safe-area-inset-bottom, 0px));max-height:80vh;overflow-y:auto;animation:sv2pickerSlideUp 0.3s cubic-bezier(0.34, 1.3, 0.64, 1);">'
-    + '<div style="width:40px;height:4px;background:rgba(240,240,255,0.2);border-radius:2px;margin:0 auto 18px;"></div>'
-    + '<div style="font-family:Bebas Neue,sans-serif;font-size:30px;color:#F0F0FF;text-align:center;line-height:1.1;letter-spacing:0.5px;">' + (titles[rowId] || 'Modifier') + '</div>'
-    + '<div style="font-size:13px;color:rgba(240,240,255,0.5);text-align:center;margin-bottom:22px;margin-top:6px;">' + (subs[rowId] || '') + '</div>'
-    + '<div style="display:flex;flex-direction:column;gap:10px;">';
-  var current = (window.U && U[key]) || Object.keys(options)[0];
-  Object.keys(options).forEach(function(k) {
-    var o = options[k];
-    var isOn = k === current;
-    html += '<button data-val="' + k + '" style="'
-      + 'display:flex;align-items:center;gap:14px;text-align:left;'
-      + 'padding:16px 18px;border-radius:18px;'
-      + 'background:' + (isOn ? 'linear-gradient(135deg,rgba(249,136,5,0.18),rgba(243,86,149,0.08))' : 'rgba(240,240,255,0.04)') + ';'
-      + 'border:1px solid ' + (isOn ? '#F98805' : 'rgba(240,240,255,0.08)') + ';'
-      + 'cursor:pointer;font-family:DM Sans,sans-serif;color:#F0F0FF;width:100%;">'
-      + '<div style="font-size:32px;flex-shrink:0;">' + o.icon + '</div>'
-      + '<div style="flex:1;">'
-      +   '<div style="font-family:Space Grotesk,sans-serif;font-size:16px;font-weight:700;">' + o.label + '</div>'
-      +   (o.sub ? '<div style="font-size:12px;color:rgba(240,240,255,0.55);margin-top:2px;">' + o.sub + '</div>' : '')
-      + '</div>'
-      + (isOn ? '<div style="color:#F98805;font-size:22px;flex-shrink:0;">✓</div>' : '')
-      + '</button>';
-  });
-  html += '</div>'
-    + '<button onclick="document.getElementById(\'sv2-profile-picker\').remove()" style="margin-top:16px;width:100%;padding:14px;background:rgba(240,240,255,0.04);border:1px solid rgba(240,240,255,0.08);border-radius:14px;color:rgba(240,240,255,0.6);font-family:Space Grotesk,sans-serif;font-size:14px;font-weight:600;cursor:pointer;">Annuler</button>'
-    + '</div>';
-  // Inject les keyframes si pas déjà là
-  if (!document.getElementById('sv2-picker-anim')) {
-    var st = document.createElement('style');
-    st.id = 'sv2-picker-anim';
-    st.textContent = '@keyframes sv2pickerFadeIn{from{opacity:0;}to{opacity:1;}}@keyframes sv2pickerSlideUp{from{transform:translateY(100%);}to{transform:translateY(0);}}';
-    document.head.appendChild(st);
-  }
-  overlay.innerHTML = html;
-  // Tap backdrop = ferme
-  overlay.onclick = function(e) { if (e.target === overlay) overlay.remove(); };
-  // Click sur option
-  overlay.querySelectorAll('button[data-val]').forEach(function(btn) {
-    btn.onclick = function() {
-      var val = btn.getAttribute('data-val');
-      if (!window.U) return;
-      U[key] = val;
-      if (onChange) try { onChange(val); } catch(e) {}
-      if (typeof save === 'function') save();
-      // Refresh tab profil + tab seances
-      try {
-        if (typeof bPB === 'function') bPB();
-        var psEl = document.getElementById(rowId);
-        if (psEl) {
-          var labels = { 'ps-mode': options[val].label, 'ps-niv': options[val].label, 'ps-lieu': options[val].label };
-          psEl.innerHTML = (options[val].icon || '') + ' ' + (options[val].label || val);
-          var arrow = document.createElement('span');
-          arrow.className = 'prf-row-arrow';
-          arrow.textContent = '›';
-          arrow.style.cssText = 'color:rgba(240,240,255,0.4);margin-left:6px;font-size:18px;';
-          psEl.appendChild(arrow);
-        }
-        if (typeof buildSeancesV2 === 'function') buildSeancesV2();
-      } catch(e) {}
-      if (navigator.vibrate) try { navigator.vibrate(30); } catch(e) {}
-      overlay.remove();
-    };
-  });
-  document.body.appendChild(overlay);
-};
-
-// Activer dès que le DOM est prêt + à chaque fois qu'on bascule sur le tab Profil
-document.addEventListener('DOMContentLoaded', function() {
-  setTimeout(sv2ProfileEditable, 1000);
-  setTimeout(sv2ProfileEditable, 2500);
-});
-if (document.readyState !== 'loading') setTimeout(sv2ProfileEditable, 800);
-
-// DEBUG OVERLAY — désactivé en prod (tape sv2DebugLog() dans la console pour le ré-activer)
-(function reactivateDebug(){
-  if (window._sv2_log_active) return;
-  window._sv2_log_active = true;
-  // Stub : log seulement console (pas overlay)
-  window._sv2_log = function(msg, isErr) {
-    try { (isErr ? console.error : console.log)('[SV2]', msg); } catch(e) {}
-  };
-  // Helper pour réactiver l'overlay si besoin
-  window.sv2DebugLog = function() {
-    window._sv2_log = function(msg, isErr) {
-      try {
-        var d = document.getElementById('_sv2_dbg');
-        if (!d) {
-          d = document.createElement('div');
-          d.id = '_sv2_dbg';
-          d.style.cssText = 'position:fixed;top:0;left:0;right:0;background:rgba(0,0,0,0.95);color:#0f0;font:10px/1.3 monospace;padding:8px 10px;z-index:99999;max-height:40vh;overflow:auto;border-bottom:2px solid #0f0;white-space:pre-wrap;word-break:break-all;';
-          document.body.appendChild(d);
-        }
-        var line = document.createElement('div');
-        line.style.color = isErr ? '#f55' : '#0f0';
-        line.style.borderBottom = '1px solid #222';
-        line.style.padding = '2px 0';
-        line.textContent = '[' + new Date().toISOString().slice(11,19) + '] ' + msg;
-        d.appendChild(line);
-        d.scrollTop = d.scrollHeight;
-      } catch(e) {}
-    };
-    _sv2_log('debug overlay réactivé');
-  };
-})();
-
-/* ─────────────────────────────────────────────
-   FEATURE 1/4 — VIDÉOS EXOS YMOVE (libre droit)
-   ───────────────────────────────────────────── */
-(function(){
-'use strict';
-if (!window.SV2_FLAGS || !SV2_FLAGS.videos) { _sv2_log('[1/4] videos OFF'); return; }
-_sv2_log('[1/4] videos init');
-
-window.EXOS_VIDEOS = {
-  // ymove.app royalty-free (25 vidéos pro fond blanc HD)
-  'squat':            'd65feff4-9891-4ff8-a9f9-64965da7b69c', // Barbell Back Squat
-  'bench_press':      'd09e0ed7-21dd-4f1c-b5cf-3e345e9304ec', // Bench Press
-  'soulever_terre':   'f96d5f24-c9b0-4782-bbd9-41d383a6b633', // Barbell Deadlift
-  'rowing_barre':     'ae1f15b4-61f9-4da7-9ffe-0d8e72e6f097', // Barbell Rows
-  'rowing_haltere':   'ae1f15b4-61f9-4da7-9ffe-0d8e72e6f097', // → on map au Barbell Rows (même mvt)
-  'developpe_militaire': 'd725ad5a-e0dd-4fca-8b9e-0016aaa757a0', // Shoulder/OHP/Military
-  'tirage_vertical':  'ed1ca95e-2642-4551-a477-17485e486bfc', // Lat Pulldown
-  'leg_press':        '3dabdcc0-8639-4868-9e57-5afc621ed50d', // Leg Press
-  'curl_barre':       '998e8f21-2bda-49d8-a773-b59c316d022d', // Barbell Curls
-  'extension_tri':    '9a550e2c-c55e-495d-b59e-b676c3d48a41', // Cable Tricep Pushdown
-  'arnold':           'fb62140e-87c2-41f0-ada2-1d9be58664cf', // Dumbbell Shoulder Press
-  'leg_curl':         '34a512bf-baa1-48ac-a5b9-132073166018', // Lying Leg Curl
-  'eleve_lat':        '1cce8f37-dd9f-442f-995e-be02b98a35ad', // Side Lateral Raise
-  'oiseau':           '0f7cf0c4-34fe-4cb3-993e-469be8004c2c', // Cable Rope Face Pull
-  'tirage_horiz':     '499ccaa4-719d-40bd-b441-511291482471', // Seated Cable Row
-  'incline_bench':    'ece55528-9855-49cf-a970-cf47c662e45d', // Incline Dumbbell Press
-  'tractions':        'c17e320f-7c96-4385-b8d7-f307ed4bae2e', // Pull ups
-  'fentes':           '166bf038-1670-4c52-9f32-cf6463556d99', // Dumbbell Lunges
-  'gainage':          'be8f26b0-4948-4f48-b851-1a9d2cfd953c', // Plank
-  'mollets':          '94b73c60-81d0-4522-964e-ceacf89129cf', // Seated Calf Raise
-  'curl_haltere':     '2a0529a0-be74-4b88-bf1c-6b67c8f12ef8', // Dumbbell Bicep Curl
-  // Nouveaux ajouts
-  'curl_marteau':     '2a0529a0-be74-4b88-bf1c-6b67c8f12ef8', // → bicep curl (même base)
-  'ecarte_haltere':   '82760b28-30e2-4311-a4c5-42da40082079', // Low Cable Crossover
-  'squat_pdc':        'd65feff4-9891-4ff8-a9f9-64965da7b69c', // → mappe sur barbell squat
-  'squat_bulgare':    '166bf038-1670-4c52-9f32-cf6463556d99'  // → lunges (proche)
-};
-
-window.sv2GetVideoURL = function(exoId) {
-  var uuid = EXOS_VIDEOS[exoId];
-  if (!uuid) return null;
-  return 'https://ymove.app/api/free/' + uuid + '?type=video';
-};
-window.sv2GetThumbURL = function(exoId) {
-  var uuid = EXOS_VIDEOS[exoId];
-  if (!uuid) return null;
-  return 'https://ymove.app/api/free/' + uuid + '?type=thumbnail';
-};
-
-(function patchActive(){
-  if (!window.sv2RenderActive) { setTimeout(patchActive, 200); return; }
-  var _orig = window.sv2RenderActive;
-  window.sv2RenderActive = function() {
-    _sv2_log('[1/4] sv2RenderActive wrapper called');
-    try {
-      _orig.apply(this, arguments);
-    } catch(e) {
-      _sv2_log('[1/4] orig renderActive THREW: ' + e.message, true);
-      throw e;
-    }
-    try {
-      var exo = SV2.current && SV2.current.exos[SV2.exoIdx];
-      if (!exo) { _sv2_log('[1/4] no exo'); return; }
-      var url = sv2GetVideoURL(exo.id);
-      if (!url) { _sv2_log('[1/4] no video for ' + exo.id); return; }
-      var wrap = document.querySelector('#sv2-active-body .sv2-active-svg-wrap');
-      if (wrap) {
-        wrap.outerHTML = '<div class="sv2-video-wrap"><video src="'+url+'" autoplay muted loop playsinline preload="auto" poster="'+sv2GetThumbURL(exo.id)+'" disablePictureInPicture x-webkit-airplay="deny" controlslist="nodownload nofullscreen noremoteplayback noplaybackrate" style="pointer-events:none;"></video></div>';
-        _sv2_log('[1/4] video swapped for ' + exo.id);
-      }
-    } catch(e) {
-      _sv2_log('[1/4] active post-patch err: ' + e.message, true);
-      console.error('[SV2.video] active patch err:', e);
-    }
-  };
-})();
-
-(function patchDetail(){
-  if (!window.sv2OpenDetail) { setTimeout(patchDetail, 200); return; }
-  var _orig = window.sv2OpenDetail;
-  window.sv2OpenDetail = function() {
-    _sv2_log('[1/4] sv2OpenDetail wrapper called');
-    try {
-      _orig.apply(this, arguments);
-    } catch(e) {
-      _sv2_log('[1/4] orig openDetail THREW: ' + e.message, true);
-      throw e;
-    }
-    try {
-      var cards = document.querySelectorAll('#sv2-detail-body .sv2-exo-card');
-      _sv2_log('[1/4] found ' + cards.length + ' cards');
-      cards.forEach(function(card, i){
-        var exo = SV2.current && SV2.current.exos[i];
-        if (!exo) return;
-        var url = sv2GetVideoURL(exo.id);
-        if (!url) return;
-        var svg = card.querySelector('.sv2-exo-svg');
-        if (svg) {
-          svg.outerHTML = '<div class="sv2-mini-video"><video src="'+url+'" muted loop playsinline preload="metadata" poster="'+sv2GetThumbURL(exo.id)+'" autoplay disablePictureInPicture x-webkit-airplay="deny" controlslist="nodownload nofullscreen noremoteplayback noplaybackrate" style="pointer-events:none;"></video></div>';
-        }
-      });
-      _sv2_log('[1/4] detail patch done');
-    } catch(e) {
-      _sv2_log('[1/4] detail post-patch err: ' + e.message, true);
-      console.error('[SV2.video] detail patch err:', e);
-    }
-  };
-})();
-
-console.log('[SV2.video] vidéos exos initialisées : ' + Object.keys(EXOS_VIDEOS).length + ' disponibles');
-
-})();
-
-/* ─────────────────────────────────────────────
-   FEATURE 2/4 — COACH PROACTIF (bulles auto)
-   ───────────────────────────────────────────── */
-(function(){
-'use strict';
-if (!window.SV2_FLAGS || !SV2_FLAGS.proactive) { _sv2_log('[2/4] proactive OFF'); return; }
-_sv2_log('[2/4] proactive init');
-
-window.SV2_PROACTIVE = {
-  lastBubble: 0,
-  cooldown: 60000,
-  setStartTime: 0,
-  shown: {}
-};
-
-window.sv2CoachBubbleShow = function(text, actions) {
-  var now = Date.now();
-  if (now - SV2_PROACTIVE.lastBubble < SV2_PROACTIVE.cooldown) return;
-  SV2_PROACTIVE.lastBubble = now;
-  var bubble = document.getElementById('sv2-coach-bubble');
-  if (!bubble) return;
-  document.getElementById('sv2-coach-bubble-text').textContent = text;
-  var actionsWrap = document.getElementById('sv2-coach-bubble-actions');
-  actionsWrap.innerHTML = '';
-  (actions || [{label:'OK', primary:true}]).forEach(function(a){
-    var btn = document.createElement('button');
-    btn.className = 'sv2-coach-bubble-btn' + (a.primary ? ' primary' : '');
-    btn.textContent = a.label;
-    btn.onclick = function() {
-      if (a.fn) try { a.fn(); } catch(e) {}
-      sv2CoachBubbleHide();
-    };
-    actionsWrap.appendChild(btn);
-  });
-  bubble.classList.add('on');
-  if (navigator.vibrate) try { navigator.vibrate([60, 40, 60]); } catch(e) {}
-  setTimeout(function(){ sv2CoachBubbleHide(); }, 12000);
-};
-
-window.sv2CoachBubbleHide = function() {
-  var bubble = document.getElementById('sv2-coach-bubble');
-  if (bubble) bubble.classList.remove('on');
-};
-
-(function hookValidate(){
-  if (!window.sv2ValidateSet) { setTimeout(hookValidate, 200); return; }
-  var _orig = window.sv2ValidateSet;
-  window.sv2ValidateSet = function() {
-    var exo = SV2.current && SV2.current.exos[SV2.exoIdx];
-    var setDone = exo && exo.logs[SV2.setIdx];
-    var wasReps = setDone ? setDone.reps : 0;
-    var wasCharge = setDone ? setDone.charge : 0;
-    var targetReps = exo ? exo.reps : 0;
-    var exoIdxBefore = SV2.exoIdx;
-    _orig.apply(this, arguments);
-    try {
-      if (wasReps < targetReps * 0.7 && wasReps > 0 && !SV2_PROACTIVE.shown['lowreps_'+exoIdxBefore]) {
-        SV2_PROACTIVE.shown['lowreps_'+exoIdxBefore] = true;
-        setTimeout(function(){
-          sv2CoachBubbleShow(
-            "T'as fait " + wasReps + " au lieu de " + targetReps + ". On baisse la charge de 2.5kg pour finir propre ?",
-            [
-              { label: 'Garder', fn: null },
-              { label: 'Baisser', primary: true, fn: function(){
-                if (exo && SV2.setIdx < exo.sets) {
-                  for (var k = SV2.setIdx; k < exo.sets; k++) {
-                    if (exo.logs[k] && !exo.logs[k].done) exo.logs[k].charge = Math.max(0, exo.logs[k].charge - 2.5);
-                  }
-                  if (typeof sv2RenderActive === 'function') sv2RenderActive();
-                }
-              }}
-            ]
-          );
-        }, 800);
-      } else if (wasReps > targetReps * 1.2 && wasCharge > 0 && !SV2_PROACTIVE.shown['easy_'+exoIdxBefore]) {
-        SV2_PROACTIVE.shown['easy_'+exoIdxBefore] = true;
-        setTimeout(function(){
-          sv2CoachBubbleShow(
-            "Trop facile ! " + wasReps + " reps c'est plus que prévu. On monte de 2.5kg pour le prochain set ?",
-            [
-              { label: 'Non', fn: null },
-              { label: 'Monter', primary: true, fn: function(){
-                if (exo && SV2.setIdx < exo.sets) {
-                  for (var k = SV2.setIdx; k < exo.sets; k++) {
-                    if (exo.logs[k] && !exo.logs[k].done) exo.logs[k].charge += 2.5;
-                  }
-                  if (typeof sv2RenderActive === 'function') sv2RenderActive();
-                }
-              }}
-            ]
-          );
-        }, 800);
-      }
-      SV2_PROACTIVE.setStartTime = Date.now();
-    } catch(e) { console.error('[SV2.proactive] err:', e); }
-  };
-})();
-
-(function hookEndRest(){
-  if (!window.sv2EndRest) { setTimeout(hookEndRest, 200); return; }
-  var _orig = window.sv2EndRest;
-  window.sv2EndRest = function() {
-    SV2_PROACTIVE.setStartTime = Date.now();
-    return _orig.apply(this, arguments);
-  };
-})();
-
-(function hookStart(){
-  if (!window.sv2StartActive) { setTimeout(hookStart, 200); return; }
-  var _orig = window.sv2StartActive;
-  window.sv2StartActive = function() {
-    SV2_PROACTIVE.setStartTime = Date.now();
-    SV2_PROACTIVE.shown = {};
-    SV2_PROACTIVE.lastBubble = 0;
-    return _orig.apply(this, arguments);
-  };
-})();
-
-setInterval(function(){
-  if (!window.SV2 || !SV2.current) return;
-  var activeOverlay = document.getElementById('sv2-active');
-  if (!activeOverlay || !activeOverlay.classList.contains('on')) return;
-  var now = Date.now();
-  if (SV2_PROACTIVE.setStartTime && now - SV2_PROACTIVE.setStartTime > 180000 && !SV2_PROACTIVE.shown['inactive_'+SV2.exoIdx+'_'+SV2.setIdx]) {
-    SV2_PROACTIVE.shown['inactive_'+SV2.exoIdx+'_'+SV2.setIdx] = true;
-    sv2CoachBubbleShow(
-      "T'as l'air bloqué. On passe à l'exo suivant ou je t'aide ?",
-      [
-        { label: 'Skip exo', fn: function(){ if (window.sv2SkipExo) sv2SkipExo(); }},
-        { label: 'Aide', primary: true, fn: function(){ if (window.sv2OpenCoach) sv2OpenCoach(); }}
-      ]
-    );
-  }
-}, 30000);
-
-console.log('[SV2.proactive] coach IA proactif initialisé ✓');
-
-})();
-
-/* ─────────────────────────────────────────────
-   FEATURE 3/4 — REP COUNTER CAMÉRA
-   ───────────────────────────────────────────── */
-(function(){
-'use strict';
-if (!window.SV2_FLAGS || !SV2_FLAGS.camera) { _sv2_log('[3/4] camera OFF'); return; }
-_sv2_log('[3/4] camera init');
-
-window.SV2_CAM = {
-  active: false,
-  stream: null,
-  reps: 0,
-  target: 10,
-  state: 'up',
-  rafId: null
-};
-
-window.sv2DetectExoType = function(exoId) {
-  if (!exoId) return 'generic';
-  var e = (window.EXOS_LIB || {})[exoId];
-  if (!e) return 'generic';
-  if (e.cat === 'jambes' || /squat|fentes|leg_press/.test(exoId)) return 'squat';
-  if (/pompe|pomp|bench|incline/.test(exoId)) return 'pushup';
-  if (/curl/.test(exoId)) return 'curl';
-  if (/traction|tirage/.test(exoId)) return 'pullup';
-  if (/militaire|arnold|developpe_m/.test(exoId)) return 'shoulderpress';
-  return 'generic';
-};
-
-window.sv2CamOpen = function(exoId, target) {
-  var overlay = document.getElementById('sv2-cam-overlay');
-  if (!overlay) return;
-  // Reset form score
-  if (typeof sv2FormReset === 'function') sv2FormReset();
-  SV2_CAM.target = target || 10;
-  SV2_CAM.reps = 0;
-  SV2_CAM.state = 'up';
-  SV2_CAM.exoId = exoId;
-  document.getElementById('sv2-cam-num').textContent = '0';
-  document.getElementById('sv2-cam-target').textContent = '/ ' + SV2_CAM.target + ' reps';
-  document.getElementById('sv2-cam-status').textContent = 'Démarrage caméra...';
-  document.getElementById('sv2-cam-status').className = 'sv2-cam-status';
-  overlay.classList.add('on');
-  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-    document.getElementById('sv2-cam-status').textContent = 'Caméra non supportée';
-    document.getElementById('sv2-cam-status').classList.add('feedback-bad');
-    return;
-  }
-  // Caméra DORSALE (back) en priorité, fallback sur frontale
-  var tryConstraints = [
-    { video: { facingMode: { exact: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false },
-    { video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false },
-    { video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false }
-  ];
-  function tryNext(idx) {
-    if (idx >= tryConstraints.length) {
-      document.getElementById('sv2-cam-status').textContent = 'Caméra refusée. Autorise dans les réglages.';
-      document.getElementById('sv2-cam-status').classList.add('feedback-bad');
-      return;
-    }
-    navigator.mediaDevices.getUserMedia(tryConstraints[idx]).then(function(stream) {
-      SV2_CAM.stream = stream;
-      var video = document.getElementById('sv2-cam-video');
-      video.srcObject = stream;
-      video.onloadedmetadata = function() {
-        video.play();
-        document.getElementById('sv2-cam-status').textContent = 'Place toi de profil, écran visible';
-        sv2CamStartLoop();
-      };
-    }).catch(function(err) {
-      console.warn('[SV2.cam] try ' + idx + ' failed:', err);
-      tryNext(idx + 1);
-    });
-  }
-  tryNext(0);
-};
-
-window.sv2CamStartLoop = function() {
-  var video = document.getElementById('sv2-cam-video');
-  var canvas = document.getElementById('sv2-cam-canvas');
-  if (!canvas || !video) return;
-  var ctx = canvas.getContext('2d');
-  // On dessine en taille viewport pour overlay propre
-  var setCanvasSize = function() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-  };
-  setCanvasSize();
-  window.addEventListener('resize', setCanvasSize);
-  var motionHistory = [];
-  var lastRepTime = 0;
-  var smoothedY = null;
-  function loop() {
-    if (!SV2_CAM.active) return;
-    try {
-      // Pour analyse on dessine la frame en interne (offscreen)
-      var ana = SV2_CAM._anaCanvas;
-      if (!ana) {
-        ana = document.createElement('canvas');
-        ana.width = 320;
-        ana.height = 240;
-        SV2_CAM._anaCanvas = ana;
-      }
-      var anaCtx = ana.getContext('2d');
-      anaCtx.drawImage(video, 0, 0, ana.width, ana.height);
-      // Zone d'analyse au centre
-      var sx = ana.width * 0.25, sy = ana.height * 0.20;
-      var sw = ana.width * 0.50, sh = ana.height * 0.60;
-      var imgData = anaCtx.getImageData(sx, sy, sw, sh);
-      var pixels = imgData.data;
-      var sumBrightness = 0, weightedY = 0;
-      for (var i = 0; i < pixels.length; i += 16) {
-        var brightness = (pixels[i] + pixels[i+1] + pixels[i+2]) / 3;
-        var pIdx = i / 4;
-        var py = Math.floor(pIdx / sw);
-        sumBrightness += brightness;
-        weightedY += brightness * py;
-      }
-      var centroidY = sumBrightness > 0 ? weightedY / sumBrightness : 0;
-      // Smoothing exponential
-      smoothedY = smoothedY === null ? centroidY : smoothedY * 0.7 + centroidY * 0.3;
-      motionHistory.push(smoothedY);
-      if (motionHistory.length > 30) motionHistory.shift();
-
-      // === DESSIN OVERLAY VISUEL ===
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      // Zone d'analyse (rectangle au centre)
-      var zx = canvas.width * 0.25;
-      var zy = canvas.height * 0.20;
-      var zw = canvas.width * 0.50;
-      var zh = canvas.height * 0.60;
-      // Cadre lime translucide
-      ctx.strokeStyle = 'rgba(221, 226, 85, 0.8)';
-      ctx.lineWidth = 3;
-      ctx.setLineDash([10, 8]);
-      ctx.strokeRect(zx, zy, zw, zh);
-      ctx.setLineDash([]);
-      // Coins (corners brackets)
-      var cornerLen = 24;
-      ctx.lineWidth = 4;
-      ctx.strokeStyle = '#DDE255';
-      // Top-left
-      ctx.beginPath();
-      ctx.moveTo(zx, zy + cornerLen); ctx.lineTo(zx, zy); ctx.lineTo(zx + cornerLen, zy);
-      ctx.stroke();
-      // Top-right
-      ctx.beginPath();
-      ctx.moveTo(zx + zw - cornerLen, zy); ctx.lineTo(zx + zw, zy); ctx.lineTo(zx + zw, zy + cornerLen);
-      ctx.stroke();
-      // Bottom-left
-      ctx.beginPath();
-      ctx.moveTo(zx, zy + zh - cornerLen); ctx.lineTo(zx, zy + zh); ctx.lineTo(zx + cornerLen, zy + zh);
-      ctx.stroke();
-      // Bottom-right
-      ctx.beginPath();
-      ctx.moveTo(zx + zw - cornerLen, zy + zh); ctx.lineTo(zx + zw, zy + zh); ctx.lineTo(zx + zw, zy + zh - cornerLen);
-      ctx.stroke();
-      // Indicateur position (ligne horizontale qui bouge selon centroïde)
-      if (motionHistory.length >= 5) {
-        var min = Math.min.apply(null, motionHistory);
-        var max = Math.max.apply(null, motionHistory);
-        var range = max - min;
-        if (range > 4) {
-          var pct = (smoothedY - min) / range;
-          var lineY = zy + pct * zh;
-          // Ligne lime qui suit le mouvement
-          ctx.strokeStyle = '#F98805';
-          ctx.lineWidth = 3;
-          ctx.beginPath();
-          ctx.moveTo(zx + 10, lineY);
-          ctx.lineTo(zx + zw - 10, lineY);
-          ctx.stroke();
-          // Cercle indicateur central
-          ctx.fillStyle = '#F98805';
-          ctx.beginPath();
-          ctx.arc(zx + zw / 2, lineY, 8, 0, Math.PI * 2);
-          ctx.fill();
-        }
-        // Barre de "force du signal" en haut à droite
-        var barH = 60, barW = 6;
-        var barX = canvas.width - 24;
-        var barY = canvas.height * 0.35;
-        ctx.fillStyle = 'rgba(0,0,0,0.4)';
-        ctx.fillRect(barX - 2, barY - 2, barW + 4, barH + 4);
-        ctx.fillStyle = range > 8 ? '#DDE255' : (range > 4 ? '#F98805' : 'rgba(255,255,255,0.3)');
-        var fillH = Math.min(barH, (range / 30) * barH);
-        ctx.fillRect(barX, barY + barH - fillH, barW, fillH);
-      }
-
-      // === DÉTECTION REP ===
-      if (motionHistory.length >= 20) {
-        var min = Math.min.apply(null, motionHistory);
-        var max = Math.max.apply(null, motionHistory);
-        var range = max - min;
-        var current = smoothedY;
-        if (range > 8) {
-          var pctPos = (current - min) / range;
-          var now = Date.now();
-          if (SV2_CAM.state === 'up' && pctPos > 0.7) {
-            SV2_CAM.state = 'down';
-          } else if (SV2_CAM.state === 'down' && pctPos < 0.3 && now - lastRepTime > 800) {
-            SV2_CAM.state = 'up';
-            SV2_CAM.reps++;
-            lastRepTime = now;
-            // Update form score
-            try { if (typeof sv2FormUpdate === 'function') sv2FormUpdate(range, now); } catch(e) {}
-            // Voix coach pour reps importantes (mi-parcours, dernière)
-            try {
-              if (typeof sv2VoiceSay === 'function') {
-                var halfway = Math.ceil(SV2_CAM.target / 2);
-                if (SV2_CAM.reps === halfway) sv2VoiceSay("La moitié.");
-                else if (SV2_CAM.reps === SV2_CAM.target - 2 && SV2_CAM.target >= 6) sv2VoiceSay("Plus que deux.");
-                else if (SV2_CAM.reps === SV2_CAM.target) sv2VoiceSay("Set bouclé.");
-              }
-            } catch(e) {}
-            document.getElementById('sv2-cam-num').textContent = SV2_CAM.reps;
-            if (navigator.vibrate) try { navigator.vibrate(50); } catch(e) {}
-            // Flash de validation visuelle
-            ctx.fillStyle = 'rgba(221, 226, 85, 0.4)';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            var s = document.getElementById('sv2-cam-status');
-            s.textContent = 'Rep ' + SV2_CAM.reps + ' validée 🔥';
-            s.className = 'sv2-cam-status feedback-good';
-            (function(captured){
-              setTimeout(function(){
-                if (s.textContent.indexOf('Rep ' + captured) === 0) {
-                  s.textContent = SV2_CAM.reps + ' / ' + SV2_CAM.target + ' reps détectées';
-                  s.className = 'sv2-cam-status';
-                }
-              }, 1200);
-            })(SV2_CAM.reps);
-            if (SV2_CAM.reps >= SV2_CAM.target) {
-              setTimeout(function(){ sv2CamValidate(); }, 800);
-            }
-          }
-        } else {
-          var s = document.getElementById('sv2-cam-status');
-          if (!s.classList.contains('feedback-good') && !s.classList.contains('feedback-bad')) {
-            s.textContent = 'Reste dans le cadre · Bouge plus amplement';
-          }
-        }
-      }
-    } catch(e) {}
-    SV2_CAM.rafId = requestAnimationFrame(loop);
-  }
-  SV2_CAM.active = true;
-  loop();
-};
-
-window.sv2CamValidate = function() {
-  if (window.SV2 && SV2.current) {
-    var exo = SV2.current.exos[SV2.exoIdx];
-    if (exo && exo.logs[SV2.setIdx]) {
-      exo.logs[SV2.setIdx].reps = SV2_CAM.reps;
-    }
-  }
-  sv2CamClose();
-  if (window.sv2ValidateSet) sv2ValidateSet();
-};
-
-window.sv2CamClose = function() {
-  SV2_CAM.active = false;
-  if (SV2_CAM.rafId) cancelAnimationFrame(SV2_CAM.rafId);
-  SV2_CAM.rafId = null;
-  if (SV2_CAM.stream) {
-    SV2_CAM.stream.getTracks().forEach(function(t){ t.stop(); });
-    SV2_CAM.stream = null;
-  }
-  document.getElementById('sv2-cam-overlay').classList.remove('on');
-};
-
-(function patchActiveForCam(){
-  if (!window.sv2RenderActive) { setTimeout(patchActiveForCam, 250); return; }
-  var _orig = window.sv2RenderActive;
-  window.sv2RenderActive = function() {
-    _orig.apply(this, arguments);
-    try {
-      var exo = SV2.current && SV2.current.exos[SV2.exoIdx];
-      if (!exo) return;
-      var type = sv2DetectExoType(exo.id);
-      if (type === 'generic' || type === 'curl') return;
-      var body = document.getElementById('sv2-active-body');
-      if (!body) return;
-      var existing = body.querySelector('.sv2-cam-toggle');
-      if (existing) existing.remove();
-      var btn = document.createElement('button');
-      btn.className = 'sv2-cam-toggle';
-      btn.innerHTML = '📷 Compter mes reps automatiquement';
-      btn.onclick = function() { sv2CamOpen(exo.id, exo.reps); };
-      var grid = body.querySelector('.sv2-sets-grid');
-      if (grid) grid.parentNode.insertBefore(btn, grid);
-    } catch(e) { console.error('[SV2.cam] patch err:', e); }
-  };
-})();
-
-console.log('[SV2.cam] rep counter caméra initialisé ✓');
-
-})();
-
-/* ─────────────────────────────────────────────
-   FEATURE 4/4 — AUTOPILOT IA INTER-SÉANCE
-   ───────────────────────────────────────────── */
-(function(){
-'use strict';
-if (!window.SV2_FLAGS || !SV2_FLAGS.autopilot) { _sv2_log('[4/4] autopilot OFF'); return; }
-_sv2_log('[4/4] autopilot init');
-
-window.SV2_AUTOPILOT = { enabled: true };
-
-window.sv2AutopilotCompute = function() {
-  if (!window.U || !U.sessions || U.sessions.length === 0) return null;
-  var recent = U.sessions.slice(-5);
-  var avgFelt = 0, feltCount = 0;
-  recent.forEach(function(s){
-    if (s.felt) { avgFelt += s.felt; feltCount++; }
-  });
-  if (feltCount > 0) avgFelt = avgFelt / feltCount;
-  var readiness = (typeof calcReadiness === 'function') ? calcReadiness() : 70;
-  var streak = U.streak || 0;
-  var decision = { volume: 1.0, intensity: 1.0, reason: '', icon: '⚡', show: false };
-  if (avgFelt >= 4.5) {
-    decision.volume = 1.10; decision.intensity = 1.05;
-    decision.reason = "T'es au top sur les dernières séances. <strong>+10% volume</strong> aujourd'hui.";
-    decision.icon = '🔥';
-    decision.show = true;
-  } else if (avgFelt > 0 && avgFelt <= 2.5) {
-    decision.volume = 0.85; decision.intensity = 0.90;
-    decision.reason = "Tu galères ces derniers jours. <strong>−15% volume</strong> pour bien récupérer.";
-    decision.icon = '🌿';
-    decision.show = true;
-  } else if (readiness < 50) {
-    decision.volume = 0.90; decision.intensity = 0.95;
-    decision.reason = "Readiness à <strong>" + Math.round(readiness) + "%</strong>. Version allégée aujourd'hui.";
-    decision.icon = '⚖️';
-    decision.show = true;
-  } else if (streak >= 5) {
-    decision.reason = "Streak de <strong>" + streak + " jours</strong>. Maintien de l'intensité.";
-    decision.icon = '🎯';
-    decision.show = true;
-  }
-  return decision;
-};
-
-(function patchGen(){
-  if (!window.sv2GenSeance) { setTimeout(patchGen, 200); return; }
-  var _orig = window.sv2GenSeance;
-  window.sv2GenSeance = function(jourIdx) {
-    var seance = _orig.apply(this, arguments);
-    if (!SV2_AUTOPILOT.enabled || seance.rest) return seance;
-    var dec = sv2AutopilotCompute();
-    if (!dec || !dec.show) return seance;
-    seance.exos.forEach(function(exo){
-      if (dec.volume !== 1.0) {
-        var newSets = Math.max(2, Math.round(exo.sets * dec.volume));
-        if (newSets !== exo.sets) {
-          exo.sets = newSets;
-          var arr = [];
-          for (var k = 0; k < newSets; k++) arr.push({ reps: exo.reps, charge: exo.charge, done: false });
-          exo.logs = arr;
-        }
-      }
-      if (dec.intensity !== 1.0 && exo.charge > 0) {
-        exo.charge = Math.round(exo.charge * dec.intensity / 2.5) * 2.5;
-        exo.logs.forEach(function(l){ l.charge = exo.charge; });
-      }
-    });
-    seance.duree = Math.round(seance.exos.length * (seance.exos[0].sets * (45 + (seance.exos[0].rest || 75)) / 60));
-    seance._autopilot = dec;
-    return seance;
-  };
-})();
-
-(function patchBuild(){
-  if (!window.buildSeancesV2) { setTimeout(patchBuild, 200); return; }
-  var _orig = window.buildSeancesV2;
-  window.buildSeancesV2 = function() {
-    _orig.apply(this, arguments);
-    try {
-      var sc = document.querySelector('.seances-v2-root');
-      if (!sc) return;
-      var seance = sv2GenSeance();
-      if (!seance || !seance._autopilot) return;
-      var dec = seance._autopilot;
-      var hero = sc.querySelector('.sv2-hero');
-      if (!hero) return;
-      var existing = sc.querySelector('.sv2-autopilot-banner');
-      if (existing) existing.remove();
-      var banner = document.createElement('div');
-      banner.className = 'sv2-autopilot-banner';
-      banner.innerHTML = '<div class="sv2-autopilot-banner-icon">' + dec.icon + '</div>'
-        + '<div class="sv2-autopilot-banner-text">'
-        +   '<div class="sv2-autopilot-thinking">AUTOPILOT HIMA</div>'
-        +   '<div style="margin-top:2px;">' + dec.reason + '</div>'
-        + '</div>';
-      hero.parentNode.insertBefore(banner, hero);
-    } catch(e) { console.error('[SV2.autopilot] build err:', e); }
-  };
-})();
-
-console.log('[SV2.autopilot] adaptation IA inter-séance initialisée ✓');
-
-})();
-
-/* ─────────────────────────────────────────────
-   FEATURE 5/4 BONUS — SVG CARDIO DYNAMIQUES
-   Pour les exos cardio sans vidéo : silhouette qui bouge
-   ───────────────────────────────────────────── */
-(function(){
-'use strict';
-
-// SVG silhouettes animées par type d'exo cardio
-window.sv2CardioSVG = function(exoId) {
-  var anims = {
-    'jumping_jack':
-      '<svg viewBox="0 0 100 160" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;">'
-      + '<style>.jjbody{transform-origin:50px 80px;animation:jjpulse 0.6s ease-in-out infinite;}'
-      + '.jjarm-l{transform-origin:38px 35px;animation:jjarmL 0.6s ease-in-out infinite;}'
-      + '.jjarm-r{transform-origin:62px 35px;animation:jjarmR 0.6s ease-in-out infinite;}'
-      + '.jjleg-l{transform-origin:48px 80px;animation:jjlegL 0.6s ease-in-out infinite;}'
-      + '.jjleg-r{transform-origin:52px 80px;animation:jjlegR 0.6s ease-in-out infinite;}'
-      + '@keyframes jjpulse{0%,100%{transform:translateY(0);}50%{transform:translateY(-3px);}}'
-      + '@keyframes jjarmL{0%,100%{transform:rotate(20deg);}50%{transform:rotate(-160deg);}}'
-      + '@keyframes jjarmR{0%,100%{transform:rotate(-20deg);}50%{transform:rotate(160deg);}}'
-      + '@keyframes jjlegL{0%,100%{transform:rotate(-5deg);}50%{transform:rotate(-25deg);}}'
-      + '@keyframes jjlegR{0%,100%{transform:rotate(5deg);}50%{transform:rotate(25deg);}}'
-      + '</style>'
-      + '<g class="jjbody">'
-      + '<circle cx="50" cy="22" r="9" fill="#F35695"/>' // tête
-      + '<rect x="46" y="30" width="8" height="35" rx="3" fill="#F98805"/>' // torse
-      + '<g class="jjarm-l"><rect x="34" y="32" width="8" height="22" rx="3" fill="#F98805"/></g>'
-      + '<g class="jjarm-r"><rect x="58" y="32" width="8" height="22" rx="3" fill="#F98805"/></g>'
-      + '<g class="jjleg-l"><rect x="44" y="65" width="6" height="35" rx="3" fill="#DDE255"/></g>'
-      + '<g class="jjleg-r"><rect x="50" y="65" width="6" height="35" rx="3" fill="#DDE255"/></g>'
-      + '</g></svg>',
-
-    'burpees':
-      '<svg viewBox="0 0 100 160" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;">'
-      + '<style>.bpscene{animation:bpcycle 2s ease-in-out infinite;}'
-      + '@keyframes bpcycle{0%,100%{transform:translateY(0);opacity:1;}25%{transform:translateY(20px);opacity:0.7;}50%{transform:translateY(40px) scale(0.9);opacity:0.5;}75%{transform:translateY(20px);opacity:0.7;}}'
-      + '</style>'
-      + '<g class="bpscene">'
-      + '<circle cx="50" cy="30" r="9" fill="#F35695"/>'
-      + '<rect x="46" y="38" width="8" height="35" rx="3" fill="#F98805"/>'
-      + '<rect x="34" y="40" width="8" height="22" rx="3" fill="#F98805"/>'
-      + '<rect x="58" y="40" width="8" height="22" rx="3" fill="#F98805"/>'
-      + '<rect x="44" y="73" width="6" height="35" rx="3" fill="#DDE255"/>'
-      + '<rect x="50" y="73" width="6" height="35" rx="3" fill="#DDE255"/>'
-      + '</g></svg>',
-
-    'high_knees':
-      '<svg viewBox="0 0 100 160" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;">'
-      + '<style>.hkleg-l{transform-origin:48px 80px;animation:hkLegL 0.4s ease-in-out infinite;}'
-      + '.hkleg-r{transform-origin:52px 80px;animation:hkLegR 0.4s ease-in-out infinite;}'
-      + '.hkarm-l{transform-origin:38px 35px;animation:hkArmL 0.4s ease-in-out infinite;}'
-      + '.hkarm-r{transform-origin:62px 35px;animation:hkArmR 0.4s ease-in-out infinite;}'
-      + '@keyframes hkLegL{0%,100%{transform:rotate(0);}50%{transform:rotate(-70deg);}}'
-      + '@keyframes hkLegR{0%,100%{transform:rotate(-70deg);}50%{transform:rotate(0);}}'
-      + '@keyframes hkArmL{0%,100%{transform:rotate(60deg);}50%{transform:rotate(-30deg);}}'
-      + '@keyframes hkArmR{0%,100%{transform:rotate(-30deg);}50%{transform:rotate(60deg);}}'
-      + '</style>'
-      + '<circle cx="50" cy="22" r="9" fill="#F35695"/>'
-      + '<rect x="46" y="30" width="8" height="35" rx="3" fill="#F98805"/>'
-      + '<g class="hkarm-l"><rect x="34" y="32" width="8" height="22" rx="3" fill="#F98805"/></g>'
-      + '<g class="hkarm-r"><rect x="58" y="32" width="8" height="22" rx="3" fill="#F98805"/></g>'
-      + '<g class="hkleg-l"><rect x="44" y="65" width="6" height="35" rx="3" fill="#DDE255"/></g>'
-      + '<g class="hkleg-r"><rect x="50" y="65" width="6" height="35" rx="3" fill="#DDE255"/></g>'
-      + '</svg>',
-
-    'mountain':
-      '<svg viewBox="0 0 100 160" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;">'
-      + '<style>.mcleg-l{transform-origin:55px 100px;animation:mcLegL 0.5s ease-in-out infinite;}'
-      + '.mcleg-r{transform-origin:55px 100px;animation:mcLegR 0.5s ease-in-out infinite;}'
-      + '@keyframes mcLegL{0%,100%{transform:translateX(0);}50%{transform:translateX(-15px);}}'
-      + '@keyframes mcLegR{0%,100%{transform:translateX(-15px);}50%{transform:translateX(0);}}'
-      + '</style>'
-      // Position planche
-      + '<circle cx="22" cy="60" r="9" fill="#F35695"/>'
-      + '<rect x="22" y="60" width="60" height="14" rx="6" fill="#F98805"/>'
-      // Bras (verticaux, soutiens)
-      + '<rect x="22" y="68" width="6" height="32" rx="3" fill="#F98805"/>'
-      + '<rect x="32" y="68" width="6" height="32" rx="3" fill="#F98805"/>'
-      // Jambes (animées)
-      + '<g class="mcleg-l"><rect x="64" y="74" width="6" height="28" rx="3" fill="#DDE255"/></g>'
-      + '<g class="mcleg-r"><rect x="74" y="74" width="6" height="28" rx="3" fill="#DDE255"/></g>'
-      + '</svg>',
-
-    'sprints':
-      '<svg viewBox="0 0 100 160" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;">'
-      + '<style>.sprleg-l{transform-origin:48px 78px;animation:sprLegL 0.3s ease-in-out infinite;}'
-      + '.sprleg-r{transform-origin:52px 78px;animation:sprLegR 0.3s ease-in-out infinite;}'
-      + '.sprarm-l{transform-origin:38px 38px;animation:sprArmL 0.3s ease-in-out infinite;}'
-      + '.sprarm-r{transform-origin:62px 38px;animation:sprArmR 0.3s ease-in-out infinite;}'
-      + '.sprtrunk{animation:sprBob 0.3s ease-in-out infinite;}'
-      + '@keyframes sprBob{0%,100%{transform:translateY(0) rotate(2deg);}50%{transform:translateY(-2px) rotate(-2deg);}}'
-      + '@keyframes sprLegL{0%,100%{transform:rotate(40deg);}50%{transform:rotate(-50deg);}}'
-      + '@keyframes sprLegR{0%,100%{transform:rotate(-50deg);}50%{transform:rotate(40deg);}}'
-      + '@keyframes sprArmL{0%,100%{transform:rotate(40deg);}50%{transform:rotate(-50deg);}}'
-      + '@keyframes sprArmR{0%,100%{transform:rotate(-50deg);}50%{transform:rotate(40deg);}}'
-      + '</style>'
-      + '<g class="sprtrunk">'
-      + '<circle cx="50" cy="22" r="9" fill="#F35695"/>'
-      + '<rect x="46" y="30" width="8" height="35" rx="3" fill="#F98805"/>'
-      + '<g class="sprarm-l"><rect x="34" y="35" width="8" height="22" rx="3" fill="#F98805"/></g>'
-      + '<g class="sprarm-r"><rect x="58" y="35" width="8" height="22" rx="3" fill="#F98805"/></g>'
-      + '<g class="sprleg-l"><rect x="44" y="65" width="6" height="35" rx="3" fill="#DDE255"/></g>'
-      + '<g class="sprleg-r"><rect x="50" y="65" width="6" height="35" rx="3" fill="#DDE255"/></g>'
-      + '</g></svg>',
-
-    'corde_a_sauter':
-      '<svg viewBox="0 0 100 160" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;">'
-      + '<style>.jrbody{animation:jrjump 0.4s ease-in-out infinite;}'
-      + '.jrrope{animation:jrRope 0.4s linear infinite;transform-origin:50px 60px;}'
-      + '@keyframes jrjump{0%,100%{transform:translateY(0);}50%{transform:translateY(-8px);}}'
-      + '@keyframes jrRope{from{transform:rotate(0);}to{transform:rotate(360deg);}}'
-      + '</style>'
-      + '<ellipse class="jrrope" cx="50" cy="60" rx="25" ry="40" fill="none" stroke="#DDE255" stroke-width="1.5" opacity="0.6"/>'
-      + '<g class="jrbody">'
-      + '<circle cx="50" cy="22" r="9" fill="#F35695"/>'
-      + '<rect x="46" y="30" width="8" height="35" rx="3" fill="#F98805"/>'
-      + '<rect x="34" y="32" width="8" height="22" rx="3" fill="#F98805" transform="rotate(45 38 43)"/>'
-      + '<rect x="58" y="32" width="8" height="22" rx="3" fill="#F98805" transform="rotate(-45 62 43)"/>'
-      + '<rect x="44" y="65" width="6" height="35" rx="3" fill="#DDE255"/>'
-      + '<rect x="50" y="65" width="6" height="35" rx="3" fill="#DDE255"/>'
-      + '</g></svg>',
-
-    'gainage':
-      '<svg viewBox="0 0 100 160" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;">'
-      + '<style>.plkbody{animation:plkpulse 2s ease-in-out infinite;}'
-      + '@keyframes plkpulse{0%,100%{filter:brightness(1);}50%{filter:brightness(1.2);}}'
-      + '</style>'
-      + '<g class="plkbody">'
-      + '<circle cx="22" cy="55" r="9" fill="#F35695"/>'
-      + '<rect x="22" y="55" width="60" height="14" rx="6" fill="#F35695"/>' // dos
-      + '<rect x="22" y="62" width="6" height="35" rx="3" fill="#F98805"/>'
-      + '<rect x="32" y="62" width="6" height="35" rx="3" fill="#F98805"/>'
-      + '<rect x="65" y="62" width="6" height="35" rx="3" fill="#DDE255"/>'
-      + '<rect x="75" y="62" width="6" height="35" rx="3" fill="#DDE255"/>'
-      + '</g></svg>',
-
-    'crunch':
-      '<svg viewBox="0 0 100 160" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;">'
-      + '<style>.crbody{transform-origin:50px 90px;animation:crCrunch 1.2s ease-in-out infinite;}'
-      + '@keyframes crCrunch{0%,100%{transform:rotate(0);}50%{transform:rotate(-20deg);}}'
-      + '</style>'
-      + '<g class="crbody">'
-      + '<circle cx="50" cy="40" r="9" fill="#F35695"/>'
-      + '<rect x="46" y="48" width="8" height="40" rx="3" fill="#F35695"/>'
-      + '</g>'
-      + '<rect x="44" y="88" width="6" height="35" rx="3" fill="#DDE255" transform="rotate(-30 47 105)"/>'
-      + '<rect x="50" y="88" width="6" height="35" rx="3" fill="#DDE255" transform="rotate(30 53 105)"/>'
-      + '</svg>'
-  };
-  return anims[exoId] || null;
-};
-
-// Patche les renders pour utiliser cardio SVG en priorité quand pas de vidéo
-(function patchActiveCardio(){
-  if (!window.sv2RenderActive) { setTimeout(patchActiveCardio, 250); return; }
-  var _orig = window.sv2RenderActive;
-  window.sv2RenderActive = function() {
-    _orig.apply(this, arguments);
-    try {
-      var exo = SV2.current && SV2.current.exos[SV2.exoIdx];
-      if (!exo) return;
-      // Si pas de vidéo et c'est un cardio/core → SVG dynamique
-      var hasVideo = window.EXOS_VIDEOS && EXOS_VIDEOS[exo.id];
-      if (hasVideo) return;
-      var cardioSVG = sv2CardioSVG(exo.id);
-      if (!cardioSVG) return;
-      var wrap = document.querySelector('#sv2-active-body .sv2-active-svg-wrap, #sv2-active-body .sv2-video-wrap');
-      if (wrap) {
-        // On replace par un wrap avec SVG cardio
-        wrap.outerHTML = '<div class="sv2-active-svg-wrap" style="background:linear-gradient(135deg,rgba(243,86,149,0.12),rgba(221,226,85,0.06));"><div class="sv2-video-fallback-svg">' + cardioSVG + '</div></div>';
-      }
-    } catch(e) { console.error('[SV2.cardio] err:', e); }
-  };
-})();
-
-(function patchDetailCardio(){
-  if (!window.sv2OpenDetail) { setTimeout(patchDetailCardio, 250); return; }
-  var _orig = window.sv2OpenDetail;
-  window.sv2OpenDetail = function() {
-    _orig.apply(this, arguments);
-    try {
-      var cards = document.querySelectorAll('#sv2-detail-body .sv2-exo-card');
-      cards.forEach(function(card, i){
-        var exo = SV2.current && SV2.current.exos[i];
-        if (!exo) return;
-        // Si déjà une vidéo, skip
-        if (card.querySelector('.sv2-mini-video')) return;
-        var cardioSVG = sv2CardioSVG(exo.id);
-        if (!cardioSVG) return;
-        var svg = card.querySelector('.sv2-exo-svg');
-        if (svg) {
-          svg.innerHTML = cardioSVG;
-        }
-      });
-    } catch(e) { console.error('[SV2.cardio] detail err:', e); }
-  };
-})();
-
-console.log('[SV2.cardio] SVG cardio dynamiques initialisés ✓');
-
-})();
-
-/* ════════════════════════════════════════════════════════
-   PATCH HIMA v3.4 — POLISH ÉQUIPE D'EXPERTS
-   1. Score de forme automatique pendant la cam
-   2. Voix coach pendant les sets (ElevenLabs)
-   3. Mode rapide (auto-réduit la séance à 15 min)
-   4. Smart notifs sur le tab Accueil
-   5. Apple Health sync
-   ════════════════════════════════════════════════════════ */
-
-/* ─────────────────────────────────────────────
-   FEATURE 1 — SCORE DE FORME AUTOMATIQUE (cam)
-   Vert : amplitude propre, tempo régulier
-   Orange : amplitude correcte, tempo irrégulier
-   Rouge : amplitude trop courte, tricherie probable
-   ───────────────────────────────────────────── */
-(function(){
-'use strict';
-
-window.SV2_FORM = {
-  history: [],         // [{repTime, amplitude}, ...]
-  score: 100,
-  amplitude: 0,
-  tempoVariance: 0
-};
-
-window.sv2FormReset = function() {
-  SV2_FORM.history = [];
-  SV2_FORM.score = 100;
-  SV2_FORM.amplitude = 0;
-  var el = document.getElementById('sv2-cam-formscore');
-  if (el) el.style.display = 'none';
-};
-
-window.sv2FormUpdate = function(amplitude, repTime) {
-  SV2_FORM.history.push({ t: repTime, amp: amplitude });
-  if (SV2_FORM.history.length > 8) SV2_FORM.history.shift();
-  if (SV2_FORM.history.length < 2) return;
-  // Score amplitude : on cherche cohérence (pas trop court, pas variable)
-  var amps = SV2_FORM.history.map(function(h){ return h.amp; });
-  var avgAmp = amps.reduce(function(a,b){return a+b;}, 0) / amps.length;
-  var maxAmp = Math.max.apply(null, amps);
-  var ampRatio = maxAmp > 0 ? avgAmp / maxAmp : 1;
-  // Score tempo : interval entre reps
-  var intervals = [];
-  for (var i = 1; i < SV2_FORM.history.length; i++) {
-    intervals.push(SV2_FORM.history[i].t - SV2_FORM.history[i-1].t);
-  }
-  var avgInt = intervals.reduce(function(a,b){return a+b;},0) / intervals.length;
-  var tempoStdDev = 0;
-  intervals.forEach(function(v){ tempoStdDev += Math.pow(v - avgInt, 2); });
-  tempoStdDev = Math.sqrt(tempoStdDev / intervals.length);
-  var tempoCoherence = avgInt > 0 ? 1 - Math.min(1, tempoStdDev / avgInt) : 1;
-  // Score final
-  var score = Math.round((ampRatio * 0.6 + tempoCoherence * 0.4) * 100);
-  SV2_FORM.score = score;
-  // Display
-  var el = document.getElementById('sv2-cam-formscore');
-  var val = document.getElementById('sv2-cam-formscore-val');
-  if (!el || !val) return;
-  el.style.display = 'block';
-  val.textContent = score;
-  el.className = 'sv2-cam-formscore ' + (score >= 80 ? 'good' : score >= 60 ? 'medium' : 'bad');
-};
-
-console.log('[SV2.form] Score de forme initialisé ✓');
-})();
-
-/* ─────────────────────────────────────────────
-   FEATURE 2 — VOIX COACH PENDANT LES SETS
-   Utilise speakXI() (ElevenLabs déjà branché)
-   Phrases courtes, motivantes, contextuelles
-   ───────────────────────────────────────────── */
-(function(){
-'use strict';
-
-window.SV2_VOICE = {
-  enabled: false,
-  lastSpoken: 0,
-  cooldown: 4000,
-  spoken: {}
-};
-
-window.sv2VoiceToggle = function() {
-  SV2_VOICE.enabled = !SV2_VOICE.enabled;
-  var btn = document.getElementById('sv2-voice-toggle');
-  if (btn) {
-    btn.classList.toggle('on', SV2_VOICE.enabled);
-    btn.innerHTML = SV2_VOICE.enabled ? '🔊 Voix ON' : '🔊 Voix';
-  }
-  // Persist
-  if (window.U) {
-    U.sv2VoiceOn = SV2_VOICE.enabled;
-    if (typeof save === 'function') save();
-  }
-  if (SV2_VOICE.enabled) sv2VoiceSay("Coach activé. Je guide tes sets.");
-};
-
-window.sv2VoiceSay = function(text) {
-  if (!SV2_VOICE.enabled || !text) return;
-  var now = Date.now();
-  if (now - SV2_VOICE.lastSpoken < SV2_VOICE.cooldown) return;
-  SV2_VOICE.lastSpoken = now;
-  // Prefer ElevenLabs si dispo
-  if (typeof speakXI === 'function' && window.xiKey) {
-    try { speakXI(text); return; } catch(e) {}
-  }
-  // Fallback Web Speech API
-  if ('speechSynthesis' in window) {
-    try {
-      var u = new SpeechSynthesisUtterance(text);
-      u.lang = 'fr-FR';
-      u.rate = 1.05;
-      u.pitch = 1.0;
-      window.speechSynthesis.speak(u);
-    } catch(e) {}
-  }
-};
-
-// Restore préférence au chargement
-(function restoreVoice(){
-  setTimeout(function() {
-    if (window.U && U.sv2VoiceOn) {
-      SV2_VOICE.enabled = true;
-      var btn = document.getElementById('sv2-voice-toggle');
-      if (btn) {
-        btn.classList.add('on');
-        btn.innerHTML = '🔊 Voix ON';
-      }
-    }
-  }, 1000);
-})();
-
-// Hook validate set : encouragement entre sets
-(function hookSetValidation(){
-  var attempts = 0;
-  function tryHook() {
-    if (!window.sv2ValidateSet) {
-      if (attempts++ < 30) setTimeout(tryHook, 200);
-      return;
-    }
-    var _orig = window.sv2ValidateSet;
-    window.sv2ValidateSet = function() {
-      var exo = SV2.current && SV2.current.exos[SV2.exoIdx];
-      var setIdxBefore = SV2.setIdx;
-      var totalSets = exo ? exo.sets : 0;
-      var done = exo && exo.logs[setIdxBefore];
-      var wasReps = done ? done.reps : 0;
-      var targetReps = exo ? exo.reps : 0;
-
-      _orig.apply(this, arguments);
-
-      // Phrases contextuelles
-      try {
-        if (!SV2_VOICE.enabled) return;
-        var remaining = totalSets - (setIdxBefore + 1);
-        var phrases;
-        if (wasReps >= targetReps && remaining > 0) {
-          phrases = [
-            "Parfait. Encore " + remaining + " set" + (remaining > 1 ? "s" : "") + ".",
-            "Excellent. Continue comme ça.",
-            "Tu tiens le rythme. Allez.",
-            "Très propre. " + remaining + " à faire."
-          ];
-        } else if (wasReps < targetReps && wasReps > 0 && remaining > 0) {
-          phrases = [
-            "Pas grave. On continue.",
-            "Reste concentré. " + remaining + " set" + (remaining > 1 ? "s" : "") + " encore.",
-            "Tu peux mieux. Allez.",
-          ];
-        } else if (remaining === 0 && SV2.exoIdx + 1 < SV2.current.exos.length) {
-          var nextExo = SV2.current.exos[SV2.exoIdx + 1];
-          phrases = [
-            "Exo terminé. Place au suivant.",
-            "Bien joué. Prochain : " + nextExo.n.split(' ')[0] + ".",
-            "Solide. On enchaîne."
-          ];
-        } else if (remaining === 0) {
-          phrases = ["Dernier exo bouclé. Bravo !"];
-        }
-        if (phrases) {
-          var msg = phrases[Math.floor(Math.random() * phrases.length)];
-          setTimeout(function() { sv2VoiceSay(msg); }, 600);
-        }
-      } catch(e) { console.error('[SV2.voice] err:', e); }
-    };
-  }
-  tryHook();
-})();
-
-// Hook fin du timer repos : "C'est parti"
-(function hookEndRest(){
-  var attempts = 0;
-  function tryHook() {
-    if (!window.sv2EndRest) {
-      if (attempts++ < 30) setTimeout(tryHook, 200);
-      return;
-    }
-    var _orig = window.sv2EndRest;
-    window.sv2EndRest = function() {
-      _orig.apply(this, arguments);
-      if (!SV2_VOICE.enabled) return;
-      var phrases = ["C'est parti.", "Allez.", "On y va.", "Go."];
-      var msg = phrases[Math.floor(Math.random() * phrases.length)];
-      setTimeout(function() { sv2VoiceSay(msg); }, 200);
-    };
-  }
-  tryHook();
-})();
-
-console.log('[SV2.voice] Voix coach initialisée ✓');
-})();
-
-/* ─────────────────────────────────────────────
-   FEATURE 3 — MODE RAPIDE (15 min)
-   Pill dans le hero qui réduit la séance
-   ───────────────────────────────────────────── */
-(function(){
-'use strict';
-
-window.SV2_QUICK = { enabled: false };
-
-window.sv2QuickToggle = function() {
-  SV2_QUICK.enabled = !SV2_QUICK.enabled;
-  if (window.U) {
-    U.sv2QuickMode = SV2_QUICK.enabled;
-    if (typeof save === 'function') save();
-  }
-  if (typeof buildSeancesV2 === 'function') buildSeancesV2();
-  if (navigator.vibrate) try { navigator.vibrate(20); } catch(e) {}
-};
-
-// Patch sv2GenSeance pour réduire la séance en mode rapide
-(function patchGen(){
-  var attempts = 0;
-  function tryHook() {
-    if (!window.sv2GenSeance) {
-      if (attempts++ < 30) setTimeout(tryHook, 200);
-      return;
-    }
-    var _orig = window.sv2GenSeance;
-    window.sv2GenSeance = function(jourIdx) {
-      var seance = _orig.apply(this, arguments);
-      if (!SV2_QUICK.enabled || seance.rest) return seance;
-      // Mode rapide : 4 exos, 2 sets chacun, repos à 45s
-      seance.exos = seance.exos.slice(0, 4);
-      seance.exos.forEach(function(e){
-        e.sets = Math.max(2, Math.min(e.sets, 2));
-        e.rest = Math.min(e.rest, 45);
-        e.logs = e.logs.slice(0, 2);
-        // Re-pad si manque
-        while (e.logs.length < e.sets) {
-          e.logs.push({ reps: e.reps, charge: e.charge, done: false });
-        }
-      });
-      seance.duree = Math.round(seance.exos.length * (seance.exos[0].sets * (40 + seance.exos[0].rest) / 60));
-      seance._quick = true;
-      return seance;
-    };
-  }
-  tryHook();
-})();
-
-// Restore préférence
-(function restoreQuick(){
-  setTimeout(function() {
-    if (window.U && U.sv2QuickMode) {
-      SV2_QUICK.enabled = true;
-      if (typeof buildSeancesV2 === 'function') buildSeancesV2();
-    }
-  }, 800);
-})();
-
-// Patch buildSeancesV2 pour ajouter la pill mode rapide
-(function patchBuild(){
-  var attempts = 0;
-  function tryHook() {
-    if (!window.buildSeancesV2) {
-      if (attempts++ < 30) setTimeout(tryHook, 200);
-      return;
-    }
-    var _orig = window.buildSeancesV2;
-    window.buildSeancesV2 = function() {
-      _orig.apply(this, arguments);
-      try {
-        var sc = document.querySelector('.seances-v2-root');
-        if (!sc) return;
-        var heroMeta = sc.querySelector('.sv2-hero-meta');
-        if (!heroMeta) return;
-        // Si déjà une pill quick, retirer pour rebuilder
-        var existing = heroMeta.querySelector('.sv2-quick-pill');
-        if (existing) existing.remove();
-        var pill = document.createElement('button');
-        pill.className = 'sv2-quick-pill' + (SV2_QUICK.enabled ? ' on' : '');
-        pill.innerHTML = SV2_QUICK.enabled ? '⚡ Mode rapide ON' : '⚡ Mode rapide';
-        pill.onclick = sv2QuickToggle;
-        heroMeta.appendChild(pill);
-      } catch(e) {}
-    };
-  }
-  tryHook();
-})();
-
-console.log('[SV2.quick] Mode rapide initialisé ✓');
-})();
-
-/* ─────────────────────────────────────────────
-   FEATURE 4 — SMART NOTIFS (carte sur Accueil)
-   ───────────────────────────────────────────── */
-(function(){
-'use strict';
-
-window.SV2_SMART = { dismissed: {} };
-
-window.sv2SmartGetNotif = function() {
-  if (!window.U) return null;
-  var now = new Date();
-  var hour = now.getHours();
-  var todayKey = now.toISOString().slice(0,10);
-  var dismissedToday = SV2_SMART.dismissed[todayKey] || {};
-
-  // Calcule la dernière séance
-  var lastSeance = null;
-  if (U.sessions && U.sessions.length > 0) {
-    lastSeance = new Date(U.sessions[U.sessions.length - 1].date);
-  }
-  var hoursSinceLast = lastSeance ? (now - lastSeance) / 36e5 : 999;
-
-  // 1. Soir + pas de séance = relance
-  if (hour >= 18 && hour < 22 && hoursSinceLast > 18 && !dismissedToday.evening) {
-    return {
-      key: 'evening',
-      title: '🌙 Pas trop tard pour bouger',
-      text: "T'as pas encore fait ta séance aujourd'hui. Je te propose une version 15 min ?",
-      ctaLabel: 'Mode rapide',
-      ctaAction: function() {
-        if (!SV2_QUICK.enabled) sv2QuickToggle();
-        if (typeof switchTab === 'function') switchTab('t-prog');
-      }
-    };
-  }
-  // 2. Matin + streak en danger
-  if (hour >= 7 && hour < 12 && U.streak >= 3 && hoursSinceLast > 30 && !dismissedToday.streakRisk) {
-    return {
-      key: 'streakRisk',
-      title: '🔥 Ton streak est en jeu',
-      text: 'Tu as ' + U.streak + ' jours de suite. Une séance aujourd\'hui pour le préserver.',
-      ctaLabel: 'Voir ma séance',
-      ctaAction: function() { if (typeof switchTab === 'function') switchTab('t-prog'); }
-    };
-  }
-  // 3. Plus de 3 jours sans séance
-  if (hoursSinceLast > 72 && !dismissedToday.longGap) {
-    return {
-      key: 'longGap',
-      title: '👋 Ça fait un moment',
-      text: 'Plus de 3 jours sans séance. On reprend doucement avec une version courte ?',
-      ctaLabel: 'Reprendre',
-      ctaAction: function() {
-        if (!SV2_QUICK.enabled) sv2QuickToggle();
-        if (typeof switchTab === 'function') switchTab('t-prog');
-      }
-    };
-  }
-  // 4. Lendemain de séance dure (felt <=2)
-  if (hoursSinceLast >= 18 && hoursSinceLast < 30 && U.sessions && U.sessions.length > 0) {
-    var last = U.sessions[U.sessions.length - 1];
-    if (last.felt && last.felt <= 2 && !dismissedToday.recoveryDay) {
-      return {
-        key: 'recoveryDay',
-        title: '🌿 Récup conseillée',
-        text: "Hier était dur. Aujourd'hui je propose mobilité légère, ou repos complet.",
-        ctaLabel: 'Voir la séance',
-        ctaAction: function() { if (typeof switchTab === 'function') switchTab('t-prog'); }
-      };
-    }
-  }
-  return null;
-};
-
-window.sv2SmartDismiss = function(key) {
-  var todayKey = new Date().toISOString().slice(0,10);
-  if (!SV2_SMART.dismissed[todayKey]) SV2_SMART.dismissed[todayKey] = {};
-  SV2_SMART.dismissed[todayKey][key] = true;
-  // Sauvegarder dans U
-  if (window.U) {
-    U.sv2SmartDismissed = SV2_SMART.dismissed;
-    if (typeof save === 'function') save();
-  }
-  var card = document.getElementById('sv2-smart-card');
-  if (card) {
-    card.style.transition = 'all 0.3s';
-    card.style.opacity = '0';
-    card.style.transform = 'translateX(100%)';
-    setTimeout(function() { card.remove(); }, 300);
-  }
-};
-
-// Restore dismissed
-(function() {
-  setTimeout(function() {
-    if (window.U && U.sv2SmartDismissed) SV2_SMART.dismissed = U.sv2SmartDismissed;
-  }, 500);
-})();
-
-// Insert dans le tab Accueil (t-home)
-window.sv2SmartRender = function() {
-  var notif = sv2SmartGetNotif();
-  var existing = document.getElementById('sv2-smart-card');
-  if (existing) existing.remove();
-  if (!notif) return;
-  var home = document.getElementById('t-home');
-  if (!home) return;
-  // Trouve le scrollable container
-  var target = home.querySelector('.hm-wrap, .home-wrap, .home-scroll') || home;
-  var card = document.createElement('div');
-  card.id = 'sv2-smart-card';
-  card.className = 'sv2-smart-notif';
-  card.style.margin = '14px 16px 0';
-  card.innerHTML = '<button class="sv2-smart-notif-dismiss" aria-label="Ignorer">✕</button>'
-    + '<div class="sv2-smart-notif-title">' + notif.title + '</div>'
-    + '<div class="sv2-smart-notif-text">' + notif.text + '</div>'
-    + '<button class="sv2-smart-notif-cta">' + notif.ctaLabel + '</button>';
-  // Insert tout en haut du scroll
-  if (target.firstChild) {
-    target.insertBefore(card, target.firstChild);
-  } else {
-    target.appendChild(card);
-  }
-  card.querySelector('.sv2-smart-notif-dismiss').onclick = function() {
-    sv2SmartDismiss(notif.key);
-  };
-  card.querySelector('.sv2-smart-notif-cta').onclick = function() {
-    sv2SmartDismiss(notif.key);
-    setTimeout(notif.ctaAction, 100);
-  };
-};
-
-// Render à chaque switch sur Accueil
-(function patchSwitch(){
-  var attempts = 0;
-  function tryHook() {
-    if (!window.switchTab) {
-      if (attempts++ < 50) setTimeout(tryHook, 200);
-      return;
-    }
-    var _orig = window.switchTab;
-    window.switchTab = function(tab) {
-      _orig.apply(this, arguments);
-      if (tab === 't-home') {
-        setTimeout(sv2SmartRender, 200);
-      }
-    };
-  }
-  tryHook();
-})();
-
-// Render initial si on est sur home
-setTimeout(function() {
-  var home = document.getElementById('t-home');
-  if (home && home.classList.contains('on')) sv2SmartRender();
-}, 1500);
-
-console.log('[SV2.smart] Smart notifs initialisées ✓');
-})();
-
-/* ─────────────────────────────────────────────
-   FEATURE 5 — APPLE HEALTH SYNC (préparation)
-   iOS Safari ne supporte pas HealthKit en webapp,
-   mais on prépare un export structuré pour PWA wrap.
-   ───────────────────────────────────────────── */
-(function(){
-'use strict';
-
-window.SV2_HEALTH = {};
-
-// Export d'une session au format compatible HealthKit (JSON)
-window.sv2HealthExportSession = function(session) {
-  if (!session) return null;
-  return {
-    workoutType: session.type === 'cardio' || session.type === 'hiit' ? 'HIIT' :
-                 session.type === 'force' || session.type === 'push' || session.type === 'pull' || session.type === 'legs' ? 'FunctionalStrengthTraining' :
-                 'TraditionalStrengthTraining',
-    startDate: new Date(new Date(session.date).getTime() - session.duree * 60000).toISOString(),
-    endDate: session.date,
-    duration: session.duree * 60,
-    totalEnergyBurned: { value: session.kcal, unit: 'kcal' },
-    metadata: {
-      source: 'HIMA',
-      titre: session.titre,
-      sets: session.setsCount,
-      tonnage: session.tonnage
-    }
-  };
-};
-
-// Bouton dans le récap pour share/export (futur usage PWA wrap)
-window.sv2HealthShare = function() {
-  if (!window.U || !U.sessions || U.sessions.length === 0) return;
-  var last = U.sessions[U.sessions.length - 1];
-  var data = sv2HealthExportSession(last);
-  if (navigator.share) {
-    try {
-      navigator.share({
-        title: 'Séance HIMA',
-        text: 'Séance "' + last.titre + '" terminée : ' + last.duree + 'min, ' + last.setsCount + ' sets, ' + last.kcal + ' kcal'
-      });
-    } catch(e) {}
-  } else {
-    // Fallback : copy JSON
-    if (navigator.clipboard) {
-      try {
-        navigator.clipboard.writeText(JSON.stringify(data, null, 2));
-      } catch(e) {}
-    }
-  }
-};
-
-console.log('[SV2.health] Apple Health export préparé ✓');
-})();
-
-console.log('HIMA v3.4 polish équipe d\'experts chargé ✓');
-
 </script>
 </html>
