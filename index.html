@@ -2616,6 +2616,154 @@ body:not([data-tab="chat"]) .voice-status { display: none !important; }
   50% { opacity: 1; }
 }
 
+/* ════════════════════════════════════════════════════════
+   PATCH HIMA v3.4 — Polish équipe d'experts
+   Form score · Voix coach · Mode rapide · Smart notifs · Apple Health
+   ════════════════════════════════════════════════════════ */
+
+/* === FORM SCORE (badge vert/orange/rouge dans la cam) === */
+.sv2-cam-formscore {
+  position: absolute;
+  top: calc(20px + env(safe-area-inset-top, 0px));
+  left: 16px;
+  z-index: 4;
+  background: rgba(0,0,0,0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 14px;
+  padding: 10px 12px;
+  text-align: center;
+  min-width: 80px;
+  border: 2px solid transparent;
+  transition: border-color 0.3s, background 0.3s;
+}
+.sv2-cam-formscore.good { border-color: #DDE255; background: rgba(221, 226, 85, 0.15); }
+.sv2-cam-formscore.medium { border-color: #F98805; background: rgba(249, 136, 5, 0.15); }
+.sv2-cam-formscore.bad { border-color: #F35695; background: rgba(243, 86, 149, 0.15); }
+.sv2-cam-formscore-label {
+  font-size: 9px;
+  color: rgba(255,255,255,0.7);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+.sv2-cam-formscore-val {
+  font-family: "Bebas Neue", sans-serif;
+  font-size: 26px;
+  color: #fff;
+  line-height: 1;
+  margin-top: 2px;
+}
+
+/* === VOIX COACH — indicateur active === */
+.sv2-voice-toggle {
+  position: absolute;
+  top: calc(20px + env(safe-area-inset-top, 0px) + 90px);
+  right: 16px;
+  z-index: 4;
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 99px;
+  padding: 10px 12px;
+  font-size: 13px;
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 700;
+}
+.sv2-voice-toggle.on {
+  background: linear-gradient(135deg, rgba(249,136,5,0.85), rgba(243,86,149,0.85));
+  border-color: transparent;
+}
+.sv2-voice-toggle.speaking::after {
+  content: '';
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: #DDE255;
+  margin-left: 4px;
+  animation: sv2voicePulse 0.7s ease-in-out infinite;
+}
+@keyframes sv2voicePulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.5); opacity: 0.6; }
+}
+
+/* === MODE RAPIDE — pill === */
+.sv2-quick-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(221, 226, 85, 0.12);
+  border: 1px solid rgba(221, 226, 85, 0.35);
+  border-radius: 99px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #DDE255;
+  cursor: pointer;
+  font-family: "Space Grotesk", sans-serif;
+}
+.sv2-quick-pill.on {
+  background: linear-gradient(135deg, rgba(221,226,85,0.3), rgba(249,136,5,0.2));
+}
+
+/* === HOME SMART CARD === */
+.sv2-smart-notif {
+  position: relative;
+  background: linear-gradient(135deg, rgba(243,86,149,0.18), rgba(249,136,5,0.10));
+  border: 1px solid rgba(243,86,149,0.35);
+  border-radius: 18px;
+  padding: 16px 18px 16px 60px;
+  margin-bottom: 14px;
+  box-shadow: 0 8px 24px rgba(243,86,149,0.15);
+}
+.sv2-smart-notif::before {
+  content: '🔔';
+  position: absolute;
+  left: 18px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 26px;
+}
+.sv2-smart-notif-title {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 13px;
+  font-weight: 800;
+  color: #F0F0FF;
+  margin-bottom: 4px;
+}
+.sv2-smart-notif-text {
+  font-size: 13px;
+  color: rgba(240,240,255,0.75);
+  line-height: 1.4;
+  margin-bottom: 10px;
+}
+.sv2-smart-notif-cta {
+  background: linear-gradient(135deg, #F98805, #F35695);
+  color: #fff;
+  border: none;
+  border-radius: 99px;
+  padding: 8px 16px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: "Space Grotesk", sans-serif;
+}
+.sv2-smart-notif-dismiss {
+  position: absolute;
+  top: 8px; right: 10px;
+  background: transparent;
+  border: none;
+  color: rgba(240,240,255,0.4);
+  font-size: 18px;
+  cursor: pointer;
+  width: 28px; height: 28px;
+}
+
 </style>
 
 <!-- SPLASH -->
@@ -3478,6 +3626,11 @@ body:not([data-tab="chat"]) .voice-status { display: none !important; }
       <div class="sv2-cam-counter-target" id="sv2-cam-target">/ 10 reps</div>
     </div>
     <div class="sv2-cam-status" id="sv2-cam-status">Mets-toi en position</div>
+    <div class="sv2-cam-formscore" id="sv2-cam-formscore" style="display:none;">
+      <div class="sv2-cam-formscore-label">FORME</div>
+      <div class="sv2-cam-formscore-val" id="sv2-cam-formscore-val">—</div>
+    </div>
+    <button class="sv2-voice-toggle" id="sv2-voice-toggle" onclick="sv2VoiceToggle()">🔊 Voix</button>
     <div class="sv2-cam-controls">
       <button class="sv2-cam-btn" onclick="sv2CamClose()">Fermer</button>
       <button class="sv2-cam-btn primary" onclick="sv2CamValidate()">✓ Valider set</button>
@@ -9006,10 +9159,33 @@ window.sv2SwapExo = function(idx) {
 };
 
 window.sv2AskCoach = function() {
+  if (!SV2.current) {
+    if (typeof switchTab === 'function') switchTab('t-chat');
+    return;
+  }
+  // Ferme l'overlay détail
+  if (typeof sv2CloseDetail === 'function') sv2CloseDetail();
+  // Bascule sur Chat
   if (typeof switchTab === 'function') switchTab('t-chat');
-  setTimeout(function(){
-    if (typeof chatQ === 'function' && SV2.current) chatQ('Adapte ma séance "'+SV2.current.titre+'" : ');
-  }, 300);
+  // Prefill le contexte complet de la séance dans l'input
+  setTimeout(function() {
+    var ci = document.getElementById('ci');
+    if (!ci) return;
+    var s = SV2.current;
+    var exosListe = s.exos.map(function(e, i) {
+      return (i+1) + '. ' + e.n + ' (' + e.sets + '×' + e.reps + (e.charge>0 ? ', '+e.charge+'kg' : '') + ')';
+    }).join('\n');
+    var prefill = 'Voici ma séance "' + s.titre + '" (' + s.duree + ' min, niveau ' + ({deb:'débutant',int:'intermédiaire',av:'avancé'}[s.niv] || 'débutant') + ') :\n\n' + exosListe + '\n\nAdapte-la pour : ';
+    ci.value = prefill;
+    ci.focus();
+    // Place le curseur à la fin
+    if (ci.setSelectionRange) {
+      var len = prefill.length;
+      ci.setSelectionRange(len, len);
+    }
+    // Scroll vers l'input
+    ci.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, 350);
 };
 
 // ─── MODE ACTIF ───
@@ -9645,26 +9821,33 @@ if (!window.SV2_FLAGS || !SV2_FLAGS.videos) { _sv2_log('[1/4] videos OFF'); retu
 _sv2_log('[1/4] videos init');
 
 window.EXOS_VIDEOS = {
-  'squat':            'd65feff4-9891-4ff8-a9f9-64965da7b69c',
-  'bench_press':      'd09e0ed7-21dd-4f1c-b5cf-3e345e9304ec',
-  'soulever_terre':   'f96d5f24-c9b0-4782-bbd9-41d383a6b633',
-  'rowing_barre':     'ae1f15b4-61f9-4da7-9ffe-0d8e72e6f097',
-  'developpe_militaire': 'd725ad5a-e0dd-4fca-8b9e-0016aaa757a0',
-  'tirage_vertical':  'ed1ca95e-2642-4551-a477-17485e486bfc',
-  'leg_press':        '3dabdcc0-8639-4868-9e57-5afc621ed50d',
-  'curl_barre':       '998e8f21-2bda-49d8-a773-b59c316d022d',
-  'extension_tri':    '9a550e2c-c55e-495d-b59e-b676c3d48a41',
-  'arnold':           'fb62140e-87c2-41f0-ada2-1d9be58664cf',
-  'leg_curl':         '34a512bf-baa1-48ac-a5b9-132073166018',
-  'eleve_lat':        '1cce8f37-dd9f-442f-995e-be02b98a35ad',
-  'oiseau':           '0f7cf0c4-34fe-4cb3-993e-469be8004c2c',
-  'tirage_horiz':     '499ccaa4-719d-40bd-b441-511291482471',
-  'incline_bench':    'ece55528-9855-49cf-a970-cf47c662e45d',
-  'tractions':        'c17e320f-7c96-4385-b8d7-f307ed4bae2e',
-  'fentes':           '166bf038-1670-4c52-9f32-cf6463556d99',
-  'gainage':          'be8f26b0-4948-4f48-b851-1a9d2cfd953c',
-  'mollets':          '94b73c60-81d0-4522-964e-ceacf89129cf',
-  'curl_haltere':     '2a0529a0-be74-4b88-bf1c-6b67c8f12ef8'
+  // ymove.app royalty-free (25 vidéos pro fond blanc HD)
+  'squat':            'd65feff4-9891-4ff8-a9f9-64965da7b69c', // Barbell Back Squat
+  'bench_press':      'd09e0ed7-21dd-4f1c-b5cf-3e345e9304ec', // Bench Press
+  'soulever_terre':   'f96d5f24-c9b0-4782-bbd9-41d383a6b633', // Barbell Deadlift
+  'rowing_barre':     'ae1f15b4-61f9-4da7-9ffe-0d8e72e6f097', // Barbell Rows
+  'rowing_haltere':   'ae1f15b4-61f9-4da7-9ffe-0d8e72e6f097', // → on map au Barbell Rows (même mvt)
+  'developpe_militaire': 'd725ad5a-e0dd-4fca-8b9e-0016aaa757a0', // Shoulder/OHP/Military
+  'tirage_vertical':  'ed1ca95e-2642-4551-a477-17485e486bfc', // Lat Pulldown
+  'leg_press':        '3dabdcc0-8639-4868-9e57-5afc621ed50d', // Leg Press
+  'curl_barre':       '998e8f21-2bda-49d8-a773-b59c316d022d', // Barbell Curls
+  'extension_tri':    '9a550e2c-c55e-495d-b59e-b676c3d48a41', // Cable Tricep Pushdown
+  'arnold':           'fb62140e-87c2-41f0-ada2-1d9be58664cf', // Dumbbell Shoulder Press
+  'leg_curl':         '34a512bf-baa1-48ac-a5b9-132073166018', // Lying Leg Curl
+  'eleve_lat':        '1cce8f37-dd9f-442f-995e-be02b98a35ad', // Side Lateral Raise
+  'oiseau':           '0f7cf0c4-34fe-4cb3-993e-469be8004c2c', // Cable Rope Face Pull
+  'tirage_horiz':     '499ccaa4-719d-40bd-b441-511291482471', // Seated Cable Row
+  'incline_bench':    'ece55528-9855-49cf-a970-cf47c662e45d', // Incline Dumbbell Press
+  'tractions':        'c17e320f-7c96-4385-b8d7-f307ed4bae2e', // Pull ups
+  'fentes':           '166bf038-1670-4c52-9f32-cf6463556d99', // Dumbbell Lunges
+  'gainage':          'be8f26b0-4948-4f48-b851-1a9d2cfd953c', // Plank
+  'mollets':          '94b73c60-81d0-4522-964e-ceacf89129cf', // Seated Calf Raise
+  'curl_haltere':     '2a0529a0-be74-4b88-bf1c-6b67c8f12ef8', // Dumbbell Bicep Curl
+  // Nouveaux ajouts
+  'curl_marteau':     '2a0529a0-be74-4b88-bf1c-6b67c8f12ef8', // → bicep curl (même base)
+  'ecarte_haltere':   '82760b28-30e2-4311-a4c5-42da40082079', // Low Cable Crossover
+  'squat_pdc':        'd65feff4-9891-4ff8-a9f9-64965da7b69c', // → mappe sur barbell squat
+  'squat_bulgare':    '166bf038-1670-4c52-9f32-cf6463556d99'  // → lunges (proche)
 };
 
 window.sv2GetVideoURL = function(exoId) {
@@ -9696,7 +9879,7 @@ window.sv2GetThumbURL = function(exoId) {
       if (!url) { _sv2_log('[1/4] no video for ' + exo.id); return; }
       var wrap = document.querySelector('#sv2-active-body .sv2-active-svg-wrap');
       if (wrap) {
-        wrap.outerHTML = '<div class="sv2-video-wrap"><video src="'+url+'" autoplay muted loop playsinline preload="auto" poster="'+sv2GetThumbURL(exo.id)+'"></video></div>';
+        wrap.outerHTML = '<div class="sv2-video-wrap"><video src="'+url+'" autoplay muted loop playsinline preload="auto" poster="'+sv2GetThumbURL(exo.id)+'" disablePictureInPicture x-webkit-airplay="deny" controlslist="nodownload nofullscreen noremoteplayback noplaybackrate" style="pointer-events:none;"></video></div>';
         _sv2_log('[1/4] video swapped for ' + exo.id);
       }
     } catch(e) {
@@ -9727,7 +9910,7 @@ window.sv2GetThumbURL = function(exoId) {
         if (!url) return;
         var svg = card.querySelector('.sv2-exo-svg');
         if (svg) {
-          svg.outerHTML = '<div class="sv2-mini-video"><video src="'+url+'" muted loop playsinline preload="metadata" poster="'+sv2GetThumbURL(exo.id)+'" autoplay></video></div>';
+          svg.outerHTML = '<div class="sv2-mini-video"><video src="'+url+'" muted loop playsinline preload="metadata" poster="'+sv2GetThumbURL(exo.id)+'" autoplay disablePictureInPicture x-webkit-airplay="deny" controlslist="nodownload nofullscreen noremoteplayback noplaybackrate" style="pointer-events:none;"></video></div>';
         }
       });
       _sv2_log('[1/4] detail patch done');
@@ -9913,9 +10096,12 @@ window.sv2DetectExoType = function(exoId) {
 window.sv2CamOpen = function(exoId, target) {
   var overlay = document.getElementById('sv2-cam-overlay');
   if (!overlay) return;
+  // Reset form score
+  if (typeof sv2FormReset === 'function') sv2FormReset();
   SV2_CAM.target = target || 10;
   SV2_CAM.reps = 0;
   SV2_CAM.state = 'up';
+  SV2_CAM.exoId = exoId;
   document.getElementById('sv2-cam-num').textContent = '0';
   document.getElementById('sv2-cam-target').textContent = '/ ' + SV2_CAM.target + ' reps';
   document.getElementById('sv2-cam-status').textContent = 'Démarrage caméra...';
@@ -9926,23 +10112,33 @@ window.sv2CamOpen = function(exoId, target) {
     document.getElementById('sv2-cam-status').classList.add('feedback-bad');
     return;
   }
-  navigator.mediaDevices.getUserMedia({
-    video: { facingMode: 'user', width: { ideal: 720 }, height: { ideal: 1280 } },
-    audio: false
-  }).then(function(stream){
-    SV2_CAM.stream = stream;
-    var video = document.getElementById('sv2-cam-video');
-    video.srcObject = stream;
-    video.onloadedmetadata = function() {
-      video.play();
-      document.getElementById('sv2-cam-status').textContent = 'Place-toi en position de départ';
-      sv2CamStartLoop();
-    };
-  }).catch(function(err){
-    document.getElementById('sv2-cam-status').textContent = 'Caméra refusée. Autorise dans les réglages.';
-    document.getElementById('sv2-cam-status').classList.add('feedback-bad');
-    console.error('[SV2.cam] err:', err);
-  });
+  // Caméra DORSALE (back) en priorité, fallback sur frontale
+  var tryConstraints = [
+    { video: { facingMode: { exact: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false },
+    { video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false },
+    { video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false }
+  ];
+  function tryNext(idx) {
+    if (idx >= tryConstraints.length) {
+      document.getElementById('sv2-cam-status').textContent = 'Caméra refusée. Autorise dans les réglages.';
+      document.getElementById('sv2-cam-status').classList.add('feedback-bad');
+      return;
+    }
+    navigator.mediaDevices.getUserMedia(tryConstraints[idx]).then(function(stream) {
+      SV2_CAM.stream = stream;
+      var video = document.getElementById('sv2-cam-video');
+      video.srcObject = stream;
+      video.onloadedmetadata = function() {
+        video.play();
+        document.getElementById('sv2-cam-status').textContent = 'Place toi de profil, écran visible';
+        sv2CamStartLoop();
+      };
+    }).catch(function(err) {
+      console.warn('[SV2.cam] try ' + idx + ' failed:', err);
+      tryNext(idx + 1);
+    });
+  }
+  tryNext(0);
 };
 
 window.sv2CamStartLoop = function() {
@@ -9950,17 +10146,33 @@ window.sv2CamStartLoop = function() {
   var canvas = document.getElementById('sv2-cam-canvas');
   if (!canvas || !video) return;
   var ctx = canvas.getContext('2d');
-  canvas.width = video.videoWidth || 640;
-  canvas.height = video.videoHeight || 480;
+  // On dessine en taille viewport pour overlay propre
+  var setCanvasSize = function() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  };
+  setCanvasSize();
+  window.addEventListener('resize', setCanvasSize);
   var motionHistory = [];
   var lastRepTime = 0;
+  var smoothedY = null;
   function loop() {
     if (!SV2_CAM.active) return;
     try {
-      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-      var sx = canvas.width * 0.3, sy = canvas.height * 0.3;
-      var sw = canvas.width * 0.4, sh = canvas.height * 0.4;
-      var imgData = ctx.getImageData(sx, sy, sw, sh);
+      // Pour analyse on dessine la frame en interne (offscreen)
+      var ana = SV2_CAM._anaCanvas;
+      if (!ana) {
+        ana = document.createElement('canvas');
+        ana.width = 320;
+        ana.height = 240;
+        SV2_CAM._anaCanvas = ana;
+      }
+      var anaCtx = ana.getContext('2d');
+      anaCtx.drawImage(video, 0, 0, ana.width, ana.height);
+      // Zone d'analyse au centre
+      var sx = ana.width * 0.25, sy = ana.height * 0.20;
+      var sw = ana.width * 0.50, sh = ana.height * 0.60;
+      var imgData = anaCtx.getImageData(sx, sy, sw, sh);
       var pixels = imgData.data;
       var sumBrightness = 0, weightedY = 0;
       for (var i = 0; i < pixels.length; i += 16) {
@@ -9971,13 +10183,82 @@ window.sv2CamStartLoop = function() {
         weightedY += brightness * py;
       }
       var centroidY = sumBrightness > 0 ? weightedY / sumBrightness : 0;
-      motionHistory.push(centroidY);
+      // Smoothing exponential
+      smoothedY = smoothedY === null ? centroidY : smoothedY * 0.7 + centroidY * 0.3;
+      motionHistory.push(smoothedY);
       if (motionHistory.length > 30) motionHistory.shift();
+
+      // === DESSIN OVERLAY VISUEL ===
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      // Zone d'analyse (rectangle au centre)
+      var zx = canvas.width * 0.25;
+      var zy = canvas.height * 0.20;
+      var zw = canvas.width * 0.50;
+      var zh = canvas.height * 0.60;
+      // Cadre lime translucide
+      ctx.strokeStyle = 'rgba(221, 226, 85, 0.8)';
+      ctx.lineWidth = 3;
+      ctx.setLineDash([10, 8]);
+      ctx.strokeRect(zx, zy, zw, zh);
+      ctx.setLineDash([]);
+      // Coins (corners brackets)
+      var cornerLen = 24;
+      ctx.lineWidth = 4;
+      ctx.strokeStyle = '#DDE255';
+      // Top-left
+      ctx.beginPath();
+      ctx.moveTo(zx, zy + cornerLen); ctx.lineTo(zx, zy); ctx.lineTo(zx + cornerLen, zy);
+      ctx.stroke();
+      // Top-right
+      ctx.beginPath();
+      ctx.moveTo(zx + zw - cornerLen, zy); ctx.lineTo(zx + zw, zy); ctx.lineTo(zx + zw, zy + cornerLen);
+      ctx.stroke();
+      // Bottom-left
+      ctx.beginPath();
+      ctx.moveTo(zx, zy + zh - cornerLen); ctx.lineTo(zx, zy + zh); ctx.lineTo(zx + cornerLen, zy + zh);
+      ctx.stroke();
+      // Bottom-right
+      ctx.beginPath();
+      ctx.moveTo(zx + zw - cornerLen, zy + zh); ctx.lineTo(zx + zw, zy + zh); ctx.lineTo(zx + zw, zy + zh - cornerLen);
+      ctx.stroke();
+      // Indicateur position (ligne horizontale qui bouge selon centroïde)
+      if (motionHistory.length >= 5) {
+        var min = Math.min.apply(null, motionHistory);
+        var max = Math.max.apply(null, motionHistory);
+        var range = max - min;
+        if (range > 4) {
+          var pct = (smoothedY - min) / range;
+          var lineY = zy + pct * zh;
+          // Ligne lime qui suit le mouvement
+          ctx.strokeStyle = '#F98805';
+          ctx.lineWidth = 3;
+          ctx.beginPath();
+          ctx.moveTo(zx + 10, lineY);
+          ctx.lineTo(zx + zw - 10, lineY);
+          ctx.stroke();
+          // Cercle indicateur central
+          ctx.fillStyle = '#F98805';
+          ctx.beginPath();
+          ctx.arc(zx + zw / 2, lineY, 8, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        // Barre de "force du signal" en haut à droite
+        var barH = 60, barW = 6;
+        var barX = canvas.width - 24;
+        var barY = canvas.height * 0.35;
+        ctx.fillStyle = 'rgba(0,0,0,0.4)';
+        ctx.fillRect(barX - 2, barY - 2, barW + 4, barH + 4);
+        ctx.fillStyle = range > 8 ? '#DDE255' : (range > 4 ? '#F98805' : 'rgba(255,255,255,0.3)');
+        var fillH = Math.min(barH, (range / 30) * barH);
+        ctx.fillRect(barX, barY + barH - fillH, barW, fillH);
+      }
+
+      // === DÉTECTION REP ===
       if (motionHistory.length >= 20) {
         var min = Math.min.apply(null, motionHistory);
         var max = Math.max.apply(null, motionHistory);
         var range = max - min;
-        var current = motionHistory[motionHistory.length - 1];
+        var current = smoothedY;
         if (range > 8) {
           var pctPos = (current - min) / range;
           var now = Date.now();
@@ -9987,15 +10268,29 @@ window.sv2CamStartLoop = function() {
             SV2_CAM.state = 'up';
             SV2_CAM.reps++;
             lastRepTime = now;
+            // Update form score
+            try { if (typeof sv2FormUpdate === 'function') sv2FormUpdate(range, now); } catch(e) {}
+            // Voix coach pour reps importantes (mi-parcours, dernière)
+            try {
+              if (typeof sv2VoiceSay === 'function') {
+                var halfway = Math.ceil(SV2_CAM.target / 2);
+                if (SV2_CAM.reps === halfway) sv2VoiceSay("La moitié.");
+                else if (SV2_CAM.reps === SV2_CAM.target - 2 && SV2_CAM.target >= 6) sv2VoiceSay("Plus que deux.");
+                else if (SV2_CAM.reps === SV2_CAM.target) sv2VoiceSay("Set bouclé.");
+              }
+            } catch(e) {}
             document.getElementById('sv2-cam-num').textContent = SV2_CAM.reps;
             if (navigator.vibrate) try { navigator.vibrate(50); } catch(e) {}
+            // Flash de validation visuelle
+            ctx.fillStyle = 'rgba(221, 226, 85, 0.4)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
             var s = document.getElementById('sv2-cam-status');
             s.textContent = 'Rep ' + SV2_CAM.reps + ' validée 🔥';
             s.className = 'sv2-cam-status feedback-good';
             (function(captured){
               setTimeout(function(){
                 if (s.textContent.indexOf('Rep ' + captured) === 0) {
-                  s.textContent = SV2_CAM.reps + ' / ' + SV2_CAM.target;
+                  s.textContent = SV2_CAM.reps + ' / ' + SV2_CAM.target + ' reps détectées';
                   s.className = 'sv2-cam-status';
                 }
               }, 1200);
@@ -10007,7 +10302,7 @@ window.sv2CamStartLoop = function() {
         } else {
           var s = document.getElementById('sv2-cam-status');
           if (!s.classList.contains('feedback-good') && !s.classList.contains('feedback-bad')) {
-            s.textContent = 'Bouge un peu plus pour que je détecte';
+            s.textContent = 'Reste dans le cadre · Bouge plus amplement';
           }
         }
       }
@@ -10373,6 +10668,528 @@ window.sv2CardioSVG = function(exoId) {
 console.log('[SV2.cardio] SVG cardio dynamiques initialisés ✓');
 
 })();
+
+/* ════════════════════════════════════════════════════════
+   PATCH HIMA v3.4 — POLISH ÉQUIPE D'EXPERTS
+   1. Score de forme automatique pendant la cam
+   2. Voix coach pendant les sets (ElevenLabs)
+   3. Mode rapide (auto-réduit la séance à 15 min)
+   4. Smart notifs sur le tab Accueil
+   5. Apple Health sync
+   ════════════════════════════════════════════════════════ */
+
+/* ─────────────────────────────────────────────
+   FEATURE 1 — SCORE DE FORME AUTOMATIQUE (cam)
+   Vert : amplitude propre, tempo régulier
+   Orange : amplitude correcte, tempo irrégulier
+   Rouge : amplitude trop courte, tricherie probable
+   ───────────────────────────────────────────── */
+(function(){
+'use strict';
+
+window.SV2_FORM = {
+  history: [],         // [{repTime, amplitude}, ...]
+  score: 100,
+  amplitude: 0,
+  tempoVariance: 0
+};
+
+window.sv2FormReset = function() {
+  SV2_FORM.history = [];
+  SV2_FORM.score = 100;
+  SV2_FORM.amplitude = 0;
+  var el = document.getElementById('sv2-cam-formscore');
+  if (el) el.style.display = 'none';
+};
+
+window.sv2FormUpdate = function(amplitude, repTime) {
+  SV2_FORM.history.push({ t: repTime, amp: amplitude });
+  if (SV2_FORM.history.length > 8) SV2_FORM.history.shift();
+  if (SV2_FORM.history.length < 2) return;
+  // Score amplitude : on cherche cohérence (pas trop court, pas variable)
+  var amps = SV2_FORM.history.map(function(h){ return h.amp; });
+  var avgAmp = amps.reduce(function(a,b){return a+b;}, 0) / amps.length;
+  var maxAmp = Math.max.apply(null, amps);
+  var ampRatio = maxAmp > 0 ? avgAmp / maxAmp : 1;
+  // Score tempo : interval entre reps
+  var intervals = [];
+  for (var i = 1; i < SV2_FORM.history.length; i++) {
+    intervals.push(SV2_FORM.history[i].t - SV2_FORM.history[i-1].t);
+  }
+  var avgInt = intervals.reduce(function(a,b){return a+b;},0) / intervals.length;
+  var tempoStdDev = 0;
+  intervals.forEach(function(v){ tempoStdDev += Math.pow(v - avgInt, 2); });
+  tempoStdDev = Math.sqrt(tempoStdDev / intervals.length);
+  var tempoCoherence = avgInt > 0 ? 1 - Math.min(1, tempoStdDev / avgInt) : 1;
+  // Score final
+  var score = Math.round((ampRatio * 0.6 + tempoCoherence * 0.4) * 100);
+  SV2_FORM.score = score;
+  // Display
+  var el = document.getElementById('sv2-cam-formscore');
+  var val = document.getElementById('sv2-cam-formscore-val');
+  if (!el || !val) return;
+  el.style.display = 'block';
+  val.textContent = score;
+  el.className = 'sv2-cam-formscore ' + (score >= 80 ? 'good' : score >= 60 ? 'medium' : 'bad');
+};
+
+console.log('[SV2.form] Score de forme initialisé ✓');
+})();
+
+/* ─────────────────────────────────────────────
+   FEATURE 2 — VOIX COACH PENDANT LES SETS
+   Utilise speakXI() (ElevenLabs déjà branché)
+   Phrases courtes, motivantes, contextuelles
+   ───────────────────────────────────────────── */
+(function(){
+'use strict';
+
+window.SV2_VOICE = {
+  enabled: false,
+  lastSpoken: 0,
+  cooldown: 4000,
+  spoken: {}
+};
+
+window.sv2VoiceToggle = function() {
+  SV2_VOICE.enabled = !SV2_VOICE.enabled;
+  var btn = document.getElementById('sv2-voice-toggle');
+  if (btn) {
+    btn.classList.toggle('on', SV2_VOICE.enabled);
+    btn.innerHTML = SV2_VOICE.enabled ? '🔊 Voix ON' : '🔊 Voix';
+  }
+  // Persist
+  if (window.U) {
+    U.sv2VoiceOn = SV2_VOICE.enabled;
+    if (typeof save === 'function') save();
+  }
+  if (SV2_VOICE.enabled) sv2VoiceSay("Coach activé. Je guide tes sets.");
+};
+
+window.sv2VoiceSay = function(text) {
+  if (!SV2_VOICE.enabled || !text) return;
+  var now = Date.now();
+  if (now - SV2_VOICE.lastSpoken < SV2_VOICE.cooldown) return;
+  SV2_VOICE.lastSpoken = now;
+  // Prefer ElevenLabs si dispo
+  if (typeof speakXI === 'function' && window.xiKey) {
+    try { speakXI(text); return; } catch(e) {}
+  }
+  // Fallback Web Speech API
+  if ('speechSynthesis' in window) {
+    try {
+      var u = new SpeechSynthesisUtterance(text);
+      u.lang = 'fr-FR';
+      u.rate = 1.05;
+      u.pitch = 1.0;
+      window.speechSynthesis.speak(u);
+    } catch(e) {}
+  }
+};
+
+// Restore préférence au chargement
+(function restoreVoice(){
+  setTimeout(function() {
+    if (window.U && U.sv2VoiceOn) {
+      SV2_VOICE.enabled = true;
+      var btn = document.getElementById('sv2-voice-toggle');
+      if (btn) {
+        btn.classList.add('on');
+        btn.innerHTML = '🔊 Voix ON';
+      }
+    }
+  }, 1000);
+})();
+
+// Hook validate set : encouragement entre sets
+(function hookSetValidation(){
+  var attempts = 0;
+  function tryHook() {
+    if (!window.sv2ValidateSet) {
+      if (attempts++ < 30) setTimeout(tryHook, 200);
+      return;
+    }
+    var _orig = window.sv2ValidateSet;
+    window.sv2ValidateSet = function() {
+      var exo = SV2.current && SV2.current.exos[SV2.exoIdx];
+      var setIdxBefore = SV2.setIdx;
+      var totalSets = exo ? exo.sets : 0;
+      var done = exo && exo.logs[setIdxBefore];
+      var wasReps = done ? done.reps : 0;
+      var targetReps = exo ? exo.reps : 0;
+
+      _orig.apply(this, arguments);
+
+      // Phrases contextuelles
+      try {
+        if (!SV2_VOICE.enabled) return;
+        var remaining = totalSets - (setIdxBefore + 1);
+        var phrases;
+        if (wasReps >= targetReps && remaining > 0) {
+          phrases = [
+            "Parfait. Encore " + remaining + " set" + (remaining > 1 ? "s" : "") + ".",
+            "Excellent. Continue comme ça.",
+            "Tu tiens le rythme. Allez.",
+            "Très propre. " + remaining + " à faire."
+          ];
+        } else if (wasReps < targetReps && wasReps > 0 && remaining > 0) {
+          phrases = [
+            "Pas grave. On continue.",
+            "Reste concentré. " + remaining + " set" + (remaining > 1 ? "s" : "") + " encore.",
+            "Tu peux mieux. Allez.",
+          ];
+        } else if (remaining === 0 && SV2.exoIdx + 1 < SV2.current.exos.length) {
+          var nextExo = SV2.current.exos[SV2.exoIdx + 1];
+          phrases = [
+            "Exo terminé. Place au suivant.",
+            "Bien joué. Prochain : " + nextExo.n.split(' ')[0] + ".",
+            "Solide. On enchaîne."
+          ];
+        } else if (remaining === 0) {
+          phrases = ["Dernier exo bouclé. Bravo !"];
+        }
+        if (phrases) {
+          var msg = phrases[Math.floor(Math.random() * phrases.length)];
+          setTimeout(function() { sv2VoiceSay(msg); }, 600);
+        }
+      } catch(e) { console.error('[SV2.voice] err:', e); }
+    };
+  }
+  tryHook();
+})();
+
+// Hook fin du timer repos : "C'est parti"
+(function hookEndRest(){
+  var attempts = 0;
+  function tryHook() {
+    if (!window.sv2EndRest) {
+      if (attempts++ < 30) setTimeout(tryHook, 200);
+      return;
+    }
+    var _orig = window.sv2EndRest;
+    window.sv2EndRest = function() {
+      _orig.apply(this, arguments);
+      if (!SV2_VOICE.enabled) return;
+      var phrases = ["C'est parti.", "Allez.", "On y va.", "Go."];
+      var msg = phrases[Math.floor(Math.random() * phrases.length)];
+      setTimeout(function() { sv2VoiceSay(msg); }, 200);
+    };
+  }
+  tryHook();
+})();
+
+console.log('[SV2.voice] Voix coach initialisée ✓');
+})();
+
+/* ─────────────────────────────────────────────
+   FEATURE 3 — MODE RAPIDE (15 min)
+   Pill dans le hero qui réduit la séance
+   ───────────────────────────────────────────── */
+(function(){
+'use strict';
+
+window.SV2_QUICK = { enabled: false };
+
+window.sv2QuickToggle = function() {
+  SV2_QUICK.enabled = !SV2_QUICK.enabled;
+  if (window.U) {
+    U.sv2QuickMode = SV2_QUICK.enabled;
+    if (typeof save === 'function') save();
+  }
+  if (typeof buildSeancesV2 === 'function') buildSeancesV2();
+  if (navigator.vibrate) try { navigator.vibrate(20); } catch(e) {}
+};
+
+// Patch sv2GenSeance pour réduire la séance en mode rapide
+(function patchGen(){
+  var attempts = 0;
+  function tryHook() {
+    if (!window.sv2GenSeance) {
+      if (attempts++ < 30) setTimeout(tryHook, 200);
+      return;
+    }
+    var _orig = window.sv2GenSeance;
+    window.sv2GenSeance = function(jourIdx) {
+      var seance = _orig.apply(this, arguments);
+      if (!SV2_QUICK.enabled || seance.rest) return seance;
+      // Mode rapide : 4 exos, 2 sets chacun, repos à 45s
+      seance.exos = seance.exos.slice(0, 4);
+      seance.exos.forEach(function(e){
+        e.sets = Math.max(2, Math.min(e.sets, 2));
+        e.rest = Math.min(e.rest, 45);
+        e.logs = e.logs.slice(0, 2);
+        // Re-pad si manque
+        while (e.logs.length < e.sets) {
+          e.logs.push({ reps: e.reps, charge: e.charge, done: false });
+        }
+      });
+      seance.duree = Math.round(seance.exos.length * (seance.exos[0].sets * (40 + seance.exos[0].rest) / 60));
+      seance._quick = true;
+      return seance;
+    };
+  }
+  tryHook();
+})();
+
+// Restore préférence
+(function restoreQuick(){
+  setTimeout(function() {
+    if (window.U && U.sv2QuickMode) {
+      SV2_QUICK.enabled = true;
+      if (typeof buildSeancesV2 === 'function') buildSeancesV2();
+    }
+  }, 800);
+})();
+
+// Patch buildSeancesV2 pour ajouter la pill mode rapide
+(function patchBuild(){
+  var attempts = 0;
+  function tryHook() {
+    if (!window.buildSeancesV2) {
+      if (attempts++ < 30) setTimeout(tryHook, 200);
+      return;
+    }
+    var _orig = window.buildSeancesV2;
+    window.buildSeancesV2 = function() {
+      _orig.apply(this, arguments);
+      try {
+        var sc = document.querySelector('.seances-v2-root');
+        if (!sc) return;
+        var heroMeta = sc.querySelector('.sv2-hero-meta');
+        if (!heroMeta) return;
+        // Si déjà une pill quick, retirer pour rebuilder
+        var existing = heroMeta.querySelector('.sv2-quick-pill');
+        if (existing) existing.remove();
+        var pill = document.createElement('button');
+        pill.className = 'sv2-quick-pill' + (SV2_QUICK.enabled ? ' on' : '');
+        pill.innerHTML = SV2_QUICK.enabled ? '⚡ Mode rapide ON' : '⚡ Mode rapide';
+        pill.onclick = sv2QuickToggle;
+        heroMeta.appendChild(pill);
+      } catch(e) {}
+    };
+  }
+  tryHook();
+})();
+
+console.log('[SV2.quick] Mode rapide initialisé ✓');
+})();
+
+/* ─────────────────────────────────────────────
+   FEATURE 4 — SMART NOTIFS (carte sur Accueil)
+   ───────────────────────────────────────────── */
+(function(){
+'use strict';
+
+window.SV2_SMART = { dismissed: {} };
+
+window.sv2SmartGetNotif = function() {
+  if (!window.U) return null;
+  var now = new Date();
+  var hour = now.getHours();
+  var todayKey = now.toISOString().slice(0,10);
+  var dismissedToday = SV2_SMART.dismissed[todayKey] || {};
+
+  // Calcule la dernière séance
+  var lastSeance = null;
+  if (U.sessions && U.sessions.length > 0) {
+    lastSeance = new Date(U.sessions[U.sessions.length - 1].date);
+  }
+  var hoursSinceLast = lastSeance ? (now - lastSeance) / 36e5 : 999;
+
+  // 1. Soir + pas de séance = relance
+  if (hour >= 18 && hour < 22 && hoursSinceLast > 18 && !dismissedToday.evening) {
+    return {
+      key: 'evening',
+      title: '🌙 Pas trop tard pour bouger',
+      text: "T'as pas encore fait ta séance aujourd'hui. Je te propose une version 15 min ?",
+      ctaLabel: 'Mode rapide',
+      ctaAction: function() {
+        if (!SV2_QUICK.enabled) sv2QuickToggle();
+        if (typeof switchTab === 'function') switchTab('t-prog');
+      }
+    };
+  }
+  // 2. Matin + streak en danger
+  if (hour >= 7 && hour < 12 && U.streak >= 3 && hoursSinceLast > 30 && !dismissedToday.streakRisk) {
+    return {
+      key: 'streakRisk',
+      title: '🔥 Ton streak est en jeu',
+      text: 'Tu as ' + U.streak + ' jours de suite. Une séance aujourd\'hui pour le préserver.',
+      ctaLabel: 'Voir ma séance',
+      ctaAction: function() { if (typeof switchTab === 'function') switchTab('t-prog'); }
+    };
+  }
+  // 3. Plus de 3 jours sans séance
+  if (hoursSinceLast > 72 && !dismissedToday.longGap) {
+    return {
+      key: 'longGap',
+      title: '👋 Ça fait un moment',
+      text: 'Plus de 3 jours sans séance. On reprend doucement avec une version courte ?',
+      ctaLabel: 'Reprendre',
+      ctaAction: function() {
+        if (!SV2_QUICK.enabled) sv2QuickToggle();
+        if (typeof switchTab === 'function') switchTab('t-prog');
+      }
+    };
+  }
+  // 4. Lendemain de séance dure (felt <=2)
+  if (hoursSinceLast >= 18 && hoursSinceLast < 30 && U.sessions && U.sessions.length > 0) {
+    var last = U.sessions[U.sessions.length - 1];
+    if (last.felt && last.felt <= 2 && !dismissedToday.recoveryDay) {
+      return {
+        key: 'recoveryDay',
+        title: '🌿 Récup conseillée',
+        text: "Hier était dur. Aujourd'hui je propose mobilité légère, ou repos complet.",
+        ctaLabel: 'Voir la séance',
+        ctaAction: function() { if (typeof switchTab === 'function') switchTab('t-prog'); }
+      };
+    }
+  }
+  return null;
+};
+
+window.sv2SmartDismiss = function(key) {
+  var todayKey = new Date().toISOString().slice(0,10);
+  if (!SV2_SMART.dismissed[todayKey]) SV2_SMART.dismissed[todayKey] = {};
+  SV2_SMART.dismissed[todayKey][key] = true;
+  // Sauvegarder dans U
+  if (window.U) {
+    U.sv2SmartDismissed = SV2_SMART.dismissed;
+    if (typeof save === 'function') save();
+  }
+  var card = document.getElementById('sv2-smart-card');
+  if (card) {
+    card.style.transition = 'all 0.3s';
+    card.style.opacity = '0';
+    card.style.transform = 'translateX(100%)';
+    setTimeout(function() { card.remove(); }, 300);
+  }
+};
+
+// Restore dismissed
+(function() {
+  setTimeout(function() {
+    if (window.U && U.sv2SmartDismissed) SV2_SMART.dismissed = U.sv2SmartDismissed;
+  }, 500);
+})();
+
+// Insert dans le tab Accueil (t-home)
+window.sv2SmartRender = function() {
+  var notif = sv2SmartGetNotif();
+  var existing = document.getElementById('sv2-smart-card');
+  if (existing) existing.remove();
+  if (!notif) return;
+  var home = document.getElementById('t-home');
+  if (!home) return;
+  // Trouve le scrollable container
+  var target = home.querySelector('.hm-wrap, .home-wrap, .home-scroll') || home;
+  var card = document.createElement('div');
+  card.id = 'sv2-smart-card';
+  card.className = 'sv2-smart-notif';
+  card.style.margin = '14px 16px 0';
+  card.innerHTML = '<button class="sv2-smart-notif-dismiss" aria-label="Ignorer">✕</button>'
+    + '<div class="sv2-smart-notif-title">' + notif.title + '</div>'
+    + '<div class="sv2-smart-notif-text">' + notif.text + '</div>'
+    + '<button class="sv2-smart-notif-cta">' + notif.ctaLabel + '</button>';
+  // Insert tout en haut du scroll
+  if (target.firstChild) {
+    target.insertBefore(card, target.firstChild);
+  } else {
+    target.appendChild(card);
+  }
+  card.querySelector('.sv2-smart-notif-dismiss').onclick = function() {
+    sv2SmartDismiss(notif.key);
+  };
+  card.querySelector('.sv2-smart-notif-cta').onclick = function() {
+    sv2SmartDismiss(notif.key);
+    setTimeout(notif.ctaAction, 100);
+  };
+};
+
+// Render à chaque switch sur Accueil
+(function patchSwitch(){
+  var attempts = 0;
+  function tryHook() {
+    if (!window.switchTab) {
+      if (attempts++ < 50) setTimeout(tryHook, 200);
+      return;
+    }
+    var _orig = window.switchTab;
+    window.switchTab = function(tab) {
+      _orig.apply(this, arguments);
+      if (tab === 't-home') {
+        setTimeout(sv2SmartRender, 200);
+      }
+    };
+  }
+  tryHook();
+})();
+
+// Render initial si on est sur home
+setTimeout(function() {
+  var home = document.getElementById('t-home');
+  if (home && home.classList.contains('on')) sv2SmartRender();
+}, 1500);
+
+console.log('[SV2.smart] Smart notifs initialisées ✓');
+})();
+
+/* ─────────────────────────────────────────────
+   FEATURE 5 — APPLE HEALTH SYNC (préparation)
+   iOS Safari ne supporte pas HealthKit en webapp,
+   mais on prépare un export structuré pour PWA wrap.
+   ───────────────────────────────────────────── */
+(function(){
+'use strict';
+
+window.SV2_HEALTH = {};
+
+// Export d'une session au format compatible HealthKit (JSON)
+window.sv2HealthExportSession = function(session) {
+  if (!session) return null;
+  return {
+    workoutType: session.type === 'cardio' || session.type === 'hiit' ? 'HIIT' :
+                 session.type === 'force' || session.type === 'push' || session.type === 'pull' || session.type === 'legs' ? 'FunctionalStrengthTraining' :
+                 'TraditionalStrengthTraining',
+    startDate: new Date(new Date(session.date).getTime() - session.duree * 60000).toISOString(),
+    endDate: session.date,
+    duration: session.duree * 60,
+    totalEnergyBurned: { value: session.kcal, unit: 'kcal' },
+    metadata: {
+      source: 'HIMA',
+      titre: session.titre,
+      sets: session.setsCount,
+      tonnage: session.tonnage
+    }
+  };
+};
+
+// Bouton dans le récap pour share/export (futur usage PWA wrap)
+window.sv2HealthShare = function() {
+  if (!window.U || !U.sessions || U.sessions.length === 0) return;
+  var last = U.sessions[U.sessions.length - 1];
+  var data = sv2HealthExportSession(last);
+  if (navigator.share) {
+    try {
+      navigator.share({
+        title: 'Séance HIMA',
+        text: 'Séance "' + last.titre + '" terminée : ' + last.duree + 'min, ' + last.setsCount + ' sets, ' + last.kcal + ' kcal'
+      });
+    } catch(e) {}
+  } else {
+    // Fallback : copy JSON
+    if (navigator.clipboard) {
+      try {
+        navigator.clipboard.writeText(JSON.stringify(data, null, 2));
+      } catch(e) {}
+    }
+  }
+};
+
+console.log('[SV2.health] Apple Health export préparé ✓');
+})();
+
+console.log('HIMA v3.4 polish équipe d\'experts chargé ✓');
 
 </script>
 </html>
