@@ -1451,20 +1451,22 @@ body:not([data-tab="chat"]) .voice-status { display: none !important; }
 
 /* === RESET du tab t-prog (SV2) — iOS height fix === */
 /* Bug iOS : .atab.on est { display:flex; height:100%; overflow:hidden } → collapse à 0 */
-/* Fix : on sort #t-prog du contexte flex, on force display:block + overflow visible */
+/* Fix : on sort #t-prog du contexte flex, on force display:block + scroll interne */
 #t-prog.atab.on {
   display: block !important;
-  height: auto !important;
+  height: calc(100vh - 70px) !important;
   min-height: calc(100vh - 70px) !important;
-  overflow: visible !important;
+  max-height: calc(100vh - 70px) !important;
+  overflow: hidden !important;
   position: relative !important;
 }
 #t-prog .seances-v2-root {
   display: block;
   width: 100%;
-  min-height: calc(100vh - 70px);
+  height: 100%;
   background: #080810;
-  -webkit-overflow-scrolling: touch;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch !important;
   padding: calc(20px + env(safe-area-inset-top, 0px)) 16px calc(100px + env(safe-area-inset-bottom, 0px)) 16px;
   box-sizing: border-box;
   position: relative;
@@ -8311,36 +8313,17 @@ console.log('HIMA Conversion Engine v3.1 chargé ✓ — pricing 14,99/24,99 act
 (function(){
 'use strict';
 
-// ─── DEBUG OVERLAY iOS — vire ce bloc une fois bug fixé ───
+// ─── DEBUG OVERLAY iOS — désactivé une fois bug fixé ───
+// Pour réactiver : remplacer le body de _sv2_log par le code original
 window._sv2_log = function(msg, isErr) {
-  try {
-    var d = document.getElementById('_sv2_dbg');
-    if (!d) {
-      d = document.createElement('div');
-      d.id = '_sv2_dbg';
-      d.style.cssText = 'position:fixed;top:0;left:0;right:0;background:rgba(0,0,0,0.95);color:#0f0;font:11px/1.3 monospace;padding:8px 10px;z-index:99999;max-height:50vh;overflow:auto;border-bottom:2px solid #0f0;white-space:pre-wrap;word-break:break-all;';
-      d.ontouchstart = function(){ d.style.display = d.style.maxHeight === 'none' ? 'block' : 'none'; };
-      document.body.appendChild(d);
-    }
-    var line = document.createElement('div');
-    line.style.color = isErr ? '#f55' : '#0f0';
-    line.style.borderBottom = '1px solid #222';
-    line.style.padding = '2px 0';
-    line.textContent = '[' + new Date().toISOString().slice(11,19) + '] ' + msg;
-    d.appendChild(line);
-    d.scrollTop = d.scrollHeight;
-  } catch(e) {}
+  // Désactivé — garde juste console.log pour le dev
+  try { (isErr ? console.error : console.log)('[SV2]', msg); } catch(e) {}
 };
 
-// Attrape toutes les erreurs JS globales
+// On garde quand même les error handlers globaux pour ne pas perdre les crashes
 window.addEventListener('error', function(e){
-  _sv2_log('ERR: ' + (e.message||'?') + ' @ ' + (e.filename||'?').split('/').pop() + ':' + (e.lineno||'?'), true);
+  console.error('[SV2] global error:', e.message, '@', e.filename, ':', e.lineno);
 });
-window.addEventListener('unhandledrejection', function(e){
-  _sv2_log('PROMISE REJECT: ' + (e.reason && e.reason.message ? e.reason.message : e.reason), true);
-});
-
-_sv2_log('SV2 init start');
 
 window.SV2 = window.SV2 || {
   current: null, exoIdx: 0, setIdx: 0,
@@ -8627,26 +8610,12 @@ window.buildSeancesV2 = function() {
     var vh = window.innerHeight || document.documentElement.clientHeight;
     var navH = 70;
     sc.style.minHeight = (vh - navH) + 'px';
-    tab.style.minHeight = (vh - navH) + 'px';
-    tab.style.height = 'auto';
-    tab.style.overflow = 'visible';
+    sc.style.height = (vh - navH) + 'px';
+    tab.style.height = (vh - navH) + 'px';
+    tab.style.maxHeight = (vh - navH) + 'px';
+    tab.style.overflow = 'hidden';
     tab.style.display = 'block';
-    _sv2_log('forced height=' + (vh - navH) + 'px (vh=' + vh + ')');
-    // Mesurer ce qui est réellement rendu
-    setTimeout(function(){
-      var tr = tab.getBoundingClientRect();
-      var sr = sc.getBoundingClientRect();
-      _sv2_log('tab rect: ' + Math.round(tr.width) + 'x' + Math.round(tr.height) + ' top=' + Math.round(tr.top));
-      _sv2_log('root rect: ' + Math.round(sr.width) + 'x' + Math.round(sr.height) + ' top=' + Math.round(sr.top));
-      var hero = sc.querySelector('.sv2-hero');
-      if (hero) {
-        var hr = hero.getBoundingClientRect();
-        _sv2_log('hero rect: ' + Math.round(hr.width) + 'x' + Math.round(hr.height) + ' top=' + Math.round(hr.top));
-      } else {
-        _sv2_log('NO HERO IN DOM', true);
-      }
-    }, 100);
-  } catch(e) { _sv2_log('height fix err: ' + e.message, true); }
+  } catch(e) {}
   // Marque le body comme prêt
   document.body.setAttribute('data-sv2', 'ready');
 };
