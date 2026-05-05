@@ -1168,18 +1168,35 @@ body::after { display:none !important; }
 }
 
 /* FIX 3 — Pricing redesign HIMA Conversion Engine */
-.pricing-screen {
-  padding: 24px 18px calc(120px + env(safe-area-inset-bottom, 0px)) !important;
-  /* FIX SCROLL : la pricing-screen devient le conteneur scrollable */
-  flex: 1 1 auto !important;
+
+/* FIX SCROLL CRITIQUE :
+   Quand #onb affiche le pricing, on force le scroll sur #onb lui-même
+   car .pricing-screen est injectée directement dans #onb (pas dans .onb-sc) */
+#onb:has(.pricing-screen) {
   overflow-y: auto !important;
   -webkit-overflow-scrolling: touch !important;
-  min-height: 0 !important;
-  height: 100% !important;
+  display: block !important;
+  height: 100vh !important;
+  height: 100dvh !important;
+}
+#onb:has(.pricing-screen)::-webkit-scrollbar { display: none !important; }
+
+/* Fallback pour Safari iOS plus ancien qui ne supporte pas :has() */
+#onb.pricing-active {
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+  display: block !important;
+  height: 100vh !important;
+  height: 100dvh !important;
+}
+#onb.pricing-active::-webkit-scrollbar { display: none !important; }
+
+.pricing-screen {
+  padding: 24px 18px calc(140px + env(safe-area-inset-bottom, 0px)) !important;
   width: 100% !important;
   box-sizing: border-box !important;
+  min-height: 100%;
 }
-.pricing-screen::-webkit-scrollbar { display: none !important; }
 
 /* Bloc FOMO au-dessus des cards */
 .pw-fomo {
@@ -7230,6 +7247,10 @@ buildPricingCards = function() {
 // On override pour que le copy du header pricing matche le ton HIMA
 showPricingOnb = function() {
   var sc = document.getElementById('onb'); if (!sc) return;
+  // FIX SCROLL : ajout classe pricing-active (fallback :has())
+  sc.classList.add('pricing-active');
+  // Reset scroll position en haut
+  sc.scrollTop = 0;
   var prenom = U.prenom || 'Champion';
   sc.innerHTML = '<div class="pricing-screen">'
     + '<div class="pricing-title">CHOISIS TON CHEMIN</div>'
@@ -7244,6 +7265,8 @@ showPricingOnb = function() {
     + '</div>';
   setTimeout(function(){
     sc.querySelectorAll('.plan-card-v3').forEach(function(c,i){ c.style.animationDelay = (i*0.1)+'s'; });
+    // Force le scroll-top après render
+    sc.scrollTop = 0;
   }, 50);
 };
 
