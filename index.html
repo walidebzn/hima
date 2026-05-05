@@ -8783,7 +8783,10 @@ window.sv2EstimateCharge = function(exoId) {
 
 // ─── GÉNÉRATION SÉANCE ───
 window.sv2GenSeance = function(jourIdx) {
-  var mode = U.mode || 'glow';
+  // Le mode est dérivé de l'objectif si pas explicitement défini
+  // perte → glow (cardio dominant) | muscle → bodybuilding | mixte → mindset (équilibré) | perf → hyrox
+  var goalToMode = { perte: 'glow', muscle: 'bodybuilding', mixte: 'mindset', perf: 'hyrox' };
+  var mode = U.mode || goalToMode[U.obj] || 'bodybuilding';
   var lieu = U.lieu || 'maison';
   var niv = U.niv || 'deb';
   var d = (typeof jourIdx === 'number') ? jourIdx : (new Date().getDay() === 0 ? 6 : new Date().getDay() - 1);
@@ -9435,40 +9438,202 @@ _sv2_log('SV2 script loaded OK, ' + Object.keys(EXOS_LIB).length + ' exos');
    IIFE séparées : si une crashe les autres tournent
    ════════════════════════════════════════════════════════ */
 
-// KILL SWITCH — pour debug, mets à false pour désactiver
+// KILL SWITCH — toutes activées (test confirmé OK)
 window.SV2_FLAGS = {
-  videos: true,       // vidéos exos ymove
-  proactive: true,    // coach IA bulles auto
-  camera: true,       // rep counter caméra
-  autopilot: true     // autopilot inter-séance
+  videos: true,
+  proactive: true,
+  camera: true,
+  autopilot: true
 };
 
-// DEBUG OVERLAY réactivé pour ce test (auto-disparaît au tap)
+// HELPER DEBUG : change le mode de l'app pour tester les vidéos de muscu
+// Tape dans la console iOS : sv2DebugBodybuilding()
+window.sv2DebugBodybuilding = function() {
+  if (!window.U) return;
+  U.mode = 'bodybuilding';
+  if (typeof save === 'function') save();
+  if (typeof buildSeancesV2 === 'function') buildSeancesV2();
+  _sv2_log('mode = bodybuilding (push/pull/legs)');
+};
+window.sv2DebugGlow = function() {
+  if (!window.U) return;
+  U.mode = 'glow';
+  if (typeof save === 'function') save();
+  if (typeof buildSeancesV2 === 'function') buildSeancesV2();
+  _sv2_log('mode = glow (cardio dominante)');
+};
+
+// HELPER : change le mode (utilisé par les boutons du tab Séances)
+window.sv2SetMode = function(mode) {
+  if (!window.U) return;
+  U.mode = mode;
+  if (typeof save === 'function') save();
+  if (typeof buildSeancesV2 === 'function') buildSeancesV2();
+  // Vibration de confirmation
+  if (navigator.vibrate) try { navigator.vibrate(30); } catch(e) {}
+};
+
+// === TAB PROFIL : rendre Objectif/Niveau/Lieu éditables ===
+window.sv2ProfileEditable = function() {
+  // Mappings affichage ↔ valeurs internes
+  var goalLabels = {
+    perte: { label: 'Perdre du poids', icon: '🌱', mode: 'glow' },
+    muscle: { label: 'Prendre du muscle', icon: '💪', mode: 'bodybuilding' },
+    mixte: { label: 'Rééquilibrage', icon: '⚖️', mode: 'mindset' },
+    perf: { label: 'Performance', icon: '🏆', mode: 'hyrox' }
+  };
+  var nivLabels = {
+    deb: { label: 'Débutant', icon: '🌱', sub: '0-6 mois' },
+    int: { label: 'Intermédiaire', icon: '🔥', sub: '6 mois - 2 ans' },
+    av: { label: 'Avancé', icon: '⚡', sub: '2 ans et +' }
+  };
+  var lieuLabels = {
+    maison: { label: 'À la maison', icon: '🏠', sub: 'Bodyweight + petit matos' },
+    salle: { label: 'En salle', icon: '🏋️', sub: 'Tout le matériel' }
+  };
+
+  function makeEditable(rowId, valueKey, optionsMap, onChange) {
+    var valEl = document.getElementById(rowId);
+    if (!valEl) return;
+    var row = valEl.closest('.prf-row');
+    if (!row || row._editable) return;
+    row._editable = true;
+    row.style.cursor = 'pointer';
+    // Indicateur ›
+    if (!row.querySelector('.prf-row-arrow')) {
+      var arrow = document.createElement('span');
+      arrow.className = 'prf-row-arrow';
+      arrow.textContent = '›';
+      arrow.style.cssText = 'color:rgba(240,240,255,0.4);margin-left:6px;font-size:18px;';
+      valEl.appendChild(arrow);
+    }
+    row.onclick = function() {
+      sv2OpenProfilePicker(rowId, optionsMap, valueKey, onChange);
+    };
+  }
+  setTimeout(function() {
+    makeEditable('ps-mode', 'obj', goalLabels, function(newVal) {
+      U.obj = newVal;
+      // Auto-set le mode aussi
+      U.mode = goalLabels[newVal].mode;
+    });
+    makeEditable('ps-niv', 'niv', nivLabels);
+    makeEditable('ps-lieu', 'lieu', lieuLabels);
+  }, 600);
+};
+
+window.sv2OpenProfilePicker = function(rowId, options, key, onChange) {
+  // Crée un overlay modal
+  var existing = document.getElementById('sv2-profile-picker');
+  if (existing) existing.remove();
+  var overlay = document.createElement('div');
+  overlay.id = 'sv2-profile-picker';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(8,8,16,0.85);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);z-index:900;display:flex;flex-direction:column;justify-content:flex-end;animation:sv2pickerFadeIn 0.25s ease-out;';
+  var titles = { 'ps-mode': 'Quel est ton objectif ?', 'ps-niv': 'Quel est ton niveau ?', 'ps-lieu': 'Où tu t\'entraînes ?' };
+  var subs = { 'ps-mode': 'Ça change ton programme entier', 'ps-niv': 'On adapte sets, reps et charges', 'ps-lieu': 'On filtre les exercices possibles' };
+  var html = '<div style="background:#080810;border-radius:24px 24px 0 0;padding:28px 20px calc(28px + env(safe-area-inset-bottom, 0px));max-height:80vh;overflow-y:auto;animation:sv2pickerSlideUp 0.3s cubic-bezier(0.34, 1.3, 0.64, 1);">'
+    + '<div style="width:40px;height:4px;background:rgba(240,240,255,0.2);border-radius:2px;margin:0 auto 18px;"></div>'
+    + '<div style="font-family:Bebas Neue,sans-serif;font-size:30px;color:#F0F0FF;text-align:center;line-height:1.1;letter-spacing:0.5px;">' + (titles[rowId] || 'Modifier') + '</div>'
+    + '<div style="font-size:13px;color:rgba(240,240,255,0.5);text-align:center;margin-bottom:22px;margin-top:6px;">' + (subs[rowId] || '') + '</div>'
+    + '<div style="display:flex;flex-direction:column;gap:10px;">';
+  var current = (window.U && U[key]) || Object.keys(options)[0];
+  Object.keys(options).forEach(function(k) {
+    var o = options[k];
+    var isOn = k === current;
+    html += '<button data-val="' + k + '" style="'
+      + 'display:flex;align-items:center;gap:14px;text-align:left;'
+      + 'padding:16px 18px;border-radius:18px;'
+      + 'background:' + (isOn ? 'linear-gradient(135deg,rgba(249,136,5,0.18),rgba(243,86,149,0.08))' : 'rgba(240,240,255,0.04)') + ';'
+      + 'border:1px solid ' + (isOn ? '#F98805' : 'rgba(240,240,255,0.08)') + ';'
+      + 'cursor:pointer;font-family:DM Sans,sans-serif;color:#F0F0FF;width:100%;">'
+      + '<div style="font-size:32px;flex-shrink:0;">' + o.icon + '</div>'
+      + '<div style="flex:1;">'
+      +   '<div style="font-family:Space Grotesk,sans-serif;font-size:16px;font-weight:700;">' + o.label + '</div>'
+      +   (o.sub ? '<div style="font-size:12px;color:rgba(240,240,255,0.55);margin-top:2px;">' + o.sub + '</div>' : '')
+      + '</div>'
+      + (isOn ? '<div style="color:#F98805;font-size:22px;flex-shrink:0;">✓</div>' : '')
+      + '</button>';
+  });
+  html += '</div>'
+    + '<button onclick="document.getElementById(\'sv2-profile-picker\').remove()" style="margin-top:16px;width:100%;padding:14px;background:rgba(240,240,255,0.04);border:1px solid rgba(240,240,255,0.08);border-radius:14px;color:rgba(240,240,255,0.6);font-family:Space Grotesk,sans-serif;font-size:14px;font-weight:600;cursor:pointer;">Annuler</button>'
+    + '</div>';
+  // Inject les keyframes si pas déjà là
+  if (!document.getElementById('sv2-picker-anim')) {
+    var st = document.createElement('style');
+    st.id = 'sv2-picker-anim';
+    st.textContent = '@keyframes sv2pickerFadeIn{from{opacity:0;}to{opacity:1;}}@keyframes sv2pickerSlideUp{from{transform:translateY(100%);}to{transform:translateY(0);}}';
+    document.head.appendChild(st);
+  }
+  overlay.innerHTML = html;
+  // Tap backdrop = ferme
+  overlay.onclick = function(e) { if (e.target === overlay) overlay.remove(); };
+  // Click sur option
+  overlay.querySelectorAll('button[data-val]').forEach(function(btn) {
+    btn.onclick = function() {
+      var val = btn.getAttribute('data-val');
+      if (!window.U) return;
+      U[key] = val;
+      if (onChange) try { onChange(val); } catch(e) {}
+      if (typeof save === 'function') save();
+      // Refresh tab profil + tab seances
+      try {
+        if (typeof bPB === 'function') bPB();
+        var psEl = document.getElementById(rowId);
+        if (psEl) {
+          var labels = { 'ps-mode': options[val].label, 'ps-niv': options[val].label, 'ps-lieu': options[val].label };
+          psEl.innerHTML = (options[val].icon || '') + ' ' + (options[val].label || val);
+          var arrow = document.createElement('span');
+          arrow.className = 'prf-row-arrow';
+          arrow.textContent = '›';
+          arrow.style.cssText = 'color:rgba(240,240,255,0.4);margin-left:6px;font-size:18px;';
+          psEl.appendChild(arrow);
+        }
+        if (typeof buildSeancesV2 === 'function') buildSeancesV2();
+      } catch(e) {}
+      if (navigator.vibrate) try { navigator.vibrate(30); } catch(e) {}
+      overlay.remove();
+    };
+  });
+  document.body.appendChild(overlay);
+};
+
+// Activer dès que le DOM est prêt + à chaque fois qu'on bascule sur le tab Profil
+document.addEventListener('DOMContentLoaded', function() {
+  setTimeout(sv2ProfileEditable, 1000);
+  setTimeout(sv2ProfileEditable, 2500);
+});
+if (document.readyState !== 'loading') setTimeout(sv2ProfileEditable, 800);
+
+// DEBUG OVERLAY — désactivé en prod (tape sv2DebugLog() dans la console pour le ré-activer)
 (function reactivateDebug(){
   if (window._sv2_log_active) return;
   window._sv2_log_active = true;
+  // Stub : log seulement console (pas overlay)
   window._sv2_log = function(msg, isErr) {
-    try {
-      var d = document.getElementById('_sv2_dbg');
-      if (!d) {
-        d = document.createElement('div');
-        d.id = '_sv2_dbg';
-        d.style.cssText = 'position:fixed;top:0;left:0;right:0;background:rgba(0,0,0,0.95);color:#0f0;font:10px/1.3 monospace;padding:8px 10px;z-index:99999;max-height:40vh;overflow:auto;border-bottom:2px solid #0f0;white-space:pre-wrap;word-break:break-all;';
-        document.body.appendChild(d);
-      }
-      var line = document.createElement('div');
-      line.style.color = isErr ? '#f55' : '#0f0';
-      line.style.borderBottom = '1px solid #222';
-      line.style.padding = '2px 0';
-      line.textContent = '[' + new Date().toISOString().slice(11,19) + '] ' + msg;
-      d.appendChild(line);
-      d.scrollTop = d.scrollHeight;
-    } catch(e) {}
+    try { (isErr ? console.error : console.log)('[SV2]', msg); } catch(e) {}
   };
-  window.addEventListener('error', function(e){
-    _sv2_log('ERR: ' + (e.message||'?').slice(0,80) + ' @ L' + (e.lineno||'?'), true);
-  });
-  _sv2_log('v3.3 features loading...');
+  // Helper pour réactiver l'overlay si besoin
+  window.sv2DebugLog = function() {
+    window._sv2_log = function(msg, isErr) {
+      try {
+        var d = document.getElementById('_sv2_dbg');
+        if (!d) {
+          d = document.createElement('div');
+          d.id = '_sv2_dbg';
+          d.style.cssText = 'position:fixed;top:0;left:0;right:0;background:rgba(0,0,0,0.95);color:#0f0;font:10px/1.3 monospace;padding:8px 10px;z-index:99999;max-height:40vh;overflow:auto;border-bottom:2px solid #0f0;white-space:pre-wrap;word-break:break-all;';
+          document.body.appendChild(d);
+        }
+        var line = document.createElement('div');
+        line.style.color = isErr ? '#f55' : '#0f0';
+        line.style.borderBottom = '1px solid #222';
+        line.style.padding = '2px 0';
+        line.textContent = '[' + new Date().toISOString().slice(11,19) + '] ' + msg;
+        d.appendChild(line);
+        d.scrollTop = d.scrollHeight;
+      } catch(e) {}
+    };
+    _sv2_log('debug overlay réactivé');
+  };
 })();
 
 /* ─────────────────────────────────────────────
@@ -10004,6 +10169,208 @@ window.sv2AutopilotCompute = function() {
 })();
 
 console.log('[SV2.autopilot] adaptation IA inter-séance initialisée ✓');
+
+})();
+
+/* ─────────────────────────────────────────────
+   FEATURE 5/4 BONUS — SVG CARDIO DYNAMIQUES
+   Pour les exos cardio sans vidéo : silhouette qui bouge
+   ───────────────────────────────────────────── */
+(function(){
+'use strict';
+
+// SVG silhouettes animées par type d'exo cardio
+window.sv2CardioSVG = function(exoId) {
+  var anims = {
+    'jumping_jack':
+      '<svg viewBox="0 0 100 160" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;">'
+      + '<style>.jjbody{transform-origin:50px 80px;animation:jjpulse 0.6s ease-in-out infinite;}'
+      + '.jjarm-l{transform-origin:38px 35px;animation:jjarmL 0.6s ease-in-out infinite;}'
+      + '.jjarm-r{transform-origin:62px 35px;animation:jjarmR 0.6s ease-in-out infinite;}'
+      + '.jjleg-l{transform-origin:48px 80px;animation:jjlegL 0.6s ease-in-out infinite;}'
+      + '.jjleg-r{transform-origin:52px 80px;animation:jjlegR 0.6s ease-in-out infinite;}'
+      + '@keyframes jjpulse{0%,100%{transform:translateY(0);}50%{transform:translateY(-3px);}}'
+      + '@keyframes jjarmL{0%,100%{transform:rotate(20deg);}50%{transform:rotate(-160deg);}}'
+      + '@keyframes jjarmR{0%,100%{transform:rotate(-20deg);}50%{transform:rotate(160deg);}}'
+      + '@keyframes jjlegL{0%,100%{transform:rotate(-5deg);}50%{transform:rotate(-25deg);}}'
+      + '@keyframes jjlegR{0%,100%{transform:rotate(5deg);}50%{transform:rotate(25deg);}}'
+      + '</style>'
+      + '<g class="jjbody">'
+      + '<circle cx="50" cy="22" r="9" fill="#F35695"/>' // tête
+      + '<rect x="46" y="30" width="8" height="35" rx="3" fill="#F98805"/>' // torse
+      + '<g class="jjarm-l"><rect x="34" y="32" width="8" height="22" rx="3" fill="#F98805"/></g>'
+      + '<g class="jjarm-r"><rect x="58" y="32" width="8" height="22" rx="3" fill="#F98805"/></g>'
+      + '<g class="jjleg-l"><rect x="44" y="65" width="6" height="35" rx="3" fill="#DDE255"/></g>'
+      + '<g class="jjleg-r"><rect x="50" y="65" width="6" height="35" rx="3" fill="#DDE255"/></g>'
+      + '</g></svg>',
+
+    'burpees':
+      '<svg viewBox="0 0 100 160" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;">'
+      + '<style>.bpscene{animation:bpcycle 2s ease-in-out infinite;}'
+      + '@keyframes bpcycle{0%,100%{transform:translateY(0);opacity:1;}25%{transform:translateY(20px);opacity:0.7;}50%{transform:translateY(40px) scale(0.9);opacity:0.5;}75%{transform:translateY(20px);opacity:0.7;}}'
+      + '</style>'
+      + '<g class="bpscene">'
+      + '<circle cx="50" cy="30" r="9" fill="#F35695"/>'
+      + '<rect x="46" y="38" width="8" height="35" rx="3" fill="#F98805"/>'
+      + '<rect x="34" y="40" width="8" height="22" rx="3" fill="#F98805"/>'
+      + '<rect x="58" y="40" width="8" height="22" rx="3" fill="#F98805"/>'
+      + '<rect x="44" y="73" width="6" height="35" rx="3" fill="#DDE255"/>'
+      + '<rect x="50" y="73" width="6" height="35" rx="3" fill="#DDE255"/>'
+      + '</g></svg>',
+
+    'high_knees':
+      '<svg viewBox="0 0 100 160" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;">'
+      + '<style>.hkleg-l{transform-origin:48px 80px;animation:hkLegL 0.4s ease-in-out infinite;}'
+      + '.hkleg-r{transform-origin:52px 80px;animation:hkLegR 0.4s ease-in-out infinite;}'
+      + '.hkarm-l{transform-origin:38px 35px;animation:hkArmL 0.4s ease-in-out infinite;}'
+      + '.hkarm-r{transform-origin:62px 35px;animation:hkArmR 0.4s ease-in-out infinite;}'
+      + '@keyframes hkLegL{0%,100%{transform:rotate(0);}50%{transform:rotate(-70deg);}}'
+      + '@keyframes hkLegR{0%,100%{transform:rotate(-70deg);}50%{transform:rotate(0);}}'
+      + '@keyframes hkArmL{0%,100%{transform:rotate(60deg);}50%{transform:rotate(-30deg);}}'
+      + '@keyframes hkArmR{0%,100%{transform:rotate(-30deg);}50%{transform:rotate(60deg);}}'
+      + '</style>'
+      + '<circle cx="50" cy="22" r="9" fill="#F35695"/>'
+      + '<rect x="46" y="30" width="8" height="35" rx="3" fill="#F98805"/>'
+      + '<g class="hkarm-l"><rect x="34" y="32" width="8" height="22" rx="3" fill="#F98805"/></g>'
+      + '<g class="hkarm-r"><rect x="58" y="32" width="8" height="22" rx="3" fill="#F98805"/></g>'
+      + '<g class="hkleg-l"><rect x="44" y="65" width="6" height="35" rx="3" fill="#DDE255"/></g>'
+      + '<g class="hkleg-r"><rect x="50" y="65" width="6" height="35" rx="3" fill="#DDE255"/></g>'
+      + '</svg>',
+
+    'mountain':
+      '<svg viewBox="0 0 100 160" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;">'
+      + '<style>.mcleg-l{transform-origin:55px 100px;animation:mcLegL 0.5s ease-in-out infinite;}'
+      + '.mcleg-r{transform-origin:55px 100px;animation:mcLegR 0.5s ease-in-out infinite;}'
+      + '@keyframes mcLegL{0%,100%{transform:translateX(0);}50%{transform:translateX(-15px);}}'
+      + '@keyframes mcLegR{0%,100%{transform:translateX(-15px);}50%{transform:translateX(0);}}'
+      + '</style>'
+      // Position planche
+      + '<circle cx="22" cy="60" r="9" fill="#F35695"/>'
+      + '<rect x="22" y="60" width="60" height="14" rx="6" fill="#F98805"/>'
+      // Bras (verticaux, soutiens)
+      + '<rect x="22" y="68" width="6" height="32" rx="3" fill="#F98805"/>'
+      + '<rect x="32" y="68" width="6" height="32" rx="3" fill="#F98805"/>'
+      // Jambes (animées)
+      + '<g class="mcleg-l"><rect x="64" y="74" width="6" height="28" rx="3" fill="#DDE255"/></g>'
+      + '<g class="mcleg-r"><rect x="74" y="74" width="6" height="28" rx="3" fill="#DDE255"/></g>'
+      + '</svg>',
+
+    'sprints':
+      '<svg viewBox="0 0 100 160" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;">'
+      + '<style>.sprleg-l{transform-origin:48px 78px;animation:sprLegL 0.3s ease-in-out infinite;}'
+      + '.sprleg-r{transform-origin:52px 78px;animation:sprLegR 0.3s ease-in-out infinite;}'
+      + '.sprarm-l{transform-origin:38px 38px;animation:sprArmL 0.3s ease-in-out infinite;}'
+      + '.sprarm-r{transform-origin:62px 38px;animation:sprArmR 0.3s ease-in-out infinite;}'
+      + '.sprtrunk{animation:sprBob 0.3s ease-in-out infinite;}'
+      + '@keyframes sprBob{0%,100%{transform:translateY(0) rotate(2deg);}50%{transform:translateY(-2px) rotate(-2deg);}}'
+      + '@keyframes sprLegL{0%,100%{transform:rotate(40deg);}50%{transform:rotate(-50deg);}}'
+      + '@keyframes sprLegR{0%,100%{transform:rotate(-50deg);}50%{transform:rotate(40deg);}}'
+      + '@keyframes sprArmL{0%,100%{transform:rotate(40deg);}50%{transform:rotate(-50deg);}}'
+      + '@keyframes sprArmR{0%,100%{transform:rotate(-50deg);}50%{transform:rotate(40deg);}}'
+      + '</style>'
+      + '<g class="sprtrunk">'
+      + '<circle cx="50" cy="22" r="9" fill="#F35695"/>'
+      + '<rect x="46" y="30" width="8" height="35" rx="3" fill="#F98805"/>'
+      + '<g class="sprarm-l"><rect x="34" y="35" width="8" height="22" rx="3" fill="#F98805"/></g>'
+      + '<g class="sprarm-r"><rect x="58" y="35" width="8" height="22" rx="3" fill="#F98805"/></g>'
+      + '<g class="sprleg-l"><rect x="44" y="65" width="6" height="35" rx="3" fill="#DDE255"/></g>'
+      + '<g class="sprleg-r"><rect x="50" y="65" width="6" height="35" rx="3" fill="#DDE255"/></g>'
+      + '</g></svg>',
+
+    'corde_a_sauter':
+      '<svg viewBox="0 0 100 160" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;">'
+      + '<style>.jrbody{animation:jrjump 0.4s ease-in-out infinite;}'
+      + '.jrrope{animation:jrRope 0.4s linear infinite;transform-origin:50px 60px;}'
+      + '@keyframes jrjump{0%,100%{transform:translateY(0);}50%{transform:translateY(-8px);}}'
+      + '@keyframes jrRope{from{transform:rotate(0);}to{transform:rotate(360deg);}}'
+      + '</style>'
+      + '<ellipse class="jrrope" cx="50" cy="60" rx="25" ry="40" fill="none" stroke="#DDE255" stroke-width="1.5" opacity="0.6"/>'
+      + '<g class="jrbody">'
+      + '<circle cx="50" cy="22" r="9" fill="#F35695"/>'
+      + '<rect x="46" y="30" width="8" height="35" rx="3" fill="#F98805"/>'
+      + '<rect x="34" y="32" width="8" height="22" rx="3" fill="#F98805" transform="rotate(45 38 43)"/>'
+      + '<rect x="58" y="32" width="8" height="22" rx="3" fill="#F98805" transform="rotate(-45 62 43)"/>'
+      + '<rect x="44" y="65" width="6" height="35" rx="3" fill="#DDE255"/>'
+      + '<rect x="50" y="65" width="6" height="35" rx="3" fill="#DDE255"/>'
+      + '</g></svg>',
+
+    'gainage':
+      '<svg viewBox="0 0 100 160" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;">'
+      + '<style>.plkbody{animation:plkpulse 2s ease-in-out infinite;}'
+      + '@keyframes plkpulse{0%,100%{filter:brightness(1);}50%{filter:brightness(1.2);}}'
+      + '</style>'
+      + '<g class="plkbody">'
+      + '<circle cx="22" cy="55" r="9" fill="#F35695"/>'
+      + '<rect x="22" y="55" width="60" height="14" rx="6" fill="#F35695"/>' // dos
+      + '<rect x="22" y="62" width="6" height="35" rx="3" fill="#F98805"/>'
+      + '<rect x="32" y="62" width="6" height="35" rx="3" fill="#F98805"/>'
+      + '<rect x="65" y="62" width="6" height="35" rx="3" fill="#DDE255"/>'
+      + '<rect x="75" y="62" width="6" height="35" rx="3" fill="#DDE255"/>'
+      + '</g></svg>',
+
+    'crunch':
+      '<svg viewBox="0 0 100 160" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;">'
+      + '<style>.crbody{transform-origin:50px 90px;animation:crCrunch 1.2s ease-in-out infinite;}'
+      + '@keyframes crCrunch{0%,100%{transform:rotate(0);}50%{transform:rotate(-20deg);}}'
+      + '</style>'
+      + '<g class="crbody">'
+      + '<circle cx="50" cy="40" r="9" fill="#F35695"/>'
+      + '<rect x="46" y="48" width="8" height="40" rx="3" fill="#F35695"/>'
+      + '</g>'
+      + '<rect x="44" y="88" width="6" height="35" rx="3" fill="#DDE255" transform="rotate(-30 47 105)"/>'
+      + '<rect x="50" y="88" width="6" height="35" rx="3" fill="#DDE255" transform="rotate(30 53 105)"/>'
+      + '</svg>'
+  };
+  return anims[exoId] || null;
+};
+
+// Patche les renders pour utiliser cardio SVG en priorité quand pas de vidéo
+(function patchActiveCardio(){
+  if (!window.sv2RenderActive) { setTimeout(patchActiveCardio, 250); return; }
+  var _orig = window.sv2RenderActive;
+  window.sv2RenderActive = function() {
+    _orig.apply(this, arguments);
+    try {
+      var exo = SV2.current && SV2.current.exos[SV2.exoIdx];
+      if (!exo) return;
+      // Si pas de vidéo et c'est un cardio/core → SVG dynamique
+      var hasVideo = window.EXOS_VIDEOS && EXOS_VIDEOS[exo.id];
+      if (hasVideo) return;
+      var cardioSVG = sv2CardioSVG(exo.id);
+      if (!cardioSVG) return;
+      var wrap = document.querySelector('#sv2-active-body .sv2-active-svg-wrap, #sv2-active-body .sv2-video-wrap');
+      if (wrap) {
+        // On replace par un wrap avec SVG cardio
+        wrap.outerHTML = '<div class="sv2-active-svg-wrap" style="background:linear-gradient(135deg,rgba(243,86,149,0.12),rgba(221,226,85,0.06));"><div class="sv2-video-fallback-svg">' + cardioSVG + '</div></div>';
+      }
+    } catch(e) { console.error('[SV2.cardio] err:', e); }
+  };
+})();
+
+(function patchDetailCardio(){
+  if (!window.sv2OpenDetail) { setTimeout(patchDetailCardio, 250); return; }
+  var _orig = window.sv2OpenDetail;
+  window.sv2OpenDetail = function() {
+    _orig.apply(this, arguments);
+    try {
+      var cards = document.querySelectorAll('#sv2-detail-body .sv2-exo-card');
+      cards.forEach(function(card, i){
+        var exo = SV2.current && SV2.current.exos[i];
+        if (!exo) return;
+        // Si déjà une vidéo, skip
+        if (card.querySelector('.sv2-mini-video')) return;
+        var cardioSVG = sv2CardioSVG(exo.id);
+        if (!cardioSVG) return;
+        var svg = card.querySelector('.sv2-exo-svg');
+        if (svg) {
+          svg.innerHTML = cardioSVG;
+        }
+      });
+    } catch(e) { console.error('[SV2.cardio] detail err:', e); }
+  };
+})();
+
+console.log('[SV2.cardio] SVG cardio dynamiques initialisés ✓');
 
 })();
 
