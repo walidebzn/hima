@@ -1156,11 +1156,14 @@ body::after { display:none !important; }
    - Pricing redesign psychologique
    ════════════════════════════════════════════════════════ */
 
-/* FIX 1 — Barre chat cachée hors de #t-chat */
-.cinpb { display: none !important; }
-#t-chat.on .cinpb { display: flex !important; }
-#t-chat.on .voice-status { display: block; }
-.voice-status { display: none; }
+/* FIX 1 — Barre chat cachée hors de #t-chat
+   Approche robuste : on toggle un attribut sur <body> via JS
+   pour éviter les conflits de spécificité avec les nombreuses
+   règles existantes #t-chat .cinpb { ... !important } */
+body:not([data-tab="chat"]) .cinpb { display: none !important; }
+body:not([data-tab="chat"]) .quick-chips { display: none !important; }
+body:not([data-tab="chat"]) #voice-status,
+body:not([data-tab="chat"]) .voice-status { display: none !important; }
 
 /* FIX 2 — Scroll Home : padding-bottom pour bottom nav (56px) + safe area */
 #t-home .hm-wrap {
@@ -7292,6 +7295,40 @@ toggleBillingOnb = function() {
 };
 
 console.log('HIMA Conversion Engine v3.1 chargé ✓ — pricing 14,99/24,99 actif');
+
+/* ════════════════════════════════════════════════════════
+   PATCH HIMA v3.1 — Override switchTab pour toggle data-tab
+   sur <body> (utilisé par CSS pour cacher .cinpb hors chat)
+   ════════════════════════════════════════════════════════ */
+(function(){
+  var _origSwitchTab = window.switchTab;
+  window.switchTab = function(id) {
+    if (typeof _origSwitchTab === 'function') _origSwitchTab(id);
+    // Toggle attribut data-tab sur body pour CSS conditionnel
+    var tabKey = (id || '').replace('t-', '');
+    document.body.setAttribute('data-tab', tabKey);
+  };
+  // Init au chargement : si tab actif au boot, on synchronise body
+  document.addEventListener('DOMContentLoaded', function(){
+    setTimeout(function(){
+      var active = document.querySelector('.atab.on');
+      if (active) {
+        var tabKey = active.id.replace('t-', '');
+        document.body.setAttribute('data-tab', tabKey);
+      }
+    }, 100);
+  });
+  // Si DOMContentLoaded est déjà passé
+  if (document.readyState !== 'loading') {
+    setTimeout(function(){
+      var active = document.querySelector('.atab.on');
+      if (active) {
+        var tabKey = active.id.replace('t-', '');
+        document.body.setAttribute('data-tab', tabKey);
+      }
+    }, 100);
+  }
+})();
 
 </script>
 </html>
