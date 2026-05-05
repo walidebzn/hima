@@ -1148,6 +1148,272 @@ body::after { display:none !important; }
 }
 .quick-chips::-webkit-scrollbar { display: none !important; }
 #t-chat .msgs { padding-bottom: 210px !important; }
+
+/* ════════════════════════════════════════════════════════
+   PATCH HIMA v3.1 — Conversion Engine
+   - Fix barre chat (visible uniquement sur tab Chat)
+   - Fix scroll Home (padding-bottom pour bottom nav)
+   - Pricing redesign psychologique
+   ════════════════════════════════════════════════════════ */
+
+/* FIX 1 — Barre chat cachée hors de #t-chat */
+.cinpb { display: none !important; }
+#t-chat.on .cinpb { display: flex !important; }
+#t-chat.on .voice-status { display: block; }
+.voice-status { display: none; }
+
+/* FIX 2 — Scroll Home : padding-bottom pour bottom nav (56px) + safe area */
+#t-home .hm-wrap {
+  padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px)) !important;
+}
+
+/* FIX 3 — Pricing redesign HIMA Conversion Engine */
+.pricing-screen {
+  padding: 24px 18px calc(120px + env(safe-area-inset-bottom, 0px)) !important;
+}
+
+/* Bloc FOMO au-dessus des cards */
+.pw-fomo {
+  background: linear-gradient(135deg, rgba(243,86,149,0.10), rgba(249,136,5,0.10));
+  border: 1px solid rgba(243,86,149,0.25);
+  border-radius: 16px;
+  padding: 14px 16px;
+  margin-bottom: 22px;
+  text-align: center;
+}
+.pw-fomo-stat {
+  font-family: "Bebas Neue", sans-serif;
+  font-size: 22px;
+  color: #F35695;
+  letter-spacing: 0.5px;
+  line-height: 1.1;
+}
+.pw-fomo-msg {
+  font-size: 13px;
+  color: #F0F0FF;
+  margin-top: 4px;
+  font-weight: 500;
+}
+
+/* Card pricing v3 */
+.plan-card-v3 {
+  border: 1px solid rgba(240,240,255,0.08);
+  border-radius: 22px;
+  padding: 24px 20px;
+  margin-bottom: 14px;
+  background: rgba(240,240,255,0.025);
+  position: relative;
+  overflow: visible;
+  animation: planIn 0.5s cubic-bezier(0.34,1.56,0.64,1) forwards;
+  opacity: 0;
+  transform: translateY(30px);
+}
+.plan-card-v3.featured {
+  border: 1.5px solid #F98805;
+  background: linear-gradient(180deg, rgba(249,136,5,0.06), rgba(243,86,149,0.04));
+  box-shadow: 0 8px 32px rgba(249,136,5,0.18);
+}
+.plan-card-v3.elite {
+  border: 1px solid rgba(243,86,149,0.3);
+  background: linear-gradient(180deg, rgba(243,86,149,0.05), rgba(139,92,246,0.04));
+}
+
+.plan-badge-v3 {
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, #F98805, #F35695);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 5px 14px;
+  border-radius: 99px;
+  font-family: "Space Grotesk", sans-serif;
+  letter-spacing: 1px;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(249,136,5,0.4);
+}
+.plan-badge-v3.elite {
+  background: linear-gradient(135deg, #F35695, #8B5CF6);
+  box-shadow: 0 4px 12px rgba(243,86,149,0.4);
+}
+
+.plan-headline {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: #F0F0FF;
+  margin-bottom: 4px;
+  line-height: 1.2;
+}
+.plan-tagline {
+  font-size: 13px;
+  color: #9090B0;
+  margin-bottom: 16px;
+  line-height: 1.4;
+}
+.plan-price-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.plan-price-v3 {
+  font-family: "Bebas Neue", sans-serif;
+  font-size: 56px;
+  color: #F0F0FF;
+  line-height: 1;
+  letter-spacing: 0.5px;
+}
+.plan-card-v3.featured .plan-price-v3 {
+  background: linear-gradient(135deg, #F98805, #F35695);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.plan-card-v3.elite .plan-price-v3 {
+  background: linear-gradient(135deg, #F35695, #8B5CF6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.plan-price-free-v3 { color: #DDE255 !important; }
+
+.plan-per-v3 {
+  font-size: 14px;
+  color: #9090B0;
+  font-weight: 500;
+}
+.plan-strike {
+  font-size: 14px;
+  color: #5A5A75;
+  text-decoration: line-through;
+  margin-left: 8px;
+}
+.plan-anchor {
+  font-size: 12px;
+  color: #DDE255;
+  margin-bottom: 16px;
+  font-weight: 600;
+}
+.plan-anchor-grey {
+  font-size: 12px;
+  color: #9090B0;
+  margin-bottom: 16px;
+}
+
+.plan-feats-v3 {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+  margin-bottom: 20px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(240,240,255,0.06);
+}
+.plan-feat-v3 {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 13px;
+  color: #F0F0FF;
+  line-height: 1.4;
+}
+.plan-feat-v3.locked { color: #5A5A75; }
+.plan-feat-ico-v3 {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 800;
+  margin-top: 1px;
+}
+.plan-feat-v3.yes .plan-feat-ico-v3 {
+  background: rgba(221,226,85,0.15);
+  color: #DDE255;
+}
+.plan-feat-v3.locked .plan-feat-ico-v3 {
+  background: rgba(240,240,255,0.04);
+  color: #5A5A75;
+}
+.plan-feat-strong { font-weight: 600; }
+
+.plan-cta-v3 {
+  width: 100%;
+  min-height: 56px;
+  padding: 17px 16px;
+  border-radius: 99px;
+  font-family: "Space Grotesk", sans-serif;
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s;
+  letter-spacing: 0.3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.plan-cta-v3-free {
+  background: rgba(240,240,255,0.06);
+  color: #9090B0;
+  border: 1px solid rgba(240,240,255,0.1);
+}
+.plan-cta-v3-pro {
+  background: linear-gradient(135deg, #F98805, #F35695);
+  color: #fff;
+  box-shadow: 0 6px 20px rgba(249,136,5,0.35);
+}
+.plan-cta-v3-elite {
+  background: transparent;
+  color: #F35695;
+  border: 1.5px solid #F35695;
+}
+.plan-cta-v3:active { transform: scale(0.98); }
+
+.plan-microcopy {
+  text-align: center;
+  font-size: 11px;
+  color: #5A5A75;
+  margin-top: 10px;
+  font-style: italic;
+}
+.plan-microcopy.warn { color: #9090B0; font-style: normal; font-weight: 500; }
+
+/* Bloc garanties en bas */
+.pw-trust {
+  margin-top: 22px;
+  padding: 18px 16px;
+  background: rgba(240,240,255,0.03);
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.pw-trust-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: #F0F0FF;
+}
+.pw-trust-ico {
+  width: 22px;
+  height: 22px;
+  border-radius: 7px;
+  background: rgba(221,226,85,0.15);
+  color: #DDE255;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 800;
+  flex-shrink: 0;
+}
 </style>
 </head>
 <body>
@@ -6838,6 +7104,162 @@ document.addEventListener('DOMContentLoaded',function(){
 });
 
 console.log('HIMA Home v3 charge ✓');
+
+/* ════════════════════════════════════════════════════════
+   PATCH HIMA v3.1 — Conversion Engine (JS)
+   Override unique de :
+   - prices (nouvelle grille 14,99 / 24,99)
+   - buildPricingCards (copy psychologique + FOMO + trust)
+   ════════════════════════════════════════════════════════ */
+
+// ── Override 1 : nouvelle grille tarifaire ──
+// Pro 14,99 mois / 9,99 annuel (-33%)
+// Elite 24,99 mois / 16,99 annuel (-32%)
+prices = { pro_m: 14.99, pro_y: 9.99, elite_m: 24.99, elite_y: 16.99 };
+
+// ── Override 2 : buildPricingCards — Conversion Engine ──
+// Active 5 leviers psy : loss aversion, identity shift, FOMO,
+// ancrage (coach humain 60€), social proof implicite, decoy effect
+buildPricingCards = function() {
+  var pro   = billingAnnual ? prices.pro_y   : prices.pro_m;
+  var elite = billingAnnual ? prices.elite_y : prices.elite_m;
+  var per   = billingAnnual ? '/mois facturé annuellement' : '/mois';
+  var proStrike   = billingAnnual ? '14,99€' : '';
+  var eliteStrike = billingAnnual ? '24,99€' : '';
+
+  // Calcul "prix par jour" pour réduire la friction perçue
+  var proDay   = (pro / 30).toFixed(2).replace('.', ',');
+  var eliteDay = (elite / 30).toFixed(2).replace('.', ',');
+
+  // Bloc FOMO — loss aversion + identity shift
+  var fomo = ''
+    + '<div class="pw-fomo">'
+    +   '<div class="pw-fomo-stat">92% ABANDONNENT EN 4 SEMAINES</div>'
+    +   '<div class="pw-fomo-msg">Pas avec un coach qui te connaît vraiment.</div>'
+    + '</div>';
+
+  // ── DÉCOUVERTE — volontairement frustrant ──
+  var free = ''
+    + '<div class="plan-card-v3" style="animation-delay:0s;">'
+    +   '<div class="plan-headline">Goûte au coaching IA</div>'
+    +   '<div class="plan-tagline">Juste assez pour comprendre. Pas assez pour transformer.</div>'
+    +   '<div class="plan-price-row">'
+    +     '<div class="plan-price-v3 plan-price-free-v3">0€</div>'
+    +     '<div class="plan-per-v3">pour toujours</div>'
+    +   '</div>'
+    +   '<div class="plan-anchor-grey">3 conversations par jour avec ton coach IA</div>'
+    +   '<div class="plan-feats-v3">'
+    +     '<div class="plan-feat-v3 yes"><span class="plan-feat-ico-v3">✓</span><span>3 messages par jour avec ton coach IA</span></div>'
+    +     '<div class="plan-feat-v3 yes"><span class="plan-feat-ico-v3">✓</span><span>Ton profil et tes macros calculés</span></div>'
+    +     '<div class="plan-feat-v3 locked"><span class="plan-feat-ico-v3">✕</span><span>Ton programme reste verrouillé</span></div>'
+    +     '<div class="plan-feat-v3 locked"><span class="plan-feat-ico-v3">✕</span><span>Ton plan nutrition reste verrouillé</span></div>'
+    +     '<div class="plan-feat-v3 locked"><span class="plan-feat-ico-v3">✕</span><span>Suivi de transformation verrouillé</span></div>'
+    +   '</div>'
+    +   '<button class="plan-cta-v3 plan-cta-v3-free" onclick="startFree()">Tester gratuitement</button>'
+    +   '<div class="plan-microcopy warn">Suffisant pour tester. Insuffisant pour transformer.</div>'
+    + '</div>';
+
+  // ── PRO — LE PLAN qu'on pousse ──
+  var proCard = ''
+    + '<div class="plan-card-v3 featured" style="animation-delay:0.1s;">'
+    +   '<div class="plan-badge-v3">⭐ LE PLUS CHOISI</div>'
+    +   '<div class="plan-headline">Transforme ton corps en 90 jours</div>'
+    +   '<div class="plan-tagline">Le coach qui ne te laisse jamais abandonner.</div>'
+    +   '<div class="plan-price-row">'
+    +     '<div class="plan-price-v3">' + pro.toFixed(2).replace('.',',') + '€</div>'
+    +     '<div class="plan-per-v3">' + per + '</div>'
+    +     (proStrike ? '<div class="plan-strike">' + proStrike + '</div>' : '')
+    +   '</div>'
+    +   '<div class="plan-anchor">' + proDay + '€/jour. Moins qu\'un café.</div>'
+    +   '<div class="plan-feats-v3">'
+    +     '<div class="plan-feat-v3 yes"><span class="plan-feat-ico-v3">✓</span><span><span class="plan-feat-strong">Conversations illimitées</span> avec ton coach IA — il s\'adapte à toi 24/7</span></div>'
+    +     '<div class="plan-feat-v3 yes"><span class="plan-feat-ico-v3">✓</span><span><span class="plan-feat-strong">Ton programme personnalisé</span> qui évolue chaque semaine selon tes progrès</span></div>'
+    +     '<div class="plan-feat-v3 yes"><span class="plan-feat-ico-v3">✓</span><span><span class="plan-feat-strong">Ta nutrition au gramme près</span> — fini les "j\'sais pas quoi manger"</span></div>'
+    +     '<div class="plan-feat-v3 yes"><span class="plan-feat-ico-v3">✓</span><span><span class="plan-feat-strong">Suivi de transformation</span> — vois ton corps changer semaine après semaine</span></div>'
+    +     '<div class="plan-feat-v3 yes"><span class="plan-feat-ico-v3">✓</span><span><span class="plan-feat-strong">Mémoire totale</span> — chaque séance, chaque douleur, chaque victoire</span></div>'
+    +     '<div class="plan-feat-v3 yes"><span class="plan-feat-ico-v3">✓</span><span><span class="plan-feat-strong">Anti-abandon intelligent</span> — il te rattrape avant que tu lâches</span></div>'
+    +   '</div>'
+    +   '<button class="plan-cta-v3 plan-cta-v3-pro" onclick="startPro()">Commencer ma transformation — 7 jours offerts</button>'
+    +   '<div class="plan-microcopy">Une seule séance avec un coach humain coûte 60€.</div>'
+    + '</div>';
+
+  // ── ELITE — ancrage + features tech premium ──
+  var eliteCard = ''
+    + '<div class="plan-card-v3 elite" style="animation-delay:0.2s;">'
+    +   '<div class="plan-badge-v3 elite">🏆 RÉSULTATS MAXIMUM</div>'
+    +   '<div class="plan-headline">Le coach personnel des athlètes — pour toi</div>'
+    +   '<div class="plan-tagline">Quand tu ne veux plus jamais te demander si tu fais bien.</div>'
+    +   '<div class="plan-price-row">'
+    +     '<div class="plan-price-v3">' + elite.toFixed(2).replace('.',',') + '€</div>'
+    +     '<div class="plan-per-v3">' + per + '</div>'
+    +     (eliteStrike ? '<div class="plan-strike">' + eliteStrike + '</div>' : '')
+    +   '</div>'
+    +   '<div class="plan-anchor">' + eliteDay + '€/jour. Un coach humain, c\'est 60€ la séance.</div>'
+    +   '<div class="plan-feats-v3">'
+    +     '<div class="plan-feat-v3 yes"><span class="plan-feat-ico-v3">✓</span><span><span class="plan-feat-strong">Tout du Pro, en illimité</span></span></div>'
+    +     '<div class="plan-feat-v3 yes"><span class="plan-feat-ico-v3">✓</span><span><span class="plan-feat-strong">Coach vocal IA</span> — il te parle pendant tes séances comme un vrai coach</span></div>'
+    +     '<div class="plan-feat-v3 yes"><span class="plan-feat-ico-v3">✓</span><span><span class="plan-feat-strong">Analyse posturale en temps réel</span> — ta caméra corrige ta technique mouvement par mouvement</span></div>'
+    +     '<div class="plan-feat-v3 yes"><span class="plan-feat-ico-v3">✓</span><span><span class="plan-feat-strong">Cartes records partageables</span> — montre tes PR, motive-toi</span></div>'
+    +     '<div class="plan-feat-v3 yes"><span class="plan-feat-ico-v3">✓</span><span><span class="plan-feat-strong">Ajustements en temps réel</span> — fatigue, blessure, événement : ton plan s\'adapte</span></div>'
+    +     '<div class="plan-feat-v3 yes"><span class="plan-feat-ico-v3">✓</span><span><span class="plan-feat-strong">Accès prioritaire</span> aux nouvelles fonctionnalités</span></div>'
+    +   '</div>'
+    +   '<button class="plan-cta-v3 plan-cta-v3-elite" onclick="startElite()">Devenir Elite — 7 jours offerts</button>'
+    + '</div>';
+
+  // Bloc trust en bas — réduit la friction d'engagement
+  var trust = ''
+    + '<div class="pw-trust">'
+    +   '<div class="pw-trust-row"><span class="pw-trust-ico">✓</span><span>Essai 7 jours gratuit sur Pro et Elite</span></div>'
+    +   '<div class="pw-trust-row"><span class="pw-trust-ico">✓</span><span>Annule en 1 clic, sans question</span></div>'
+    +   '<div class="pw-trust-row"><span class="pw-trust-ico">✓</span><span>Aucun engagement — résilie quand tu veux</span></div>'
+    + '</div>';
+
+  return fomo + free + proCard + eliteCard + trust;
+};
+
+// ── Override 3 : showPricingOnb — recharge avec nouveau copy ──
+// On override pour que le copy du header pricing matche le ton HIMA
+showPricingOnb = function() {
+  var sc = document.getElementById('onb'); if (!sc) return;
+  var prenom = U.prenom || 'Champion';
+  sc.innerHTML = '<div class="pricing-screen">'
+    + '<div class="pricing-title">CHOISIS TON CHEMIN</div>'
+    + '<div class="pricing-sub">' + prenom + ', ton programme est prêt. Reste à choisir jusqu\'où tu veux aller.</div>'
+    + '<div class="billing-toggle">'
+    +   '<span class="bt-label active" id="bt-m">Mensuel</span>'
+    +   '<div class="bt-switch" id="bt-sw" onclick="toggleBillingOnb()"><div class="bt-knob"></div></div>'
+    +   '<span class="bt-label" id="bt-y">Annuel</span>'
+    +   '<span class="save-badge">-33%</span>'
+    + '</div>'
+    + buildPricingCards()
+    + '</div>';
+  setTimeout(function(){
+    sc.querySelectorAll('.plan-card-v3').forEach(function(c,i){ c.style.animationDelay = (i*0.1)+'s'; });
+  }, 50);
+};
+
+// ── Override 4 : toggleBillingOnb — gère les nouvelles cards ──
+toggleBillingOnb = function() {
+  billingAnnual = !billingAnnual;
+  var sw = document.getElementById('bt-sw');
+  if (sw) { if (billingAnnual) sw.classList.add('on'); else sw.classList.remove('on'); }
+  var lbm = document.getElementById('bt-m'), lby = document.getElementById('bt-y');
+  if (lbm) lbm.className = 'bt-label' + (billingAnnual ? '' : ' active');
+  if (lby) lby.className = 'bt-label' + (billingAnnual ? ' active' : '');
+  // Re-render uniquement la zone des cards (FOMO + cards + trust)
+  var cont = document.querySelector('.pricing-screen');
+  if (cont) {
+    // Supprime tout sauf title, sub, toggle
+    var keep = cont.querySelectorAll('.pricing-title, .pricing-sub, .billing-toggle');
+    cont.innerHTML = '';
+    keep.forEach(function(el){ cont.appendChild(el); });
+    var tmp = document.createElement('div');
+    tmp.innerHTML = buildPricingCards();
+    Array.from(tmp.children).forEach(function(c){ cont.appendChild(c); });
+  }
+};
+
+console.log('HIMA Conversion Engine v3.1 chargé ✓ — pricing 14,99/24,99 actif');
 
 </script>
 </html>
