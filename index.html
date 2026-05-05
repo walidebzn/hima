@@ -1449,20 +1449,25 @@ body:not([data-tab="chat"]) .voice-status { display: none !important; }
    + Programme hebdo + Bibliothèque exos + SVG anatomiques animés
    ════════════════════════════════════════════════════════ */
 
-/* === RESET du tab t-prog (SV2) — APPROCHE SIMPLE === */
-/* Pas de display:none agressif. On laisse le JS vider le tab et insérer le nouveau contenu. */
-/* On s'occupe juste du root SV2 quand il existe. */
+/* === RESET du tab t-prog (SV2) — iOS height fix === */
+/* Le bug iOS : .atab { height: 100% } chainé peut collapse à 0. */
+/* Fix : on utilise min-height + viewport units en fallback */
 #t-prog .seances-v2-root {
   display: block;
   width: 100%;
-  height: 100%;
+  min-height: 100%;
+  /* fallback iOS : si parent collapse, on prend la viewport */
+  min-height: calc(100vh - 70px);
   background: #080810;
-  overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   padding: calc(20px + env(safe-area-inset-top, 0px)) 16px calc(100px + env(safe-area-inset-bottom, 0px)) 16px;
   box-sizing: border-box;
+  position: relative;
+  overflow-y: auto;
 }
 #t-prog .seances-v2-root::-webkit-scrollbar { display: none; }
+/* Le tab parent doit aussi avoir une hauteur garantie sur iOS */
+#t-prog.atab.on { min-height: calc(100vh - 70px) !important; }
 
 /* === HERO séance du jour === */
 .sv2-hero {
@@ -8614,6 +8619,14 @@ window.buildSeancesV2 = function() {
     + '<button class="sv2-hero-cta-secondary" onclick="sv2OpenLib()" style="margin-top:0;">📚 Bibliothèque · '+Object.keys(EXOS_LIB).length+' exercices</button>';
   sc.innerHTML = html;
   _sv2_log('innerHTML set OK, length=' + html.length);
+  // iOS Safari fix : force la hauteur en pixels pour éviter le collapse
+  try {
+    var vh = window.innerHeight || document.documentElement.clientHeight;
+    var navH = 70;
+    sc.style.minHeight = (vh - navH) + 'px';
+    tab.style.minHeight = (vh - navH) + 'px';
+    _sv2_log('forced height=' + (vh - navH) + 'px (vh=' + vh + ')');
+  } catch(e) { _sv2_log('height fix err: ' + e.message, true); }
   // Marque le body comme prêt
   document.body.setAttribute('data-sv2', 'ready');
 };
