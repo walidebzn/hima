@@ -1449,19 +1449,27 @@ body:not([data-tab="chat"]) .voice-status { display: none !important; }
    + Programme hebdo + Bibliothèque exos + SVG anatomiques animés
    ════════════════════════════════════════════════════════ */
 
-/* === RESET du tab t-prog === */
-#t-prog { background: #080810 !important; }
-#t-prog .tab-hd,
-#t-prog .week-strip,
-#t-prog .tsc,
-#t-prog .adapt-banner,
-#t-prog #prog-ia-result { display: none !important; }
-#t-prog .seances-v2-root { display: flex !important; flex-direction: column; height: 100%; }
-#t-prog .seances-v2-scroll {
-  flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch;
-  padding: 0 16px calc(100px + env(safe-area-inset-bottom, 0px)) 16px;
+/* === RESET du tab t-prog (SV2) — spécificité maximale === */
+body #t-prog { background: #080810 !important; padding: 0 !important; }
+body #t-prog > .tab-hd,
+body #t-prog > .week-strip,
+body #t-prog > .tsc,
+body #t-prog .tab-hd,
+body #t-prog .week-strip,
+body #t-prog .tsc,
+body #t-prog .adapt-banner,
+body #t-prog #prog-ia-result,
+body #t-prog #wstrip,
+body #t-prog #prog-sc { display: none !important; visibility: hidden !important; height: 0 !important; overflow: hidden !important; }
+body #t-prog .seances-v2-root { display: flex !important; flex-direction: column !important; height: 100% !important; visibility: visible !important; }
+body #t-prog .seances-v2-scroll {
+  flex: 1 !important; overflow-y: auto !important; -webkit-overflow-scrolling: touch !important;
+  padding: 0 16px calc(100px + env(safe-area-inset-bottom, 0px)) 16px !important;
+  visibility: visible !important;
 }
-#t-prog .seances-v2-scroll::-webkit-scrollbar { display: none; }
+body #t-prog .seances-v2-scroll * { visibility: visible !important; }
+body #t-prog .seances-v2-scroll::-webkit-scrollbar { display: none; }
+body #t-prog .seances-v2-scroll { padding-top: calc(20px + env(safe-area-inset-top, 0px)) !important; }
 
 /* === HERO séance du jour === */
 .sv2-hero {
@@ -8996,23 +9004,71 @@ window.sv2ShowExoInfo = function(exoId) {
   sv2CloseDetail();
 };
 
-// ─── OVERRIDE buildProg ───
-if (typeof window.buildProg === 'function') {
-  var _orig_buildProg = window.buildProg;
-  window.buildProg = function() {
-    try { buildSeancesV2(); }
-    catch(e) { console.error('[SV2] erreur build:', e); _orig_buildProg(); }
+// ─── OVERRIDE buildProg (forcé, retry, et auto-build) ───
+function _sv2InstallOverride() {
+  if (window.buildProg && window.buildProg._sv2 === true) return; // déjà installé
+  var _orig_buildProg = (typeof window.buildProg === 'function') ? window.buildProg : null;
+  var newFn = function() {
+    try {
+      buildSeancesV2();
+    } catch(e) {
+      console.error('[SV2] erreur buildSeancesV2, fallback ancien:', e);
+      if (_orig_buildProg) try { _orig_buildProg(); } catch(e2) {}
+    }
   };
-} else {
-  window.buildProg = function() { buildSeancesV2(); };
+  newFn._sv2 = true;
+  window.buildProg = newFn;
+  console.log('[SV2] override buildProg installé');
+}
+
+// Installer immédiatement + retry au cas où buildProg défini plus tard
+_sv2InstallOverride();
+setTimeout(_sv2InstallOverride, 500);
+setTimeout(_sv2InstallOverride, 1500);
+setTimeout(_sv2InstallOverride, 3000);
+
+// MutationObserver : si t-prog devient .on, force buildSeancesV2
+function _sv2WatchTab() {
+  var t = document.getElementById('t-prog');
+  if (!t) { setTimeout(_sv2WatchTab, 300); return; }
+  var obs = new MutationObserver(function(){
+    if (t.classList.contains('on')) {
+      // Build si la div root sv2 n'existe pas encore
+      if (!t.querySelector('.seances-v2-root') || !t.querySelector('.seances-v2-root .sv2-hero, .seances-v2-root .sv2-week')) {
+        try { buildSeancesV2(); } catch(e) { console.error('[SV2] build err:', e); }
+      }
+    }
+  });
+  obs.observe(t, { attributes: true, attributeFilter: ['class'] });
+  // Build initial si déjà actif
+  if (t.classList.contains('on')) {
+    try { buildSeancesV2(); } catch(e) { console.error('[SV2] init build err:', e); }
+  }
+  console.log('[SV2] watcher tab t-prog actif');
 }
 
 document.addEventListener('DOMContentLoaded', function(){
+  setTimeout(_sv2WatchTab, 500);
+  setTimeout(_sv2WatchTab, 2000);
+  // Force build si tab déjà actif
   setTimeout(function(){
     var t = document.getElementById('t-prog');
-    if (t && t.classList.contains('on')) buildSeancesV2();
-  }, 800);
+    if (t && t.classList.contains('on')) {
+      try { buildSeancesV2(); } catch(e) {}
+    }
+  }, 1500);
 });
+
+// Aussi déclencher si déjà chargé
+if (document.readyState !== 'loading') {
+  setTimeout(_sv2WatchTab, 100);
+  setTimeout(function(){
+    var t = document.getElementById('t-prog');
+    if (t && t.classList.contains('on')) {
+      try { buildSeancesV2(); } catch(e) {}
+    }
+  }, 800);
+}
 
 console.log('HIMA Tab Séances v3.2 chargé ✓ — '+Object.keys(EXOS_LIB).length+' exos disponibles');
 
