@@ -1170,7 +1170,16 @@ body::after { display:none !important; }
 /* FIX 3 — Pricing redesign HIMA Conversion Engine */
 .pricing-screen {
   padding: 24px 18px calc(120px + env(safe-area-inset-bottom, 0px)) !important;
+  /* FIX SCROLL : la pricing-screen devient le conteneur scrollable */
+  flex: 1 1 auto !important;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+  min-height: 0 !important;
+  height: 100% !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
 }
+.pricing-screen::-webkit-scrollbar { display: none !important; }
 
 /* Bloc FOMO au-dessus des cards */
 .pw-fomo {
