@@ -7297,36 +7297,42 @@ toggleBillingOnb = function() {
 console.log('HIMA Conversion Engine v3.1 chargé ✓ — pricing 14,99/24,99 actif');
 
 /* ════════════════════════════════════════════════════════
-   PATCH HIMA v3.1 — Override switchTab pour toggle data-tab
-   sur <body> (utilisé par CSS pour cacher .cinpb hors chat)
+   PATCH HIMA v3.1 — Sync body[data-tab] avec tab actif
+   Approche béton : MutationObserver sur les .atab pour
+   détecter ajout/retrait de .on, peu importe qui le fait
    ════════════════════════════════════════════════════════ */
 (function(){
-  var _origSwitchTab = window.switchTab;
-  window.switchTab = function(id) {
-    if (typeof _origSwitchTab === 'function') _origSwitchTab(id);
-    // Toggle attribut data-tab sur body pour CSS conditionnel
-    var tabKey = (id || '').replace('t-', '');
-    document.body.setAttribute('data-tab', tabKey);
-  };
-  // Init au chargement : si tab actif au boot, on synchronise body
-  document.addEventListener('DOMContentLoaded', function(){
-    setTimeout(function(){
-      var active = document.querySelector('.atab.on');
-      if (active) {
-        var tabKey = active.id.replace('t-', '');
-        document.body.setAttribute('data-tab', tabKey);
-      }
-    }, 100);
-  });
-  // Si DOMContentLoaded est déjà passé
-  if (document.readyState !== 'loading') {
-    setTimeout(function(){
-      var active = document.querySelector('.atab.on');
-      if (active) {
-        var tabKey = active.id.replace('t-', '');
-        document.body.setAttribute('data-tab', tabKey);
-      }
-    }, 100);
+  function syncBodyTab() {
+    var active = document.querySelector('.atab.on');
+    var key = active ? active.id.replace('t-', '') : 'none';
+    if (document.body.getAttribute('data-tab') !== key) {
+      document.body.setAttribute('data-tab', key);
+    }
+  }
+
+  function startObserver() {
+    // Sync immédiat
+    syncBodyTab();
+    // Observer toutes les .atab pour détecter changements de class
+    var tabs = document.querySelectorAll('.atab');
+    if (!tabs.length) {
+      // .atab pas encore dans le DOM, on retente dans 200ms
+      setTimeout(startObserver, 200);
+      return;
+    }
+    var obs = new MutationObserver(function(){ syncBodyTab(); });
+    tabs.forEach(function(t){
+      obs.observe(t, { attributes: true, attributeFilter: ['class'] });
+    });
+    // Re-sync toutes les 1s en safety net (très peu coûteux)
+    setInterval(syncBodyTab, 1000);
+    console.log('[HIMA] body[data-tab] sync actif');
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function(){ setTimeout(startObserver, 100); });
+  } else {
+    setTimeout(startObserver, 100);
   }
 })();
 
