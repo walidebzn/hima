@@ -1450,24 +1450,27 @@ body:not([data-tab="chat"]) .voice-status { display: none !important; }
    ════════════════════════════════════════════════════════ */
 
 /* === RESET du tab t-prog (SV2) — iOS height fix === */
-/* Le bug iOS : .atab { height: 100% } chainé peut collapse à 0. */
-/* Fix : on utilise min-height + viewport units en fallback */
+/* Bug iOS : .atab.on est { display:flex; height:100%; overflow:hidden } → collapse à 0 */
+/* Fix : on sort #t-prog du contexte flex, on force display:block + overflow visible */
+#t-prog.atab.on {
+  display: block !important;
+  height: auto !important;
+  min-height: calc(100vh - 70px) !important;
+  overflow: visible !important;
+  position: relative !important;
+}
 #t-prog .seances-v2-root {
   display: block;
   width: 100%;
-  min-height: 100%;
-  /* fallback iOS : si parent collapse, on prend la viewport */
   min-height: calc(100vh - 70px);
   background: #080810;
   -webkit-overflow-scrolling: touch;
   padding: calc(20px + env(safe-area-inset-top, 0px)) 16px calc(100px + env(safe-area-inset-bottom, 0px)) 16px;
   box-sizing: border-box;
   position: relative;
-  overflow-y: auto;
+  z-index: 1;
 }
 #t-prog .seances-v2-root::-webkit-scrollbar { display: none; }
-/* Le tab parent doit aussi avoir une hauteur garantie sur iOS */
-#t-prog.atab.on { min-height: calc(100vh - 70px) !important; }
 
 /* === HERO séance du jour === */
 .sv2-hero {
@@ -8625,7 +8628,24 @@ window.buildSeancesV2 = function() {
     var navH = 70;
     sc.style.minHeight = (vh - navH) + 'px';
     tab.style.minHeight = (vh - navH) + 'px';
+    tab.style.height = 'auto';
+    tab.style.overflow = 'visible';
+    tab.style.display = 'block';
     _sv2_log('forced height=' + (vh - navH) + 'px (vh=' + vh + ')');
+    // Mesurer ce qui est réellement rendu
+    setTimeout(function(){
+      var tr = tab.getBoundingClientRect();
+      var sr = sc.getBoundingClientRect();
+      _sv2_log('tab rect: ' + Math.round(tr.width) + 'x' + Math.round(tr.height) + ' top=' + Math.round(tr.top));
+      _sv2_log('root rect: ' + Math.round(sr.width) + 'x' + Math.round(sr.height) + ' top=' + Math.round(sr.top));
+      var hero = sc.querySelector('.sv2-hero');
+      if (hero) {
+        var hr = hero.getBoundingClientRect();
+        _sv2_log('hero rect: ' + Math.round(hr.width) + 'x' + Math.round(hr.height) + ' top=' + Math.round(hr.top));
+      } else {
+        _sv2_log('NO HERO IN DOM', true);
+      }
+    }, 100);
   } catch(e) { _sv2_log('height fix err: ' + e.message, true); }
   // Marque le body comme prêt
   document.body.setAttribute('data-sv2', 'ready');
