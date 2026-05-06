@@ -3276,6 +3276,575 @@ body:not([data-tab="chat"]) .voice-status { display: none !important; }
   font-size: 20px;
 }
 
+
+/* ════════════════════════════════════════════════════
+   TAB PROFIL v3 — CSS isolé (préfixe pv3-)
+   À insérer dans la balise <style> existante.
+   ════════════════════════════════════════════════════ */
+
+/* SCROLL CONTAINER */
+#t-prf.atab.on {
+  display: block !important;
+  height: calc(100vh - 70px) !important;
+  min-height: calc(100vh - 70px) !important;
+  max-height: calc(100vh - 70px) !important;
+  overflow: hidden !important;
+}
+#t-prf .pv3-root {
+  height: 100%;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 18px 16px calc(100px + env(safe-area-inset-bottom, 0px));
+  box-sizing: border-box;
+}
+#t-prf .pv3-root::-webkit-scrollbar { display: none; }
+
+/* HERO IDENTITÉ */
+.pv3-hero {
+  text-align: center;
+  padding: 12px 0 22px;
+}
+.pv3-avatar {
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  margin: 0 auto 14px;
+  background: linear-gradient(135deg, #F98805 0%, #F35695 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 42px;
+  color: #fff;
+  letter-spacing: 1px;
+  box-shadow: 0 12px 40px rgba(249, 136, 5, 0.35);
+  position: relative;
+}
+.pv3-avatar::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(249,136,5,0.3), rgba(243,86,149,0.3));
+  z-index: -1;
+  filter: blur(12px);
+  opacity: 0.6;
+}
+.pv3-name-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+.pv3-name {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 28px;
+  color: #F0F0FF;
+  letter-spacing: 1px;
+}
+.pv3-name-edit {
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: rgba(240, 240, 255, 0.06);
+  border-radius: 8px;
+  font-size: 13px;
+  color: rgba(240, 240, 255, 0.6);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+.pv3-name-edit:active { background: rgba(240, 240, 255, 0.12); }
+.pv3-email {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  color: rgba(240, 240, 255, 0.5);
+  margin-bottom: 14px;
+}
+.pv3-plan-badge {
+  display: inline-block;
+  padding: 7px 16px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  color: #fff;
+  background: linear-gradient(135deg, #F98805 0%, #F35695 100%);
+  border-radius: 99px;
+  text-transform: uppercase;
+}
+.pv3-plan-badge.is-free {
+  background: rgba(240, 240, 255, 0.08);
+  color: rgba(240, 240, 255, 0.7);
+  border: 1px solid rgba(240, 240, 255, 0.15);
+}
+.pv3-plan-badge.is-elite {
+  background: linear-gradient(135deg, #DDE255 0%, #F98805 100%);
+  color: #080810;
+}
+
+/* SECTION GENERIC */
+.pv3-section {
+  margin-bottom: 22px;
+}
+.pv3-section-hd {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 4px 10px;
+}
+.pv3-section-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: rgba(240, 240, 255, 0.4);
+}
+.pv3-section-edit {
+  border: none;
+  background: rgba(240, 240, 255, 0.06);
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  color: rgba(240, 240, 255, 0.85);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: background 0.2s;
+}
+.pv3-section-edit:active { background: rgba(240, 240, 255, 0.12); }
+
+/* STATS GRID (4 cards) */
+.pv3-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+.pv3-stat {
+  background: rgba(240, 240, 255, 0.04);
+  border: 1px solid rgba(240, 240, 255, 0.08);
+  border-radius: 16px;
+  padding: 14px 6px 12px;
+  text-align: center;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+.pv3-stat-icon {
+  font-size: 18px;
+  margin-bottom: 4px;
+  line-height: 1;
+}
+.pv3-stat-val {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 19px;
+  font-weight: 800;
+  color: #F0F0FF;
+  line-height: 1.1;
+  margin-bottom: 2px;
+}
+.pv3-stat-lbl {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: rgba(240, 240, 255, 0.45);
+}
+.pv3-stat.is-streak .pv3-stat-icon {
+  animation: pv3-pulse 4s ease-in-out infinite;
+}
+@keyframes pv3-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.12); }
+}
+
+/* PROFILE SPORT CARD */
+.pv3-card {
+  background: rgba(240, 240, 255, 0.04);
+  border: 1px solid rgba(240, 240, 255, 0.08);
+  border-radius: 18px;
+  overflow: hidden;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+.pv3-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(240, 240, 255, 0.06);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.2s;
+}
+.pv3-row:last-child { border-bottom: none; }
+.pv3-row:active { background: rgba(240, 240, 255, 0.04); }
+.pv3-row-label {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(240, 240, 255, 0.65);
+}
+.pv3-row-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.pv3-row-val {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: #F0F0FF;
+  text-align: right;
+}
+.pv3-row-val.is-empty { color: rgba(240, 240, 255, 0.3); }
+.pv3-row-chev {
+  width: 7px;
+  height: 7px;
+  border-right: 1.5px solid rgba(240, 240, 255, 0.3);
+  border-bottom: 1.5px solid rgba(240, 240, 255, 0.3);
+  transform: rotate(-45deg);
+  margin-left: 4px;
+}
+.pv3-row-toggle {
+  position: relative;
+  width: 44px;
+  height: 26px;
+  background: rgba(240, 240, 255, 0.1);
+  border-radius: 99px;
+  border: none;
+  cursor: pointer;
+  transition: background 0.25s;
+}
+.pv3-row-toggle::before {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 20px;
+  height: 20px;
+  background: #fff;
+  border-radius: 50%;
+  transition: transform 0.25s;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+.pv3-row-toggle.on {
+  background: linear-gradient(135deg, #F98805, #F35695);
+}
+.pv3-row-toggle.on::before { transform: translateX(18px); }
+
+/* SUBSCRIPTION CARD */
+.pv3-sub-card {
+  position: relative;
+  padding: 22px 20px;
+  border-radius: 22px;
+  background: rgba(240, 240, 255, 0.04);
+  border: 1px solid rgba(240, 240, 255, 0.08);
+  overflow: hidden;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+.pv3-sub-card.is-pro {
+  border: 1px solid rgba(243, 86, 149, 0.3);
+  background:
+    linear-gradient(135deg, rgba(243, 86, 149, 0.08) 0%, rgba(249, 136, 5, 0.04) 100%),
+    rgba(240, 240, 255, 0.04);
+}
+.pv3-sub-card.is-elite {
+  border: 1px solid rgba(221, 226, 85, 0.3);
+  background:
+    linear-gradient(135deg, rgba(221, 226, 85, 0.08) 0%, rgba(249, 136, 5, 0.04) 100%),
+    rgba(240, 240, 255, 0.04);
+}
+.pv3-sub-name {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 24px;
+  color: #F0F0FF;
+  margin-bottom: 4px;
+  letter-spacing: 1px;
+}
+.pv3-sub-price {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: rgba(240, 240, 255, 0.6);
+  margin-bottom: 16px;
+}
+.pv3-sub-feats {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 16px 0;
+}
+.pv3-sub-feats li {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  color: rgba(240, 240, 255, 0.85);
+  padding: 6px 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.pv3-sub-feats li::before {
+  content: '✓';
+  color: #DDE255;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+.pv3-sub-cta {
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #F98805 0%, #F35695 100%);
+  color: #fff;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  cursor: pointer;
+  text-transform: uppercase;
+  box-shadow: 0 8px 20px rgba(249, 136, 5, 0.25);
+  transition: transform 0.15s;
+}
+.pv3-sub-cta:active { transform: scale(0.98); }
+
+/* ACTION BUTTONS (logout, delete) */
+.pv3-action-btn {
+  width: 100%;
+  padding: 14px;
+  border: 1px solid rgba(240, 240, 255, 0.1);
+  border-radius: 14px;
+  background: rgba(240, 240, 255, 0.04);
+  color: #F0F0FF;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-bottom: 8px;
+  transition: background 0.2s;
+}
+.pv3-action-btn:active { background: rgba(240, 240, 255, 0.08); }
+.pv3-action-btn.is-danger {
+  border: 1px solid rgba(243, 86, 149, 0.25);
+  color: #F35695;
+}
+.pv3-action-btn.is-danger:active { background: rgba(243, 86, 149, 0.08); }
+
+/* FOOTER VERSION */
+.pv3-footer {
+  text-align: center;
+  padding: 20px 0 30px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: rgba(240, 240, 255, 0.25);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ════════════════════════════════════════════════════
+   ÉDITEUR — bottom sheet plein écran
+   ════════════════════════════════════════════════════ */
+.pv3-edit-sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  display: none;
+  pointer-events: none;
+}
+.pv3-edit-sheet.on {
+  display: block;
+  pointer-events: auto;
+}
+.pv3-edit-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  transition: opacity 0.25s;
+}
+.pv3-edit-sheet.on .pv3-edit-backdrop { opacity: 1; }
+.pv3-edit-panel {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 92vh;
+  background: #0c0a18;
+  border-radius: 28px 28px 0 0;
+  transform: translateY(100%);
+  transition: transform 0.32s cubic-bezier(0.32, 0.72, 0, 1);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.pv3-edit-sheet.on .pv3-edit-panel { transform: translateY(0); }
+.pv3-edit-handle {
+  width: 40px;
+  height: 4px;
+  background: rgba(240, 240, 255, 0.2);
+  border-radius: 2px;
+  margin: 8px auto 0;
+}
+.pv3-edit-hd {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px 12px;
+  border-bottom: 1px solid rgba(240, 240, 255, 0.06);
+}
+.pv3-edit-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 22px;
+  color: #F0F0FF;
+  letter-spacing: 1px;
+}
+.pv3-edit-close {
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: rgba(240, 240, 255, 0.08);
+  border-radius: 50%;
+  color: #F0F0FF;
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.pv3-edit-body {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 16px 18px 20px;
+}
+.pv3-edit-body::-webkit-scrollbar { display: none; }
+.pv3-edit-foot {
+  padding: 12px 18px calc(18px + env(safe-area-inset-bottom, 0px));
+  border-top: 1px solid rgba(240, 240, 255, 0.06);
+  background: #0c0a18;
+}
+.pv3-edit-save {
+  width: 100%;
+  padding: 16px;
+  border: none;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #F98805 0%, #F35695 100%);
+  color: #fff;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.15s;
+}
+.pv3-edit-save:active { transform: scale(0.98); }
+.pv3-edit-save:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* EDITOR — fields */
+.pv3-fld-group {
+  margin-bottom: 20px;
+}
+.pv3-fld-label {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: rgba(240, 240, 255, 0.5);
+  margin-bottom: 10px;
+  padding: 0 4px;
+}
+.pv3-fld-input {
+  width: 100%;
+  padding: 14px 16px;
+  background: rgba(240, 240, 255, 0.05);
+  border: 1px solid rgba(240, 240, 255, 0.1);
+  border-radius: 12px;
+  color: #F0F0FF;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  -webkit-appearance: none;
+  appearance: none;
+  box-sizing: border-box;
+}
+.pv3-fld-input:focus {
+  outline: none;
+  border-color: rgba(249, 136, 5, 0.5);
+}
+.pv3-fld-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.pv3-chips {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.pv3-chip {
+  flex: 1;
+  min-width: calc(33% - 8px);
+  padding: 12px 8px;
+  background: rgba(240, 240, 255, 0.05);
+  border: 1px solid rgba(240, 240, 255, 0.1);
+  border-radius: 12px;
+  color: rgba(240, 240, 255, 0.7);
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.2s;
+  -webkit-tap-highlight-color: transparent;
+}
+.pv3-chip.on {
+  background: linear-gradient(135deg, rgba(249, 136, 5, 0.18), rgba(243, 86, 149, 0.18));
+  border-color: rgba(249, 136, 5, 0.5);
+  color: #F0F0FF;
+}
+.pv3-chip-emoji {
+  display: block;
+  font-size: 18px;
+  margin-bottom: 3px;
+}
+
+/* TOAST FEEDBACK */
+.pv3-toast {
+  position: fixed;
+  top: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-30px);
+  padding: 12px 20px;
+  background: linear-gradient(135deg, #DDE255 0%, #F98805 100%);
+  color: #080810;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 13px;
+  font-weight: 800;
+  border-radius: 14px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  z-index: 99999;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s, transform 0.25s;
+}
+.pv3-toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
 </style>
 
 <!-- SPLASH -->
@@ -3917,79 +4486,150 @@ body:not([data-tab="chat"]) .voice-status { display: none !important; }
   </div>
 
   <!-- PROFIL -->
-  <div class="atab" id="t-prf">
-    <div class="prf-hd">
-      <div class="prf-av"><div class="prf-av-letter" id="prf-avatar-letter">?</div></div>
-      <div class="prf-nm" id="pnm">Champion</div>
-      <div class="prf-email" id="ps-email">--</div>
-      <div class="plan-badge-prf" id="pplan">🆓 Découverte</div>
-      <div id="elite-badge-wrap" style="display:none;margin-top:8px">
-        <div class="elite-badge">👑 ELITE</div>
+  <!-- ════════════════════════════════════════════════════
+     TAB PROFIL v3 — HTML
+     Remplace TOUT le contenu de la div <div class="atab" id="t-prf">
+     ════════════════════════════════════════════════════ -->
+
+<div class="atab" id="t-prf">
+  <div class="pv3-root">
+
+    <!-- HERO IDENTITÉ -->
+    <div class="pv3-hero">
+      <div class="pv3-avatar" id="pv3-avatar">W</div>
+      <div class="pv3-name-row">
+        <div class="pv3-name" id="pv3-name">Champion</div>
+        <button class="pv3-name-edit" onclick="pv3OpenEditName()" aria-label="Modifier prénom">✏️</button>
       </div>
-      <div id="prf-upgrade-hint" style="font-size:11px;color:var(--v);font-weight:700;margin-top:4px">Passe à Coach → illimité à 19,99€/mois</div>
+      <div class="pv3-email" id="pv3-email">--</div>
+      <div class="pv3-plan-badge" id="pv3-plan">🆓 Découverte</div>
     </div>
-    <div class="prf-sc">
-      <div class="prf-stats">
-        <div class="prf-stat"><div class="prf-stat-v" id="prf-streak">🔥 1</div><div class="prf-stat-l">Jours</div></div>
-        <div class="prf-stat"><div class="prf-stat-v" id="prf-seances">0</div><div class="prf-stat-l">Séances</div></div>
-        <div class="prf-stat"><div class="prf-stat-v" id="prf-poids">--</div><div class="prf-stat-l">kg actuel</div></div>
-        <div class="prf-stat"><div class="prf-stat-v" id="prf-score">0</div><div class="prf-stat-l">Score</div></div>
+
+    <!-- MES CHIFFRES -->
+    <div class="pv3-section">
+      <div class="pv3-section-hd">
+        <div class="pv3-section-title">Mes chiffres</div>
       </div>
-      <div class="prf-section">
-        <div class="prf-section-title">Profil Sportif</div>
-        <div class="prf-row"><div class="prf-row-label">Objectif</div><div class="prf-row-val" id="ps-mode">--</div></div>
-        <div class="prf-row"><div class="prf-row-label">Niveau</div><div class="prf-row-val" id="ps-niv">--</div></div>
-        <div class="prf-row"><div class="prf-row-label">Lieu</div><div class="prf-row-val" id="ps-lieu">--</div></div>
-        <div class="prf-row"><div class="prf-row-label">Macros/jour</div><div class="prf-row-val" id="ps-macros">--</div></div>
-        <div class="prf-row"><div class="prf-row-label">Plan</div><div class="prf-row-val" id="ps-plan">Découverte</div></div>
-      </div>
-      <div class="prf-section">
-        <div class="prf-section-title">Clé API Claude</div>
-        <div style="display:flex;gap:8px;margin-bottom:4px">
-          <input class="api-inp" type="password" id="api-k" placeholder="sk-ant-...">
-          <button class="api-save" onclick="saveApiKey()">Enregistrer</button>
+      <div class="pv3-stats">
+        <div class="pv3-stat is-streak">
+          <div class="pv3-stat-icon">🔥</div>
+          <div class="pv3-stat-val" id="pv3-stat-streak">1</div>
+          <div class="pv3-stat-lbl">Jours</div>
         </div>
-        <div style="font-size:11px;color:var(--t4);line-height:1.6">Ta clé API est stockée localement. Crée-la sur console.anthropic.com</div>
-      </div>
-      <div class="prf-section">
-        <div class="prf-section-title">Paramètres</div>
-        <div class="prf-row">
-          <div class="prf-row-label">Thème</div>
-          <button class="tbtn" id="theme-btn" onclick="toggleTheme()">🌙</button>
+        <div class="pv3-stat">
+          <div class="pv3-stat-icon">📊</div>
+          <div class="pv3-stat-val" id="pv3-stat-seances">0</div>
+          <div class="pv3-stat-lbl">Séances</div>
         </div>
-        <div class="prf-row">
-          <div class="prf-row-label">Notifications</div>
-          <button class="tbtn2" onclick="requestNotificationPermission()">Activer</button>
+        <div class="pv3-stat">
+          <div class="pv3-stat-icon">⚖️</div>
+          <div class="pv3-stat-val" id="pv3-stat-poids">--</div>
+          <div class="pv3-stat-lbl">Poids</div>
+        </div>
+        <div class="pv3-stat">
+          <div class="pv3-stat-icon">⚡</div>
+          <div class="pv3-stat-val" id="pv3-stat-score">0</div>
+          <div class="pv3-stat-lbl">Score</div>
         </div>
       </div>
-      <div class="prf-section">
-        <div class="prf-section">
-          <div class="prf-section-title">Outils HIMA</div>
-          <button class="prf-feature-btn" onclick="triggerMealPhoto()">
-            📸 Scanner un repas
-            <span style="float:right;font-size:11px;color:var(--t3)" id="scan-lock-label">🔒 Coach</span>
-          </button>
-          <button class="prf-feature-btn" onclick="generateWeeklyReport();switchTab('t-chat')">
-            📊 Bilan de semaine
-          </button>
-          <button class="prf-feature-btn" onclick="generateMonthlyPDF()">
-            📄 Rapport PDF mensuel
-            <span style="float:right;font-size:11px;color:var(--t3)" id="pdf-lock-label">🔒 Elite</span>
-          </button>
-          <button class="prf-feature-btn" onclick="startExerciseTimer(40,'Exercice',60)">
-            ⏱️ Timer séance + Voix
-          </button>
-          <button class="prf-feature-btn" onclick="startExerciseTimer(40,'Série',60)">
-            ⏱️ Timer séance avec voix
-          </button>
-        </div>
-        <button class="logout-btn" onclick="doLogout()">Se déconnecter</button>
-        <button class="reset-btn" onclick="resetApp()">🔄 Réinitialiser l'application</button>
-        <button class="del-btn" onclick="deleteMyData()">🗑️ Supprimer mes données</button>
-      </div>
-      <div style="height:20px"></div>
     </div>
+
+    <!-- MON PROFIL SPORTIF -->
+    <div class="pv3-section">
+      <div class="pv3-section-hd">
+        <div class="pv3-section-title">Mon profil sportif</div>
+        <button class="pv3-section-edit" onclick="pv3OpenEditSport()">✏️ Modifier</button>
+      </div>
+      <div class="pv3-card">
+        <div class="pv3-row" onclick="pv3OpenEditSport('mode')">
+          <div class="pv3-row-label">Objectif</div>
+          <div class="pv3-row-right">
+            <div class="pv3-row-val" id="pv3-sport-mode">--</div>
+            <div class="pv3-row-chev"></div>
+          </div>
+        </div>
+        <div class="pv3-row" onclick="pv3OpenEditSport('niv')">
+          <div class="pv3-row-label">Niveau</div>
+          <div class="pv3-row-right">
+            <div class="pv3-row-val" id="pv3-sport-niv">--</div>
+            <div class="pv3-row-chev"></div>
+          </div>
+        </div>
+        <div class="pv3-row" onclick="pv3OpenEditSport('lieu')">
+          <div class="pv3-row-label">Lieu</div>
+          <div class="pv3-row-right">
+            <div class="pv3-row-val" id="pv3-sport-lieu">--</div>
+            <div class="pv3-row-chev"></div>
+          </div>
+        </div>
+        <div class="pv3-row" onclick="pv3OpenEditSport('mensurations')">
+          <div class="pv3-row-label">Mensurations</div>
+          <div class="pv3-row-right">
+            <div class="pv3-row-val" id="pv3-sport-mens">--</div>
+            <div class="pv3-row-chev"></div>
+          </div>
+        </div>
+        <div class="pv3-row" onclick="pv3OpenEditSport('mode')">
+          <div class="pv3-row-label">Macros / jour</div>
+          <div class="pv3-row-right">
+            <div class="pv3-row-val" id="pv3-sport-macros">--</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MON ABONNEMENT -->
+    <div class="pv3-section">
+      <div class="pv3-section-hd">
+        <div class="pv3-section-title">Mon abonnement</div>
+      </div>
+      <div class="pv3-sub-card" id="pv3-sub-card">
+        <div class="pv3-sub-name" id="pv3-sub-name">DÉCOUVERTE</div>
+        <div class="pv3-sub-price" id="pv3-sub-price">Gratuit</div>
+        <ul class="pv3-sub-feats" id="pv3-sub-feats">
+          <li>3 messages coach IA / jour</li>
+          <li>3 photos repas / jour</li>
+          <li>Programme de base</li>
+        </ul>
+        <button class="pv3-sub-cta" id="pv3-sub-cta" onclick="pv3OpenUpgrade()">Passer Pro · 14,99€/mois</button>
+      </div>
+    </div>
+
+    <!-- RÉGLAGES -->
+    <div class="pv3-section">
+      <div class="pv3-section-hd">
+        <div class="pv3-section-title">Réglages & compte</div>
+      </div>
+      <div class="pv3-card">
+        <div class="pv3-row" onclick="pv3ToggleNotifs()">
+          <div class="pv3-row-label">Notifications</div>
+          <div class="pv3-row-right">
+            <button class="pv3-row-toggle" id="pv3-tgl-notifs"></button>
+          </div>
+        </div>
+        <div class="pv3-row" onclick="pv3ExportData()">
+          <div class="pv3-row-label">Exporter mes données</div>
+          <div class="pv3-row-right">
+            <div class="pv3-row-val">JSON</div>
+            <div class="pv3-row-chev"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ACTIONS COMPTE -->
+    <div class="pv3-section">
+      <button class="pv3-action-btn" onclick="pv3Logout()">Se déconnecter</button>
+      <button class="pv3-action-btn is-danger" onclick="pv3DeleteAccount()">🗑️ Supprimer mon compte</button>
+    </div>
+
+    <!-- FOOTER VERSION (5 taps = menu avancé) -->
+    <div class="pv3-footer" id="pv3-footer" onclick="pv3FooterTap()">
+      HIMA · v3.4 · 2026
+    </div>
+
   </div>
+</div>
 
 </div>
 
@@ -10338,6 +10978,581 @@ if (document.readyState !== 'loading') {
 
 console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EXOS).length + ' exos · ' + Object.keys(window.SV_VIDS).length + ' vidéos');
 
+})();
+
+
+// ════════════════════════════════════════════════════
+// TAB PROFIL v3 — IIFE isolée
+// À insérer en fin de <script>, avant la fermeture <\/script>
+// Aucune surcharge de fonction existante hors scope #t-prf
+// Toutes les fonctions onclick exposées en window.pv3X
+// ════════════════════════════════════════════════════
+(function(){
+  'use strict';
+
+  // ─── Helpers internes ─────────────────────────────────
+  function $(id) { return document.getElementById(id); }
+  function setText(id, val) { var e = $(id); if (e) e.textContent = val; }
+
+  function getU() { return window.U || {}; }
+
+  function planLabel(plan) {
+    var map = { free: 'DÉCOUVERTE', pro: 'PRO COACH', elite: 'ELITE' };
+    return map[plan || 'free'] || 'DÉCOUVERTE';
+  }
+
+  function modeLabel(mode) {
+    var map = {
+      glow: 'Perte de gras',
+      bodybuilding: 'Prise de muscle',
+      hyrox: 'Endurance / Hyrox',
+      mindset: 'Remise en forme'
+    };
+    return map[mode] || '—';
+  }
+
+  function objLabel(obj) {
+    var map = { perte: 'Perdre du gras', muscle: 'Prendre du muscle', mixte: 'Recomposition' };
+    return map[obj] || '—';
+  }
+
+  function nivLabel(niv) {
+    var map = { deb: 'Débutant', int: 'Intermédiaire', av: 'Avancé' };
+    return map[niv] || '—';
+  }
+
+  function lieuLabel(lieu) {
+    var map = { maison: '🏠 Maison', salle: '🏋️ Salle', exterieur: '🌳 Extérieur' };
+    return map[lieu] || '—';
+  }
+
+  function sexLabel(s) { return s === 'f' ? '♀ Femme' : (s === 'h' ? '♂ Homme' : '—'); }
+
+  // ─── Toast helper ─────────────────────────────────────
+  function toast(msg) {
+    var t = $('pv3-toast-el');
+    if (!t) {
+      t = document.createElement('div');
+      t.id = 'pv3-toast-el';
+      t.className = 'pv3-toast';
+      document.body.appendChild(t);
+    }
+    t.textContent = msg;
+    requestAnimationFrame(function(){ t.classList.add('show'); });
+    setTimeout(function(){ t.classList.remove('show'); }, 1800);
+  }
+
+  function haptic(intensity) {
+    try {
+      if (window.navigator && navigator.vibrate) {
+        var p = intensity === 'heavy' ? 18 : intensity === 'medium' ? 10 : 5;
+        navigator.vibrate(p);
+      }
+    } catch(e) {}
+  }
+
+  // ─── Save to localStorage + global save() ─────────────
+  function saveU() {
+    try {
+      if (typeof window.save === 'function') {
+        window.save();
+      } else {
+        var U = getU();
+        var hist = window.hist || [];
+        var streak = window.streak || 1;
+        var score = window.score || 0;
+        var seances = window.seances || 0;
+        localStorage.setItem('hima8', JSON.stringify(Object.assign({}, U, {
+          hist: hist, streak: streak, score: score, seances: seances
+        })));
+      }
+    } catch(e) { console.warn('[PV3] save error:', e); }
+  }
+
+  // ─── Recalcul macros (utilise calcM existant si dispo) ─
+  function recalcMacros() {
+    if (typeof window.calcM === 'function') {
+      try {
+        var m = window.calcM();
+        if (m) {
+          window.U = window.U || {};
+          window.U.macros = m;
+        }
+      } catch(e) { console.warn('[PV3] calcM error:', e); }
+    }
+  }
+
+  // ─── RENDU PRINCIPAL ─────────────────────────────────
+  function renderProfil() {
+    var U = getU();
+    var streak = window.streak || 1;
+    var seances = window.seances || 0;
+    var score = window.score || 0;
+
+    // Avatar + identité
+    var prenom = U.prenom || 'Champion';
+    var letter = (prenom[0] || 'W').toUpperCase();
+    setText('pv3-avatar', letter);
+    setText('pv3-name', prenom);
+    setText('pv3-email', U.email || '—');
+
+    // Plan badge
+    var plan = U.plan || 'free';
+    var planEl = $('pv3-plan');
+    if (planEl) {
+      planEl.textContent = (plan === 'free' ? '🆓 ' : (plan === 'elite' ? '👑 ' : '★ ')) + planLabel(plan);
+      planEl.className = 'pv3-plan-badge ' + (plan === 'free' ? 'is-free' : (plan === 'elite' ? 'is-elite' : ''));
+    }
+
+    // Stats
+    setText('pv3-stat-streak', streak);
+    setText('pv3-stat-seances', seances);
+    setText('pv3-stat-poids', U.poids ? U.poids + ' kg' : '—');
+    setText('pv3-stat-score', score);
+
+    // Profil sportif
+    var modeM = U.mode ? modeLabel(U.mode) : (U.obj ? objLabel(U.obj) : '—');
+    setText('pv3-sport-mode', modeM);
+    setText('pv3-sport-niv', nivLabel(U.niv));
+    setText('pv3-sport-lieu', lieuLabel(U.lieu));
+
+    var mens = [];
+    if (U.poids) mens.push(U.poids + 'kg');
+    if (U.taille) mens.push(U.taille + 'cm');
+    if (U.age) mens.push(U.age + 'a');
+    if (U.sexe) mens.push(U.sexe === 'f' ? '♀' : '♂');
+    setText('pv3-sport-mens', mens.length ? mens.join(' · ') : '—');
+
+    var m = U.macros;
+    if (!m && typeof window.calcM === 'function') {
+      try { m = window.calcM(); U.macros = m; } catch(e) {}
+    }
+    if (m) {
+      setText('pv3-sport-macros', m.kcal + ' kcal · ' + m.prot + 'p ' + m.gluc + 'g ' + m.lip + 'l');
+    } else {
+      setText('pv3-sport-macros', '—');
+    }
+
+    // Abonnement
+    renderSubscription(plan);
+
+    // Toggle notifs (lit l'état actuel)
+    var tgl = $('pv3-tgl-notifs');
+    if (tgl) {
+      var notifsOn = (typeof Notification !== 'undefined' && Notification.permission === 'granted');
+      if (notifsOn) tgl.classList.add('on'); else tgl.classList.remove('on');
+    }
+  }
+
+  function renderSubscription(plan) {
+    var card = $('pv3-sub-card');
+    var name = $('pv3-sub-name');
+    var price = $('pv3-sub-price');
+    var feats = $('pv3-sub-feats');
+    var cta = $('pv3-sub-cta');
+    if (!card) return;
+
+    card.className = 'pv3-sub-card ' + (plan === 'pro' ? 'is-pro' : (plan === 'elite' ? 'is-elite' : ''));
+
+    if (plan === 'free') {
+      if (name) name.textContent = 'DÉCOUVERTE';
+      if (price) price.textContent = 'Gratuit';
+      if (feats) feats.innerHTML = '<li>3 messages coach IA / jour</li><li>3 photos repas / jour</li><li>Programme de base</li>';
+      if (cta) {
+        cta.style.display = '';
+        cta.textContent = 'Passer Pro · 14,99€/mois';
+      }
+    } else if (plan === 'pro') {
+      if (name) name.textContent = 'PRO COACH';
+      if (price) price.textContent = '14,99€/mois';
+      if (feats) feats.innerHTML = '<li>Coach IA illimité</li><li>Scanner photo illimité</li><li>Programmes adaptés</li><li>Suivi nutrition complet</li>';
+      if (cta) {
+        cta.style.display = '';
+        cta.textContent = '✨ Passer Elite · 24,99€/mois';
+      }
+    } else { // elite
+      if (name) name.textContent = '👑 ELITE';
+      if (price) price.textContent = '24,99€/mois';
+      if (feats) feats.innerHTML = '<li>Tout du Pro</li><li>Bilan hebdo personnalisé</li><li>Rapport PDF mensuel</li><li>Coach prioritaire</li>';
+      if (cta) cta.style.display = 'none';
+    }
+  }
+
+  // ─── ÉDITEUR : prénom ────────────────────────────────
+  window.pv3OpenEditName = function() {
+    haptic('light');
+    var current = (getU().prenom) || '';
+    var v = prompt('Ton prénom ?', current);
+    if (v === null) return;
+    v = String(v).trim().slice(0, 30);
+    if (!v) return;
+    window.U = window.U || {};
+    window.U.prenom = v;
+    saveU();
+    renderProfil();
+    toast('✓ Prénom mis à jour');
+    haptic('medium');
+  };
+
+  // ─── ÉDITEUR : profil sportif (bottom sheet) ──────────
+  function buildEditorHtml() {
+    return ''
+      + '<div class="pv3-edit-sheet" id="pv3-edit-sheet">'
+      + '  <div class="pv3-edit-backdrop" onclick="pv3CloseEdit()"></div>'
+      + '  <div class="pv3-edit-panel">'
+      + '    <div class="pv3-edit-handle"></div>'
+      + '    <div class="pv3-edit-hd">'
+      + '      <div class="pv3-edit-title">MON PROFIL SPORTIF</div>'
+      + '      <button class="pv3-edit-close" onclick="pv3CloseEdit()">✕</button>'
+      + '    </div>'
+      + '    <div class="pv3-edit-body" id="pv3-edit-body"></div>'
+      + '    <div class="pv3-edit-foot">'
+      + '      <button class="pv3-edit-save" id="pv3-edit-save" onclick="pv3SaveEdit()">Sauvegarder</button>'
+      + '    </div>'
+      + '  </div>'
+      + '</div>';
+  }
+
+  function ensureEditorDom() {
+    if ($('pv3-edit-sheet')) return;
+    var div = document.createElement('div');
+    div.innerHTML = buildEditorHtml();
+    document.body.appendChild(div.firstElementChild);
+  }
+
+  // État local de l'éditeur (ne touche U que au save)
+  var editState = null;
+
+  function buildEditorBody() {
+    var U = getU();
+    editState = {
+      mode: U.mode || 'glow',
+      obj: U.obj || 'perte',
+      niv: U.niv || 'deb',
+      lieu: U.lieu || 'maison',
+      sexe: U.sexe || 'h',
+      age: U.age || 26,
+      poids: U.poids || 75,
+      taille: U.taille || 170
+    };
+
+    var html = '';
+
+    // Objectif principal
+    html += '<div class="pv3-fld-group">'
+      + '<div class="pv3-fld-label">Objectif principal</div>'
+      + '<div class="pv3-chips">'
+      + chip('mode', 'glow', '🔥', 'Perte de gras')
+      + chip('mode', 'bodybuilding', '💪', 'Muscle')
+      + chip('mode', 'hyrox', '🏃', 'Endurance')
+      + chip('mode', 'mindset', '✨', 'Remise en forme')
+      + '</div>'
+      + '</div>';
+
+    // Sous-objectif
+    html += '<div class="pv3-fld-group">'
+      + '<div class="pv3-fld-label">Focus</div>'
+      + '<div class="pv3-chips">'
+      + chip('obj', 'perte', '⬇️', 'Perdre')
+      + chip('obj', 'muscle', '⬆️', 'Prendre')
+      + chip('obj', 'mixte', '⚖️', 'Recomp')
+      + '</div>'
+      + '</div>';
+
+    // Niveau
+    html += '<div class="pv3-fld-group">'
+      + '<div class="pv3-fld-label">Niveau</div>'
+      + '<div class="pv3-chips">'
+      + chip('niv', 'deb', '🌱', 'Débutant')
+      + chip('niv', 'int', '🔥', 'Intermédiaire')
+      + chip('niv', 'av', '⚡', 'Avancé')
+      + '</div>'
+      + '</div>';
+
+    // Lieu
+    html += '<div class="pv3-fld-group">'
+      + '<div class="pv3-fld-label">Où je m\'entraîne</div>'
+      + '<div class="pv3-chips">'
+      + chip('lieu', 'maison', '🏠', 'Maison')
+      + chip('lieu', 'salle', '🏋️', 'Salle')
+      + chip('lieu', 'exterieur', '🌳', 'Extérieur')
+      + '</div>'
+      + '</div>';
+
+    // Mensurations
+    html += '<div class="pv3-fld-group">'
+      + '<div class="pv3-fld-label">Mensurations</div>'
+      + '<div class="pv3-fld-row">'
+      + '<input class="pv3-fld-input" type="number" inputmode="numeric" id="pv3-fld-poids" placeholder="Poids (kg)" value="' + editState.poids + '" min="30" max="250" step="0.1">'
+      + '<input class="pv3-fld-input" type="number" inputmode="numeric" id="pv3-fld-taille" placeholder="Taille (cm)" value="' + editState.taille + '" min="100" max="230">'
+      + '</div>'
+      + '</div>';
+
+    html += '<div class="pv3-fld-group">'
+      + '<div class="pv3-fld-label">Profil</div>'
+      + '<div class="pv3-fld-row">'
+      + '<input class="pv3-fld-input" type="number" inputmode="numeric" id="pv3-fld-age" placeholder="Âge" value="' + editState.age + '" min="14" max="100">'
+      + '<div class="pv3-chips" style="display:flex">'
+      + chip('sexe', 'h', '♂', 'Homme')
+      + chip('sexe', 'f', '♀', 'Femme')
+      + '</div>'
+      + '</div>'
+      + '</div>';
+
+    return html;
+  }
+
+  function chip(field, value, emoji, label) {
+    var on = (editState && editState[field] === value) ? ' on' : '';
+    return '<div class="pv3-chip' + on + '" data-field="' + field + '" data-value="' + value + '" onclick="pv3SelectChip(this)">'
+      + '<span class="pv3-chip-emoji">' + emoji + '</span>' + label
+      + '</div>';
+  }
+
+  window.pv3OpenEditSport = function(focus) {
+    haptic('light');
+    ensureEditorDom();
+    var body = $('pv3-edit-body');
+    if (body) body.innerHTML = buildEditorBody();
+    var sheet = $('pv3-edit-sheet');
+    if (sheet) {
+      // Force reflow puis activer
+      requestAnimationFrame(function(){ sheet.classList.add('on'); });
+    }
+    // Lier les inputs au state
+    setTimeout(function(){
+      var pIn = $('pv3-fld-poids');
+      var tIn = $('pv3-fld-taille');
+      var aIn = $('pv3-fld-age');
+      if (pIn) pIn.addEventListener('input', function(){ editState.poids = parseFloat(this.value) || editState.poids; });
+      if (tIn) tIn.addEventListener('input', function(){ editState.taille = parseInt(this.value) || editState.taille; });
+      if (aIn) aIn.addEventListener('input', function(){ editState.age = parseInt(this.value) || editState.age; });
+    }, 50);
+  };
+
+  window.pv3SelectChip = function(el) {
+    if (!el || !editState) return;
+    var field = el.getAttribute('data-field');
+    var value = el.getAttribute('data-value');
+    if (!field || !value) return;
+    haptic('light');
+    editState[field] = value;
+    // Désactiver les autres chips du même field
+    var allChips = document.querySelectorAll('.pv3-chip[data-field="' + field + '"]');
+    for (var i = 0; i < allChips.length; i++) {
+      allChips[i].classList.remove('on');
+    }
+    el.classList.add('on');
+  };
+
+  window.pv3CloseEdit = function() {
+    var sheet = $('pv3-edit-sheet');
+    if (sheet) sheet.classList.remove('on');
+    setTimeout(function(){
+      // Cleanup DOM si on veut tout reconstruire la prochaine fois
+    }, 300);
+  };
+
+  window.pv3SaveEdit = function() {
+    if (!editState) { window.pv3CloseEdit(); return; }
+    var U = window.U = window.U || {};
+    U.mode = editState.mode;
+    U.obj = editState.obj;
+    U.niv = editState.niv;
+    U.lieu = editState.lieu;
+    U.sexe = editState.sexe;
+    U.age = parseInt(editState.age) || U.age;
+    U.poids = parseFloat(editState.poids) || U.poids;
+    U.taille = parseInt(editState.taille) || U.taille;
+
+    // Recalcul macros
+    recalcMacros();
+    saveU();
+
+    // Mise à jour de hist[] si nouveau poids
+    if (window.hist && Array.isArray(window.hist)) {
+      var lastP = window.hist[window.hist.length - 1];
+      if (lastP !== U.poids) window.hist.push(U.poids);
+    }
+
+    haptic('medium');
+    toast('✓ Profil mis à jour');
+    window.pv3CloseEdit();
+
+    // Re-render
+    setTimeout(renderProfil, 50);
+  };
+
+  // ─── ABONNEMENT ──────────────────────────────────────
+  window.pv3OpenUpgrade = function() {
+    haptic('light');
+    if (typeof window.showUpgradeModal === 'function') {
+      window.showUpgradeModal('coach');
+    } else if (typeof window.showPricingOnb === 'function') {
+      window.showPricingOnb();
+    } else {
+      toast('Page upgrade bientôt dispo');
+    }
+  };
+
+  // ─── NOTIFS TOGGLE ───────────────────────────────────
+  window.pv3ToggleNotifs = function() {
+    haptic('light');
+    var tgl = $('pv3-tgl-notifs');
+    if (typeof Notification === 'undefined') {
+      toast('Notifications non supportées');
+      return;
+    }
+    if (Notification.permission === 'granted') {
+      // On peut pas révoquer programmatiquement → toggle visuel + info
+      toast('Désactive dans Réglages Safari');
+      return;
+    }
+    if (typeof window.requestNotificationPermission === 'function') {
+      try {
+        window.requestNotificationPermission();
+      } catch(e) {}
+    } else if (Notification.requestPermission) {
+      Notification.requestPermission().then(function(p){
+        if (p === 'granted') {
+          if (tgl) tgl.classList.add('on');
+          toast('✓ Notifications activées');
+        }
+      });
+    }
+  };
+
+  // ─── EXPORT DATA ─────────────────────────────────────
+  window.pv3ExportData = function() {
+    haptic('light');
+    try {
+      var data = JSON.stringify({
+        user: getU(),
+        hist: window.hist || [],
+        streak: window.streak || 0,
+        seances: window.seances || 0,
+        score: window.score || 0,
+        exportDate: new Date().toISOString()
+      }, null, 2);
+      var blob = new Blob([data], { type: 'application/json' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = 'hima-data-' + new Date().toISOString().slice(0,10) + '.json';
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(function(){ document.body.removeChild(a); URL.revokeObjectURL(url); }, 100);
+      toast('✓ Export téléchargé');
+    } catch(e) {
+      toast('Export impossible');
+    }
+  };
+
+  // ─── DÉCONNEXION ─────────────────────────────────────
+  window.pv3Logout = function() {
+    haptic('medium');
+    var ok = confirm('Te déconnecter de HIMA ?');
+    if (!ok) return;
+    if (typeof window.doLogout === 'function') {
+      try { window.doLogout(); } catch(e) {}
+    } else {
+      try {
+        if (window.firebase && firebase.auth) firebase.auth().signOut();
+      } catch(e) {}
+      try { localStorage.removeItem('hima8'); } catch(e) {}
+      location.reload();
+    }
+  };
+
+  // ─── SUPPRESSION COMPTE ──────────────────────────────
+  window.pv3DeleteAccount = function() {
+    haptic('heavy');
+    var ok1 = confirm('⚠️ Supprimer ton compte HIMA et toutes tes données ?\n\nCette action est IRRÉVERSIBLE.');
+    if (!ok1) return;
+    var ok2 = confirm('Es-tu vraiment sûr ? Toutes tes données seront perdues.');
+    if (!ok2) return;
+    if (typeof window.deleteMyData === 'function') {
+      try { window.deleteMyData(); return; } catch(e) {}
+    }
+    try { localStorage.clear(); } catch(e) {}
+    location.reload();
+  };
+
+  // ─── FOOTER 5-TAP : menu avancé ──────────────────────
+  var footerTaps = 0;
+  var footerTimer = null;
+  window.pv3FooterTap = function() {
+    footerTaps++;
+    if (footerTimer) clearTimeout(footerTimer);
+    footerTimer = setTimeout(function(){ footerTaps = 0; }, 1500);
+    if (footerTaps >= 5) {
+      footerTaps = 0;
+      pv3OpenAdvanced();
+    }
+  };
+
+  function pv3OpenAdvanced() {
+    haptic('heavy');
+    var current = getU().apiKey || '';
+    var v = prompt('🔐 Avancé — Clé API Claude\n(stockée localement, pour debug)', current);
+    if (v === null) return;
+    v = String(v).trim();
+    if (v && v.indexOf('sk-ant-') !== 0) {
+      toast('Clé invalide (doit commencer par sk-ant-)');
+      return;
+    }
+    window.U = window.U || {};
+    window.U.apiKey = v;
+    saveU();
+    toast('✓ Clé API enregistrée');
+  }
+
+  // ─── HOTFIX : saveApiKey manquant (legacy) ───────────
+  // Au cas où un autre bouton legacy l'appelle
+  if (typeof window.saveApiKey !== 'function') {
+    window.saveApiKey = function() {
+      var k = $('api-k');
+      if (k && k.value && k.value.indexOf('sk-ant-') === 0) {
+        window.U = window.U || {};
+        window.U.apiKey = k.value;
+        saveU();
+        toast('✓ Clé API enregistrée');
+      } else {
+        toast('Clé invalide');
+      }
+    };
+  }
+
+  // ─── OBSERVER : déclenche renderProfil quand .on ─────
+  // Pas de modification de switchTab — on observe le tab.
+  function installWatcher() {
+    var t = $('t-prf');
+    if (!t) { setTimeout(installWatcher, 300); return; }
+    if (t._pv3_watched) return;
+    t._pv3_watched = true;
+
+    var obs = new MutationObserver(function(){
+      if (t.classList.contains('on')) {
+        try { renderProfil(); } catch(e) { console.error('[PV3] render err:', e); }
+      }
+    });
+    obs.observe(t, { attributes: true, attributeFilter: ['class'] });
+
+    // Si déjà actif au boot
+    if (t.classList.contains('on')) {
+      try { renderProfil(); } catch(e) {}
+    }
+    console.log('[PV3] Profil v3 watcher actif');
+  }
+
+  // Bootstrap
+  if (document.readyState !== 'loading') {
+    setTimeout(installWatcher, 100);
+  } else {
+    document.addEventListener('DOMContentLoaded', function(){ setTimeout(installWatcher, 100); });
+  }
+
+  console.log('[PV3] Profil v3 chargé');
 })();
 
 </script>
