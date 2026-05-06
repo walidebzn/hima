@@ -2998,6 +2998,262 @@ body:not([data-tab="chat"]) .voice-status { display: none !important; }
   margin-top: 4px;
 }
 
+/* ═══ MODE REPOS ENRICHI (v3.5) ═══ */
+.sv-rest-hero {
+  position: relative;
+  margin: 14px 0 18px;
+  padding: 26px 22px;
+  border-radius: 22px;
+  background: linear-gradient(135deg, rgba(221,226,85,0.18) 0%, rgba(34,197,94,0.10) 60%, rgba(8,8,16,0.95) 100%);
+  border: 1px solid rgba(221,226,85,0.22);
+  overflow: hidden;
+}
+.sv-rest-hero::before {
+  content: "";
+  position: absolute;
+  top: -40px;
+  right: -40px;
+  width: 160px;
+  height: 160px;
+  background: radial-gradient(circle, rgba(221,226,85,0.18) 0%, transparent 70%);
+  pointer-events: none;
+}
+.sv-rest-hero-eyebrow {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 11px;
+  font-weight: 800;
+  color: #DDE255;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  position: relative;
+}
+.sv-rest-hero-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 56px;
+  line-height: 1;
+  letter-spacing: 0.5px;
+  color: #F0F0FF;
+  margin-bottom: 8px;
+  position: relative;
+}
+.sv-rest-hero-sub {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  line-height: 1.55;
+  color: rgba(240,240,255,0.72);
+  margin-bottom: 14px;
+  position: relative;
+}
+.sv-rest-hero-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  color: #DDE255;
+  padding: 6px 12px;
+  border: 1px solid rgba(221,226,85,0.30);
+  border-radius: 999px;
+  background: rgba(221,226,85,0.08);
+  position: relative;
+}
+
+/* Cards génériques REPOS */
+.sv-rest-card {
+  margin: 14px 0;
+  padding: 18px 16px;
+  background: rgba(240,240,255,0.03);
+  border: 1px solid rgba(240,240,255,0.07);
+  border-radius: 18px;
+}
+.sv-rest-card-hd {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.sv-rest-card-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: rgba(240,240,255,0.7);
+}
+.sv-rest-card-badge {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  color: rgba(240,240,255,0.5);
+  padding: 3px 8px;
+  border: 1px solid rgba(240,240,255,0.12);
+  border-radius: 999px;
+}
+
+/* Card mobilité */
+.sv-rest-mob-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.sv-rest-mob-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  background: rgba(240,240,255,0.025);
+  border-radius: 12px;
+}
+.sv-rest-mob-icon {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  background: rgba(221,226,85,0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+}
+.sv-rest-mob-meta { flex: 1; min-width: 0; }
+.sv-rest-mob-name {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: #F0F0FF;
+  line-height: 1.2;
+}
+.sv-rest-mob-sub {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px;
+  color: rgba(240,240,255,0.5);
+  margin-top: 2px;
+}
+.sv-rest-cta-mob {
+  display: block;
+  width: 100%;
+  padding: 14px;
+  border: 1px solid rgba(221,226,85,0.35);
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(221,226,85,0.16), rgba(221,226,85,0.06));
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  color: #DDE255;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+.sv-rest-cta-mob:active { transform: scale(0.98); }
+
+/* Card conseils */
+.sv-rest-tips {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.sv-rest-tip {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(240,240,255,0.05);
+}
+.sv-rest-tip:last-child { border-bottom: none; padding-bottom: 0; }
+.sv-rest-tip-icon {
+  font-size: 22px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.sv-rest-tip-body { flex: 1; min-width: 0; }
+.sv-rest-tip-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: #F0F0FF;
+  margin-bottom: 2px;
+}
+.sv-rest-tip-text {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  line-height: 1.5;
+  color: rgba(240,240,255,0.65);
+}
+
+/* Card prochaine séance */
+.sv-rest-next {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px;
+  background: linear-gradient(135deg, rgba(249,136,5,0.10), rgba(243,86,149,0.06));
+  border: 1px solid rgba(249,136,5,0.22);
+  border-radius: 14px;
+  cursor: pointer;
+}
+.sv-rest-next-icon {
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #F98805, #F35695);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  box-shadow: 0 6px 18px rgba(249,136,5,0.25);
+}
+.sv-rest-next-meta { flex: 1; min-width: 0; }
+.sv-rest-next-eyebrow {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: #F98805;
+  margin-bottom: 2px;
+}
+.sv-rest-next-name {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 22px;
+  color: #F0F0FF;
+  line-height: 1.1;
+}
+.sv-rest-next-sub {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px;
+  color: rgba(240,240,255,0.55);
+  margin-top: 2px;
+}
+.sv-rest-next-arrow {
+  font-size: 22px;
+  color: rgba(240,240,255,0.4);
+  flex-shrink: 0;
+}
+
+/* CTA HIMA pour repos */
+.sv-rest-cta-hima {
+  display: block;
+  width: 100%;
+  margin: 14px 0 6px;
+  padding: 16px;
+  border: none;
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(249,136,5,0.20), rgba(243,86,149,0.14));
+  border: 1px solid rgba(249,136,5,0.30);
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  color: #F0F0FF;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+.sv-rest-cta-hima:active { transform: scale(0.98); }
+
 /* ═══ MODE ACTIF — VIDÉO ═══ */
 .sv-active-video {
   width: 100%;
@@ -10232,6 +10488,178 @@ window.svWeekKey = function(dayIdx) {
 };
 
 // ────────────────────────────────────────────────
+// ÉCRAN REPOS ENRICHI (v3.5)
+// ────────────────────────────────────────────────
+window.svBuildRestHTML = function(seance, today, U) {
+  // Streak rest (combien de jours rest consécutifs incluant aujourd'hui)
+  var restStreak = 1; // au moins aujourd'hui
+  // Calcul du jour de l'année pour rotation déterministe des conseils
+  var now = new Date();
+  var startOfYear = new Date(now.getFullYear(), 0, 0);
+  var dayOfYear = Math.floor((now - startOfYear) / 86400000);
+
+  // ── Conseils tournants (4 sets, rotation par jour de l'année) ──
+  var tipsSets = [
+    [
+      { i:'😴', t:'Sommeil 7-9h', d:'Récupération musculaire pic entre 22h et 2h. Vise 23h max.' },
+      { i:'💧', t:'Hydratation', d:'35 ml/kg. Pour toi : ' + Math.round(((U.poids || 75) * 35)/100)/10 + ' L sur la journée.' },
+      { i:'🚶', t:'Marche active', d:'30-45 min en zone 1. Active la circulation, accélère la récup.' }
+    ],
+    [
+      { i:'🥩', t:'Protéines réparties', d:'1.6-2.2 g/kg/j sur 4 prises. Tu construis le muscle pendant le repos.' },
+      { i:'🧘', t:'Stress sous contrôle', d:'10 min de respiration ou méditation. Cortisol bas = récup haute.' },
+      { i:'🌞', t:'Lumière du jour', d:'15 min dehors le matin. Régule mélatonine et énergie.' }
+    ],
+    [
+      { i:'🍌', t:'Glucides intelligents', d:'Reconstitue le glycogène. Avoine, riz, fruits autour des repas.' },
+      { i:'❄️', t:'Douche froide', d:'2-3 min en fin de douche. Réduit inflammations et courbatures.' },
+      { i:'📵', t:'Écrans limités', d:'Pas de téléphone 30 min avant le coucher. Sommeil profond x2.' }
+    ],
+    [
+      { i:'🦴', t:'Mobilité quotidienne', d:'10 min suffisent. Hanches, épaules, colonne. Prévient les blessures.' },
+      { i:'🫐', t:'Anti-oxydants', d:'Fruits rouges, légumes verts. Combat le stress oxydatif post-séance.' },
+      { i:'⏰', t:'Routine constante', d:'Coucher/lever réguliers. Le corps adore la prévisibilité.' }
+    ]
+  ];
+  var tips = tipsSets[dayOfYear % tipsSets.length];
+
+  // ── Hero REPOS ──
+  var html = '<div class="sv-rest-hero">'
+    + '<div class="sv-rest-hero-eyebrow">Aujourd\'hui · Récupération</div>'
+    + '<div class="sv-rest-hero-title">REPOS</div>'
+    + '<div class="sv-rest-hero-sub">Le muscle ne pousse pas pendant l\'effort, il pousse pendant le repos. Profites-en, tu progresses là.</div>'
+    + '<div class="sv-rest-hero-pill">🌿 Jour OFF programmé</div>'
+    + '</div>';
+
+  // ── Card 1 : Mobilité optionnelle ──
+  var mobIds = ['cat_cow', 'world_greatest', 'mobilite_hanche'];
+  html += '<div class="sv-rest-card">'
+    + '<div class="sv-rest-card-hd">'
+    + '<div class="sv-rest-card-title">Mobilité optionnelle</div>'
+    + '<div class="sv-rest-card-badge">~ 10 min</div>'
+    + '</div>'
+    + '<div class="sv-rest-mob-list">';
+  mobIds.forEach(function(id){
+    var e = window.SV_EXOS[id];
+    if (!e) return;
+    html += '<div class="sv-rest-mob-row">'
+      + '<div class="sv-rest-mob-icon">🧘</div>'
+      + '<div class="sv-rest-mob-meta">'
+      + '<div class="sv-rest-mob-name">' + e.n + '</div>'
+      + '<div class="sv-rest-mob-sub">3 × 60s · ' + e.m + '</div>'
+      + '</div>'
+      + '</div>';
+  });
+  html += '</div>'
+    + '<button class="sv-rest-cta-mob" onclick="svStartMobility()">▶ Lancer la routine mobilité</button>'
+    + '</div>';
+
+  // ── Card 2 : Conseils récup du jour ──
+  html += '<div class="sv-rest-card">'
+    + '<div class="sv-rest-card-hd">'
+    + '<div class="sv-rest-card-title">Bien récupérer aujourd\'hui</div>'
+    + '<div class="sv-rest-card-badge">3 essentiels</div>'
+    + '</div>'
+    + '<div class="sv-rest-tips">';
+  tips.forEach(function(tip){
+    html += '<div class="sv-rest-tip">'
+      + '<div class="sv-rest-tip-icon">' + tip.i + '</div>'
+      + '<div class="sv-rest-tip-body">'
+      + '<div class="sv-rest-tip-title">' + tip.t + '</div>'
+      + '<div class="sv-rest-tip-text">' + tip.d + '</div>'
+      + '</div>'
+      + '</div>';
+  });
+  html += '</div></div>';
+
+  // ── Card 3 : Prochaine séance (preview demain) ──
+  // Trouver le prochain jour non-rest
+  var nextDay = null;
+  var nextSeance = null;
+  for (var k = 1; k <= 7; k++) {
+    var idx = (today + k) % 7;
+    var s = svGenSeance(idx);
+    if (!s.rest) { nextDay = idx; nextSeance = s; break; }
+  }
+  if (nextSeance) {
+    var DAYS_FULL = ['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche'];
+    var labelDay;
+    if (nextDay === (today + 1) % 7) {
+      labelDay = 'Demain';
+    } else {
+      labelDay = DAYS_FULL[nextDay];
+    }
+    html += '<div class="sv-rest-card" style="padding:14px 16px;">'
+      + '<div class="sv-rest-card-hd" style="margin-bottom:10px;">'
+      + '<div class="sv-rest-card-title">Prochaine séance</div>'
+      + '<div class="sv-rest-card-badge">' + labelDay + '</div>'
+      + '</div>'
+      + '<div class="sv-rest-next" onclick="svPreviewNext()">'
+      + '<div class="sv-rest-next-icon">💪</div>'
+      + '<div class="sv-rest-next-meta">'
+      + '<div class="sv-rest-next-eyebrow">' + labelDay.toUpperCase() + ' · ' + nextSeance.duree + ' MIN</div>'
+      + '<div class="sv-rest-next-name">' + nextSeance.titre.toUpperCase() + '</div>'
+      + '<div class="sv-rest-next-sub">' + nextSeance.sub + ' · ' + nextSeance.exos.length + ' exos</div>'
+      + '</div>'
+      + '<div class="sv-rest-next-arrow">›</div>'
+      + '</div>'
+      + '</div>';
+  }
+
+  // ── CTA HIMA récupération ──
+  html += '<button class="sv-rest-cta-hima" onclick="svAskHIMARest()">💬 Optimiser ma récup avec HIMA</button>';
+
+  return html;
+};
+
+// Routine mobilité rapide : génère une séance mobilité et la lance
+window.svStartMobility = function() {
+  var mobIds = ['cat_cow', 'world_greatest', 'mobilite_hanche'];
+  var exos = mobIds.map(function(id){
+    var e = window.SV_EXOS[id];
+    if (!e) return null;
+    var sets = 3, reps = 60;
+    var logs = [];
+    for (var k = 0; k < sets; k++) logs.push({ reps: reps, charge: 0, done: false });
+    return {
+      id:id, n:e.n, m:e.m, sets:sets, reps:reps, rest:30, charge:0,
+      tip:e.tip, cat:e.cat, isCardio:true, logs:logs
+    };
+  }).filter(Boolean);
+  if (!exos.length) {
+    if (typeof toast === 'function') toast('Mobilité indisponible');
+    return;
+  }
+  // Construit une séance ad-hoc et lance le mode actif
+  SV.current = {
+    rest:false, day: new Date().getDay() === 0 ? 6 : new Date().getDay() - 1,
+    type:'mobilite', titre:'Mobilité', sub:'Récupération active',
+    duree: 10, niv:'deb', lieu:'maison', mode:'rest',
+    exos: exos
+  };
+  if (typeof svStartActive === 'function') svStartActive();
+};
+
+// Preview de la prochaine séance : redirige vers le tab séances actif demain (placeholder simple)
+window.svPreviewNext = function() {
+  if (typeof toast === 'function') toast('Reviens demain pour cette séance 💪');
+};
+
+// Demande à HIMA optimisation récup
+window.svAskHIMARest = function() {
+  if (typeof switchTab === 'function') switchTab('t-chat');
+  setTimeout(function(){
+    var ci = document.getElementById('ci');
+    if (!ci) return;
+    var prefill = 'Je suis en jour de repos aujourd\'hui. Comment optimiser ma récupération ? (sommeil, nutrition, mobilité, charge mentale)';
+    ci.value = prefill;
+    ci.focus();
+    if (ci.setSelectionRange) ci.setSelectionRange(prefill.length, prefill.length);
+    ci.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, 350);
+};
+
+// ────────────────────────────────────────────────
 // ÉCRAN 1 — LANDING (avec liste exos visible direct)
 // ────────────────────────────────────────────────
 window.svBuildLanding = function() {
@@ -10282,11 +10710,7 @@ window.svBuildLandingImpl = function() {
   var today = new Date().getDay() === 0 ? 6 : new Date().getDay() - 1;
   var html = '';
   if (seance.rest) {
-    html = '<div class="sv-hero"><div class="sv-hero-eyebrow">AUJOURD\'HUI</div>'
-      + '<div class="sv-hero-title">REPOS</div>'
-      + '<div class="sv-hero-sub">Le repos fait progresser. Reviens demain.</div>'
-      + '<button class="sv-btn-ghost" onclick="svOpenLib()" style="margin-top:18px;">📚 Voir la bibliothèque</button>'
-      + '</div>';
+    html = svBuildRestHTML(seance, today, U);
   } else {
     var jourFr = ['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche'][today];
     html = '<div class="sv-hero">'
