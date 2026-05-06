@@ -2764,6 +2764,520 @@ body:not([data-tab="chat"]) .voice-status { display: none !important; }
   width: 28px; height: 28px;
 }
 
+
+/* ═══════════════════════════════════════════════════
+   HIMA Tab Séances v5.0 — CSS minimaliste (ajout)
+   ═══════════════════════════════════════════════════ */
+/* ════════════════════════════════════════════════════════
+   HIMA TAB SÉANCES v5.0 — CSS minimaliste
+   Design tokens : --bg #080810, accents orange #F98805,
+   pink #F35695, lime #DDE255
+   ════════════════════════════════════════════════════════ */
+
+/* Tab root iOS Safari fix */
+#t-prog.atab.on {
+  display: block !important;
+  height: calc(100vh - 70px) !important;
+  min-height: calc(100vh - 70px) !important;
+  max-height: calc(100vh - 70px) !important;
+  overflow: hidden !important;
+  position: relative !important;
+}
+#t-prog .sv-root {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: #080810;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+  padding: calc(20px + env(safe-area-inset-top, 0px)) 16px calc(110px + env(safe-area-inset-bottom, 0px)) 16px;
+  box-sizing: border-box;
+  position: relative;
+}
+#t-prog .sv-root::-webkit-scrollbar { display: none; }
+
+/* ═══ HERO ═══ */
+.sv-hero {
+  margin-bottom: 18px;
+  padding: 4px 0;
+}
+.sv-hero-eyebrow {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 11px;
+  font-weight: 800;
+  color: #DDE255;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.sv-hero-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 56px;
+  line-height: 1;
+  letter-spacing: 0.5px;
+  color: #F0F0FF;
+  margin-bottom: 6px;
+}
+.sv-hero-sub {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  color: rgba(240,240,255,0.6);
+  margin-bottom: 12px;
+}
+.sv-hero-pills {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.sv-pill {
+  display: inline-block;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(240,240,255,0.85);
+  padding: 6px 12px;
+  border: 1px solid rgba(240,240,255,0.12);
+  border-radius: 999px;
+  background: rgba(240,240,255,0.03);
+}
+
+/* ═══ LISTE EXOS PREVIEW (landing) ═══ */
+.sv-exo-list {
+  margin: 18px 0;
+  background: rgba(240,240,255,0.03);
+  border: 1px solid rgba(240,240,255,0.06);
+  border-radius: 16px;
+  overflow: hidden;
+}
+.sv-exo-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(240,240,255,0.04);
+}
+.sv-exo-row:last-child { border-bottom: none; }
+.sv-exo-thumb {
+  width: 56px;
+  height: 56px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #000;
+}
+.sv-exo-meta {
+  flex: 1;
+  min-width: 0;
+}
+.sv-exo-name {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  color: #F0F0FF;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 2px;
+}
+.sv-exo-sub {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  color: rgba(240,240,255,0.5);
+}
+
+/* ═══ SEMAINE 7 DOTS ═══ */
+.sv-week-dots {
+  display: flex;
+  justify-content: space-between;
+  margin: 18px 0;
+  padding: 0 4px;
+}
+.sv-dot {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(240,240,255,0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  color: rgba(240,240,255,0.4);
+}
+.sv-dot.today {
+  border-color: #F98805;
+  color: #F98805;
+  box-shadow: 0 0 0 2px rgba(249,136,5,0.15);
+}
+.sv-dot.done {
+  background: #DDE255;
+  border-color: #DDE255;
+  color: #080810;
+}
+.sv-dot.rest {
+  opacity: 0.4;
+}
+
+/* ═══ CTA PRINCIPAL ═══ */
+.sv-cta-main {
+  display: block;
+  width: 100%;
+  margin: 14px 0 8px;
+  padding: 22px 16px;
+  border: none;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #F98805 0%, #F35695 100%);
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  color: #fff;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(243,86,149,0.25);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.sv-cta-main:active {
+  transform: scale(0.98);
+  box-shadow: 0 4px 14px rgba(243,86,149,0.2);
+}
+
+/* ═══ LIENS SECONDAIRES ═══ */
+.sv-link {
+  display: block;
+  width: 100%;
+  margin: 6px 0;
+  padding: 12px;
+  border: none;
+  background: transparent;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(240,240,255,0.6);
+  text-align: center;
+  cursor: pointer;
+}
+.sv-link:active { color: #F98805; }
+.sv-btn-ghost {
+  display: inline-block;
+  padding: 12px 20px;
+  border: 1px solid rgba(240,240,255,0.15);
+  border-radius: 14px;
+  background: rgba(240,240,255,0.03);
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: #F0F0FF;
+  cursor: pointer;
+}
+
+/* ═══ STATS MINI ═══ */
+.sv-stats-mini {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+  margin: 16px 0 8px;
+}
+.sv-stat-mini {
+  background: rgba(240,240,255,0.03);
+  border: 1px solid rgba(240,240,255,0.06);
+  border-radius: 12px;
+  padding: 12px 6px;
+  text-align: center;
+}
+.sv-stat-mini-val {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 24px;
+  color: #F0F0FF;
+  line-height: 1;
+}
+.sv-stat-mini-lbl {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  color: rgba(240,240,255,0.5);
+  letter-spacing: 1.2px;
+  margin-top: 4px;
+}
+
+/* ═══ MODE ACTIF — VIDÉO ═══ */
+.sv-active-video {
+  width: 100%;
+  height: 240px;
+  border-radius: 18px;
+  overflow: hidden;
+  background: #000;
+  margin-bottom: 16px;
+}
+.sv-active-name {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 32px;
+  color: #F0F0FF;
+  letter-spacing: 0.5px;
+  line-height: 1.1;
+}
+.sv-active-muscle {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  color: rgba(240,240,255,0.55);
+  margin-top: 2px;
+  margin-bottom: 12px;
+}
+.sv-active-tip {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  color: #F98805;
+  background: rgba(249,136,5,0.08);
+  border-radius: 10px;
+  padding: 10px 12px;
+  line-height: 1.4;
+  margin-bottom: 18px;
+}
+
+/* ═══ MODE ACTIF — SETS ROW ═══ */
+.sv-sets-row {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 18px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.sv-sets-row::-webkit-scrollbar { display: none; }
+.sv-set-pill {
+  flex-shrink: 0;
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  color: rgba(240,240,255,0.5);
+  background: rgba(240,240,255,0.04);
+  border: 1px solid rgba(240,240,255,0.08);
+  letter-spacing: 0.5px;
+}
+.sv-set-pill.done {
+  background: rgba(221,226,85,0.15);
+  border-color: rgba(221,226,85,0.4);
+  color: #DDE255;
+}
+.sv-set-pill.current {
+  background: rgba(249,136,5,0.15);
+  border-color: #F98805;
+  color: #F98805;
+}
+
+/* ═══ MODE ACTIF — CONTROLS REPS / CHARGE ═══ */
+.sv-controls-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+.sv-control {
+  background: rgba(240,240,255,0.03);
+  border: 1px solid rgba(240,240,255,0.08);
+  border-radius: 14px;
+  padding: 12px;
+}
+.sv-control-lbl {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 10px;
+  font-weight: 800;
+  color: rgba(240,240,255,0.5);
+  letter-spacing: 1.5px;
+  text-align: center;
+  margin-bottom: 8px;
+}
+.sv-control-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.sv-control-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  border: none;
+  background: rgba(240,240,255,0.06);
+  color: #F0F0FF;
+  font-size: 22px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.sv-control-btn:active { background: rgba(249,136,5,0.2); }
+.sv-control-val {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 32px;
+  color: #F0F0FF;
+  text-align: center;
+  flex: 1;
+  line-height: 1;
+}
+.sv-unit {
+  font-size: 12px;
+  color: rgba(240,240,255,0.5);
+  font-family: 'DM Sans', sans-serif;
+  margin-left: 4px;
+}
+.sv-cardio-info {
+  text-align: center;
+  margin-bottom: 18px;
+  font-family: 'DM Sans', sans-serif;
+  color: rgba(240,240,255,0.6);
+}
+.sv-cardio-time {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 32px;
+  color: #F35695;
+}
+
+/* ═══ CTA VALIDATE ═══ */
+.sv-cta-validate {
+  display: block;
+  width: 100%;
+  padding: 22px 16px;
+  margin: 8px 0;
+  border: none;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #F98805, #F35695);
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: #fff;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(243,86,149,0.3);
+  transition: transform 0.15s ease;
+}
+.sv-cta-validate:active { transform: scale(0.98); }
+
+/* ═══ REPOS — temps & next ═══ */
+#sv-rest-time {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 96px;
+  line-height: 1;
+  color: #F0F0FF;
+}
+#sv-rest-next-data {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  color: rgba(240,240,255,0.55);
+  margin-top: 4px;
+}
+
+/* ═══ RÉCAP ═══ */
+.sv-recap-pr {
+  margin: 14px 0;
+  padding: 14px;
+  background: rgba(221,226,85,0.12);
+  border: 1px solid rgba(221,226,85,0.4);
+  border-radius: 14px;
+  text-align: center;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 14px;
+  font-weight: 800;
+  color: #DDE255;
+  letter-spacing: 1px;
+}
+.sv-recap-pr span {
+  font-weight: 600;
+  font-size: 13px;
+  color: rgba(240,240,255,0.85);
+  letter-spacing: 0;
+}
+.sv-recap-vs {
+  margin: 10px 0;
+  text-align: center;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: rgba(240,240,255,0.85);
+  padding: 12px;
+  background: rgba(240,240,255,0.04);
+  border-radius: 12px;
+}
+
+/* ═══ BIBLIOTHÈQUE ═══ */
+.sv-lib-search {
+  width: 100%;
+  padding: 14px 16px;
+  border: 1px solid rgba(240,240,255,0.08);
+  border-radius: 14px;
+  background: rgba(240,240,255,0.03);
+  color: #F0F0FF;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  margin-bottom: 12px;
+  box-sizing: border-box;
+  outline: none;
+}
+.sv-lib-search:focus { border-color: #F98805; }
+.sv-lib-chips {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 14px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 2px 0;
+}
+.sv-lib-chips::-webkit-scrollbar { display: none; }
+.sv-lib-chip {
+  flex-shrink: 0;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: rgba(240,240,255,0.04);
+  border: 1px solid rgba(240,240,255,0.08);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(240,240,255,0.7);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.sv-lib-chip.on {
+  background: rgba(249,136,5,0.15);
+  border-color: #F98805;
+  color: #F98805;
+}
+.sv-lib-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  background: rgba(240,240,255,0.03);
+  border: 1px solid rgba(240,240,255,0.04);
+  border-radius: 14px;
+  margin-bottom: 8px;
+  cursor: pointer;
+}
+.sv-lib-thumb {
+  width: 56px;
+  height: 56px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #000;
+}
+.sv-lib-meta { flex: 1; min-width: 0; }
+.sv-lib-name {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: #F0F0FF;
+  margin-bottom: 2px;
+}
+.sv-lib-sub {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  color: rgba(240,240,255,0.5);
+}
+.sv-lib-arrow {
+  color: rgba(240,240,255,0.3);
+  font-size: 20px;
+}
+
 </style>
 
 <!-- SPLASH -->
@@ -8782,97 +9296,100 @@ console.log('HIMA Conversion Engine v3.1 chargé ✓ — pricing 14,99/24,99 act
   }
 })();
 
+
 /* ════════════════════════════════════════════════════════
-   HIMA TAB SÉANCES v4.0 — REFACTOR PROPRE
+   HIMA TAB SÉANCES v5.0 — VERSION MINIMALISTE
    ────────────────────────────────────────────────────────
-   Méga refactor : 1 seule définition par fonction.
-   Plus aucun wrapper cascade. Plus aucun double observer.
-   Scope : Vidéos ymove + Cam dorsale + Autopilot + Voix coach.
-   Supprimé : score forme, smart notifs, Apple Health, mode rapide.
+   Vision validée par équipe d'experts :
+   - 5 features only : séance du jour / mode actif / coach texte / adaptation / récap
+   - 4 écrans : landing / mode actif / repos / récap
+   - 1 chemin principal : Démarrer → Set fait × N → Comment tu te sens
+   - Pas de cam, pas de pose detection, pas de score forme
+   - Pas d'overlay détail intermédiaire (détail visible directement sur landing)
+   - Voix OFF par défaut, toggle dans le mode actif
+   - Autopilot SILENCIEUX (ajustement charges sans label visible)
    ════════════════════════════════════════════════════════ */
 (function(){
 'use strict';
 
-// Logger silencieux (console.log + console.error)
-window._sv2_log = function(msg, isErr) {
-  try { (isErr ? console.error : console.log)('[SV2]', msg); } catch(e) {}
-};
-
-// Capture des erreurs globales pour debug iOS
 window.addEventListener('error', function(e){
-  console.error('[SV2] global error:', e.message, '@', e.filename, ':', e.lineno);
+  console.error('[SV] global error:', e.message, '@', e.filename, ':', e.lineno);
 });
 
 // ─── ÉTAT GLOBAL ───
-window.SV2 = window.SV2 || {
-  current: null, exoIdx: 0, setIdx: 0,
-  startTime: null, paused: false, pausedTotal: 0, pauseStart: null,
-  restTimer: null, restRemaining: 0, restDefault: 90,
-  felt: null, log: []
+window.SV = window.SV || {
+  current: null,        // séance en cours
+  exoIdx: 0,            // exo actuel (0-based)
+  setIdx: 0,            // set actuel (0-based)
+  startTime: null,
+  paused: false,
+  restTimer: null,
+  restRemaining: 0,
+  restDefault: 90,
+  felt: null,
+  log: [],
+  voiceOn: false,       // voix OFF par défaut
+  bubbleLastShown: 0
 };
 
-window.SV2_CAM = { stream: null, target: 10, reps: 0, state: 'up', exoId: null, raf: null, motion: [] };
-window.SV2_VOICE = { enabled: (window.U && U.sv2VoiceOn) || false, lastSpoke: 0 };
-window.SV2_AUTOPILOT = { enabled: true };
-window.SV2_PROACTIVE = { lastShown: 0 };
+// Recharge la pref voix depuis U
+if (window.U && typeof U.svVoiceOn === 'boolean') SV.voiceOn = U.svVoiceOn;
 
-// ─── BIBLIOTHÈQUE 43 EXOS ───
-window.EXOS_LIB = {
-  'bench_press':    { n:'Développé couché barre', m:'Pectoraux', m2:'Triceps', l:'salle', niv:'int', cat:'pousser', tip:'Dos plaqué, omoplates serrées. Barre touche le sternum.' },
-  'incline_bench':  { n:'Développé incliné haltères', m:'Haut pectoraux', m2:'Épaules', l:'salle', niv:'int', cat:'pousser', tip:'Banc à 30°. Coudes 45° du buste.' },
-  'pompes':         { n:'Pompes', m:'Pectoraux', m2:'Triceps', l:'both', niv:'deb', cat:'pousser', tip:'Corps gainé, bassin neutre. Descend jusqu\'au sol.' },
-  'dips':           { n:'Dips parallèles', m:'Pectoraux bas', m2:'Triceps', l:'salle', niv:'av', cat:'pousser', tip:'Buste légèrement en avant. Descend à 90° des coudes.' },
-  'ecarte_haltere': { n:'Écartés haltères', m:'Pectoraux', l:'both', niv:'deb', cat:'pousser', tip:'Coudes légèrement fléchis fixes. Étirement contrôlé.' },
-  'tractions':      { n:'Tractions pronation', m:'Dos', m2:'Biceps', l:'both', niv:'av', cat:'tirer', tip:'Mains larges, descend jambes serrées. Tire jusqu\'au menton.' },
-  'rowing_barre':   { n:'Rowing barre', m:'Dos', m2:'Trapèzes', l:'salle', niv:'int', cat:'tirer', tip:'Buste 45°, dos neutre. Tire vers le bas du sternum.' },
+// ─── BIBLIOTHÈQUE EXOS (43) ───
+window.SV_EXOS = {
+  'bench_press':    { n:'Développé couché barre', m:'Pectoraux', l:'salle', niv:'int', cat:'pousser', tip:'Dos plaqué, omoplates serrées. Barre touche le sternum.' },
+  'incline_bench':  { n:'Développé incliné haltères', m:'Haut pectoraux', l:'salle', niv:'int', cat:'pousser', tip:'Banc à 30°. Coudes 45° du buste.' },
+  'pompes':         { n:'Pompes', m:'Pectoraux', l:'both', niv:'deb', cat:'pousser', tip:'Corps gainé, bassin neutre. Descend jusqu\'au sol.' },
+  'dips':           { n:'Dips parallèles', m:'Pectoraux bas', l:'salle', niv:'av', cat:'pousser', tip:'Buste légèrement en avant. Descend à 90° des coudes.' },
+  'ecarte_haltere': { n:'Écartés haltères', m:'Pectoraux', l:'both', niv:'deb', cat:'pousser', tip:'Coudes légèrement fléchis fixes.' },
+  'tractions':      { n:'Tractions pronation', m:'Dos', l:'both', niv:'av', cat:'tirer', tip:'Mains larges, jambes serrées. Tire jusqu\'au menton.' },
+  'rowing_barre':   { n:'Rowing barre', m:'Dos', l:'salle', niv:'int', cat:'tirer', tip:'Buste 45°, dos neutre. Tire vers le bas du sternum.' },
   'rowing_haltere': { n:'Rowing haltère 1 bras', m:'Dos', l:'both', niv:'deb', cat:'tirer', tip:'Genou et main sur banc. Tire le coude vers la hanche.' },
-  'tirage_vertical':{ n:'Tirage vertical', m:'Dos', m2:'Biceps', l:'salle', niv:'deb', cat:'tirer', tip:'Tire la barre devant le visage. Coudes vers le sol.' },
-  'tirage_horiz':   { n:'Tirage horizontal', m:'Dos', l:'salle', niv:'deb', cat:'tirer', tip:'Buste droit. Pince les omoplates en fin de mouvement.' },
-  'soulever_terre': { n:'Soulevé de terre', m:'Dos', m2:'Ischios', l:'salle', niv:'av', cat:'tirer', tip:'Dos plat, barre proche tibia. Pousse le sol avec les pieds.' },
-  'squat':          { n:'Squat barre', m:'Quadriceps', m2:'Fessiers', l:'salle', niv:'int', cat:'jambes', tip:'Pieds largeur épaules, descend droit. Genoux alignés pieds.' },
-  'squat_pdc':      { n:'Squat poids du corps', m:'Quadriceps', l:'both', niv:'deb', cat:'jambes', tip:'Bras tendus devant. Descend lentement, talons au sol.' },
-  'squat_bulgare':  { n:'Squat bulgare', m:'Quadriceps', m2:'Fessiers', l:'both', niv:'int', cat:'jambes', tip:'Pied arrière surélevé. Descend droit, genou avant à 90°.' },
-  'leg_press':      { n:'Presse à cuisses', m:'Quadriceps', m2:'Fessiers', l:'salle', niv:'deb', cat:'jambes', tip:'Pieds largeur épaules. Descend jusqu\'à 90°.' },
-  'fentes':         { n:'Fentes alternées', m:'Quadriceps', m2:'Fessiers', l:'both', niv:'deb', cat:'jambes', tip:'Genou avant aligné cheville. Buste droit.' },
+  'tirage_vertical':{ n:'Tirage vertical', m:'Dos', l:'salle', niv:'deb', cat:'tirer', tip:'Tire la barre devant le visage.' },
+  'tirage_horiz':   { n:'Tirage horizontal', m:'Dos', l:'salle', niv:'deb', cat:'tirer', tip:'Buste droit. Pince les omoplates.' },
+  'soulever_terre': { n:'Soulevé de terre', m:'Dos', l:'salle', niv:'av', cat:'tirer', tip:'Dos plat, barre proche tibia.' },
+  'squat':          { n:'Squat barre', m:'Quadriceps', l:'salle', niv:'int', cat:'jambes', tip:'Pieds largeur épaules, descend droit.' },
+  'squat_pdc':      { n:'Squat poids du corps', m:'Quadriceps', l:'both', niv:'deb', cat:'jambes', tip:'Bras tendus devant. Descend lentement.' },
+  'squat_bulgare':  { n:'Squat bulgare', m:'Quadriceps', l:'both', niv:'int', cat:'jambes', tip:'Pied arrière surélevé. Genou avant à 90°.' },
+  'leg_press':      { n:'Presse à cuisses', m:'Quadriceps', l:'salle', niv:'deb', cat:'jambes', tip:'Pieds largeur épaules. Descend jusqu\'à 90°.' },
+  'fentes':         { n:'Fentes alternées', m:'Quadriceps', l:'both', niv:'deb', cat:'jambes', tip:'Genou avant aligné cheville.' },
   'leg_curl':       { n:'Leg curl', m:'Ischios', l:'salle', niv:'deb', cat:'jambes', tip:'Mouvement contrôlé. Contracte en haut.' },
-  'mollets':        { n:'Mollets debout', m:'Mollets', l:'both', niv:'deb', cat:'jambes', tip:'Monte sur la pointe au max. Étire en bas.' },
-  'developpe_militaire': { n:'Développé militaire', m:'Épaules', m2:'Triceps', l:'salle', niv:'int', cat:'pousser', tip:'Gainage. Pousse au-dessus de la tête sans cambrer.' },
+  'mollets':        { n:'Mollets debout', m:'Mollets', l:'both', niv:'deb', cat:'jambes', tip:'Monte sur la pointe au max.' },
+  'developpe_militaire': { n:'Développé militaire', m:'Épaules', l:'salle', niv:'int', cat:'pousser', tip:'Gainage. Pousse au-dessus de la tête sans cambrer.' },
   'arnold':         { n:'Arnold press', m:'Épaules', l:'both', niv:'int', cat:'pousser', tip:'Rotation des paumes pendant la montée.' },
   'eleve_lat':      { n:'Élévations latérales', m:'Épaules latérales', l:'both', niv:'deb', cat:'pousser', tip:'Coudes légèrement fléchis. Monte à hauteur épaules.' },
-  'oiseau':         { n:'Oiseau (rear delts)', m:'Épaules arrière', l:'both', niv:'deb', cat:'tirer', tip:'Buste 45°. Écarte bras vers l\'arrière.' },
+  'oiseau':         { n:'Oiseau (rear delts)', m:'Épaules arrière', l:'both', niv:'deb', cat:'tirer', tip:'Buste 45°. Écarte les bras vers l\'arrière.' },
   'curl_barre':     { n:'Curl barre', m:'Biceps', l:'both', niv:'deb', cat:'tirer', tip:'Coudes fixes. Pas de balancement.' },
-  'curl_haltere':   { n:'Curl haltères alternés', m:'Biceps', l:'both', niv:'deb', cat:'tirer', tip:'Supination en montant. Contraction max en haut.' },
-  'curl_marteau':   { n:'Curl marteau', m:'Biceps', m2:'Avant-bras', l:'both', niv:'deb', cat:'tirer', tip:'Prise neutre. Mouvement strict.' },
+  'curl_haltere':   { n:'Curl haltères alternés', m:'Biceps', l:'both', niv:'deb', cat:'tirer', tip:'Supination en montant.' },
+  'curl_marteau':   { n:'Curl marteau', m:'Biceps', l:'both', niv:'deb', cat:'tirer', tip:'Prise neutre. Mouvement strict.' },
   'extension_tri':  { n:'Extensions triceps', m:'Triceps', l:'both', niv:'deb', cat:'pousser', tip:'Coudes serrés. Étire bien en haut.' },
   'kickback':       { n:'Kickback triceps', m:'Triceps', l:'both', niv:'deb', cat:'pousser', tip:'Bras parallèle au sol. Extension complète.' },
-  'dips_chaise':    { n:'Dips sur chaise', m:'Triceps', m2:'Pectoraux', l:'maison', niv:'deb', cat:'pousser', tip:'Mains derrière, jambes tendues. Descend en pliant les coudes.' },
-  'gainage':        { n:'Gainage planche', m:'Abdos', m2:'Lombaires', l:'both', niv:'deb', cat:'core', tip:'Corps aligné. Bassin neutre, pas de cambrure.' },
+  'dips_chaise':    { n:'Dips sur chaise', m:'Triceps', l:'maison', niv:'deb', cat:'pousser', tip:'Mains derrière, jambes tendues.' },
+  'gainage':        { n:'Gainage planche', m:'Abdos', l:'both', niv:'deb', cat:'core', tip:'Corps aligné. Bassin neutre.' },
   'gainage_lat':    { n:'Gainage latéral', m:'Obliques', l:'both', niv:'deb', cat:'core', tip:'Hanches haut. Tient la position.' },
-  'crunch':         { n:'Crunch', m:'Abdos', l:'both', niv:'deb', cat:'core', tip:'Décolle uniquement les omoplates. Expire en montant.' },
-  'releve_jambes':  { n:'Relevés de jambes', m:'Abdos bas', l:'both', niv:'int', cat:'core', tip:'Lombaires plaquées au sol. Mouvement contrôlé.' },
-  'mountain':       { n:'Mountain climbers', m:'Abdos', m2:'Cardio', l:'both', niv:'deb', cat:'core', tip:'Position planche. Alterne genoux vers la poitrine.' },
+  'crunch':         { n:'Crunch', m:'Abdos', l:'both', niv:'deb', cat:'core', tip:'Décolle les omoplates. Expire en montant.' },
+  'releve_jambes':  { n:'Relevés de jambes', m:'Abdos bas', l:'both', niv:'int', cat:'core', tip:'Lombaires plaquées au sol.' },
+  'mountain':       { n:'Mountain climbers', m:'Abdos', l:'both', niv:'deb', cat:'core', tip:'Position planche. Alterne genoux vers la poitrine.' },
   'russian_twist':  { n:'Russian twist', m:'Obliques', l:'both', niv:'deb', cat:'core', tip:'Buste 45°. Pivote d\'un côté à l\'autre.' },
-  'burpees':        { n:'Burpees', m:'Cardio', m2:'Full body', l:'both', niv:'int', cat:'cardio', tip:'Squat, planche, pompe, saut. Rythme constant.' },
+  'burpees':        { n:'Burpees', m:'Cardio', l:'both', niv:'int', cat:'cardio', tip:'Squat, planche, pompe, saut.' },
   'jumping_jack':   { n:'Jumping jacks', m:'Cardio', l:'both', niv:'deb', cat:'cardio', tip:'Bras et jambes en synchro.' },
-  'high_knees':     { n:'Genoux hauts', m:'Cardio', m2:'Quadriceps', l:'both', niv:'deb', cat:'cardio', tip:'Genoux à hauteur des hanches.' },
+  'high_knees':     { n:'Genoux hauts', m:'Cardio', l:'both', niv:'deb', cat:'cardio', tip:'Genoux à hauteur des hanches.' },
   'sprints':        { n:'Sprints sur place', m:'Cardio', l:'both', niv:'int', cat:'cardio', tip:'Vitesse max sur 20-30s.' },
-  'corde_a_sauter': { n:'Corde à sauter', m:'Cardio', m2:'Mollets', l:'both', niv:'deb', cat:'cardio', tip:'Sauts légers, sur la pointe des pieds.' },
-  'rameur':         { n:'Rameur', m:'Cardio', m2:'Dos', l:'salle', niv:'deb', cat:'cardio', tip:'Pousse jambes puis tire bras. Mouvement fluide.' },
+  'corde_a_sauter': { n:'Corde à sauter', m:'Cardio', l:'both', niv:'deb', cat:'cardio', tip:'Sauts légers, sur la pointe des pieds.' },
+  'rameur':         { n:'Rameur', m:'Cardio', l:'salle', niv:'deb', cat:'cardio', tip:'Pousse jambes puis tire bras.' },
   'mobilite_hanche':{ n:'Mobilité hanches', m:'Hanches', l:'both', niv:'deb', cat:'mobilite', tip:'Mouvements lents et amples.' },
-  'cat_cow':        { n:'Cat-cow (chat-vache)', m:'Colonne', l:'both', niv:'deb', cat:'mobilite', tip:'Respiration synchronisée avec le mouvement.' },
-  'world_greatest': { n:'World greatest stretch', m:'Full mobility', l:'both', niv:'deb', cat:'mobilite', tip:'Étirement complet, à faire avant chaque séance.' }
+  'cat_cow':        { n:'Cat-cow (chat-vache)', m:'Colonne', l:'both', niv:'deb', cat:'mobilite', tip:'Respiration synchronisée.' },
+  'world_greatest': { n:'World greatest stretch', m:'Full mobility', l:'both', niv:'deb', cat:'mobilite', tip:'Étirement complet.' }
 };
 
-// ─── BIBLIOTHÈQUE VIDÉOS ymove.app ───
-// Format URL : https://ymove.app/api/free/{uuid}?type=video|thumbnail
-window.EXOS_VIDEOS = {
-  // Muscu — 25 UUIDs ymove
+// ─── BIBLIOTHÈQUE VIDÉOS YMOVE (25 UUIDs) ───
+window.SV_VIDS = {
   'squat':            'd65feff4-9891-4ff8-a9f9-64965da7b69c',
   'bench_press':      'd09e0ed7-21dd-4f1c-b5cf-3e345e9304ec',
   'soulever_terre':   'f96d5f24-c9b0-4782-bbd9-41d383a6b633',
   'rowing_barre':     'ae1f15b4-61f9-4da7-9ffe-0d8e72e6f097',
   'rowing_haltere':   'ae1f15b4-61f9-4da7-9ffe-0d8e72e6f097',
-  'developpe_militaire': 'd725ad5a-e0dd-4fca-8b9e-0016aaa757a0',
+  'developpe_militaire':'d725ad5a-e0dd-4fca-8b9e-0016aaa757a0',
   'tirage_vertical':  'ed1ca95e-2642-4551-a477-17485e486bfc',
   'leg_press':        '3dabdcc0-8639-4868-9e57-5afc621ed50d',
   'curl_barre':       '998e8f21-2bda-49d8-a773-b59c316d022d',
@@ -8894,485 +9411,390 @@ window.EXOS_VIDEOS = {
   'squat_bulgare':    '166bf038-1670-4c52-9f32-cf6463556d99'
 };
 
-window.sv2GetVideoURL = function(exoId) {
-  var uuid = window.EXOS_VIDEOS[exoId];
-  return uuid ? 'https://ymove.app/api/free/' + uuid + '?type=video' : null;
+window.svVidURL = function(id) {
+  var u = window.SV_VIDS[id];
+  return u ? 'https://ymove.app/api/free/' + u + '?type=video' : null;
 };
-window.sv2GetThumbURL = function(exoId) {
-  var uuid = window.EXOS_VIDEOS[exoId];
-  return uuid ? 'https://ymove.app/api/free/' + uuid + '?type=thumbnail' : null;
+window.svThumbURL = function(id) {
+  var u = window.SV_VIDS[id];
+  return u ? 'https://ymove.app/api/free/' + u + '?type=thumbnail' : null;
 };
 
-// ─── SVG ANATOMIQUE animé (fallback) ───
-window.sv2BodySVG = function(muscleKey) {
-  var zones = {
-    'Pectoraux':       { c:'#F98805', parts:['chest'] },
-    'Haut pectoraux':  { c:'#F98805', parts:['chest_top'] },
-    'Pectoraux bas':   { c:'#F98805', parts:['chest_bot'] },
-    'Dos':             { c:'#F35695', parts:['back','traps'] },
-    'Trapèzes':        { c:'#F35695', parts:['traps'] },
-    'Quadriceps':      { c:'#DDE255', parts:['quads'] },
-    'Ischios':         { c:'#DDE255', parts:['hams'] },
-    'Fessiers':        { c:'#DDE255', parts:['glutes'] },
-    'Mollets':         { c:'#DDE255', parts:['calves'] },
-    'Épaules':         { c:'#F98805', parts:['delts'] },
-    'Épaules latérales':{c:'#F98805', parts:['delts'] },
-    'Épaules arrière': { c:'#F98805', parts:['delts'] },
-    'Biceps':          { c:'#F98805', parts:['biceps'] },
-    'Triceps':         { c:'#F98805', parts:['triceps'] },
-    'Avant-bras':      { c:'#F98805', parts:['forearms'] },
-    'Abdos':           { c:'#F35695', parts:['abs'] },
-    'Abdos bas':       { c:'#F35695', parts:['abs_bot'] },
-    'Obliques':        { c:'#F35695', parts:['obliques'] },
-    'Lombaires':       { c:'#F35695', parts:['back'] },
-    'Hanches':         { c:'#F35695', parts:['hips'] },
-    'Colonne':         { c:'#F35695', parts:['back','abs'] },
-    'Cardio':          { c:'#F35695', parts:['heart'] },
-    'Full body':       { c:'#F98805', parts:['full'] },
-    'Full mobility':   { c:'#F35695', parts:['full'] }
+// ─── HTML média : vidéo ymove > SVG anatomique fallback ───
+window.svMedia = function(exoId, muscle, big) {
+  var url = svVidURL(exoId);
+  if (url) {
+    var poster = svThumbURL(exoId) || '';
+    var posterAttr = poster ? ' poster="'+poster+'"' : '';
+    var style = big
+      ? 'width:100%;height:100%;object-fit:contain;pointer-events:none;border-radius:18px;background:#000;'
+      : 'width:100%;height:100%;object-fit:cover;pointer-events:none;border-radius:12px;background:#000;';
+    return '<video src="'+url+'"'+posterAttr+' autoplay muted loop playsinline preload="metadata" disablePictureInPicture x-webkit-airplay="deny" controlslist="nodownload nofullscreen noremoteplayback noplaybackrate" style="'+style+'"></video>';
+  }
+  return svBodySVG(muscle);
+};
+
+// ─── SVG anatomique simplifié (fallback uniquement) ───
+window.svBodySVG = function(muscleKey) {
+  var hot = {
+    'Pectoraux':'#F98805','Haut pectoraux':'#F98805','Pectoraux bas':'#F98805',
+    'Dos':'#F35695','Quadriceps':'#DDE255','Ischios':'#DDE255','Fessiers':'#DDE255',
+    'Mollets':'#DDE255','Épaules':'#F98805','Épaules latérales':'#F98805','Épaules arrière':'#F98805',
+    'Biceps':'#F98805','Triceps':'#F98805','Abdos':'#F35695','Abdos bas':'#F35695',
+    'Obliques':'#F35695','Hanches':'#F35695','Colonne':'#F35695','Cardio':'#F35695',
+    'Full mobility':'#F35695'
   };
-  var z = zones[muscleKey] || { c:'#F98805', parts:['full'] };
-  var on = function(p){ return z.parts.indexOf(p) !== -1 || z.parts.indexOf('full') !== -1; };
-  var glow = z.c, dim = 'rgba(240,240,255,0.18)';
-  var anim = function(p, attr, vals, dur){
-    if (!on(p)) return '';
-    return '<animate attributeName="'+attr+'" values="'+vals+'" dur="'+(dur||'1.6s')+'" repeatCount="indefinite"/>';
-  };
-  return '<svg viewBox="0 0 100 160" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;">'
+  var c = hot[muscleKey] || '#F98805';
+  var dim = 'rgba(240,240,255,0.18)';
+  return '<svg viewBox="0 0 100 160" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;background:#000;border-radius:12px;">'
     + '<circle cx="50" cy="14" r="9" fill="'+dim+'"/>'
     + '<rect x="46" y="22" width="8" height="6" fill="'+dim+'"/>'
-    + '<path d="M 38 28 Q 50 24 62 28 L 60 34 Q 50 30 40 34 Z" fill="'+(on('traps')?glow:dim)+'">'+anim('traps','opacity','0.6;1;0.6')+'</path>'
-    + '<circle cx="34" cy="34" r="6" fill="'+(on('delts')?glow:dim)+'">'+anim('delts','r','6;7;6')+'</circle>'
-    + '<circle cx="66" cy="34" r="6" fill="'+(on('delts')?glow:dim)+'">'+anim('delts','r','6;7;6')+'</circle>'
-    + '<path d="M 40 32 Q 50 30 60 32 L 58 40 Q 50 38 42 40 Z" fill="'+(on('chest_top')||on('chest')?glow:dim)+'">'+(on('chest_top')||on('chest')?'<animate attributeName="opacity" values="0.6;1;0.6" dur="1.6s" repeatCount="indefinite"/>':'')+'</path>'
-    + '<path d="M 40 40 Q 50 42 60 40 L 58 48 Q 50 50 42 48 Z" fill="'+(on('chest_bot')||on('chest')?glow:dim)+'">'+(on('chest_bot')||on('chest')?'<animate attributeName="opacity" values="0.6;1;0.6" dur="1.6s" repeatCount="indefinite"/>':'')+'</path>'
-    + '<ellipse cx="28" cy="44" rx="4" ry="8" fill="'+(on('biceps')?glow:dim)+'">'+anim('biceps','rx','4;5;4')+'</ellipse>'
-    + '<ellipse cx="72" cy="44" rx="4" ry="8" fill="'+(on('biceps')?glow:dim)+'">'+anim('biceps','rx','4;5;4')+'</ellipse>'
-    + '<ellipse cx="26" cy="46" rx="3" ry="6" fill="'+(on('triceps')?glow:dim)+'" opacity="'+(on('triceps')?'0.7':'0.3')+'"/>'
-    + '<ellipse cx="74" cy="46" rx="3" ry="6" fill="'+(on('triceps')?glow:dim)+'" opacity="'+(on('triceps')?'0.7':'0.3')+'"/>'
-    + '<ellipse cx="22" cy="58" rx="3" ry="7" fill="'+(on('forearms')?glow:dim)+'"/>'
-    + '<ellipse cx="78" cy="58" rx="3" ry="7" fill="'+(on('forearms')?glow:dim)+'"/>'
-    + '<rect x="42" y="48" width="16" height="12" rx="2" fill="'+(on('abs')?glow:dim)+'">'+anim('abs','opacity','0.6;1;0.6')+'</rect>'
-    + '<rect x="42" y="60" width="16" height="10" rx="2" fill="'+(on('abs_bot')||on('abs')?glow:dim)+'">'+(on('abs_bot')||on('abs')?'<animate attributeName="opacity" values="0.6;1;0.6" dur="1.6s" repeatCount="indefinite"/>':'')+'</rect>'
-    + '<path d="M 38 50 L 42 50 L 42 68 L 38 64 Z" fill="'+(on('obliques')?glow:dim)+'"/>'
-    + '<path d="M 62 50 L 58 50 L 58 68 L 62 64 Z" fill="'+(on('obliques')?glow:dim)+'"/>'
-    + '<path d="M 40 70 Q 50 68 60 70 L 60 78 Q 50 80 40 78 Z" fill="'+(on('hips')?glow:dim)+'"/>'
-    + '<ellipse cx="44" cy="92" rx="5" ry="14" fill="'+(on('quads')?glow:dim)+'">'+anim('quads','rx','5;6;5')+'</ellipse>'
-    + '<ellipse cx="56" cy="92" rx="5" ry="14" fill="'+(on('quads')?glow:dim)+'">'+anim('quads','rx','5;6;5')+'</ellipse>'
-    + '<ellipse cx="44" cy="92" rx="3" ry="12" fill="'+(on('hams')?glow:dim)+'" opacity="'+(on('hams')?'0.7':'0.3')+'"/>'
-    + '<ellipse cx="56" cy="92" rx="3" ry="12" fill="'+(on('hams')?glow:dim)+'" opacity="'+(on('hams')?'0.7':'0.3')+'"/>'
-    + '<path d="M 40 78 Q 50 80 60 78 L 60 88 Q 50 90 40 88 Z" fill="'+(on('glutes')?glow:dim)+'" opacity="0.7"/>'
-    + '<circle cx="44" cy="108" r="3" fill="'+dim+'"/>'
-    + '<circle cx="56" cy="108" r="3" fill="'+dim+'"/>'
-    + '<ellipse cx="44" cy="126" rx="4" ry="11" fill="'+(on('calves')?glow:dim)+'">'+anim('calves','rx','4;5;4')+'</ellipse>'
-    + '<ellipse cx="56" cy="126" rx="4" ry="11" fill="'+(on('calves')?glow:dim)+'">'+anim('calves','rx','4;5;4')+'</ellipse>'
-    + '<ellipse cx="44" cy="142" rx="4" ry="3" fill="'+dim+'"/>'
-    + '<ellipse cx="56" cy="142" rx="4" ry="3" fill="'+dim+'"/>'
-    + (on('heart') ? '<path d="M 50 42 C 46 38, 40 40, 40 46 C 40 52, 50 58, 50 58 C 50 58, 60 52, 60 46 C 60 40, 54 38, 50 42 Z" fill="'+glow+'" opacity="0.9"><animate attributeName="opacity" values="0.6;1;0.6" dur="0.9s" repeatCount="indefinite"/></path>' : '')
+    + '<path d="M 40 32 Q 50 30 60 32 L 58 50 Q 50 52 42 50 Z" fill="'+c+'" opacity="0.85"><animate attributeName="opacity" values="0.6;1;0.6" dur="1.6s" repeatCount="indefinite"/></path>'
+    + '<ellipse cx="44" cy="92" rx="5" ry="14" fill="'+c+'" opacity="0.7"/>'
+    + '<ellipse cx="56" cy="92" rx="5" ry="14" fill="'+c+'" opacity="0.7"/>'
+    + '<rect x="42" y="52" width="16" height="22" rx="3" fill="'+c+'" opacity="0.6"/>'
     + '</svg>';
 };
 
-// ─── HELPER MEDIA : vidéo ymove > SVG cardio > SVG anatomique ───
-// Renvoie le HTML du visuel à afficher pour un exo (priorité vidéo)
-window.sv2ExoMedia = function(exo, big) {
-  var url = sv2GetVideoURL(exo.id);
-  if (url) {
-    var poster = sv2GetThumbURL(exo.id) || '';
-    var posterAttr = poster ? ' poster="'+poster+'"' : '';
-    var styleVid = big
-      ? 'width:100%;height:100%;object-fit:contain;pointer-events:none;border-radius:18px;background:#000;'
-      : 'width:100%;height:100%;object-fit:cover;pointer-events:none;border-radius:14px;';
-    return '<video src="'+url+'"'+posterAttr+' autoplay muted loop playsinline preload="metadata" disablePictureInPicture x-webkit-airplay="deny" controlslist="nodownload nofullscreen noremoteplayback noplaybackrate" style="'+styleVid+'"></video>';
-  }
-  // Fallback SVG anatomique (cardio inclus via le pattern 'heart' / 'full')
-  return sv2BodySVG(exo.m);
-};
-
-// ─── ESTIMATION CHARGE ───
-window.sv2EstimateCharge = function(exoId) {
-  if (window.U && U.PRs && U.PRs[exoId]) return Math.round(U.PRs[exoId].oneRM * 0.70 / 2.5) * 2.5;
-  var poids = (window.U && U.poids) || 70;
-  var niv = (window.U && U.niv) || 'deb';
+// ─── ESTIMATION CHARGE (basée poids corporel + niveau) ───
+window.svEstCharge = function(exoId) {
+  var U = window.U || {};
+  if (U.PRs && U.PRs[exoId]) return Math.round(U.PRs[exoId].oneRM * 0.70 / 2.5) * 2.5;
+  var poids = U.poids || 70;
+  var niv = U.niv || 'deb';
   var coefs = {
-    'bench_press': { deb:0.5, int:0.8, av:1.1 }, 'squat': { deb:0.7, int:1.1, av:1.5 },
-    'soulever_terre': { deb:0.9, int:1.3, av:1.8 }, 'developpe_militaire': { deb:0.3, int:0.5, av:0.7 },
-    'rowing_barre': { deb:0.5, int:0.8, av:1.0 }, 'leg_press': { deb:1.0, int:1.5, av:2.0 },
-    'tirage_vertical': { deb:0.5, int:0.7, av:0.9 }, 'tirage_horiz': { deb:0.4, int:0.6, av:0.8 },
-    'curl_barre': { deb:0.2, int:0.35, av:0.5 }, 'curl_haltere': { deb:0.1, int:0.18, av:0.25 },
-    'curl_marteau': { deb:0.1, int:0.18, av:0.25 }, 'extension_tri': { deb:0.1, int:0.2, av:0.3 },
-    'kickback': { deb:0.05, int:0.1, av:0.15 }, 'arnold': { deb:0.1, int:0.18, av:0.28 },
-    'eleve_lat': { deb:0.05, int:0.1, av:0.15 }, 'oiseau': { deb:0.05, int:0.1, av:0.15 },
-    'incline_bench': { deb:0.1, int:0.18, av:0.28 }, 'rowing_haltere': { deb:0.15, int:0.25, av:0.35 },
-    'leg_curl': { deb:0.3, int:0.5, av:0.7 }, 'mollets': { deb:0.5, int:1.0, av:1.5 },
-    'fentes': { deb:0.1, int:0.2, av:0.35 }, 'squat_bulgare': { deb:0.1, int:0.2, av:0.35 },
-    'ecarte_haltere': { deb:0.1, int:0.15, av:0.22 }
+    'bench_press':{deb:0.5,int:0.8,av:1.1},'squat':{deb:0.7,int:1.1,av:1.5},
+    'soulever_terre':{deb:0.9,int:1.3,av:1.8},'developpe_militaire':{deb:0.3,int:0.5,av:0.7},
+    'rowing_barre':{deb:0.5,int:0.8,av:1.0},'leg_press':{deb:1.0,int:1.5,av:2.0},
+    'tirage_vertical':{deb:0.5,int:0.7,av:0.9},'tirage_horiz':{deb:0.4,int:0.6,av:0.8},
+    'curl_barre':{deb:0.2,int:0.35,av:0.5},'curl_haltere':{deb:0.1,int:0.18,av:0.25},
+    'curl_marteau':{deb:0.1,int:0.18,av:0.25},'extension_tri':{deb:0.1,int:0.2,av:0.3},
+    'kickback':{deb:0.05,int:0.1,av:0.15},'arnold':{deb:0.1,int:0.18,av:0.28},
+    'eleve_lat':{deb:0.05,int:0.1,av:0.15},'oiseau':{deb:0.05,int:0.1,av:0.15},
+    'incline_bench':{deb:0.1,int:0.18,av:0.28},'rowing_haltere':{deb:0.15,int:0.25,av:0.35},
+    'leg_curl':{deb:0.3,int:0.5,av:0.7},'mollets':{deb:0.5,int:1.0,av:1.5},
+    'fentes':{deb:0.1,int:0.2,av:0.35},'squat_bulgare':{deb:0.1,int:0.2,av:0.35},
+    'ecarte_haltere':{deb:0.1,int:0.15,av:0.22}
   };
   var c = coefs[exoId];
   if (!c) return 0;
-  var charge = poids * c[niv];
-  return Math.round(charge / 2.5) * 2.5;
+  return Math.round(poids * c[niv] / 2.5) * 2.5;
 };
 
-// ─── AUTOPILOT : ajuste sets/charges selon 5 dernières séances ───
-window.sv2AutopilotCompute = function() {
-  if (!window.U || !U.sessions || U.sessions.length < 2) return { mode: 'normal', mult: 1 };
+// ─── AUTOPILOT SILENCIEUX : ajuste sans label visible ───
+window.svAutopilot = function() {
+  var U = window.U || {};
+  if (!U.sessions || U.sessions.length < 2) return 1;
   var last5 = U.sessions.slice(-5);
-  var feltAvg = last5.reduce(function(s, x){ return s + (x.felt || 3); }, 0) / last5.length;
+  var feltAvg = last5.reduce(function(s,x){ return s+(x.felt||3); },0) / last5.length;
   var streak = U.streak || 1;
   var readiness = (typeof calcReadiness === 'function') ? calcReadiness() : 70;
-  // Logique simple : si feltAvg >= 4 et readiness > 75 → push +10%
-  if (feltAvg >= 4 && readiness >= 75 && streak >= 3) return { mode: 'push', mult: 1.10, label: '🔥 Tu pousses fort — +10%' };
-  // Si feltAvg <= 2 → -15%
-  if (feltAvg <= 2) return { mode: 'recovery', mult: 0.85, label: '🌿 Récupération — −15%' };
-  // Si readiness < 50 → -10%
-  if (readiness < 50) return { mode: 'easy', mult: 0.90, label: '⚖️ Allégé — −10%' };
-  return { mode: 'normal', mult: 1, label: '🎯 Niveau optimal' };
+  if (feltAvg >= 4 && readiness >= 75 && streak >= 3) return 1.10; // push
+  if (feltAvg <= 2) return 0.85;                                    // récup
+  if (readiness < 50) return 0.90;                                  // allégé
+  return 1;                                                          // normal
 };
 
-// ─── GÉNÉRATION SÉANCE (avec autopilot intégré) ───
-window.sv2GenSeance = function(jourIdx) {
-  // Mode dérivé de l'objectif (perte→glow, muscle→bodybuilding, mixte→mindset, perf→hyrox)
-  var goalToMode = { perte: 'glow', muscle: 'bodybuilding', mixte: 'mindset', perf: 'hyrox' };
+// ─── GÉNÉRATION SÉANCE ───
+window.svGenSeance = function(jourIdx) {
   var U = window.U || {};
+  var goalToMode = { perte:'glow', muscle:'bodybuilding', mixte:'mindset', perf:'hyrox' };
   var mode = U.mode || goalToMode[U.obj] || 'bodybuilding';
   var lieu = U.lieu || 'maison';
   var niv = U.niv || 'deb';
   var d = (typeof jourIdx === 'number') ? jourIdx : (new Date().getDay() === 0 ? 6 : new Date().getDay() - 1);
   var planMap = {
-    glow: ['fullbody', 'cardio', 'rest', 'upper', 'cardio', 'lower', 'rest'],
-    bodybuilding: ['push', 'pull', 'legs', 'rest', 'push', 'pull', 'rest'],
-    hyrox: ['endurance', 'hiit', 'force', 'rest', 'long', 'mixte', 'rest'],
-    mindset: ['fullbody', 'mobilite', 'rest', 'cardio', 'fullbody', 'mixte', 'rest']
+    glow: ['fullbody','cardio','rest','upper','cardio','lower','rest'],
+    bodybuilding: ['push','pull','legs','rest','push','pull','rest'],
+    hyrox: ['endurance','hiit','force','rest','long','mixte','rest'],
+    mindset: ['fullbody','mobilite','rest','cardio','fullbody','mixte','rest']
   };
   var typeJour = (planMap[mode] || planMap.glow)[d];
-  if (typeJour === 'rest') return { rest: true, day: d };
+  if (typeJour === 'rest') return { rest:true, day:d };
   var templates = {
-    push:      { titre:'Push — Pectoraux Épaules Triceps', exos:['bench_press','incline_bench','developpe_militaire','eleve_lat','extension_tri','dips_chaise'] },
-    pull:      { titre:'Pull — Dos Biceps', exos:['tractions','rowing_haltere','tirage_vertical','curl_haltere','curl_marteau','oiseau'] },
-    legs:      { titre:'Legs — Jambes complètes', exos:['squat','leg_press','squat_bulgare','fentes','leg_curl','mollets'] },
-    upper:     { titre:'Haut du corps', exos:['pompes','rowing_haltere','developpe_militaire','curl_haltere','extension_tri','gainage'] },
-    lower:     { titre:'Bas du corps', exos:['squat_pdc','fentes','squat_bulgare','mollets','gainage_lat','releve_jambes'] },
-    fullbody:  { titre:'Full body — Corps entier', exos:['squat_pdc','pompes','rowing_haltere','fentes','gainage','mountain'] },
-    cardio:    { titre:'Cardio — Brûle-graisse', exos:['jumping_jack','burpees','high_knees','mountain','sprints','jumping_jack'] },
-    hiit:      { titre:'HIIT — Intervalles intenses', exos:['burpees','sprints','mountain','high_knees','squat_pdc','pompes'] },
-    endurance: { titre:'Endurance — Capacité aérobie', exos:['corde_a_sauter','rameur','jumping_jack','mountain','high_knees','rameur'] },
-    long:      { titre:'Long — Volume soutenu', exos:['rameur','squat_pdc','pompes','rowing_haltere','gainage','corde_a_sauter'] },
-    force:     { titre:'Force — Lourd et bref', exos:['squat','soulever_terre','bench_press','tractions','developpe_militaire','curl_barre'] },
-    mixte:     { titre:'Mixte — Force et Cardio', exos:['squat_pdc','pompes','burpees','rowing_haltere','mountain','gainage'] },
-    mobilite:  { titre:'Mobilité — Récupération active', exos:['world_greatest','mobilite_hanche','cat_cow','gainage','world_greatest','mobilite_hanche'] }
+    push:     {titre:'Push',sub:'Pectoraux · Épaules · Triceps',exos:['bench_press','incline_bench','developpe_militaire','eleve_lat','extension_tri','dips_chaise']},
+    pull:     {titre:'Pull',sub:'Dos · Biceps',exos:['tractions','rowing_haltere','tirage_vertical','curl_haltere','curl_marteau','oiseau']},
+    legs:     {titre:'Legs',sub:'Jambes complètes',exos:['squat','leg_press','squat_bulgare','fentes','leg_curl','mollets']},
+    upper:    {titre:'Haut du corps',sub:'Pectoraux · Dos · Bras',exos:['pompes','rowing_haltere','developpe_militaire','curl_haltere','extension_tri','gainage']},
+    lower:    {titre:'Bas du corps',sub:'Jambes · Fessiers',exos:['squat_pdc','fentes','squat_bulgare','mollets','gainage_lat','releve_jambes']},
+    fullbody: {titre:'Full body',sub:'Corps entier',exos:['squat_pdc','pompes','rowing_haltere','fentes','gainage','mountain']},
+    cardio:   {titre:'Cardio',sub:'Brûle-graisse',exos:['jumping_jack','burpees','high_knees','mountain','sprints','jumping_jack']},
+    hiit:     {titre:'HIIT',sub:'Intervalles intenses',exos:['burpees','sprints','mountain','high_knees','squat_pdc','pompes']},
+    endurance:{titre:'Endurance',sub:'Capacité aérobie',exos:['corde_a_sauter','rameur','jumping_jack','mountain','high_knees','rameur']},
+    long:     {titre:'Long',sub:'Volume soutenu',exos:['rameur','squat_pdc','pompes','rowing_haltere','gainage','corde_a_sauter']},
+    force:    {titre:'Force',sub:'Lourd et bref',exos:['squat','soulever_terre','bench_press','tractions','developpe_militaire','curl_barre']},
+    mixte:    {titre:'Mixte',sub:'Force et Cardio',exos:['squat_pdc','pompes','burpees','rowing_haltere','mountain','gainage']},
+    mobilite: {titre:'Mobilité',sub:'Récupération active',exos:['world_greatest','mobilite_hanche','cat_cow','gainage','world_greatest','mobilite_hanche']}
   };
   var tpl = templates[typeJour] || templates.fullbody;
   var available = tpl.exos.filter(function(id){
-    var e = window.EXOS_LIB[id];
+    var e = window.SV_EXOS[id];
     if (!e) return false;
     if (lieu === 'maison' && e.l === 'salle') return false;
     return true;
   });
   if (available.length < 4) available = tpl.exos;
-  var setsByNiv = { deb: [3, 10], int: [4, 10], av: [4, 8] };
+  var setsByNiv = { deb:[3,10], int:[4,10], av:[4,8] };
   var sn = setsByNiv[niv] || setsByNiv.deb;
-  // Autopilot : ajuste charges
-  var ap = sv2AutopilotCompute();
-  var exos = available.slice(0, 6).map(function(id){
-    var e = window.EXOS_LIB[id];
+  var mult = svAutopilot();
+  var exos = available.slice(0,6).map(function(id){
+    var e = window.SV_EXOS[id];
     var sets = sn[0], reps = sn[1];
     var isCardio = e.cat === 'cardio' || e.cat === 'core';
     var rest = isCardio ? 30 : (niv === 'av' ? 90 : 75);
-    var charge = (lieu === 'salle' && e.l !== 'maison' && e.cat !== 'cardio' && e.cat !== 'core' && e.cat !== 'mobilite')
-      ? Math.round(sv2EstimateCharge(id) * ap.mult / 2.5) * 2.5
+    var charge = (lieu === 'salle' && e.l !== 'maison' && !isCardio && e.cat !== 'mobilite')
+      ? Math.round(svEstCharge(id) * mult / 2.5) * 2.5
       : 0;
+    var logs = [];
+    for (var k = 0; k < sets; k++) logs.push({ reps: reps, charge: charge, done: false });
     return {
-      id: id, n: e.n, m: e.m, m2: e.m2 || '',
-      sets: sets, reps: reps, rest: rest, charge: charge,
-      tip: e.tip, cat: e.cat, isCardio: isCardio,
-      logs: (function(){ var arr=[]; for(var k=0;k<sets;k++) arr.push({ reps: reps, charge: charge, done: false }); return arr; })()
+      id:id, n:e.n, m:e.m, sets:sets, reps:reps, rest:rest, charge:charge,
+      tip:e.tip, cat:e.cat, isCardio:isCardio, logs:logs
     };
   });
   var dureeEst = Math.round(exos.length * (sn[0] * (45 + (exos[0].rest || 75)) / 60));
   return {
-    rest: false, day: d, type: typeJour, titre: tpl.titre, duree: dureeEst,
-    niv: niv, lieu: lieu, mode: mode, exos: exos, autopilot: ap,
-    sub: 'Adapté à ton niveau ' + ({deb:'débutant', int:'intermédiaire', av:'avancé'}[niv] || 'débutant') + (lieu==='salle'?' · salle':' · maison')
+    rest:false, day:d, type:typeJour, titre:tpl.titre, sub:tpl.sub,
+    duree:dureeEst, niv:niv, lieu:lieu, mode:mode, exos:exos
   };
 };
 
-window.sv2WeekKey = function(dayIdx) {
+window.svWeekKey = function(dayIdx) {
   var d = new Date();
   var diff = dayIdx - (d.getDay() === 0 ? 6 : d.getDay() - 1);
   d.setDate(d.getDate() + diff);
   return d.toISOString().slice(0,10);
 };
 
-// ─── BUILD LANDING (1 seule définition, pas de wrapper) ───
-window.buildSeancesV2 = function() {
-  _sv2_log('buildSeancesV2 called');
+// ────────────────────────────────────────────────
+// ÉCRAN 1 — LANDING (avec liste exos visible direct)
+// ────────────────────────────────────────────────
+window.svBuildLanding = function() {
   var tab = document.getElementById('t-prog');
-  if (!tab) { _sv2_log('ERR: t-prog not found', true); return; }
-  // Insérer le root SV2 si absent
-  var existing = tab.querySelector('.seances-v2-root');
+  if (!tab) return;
+  // Insère root si absent
+  var existing = tab.querySelector('.sv-root');
   if (!existing) {
-    if (!tab._sv2_origHTML) tab._sv2_origHTML = tab.innerHTML;
-    tab.innerHTML = '<div class="seances-v2-root" id="sv2-root"></div>';
-    _sv2_log('inserted seances-v2-root');
+    if (!tab._sv_orig) tab._sv_orig = tab.innerHTML;
+    tab.innerHTML = '<div class="sv-root" id="sv-root"></div>';
   }
-  var sc = tab.querySelector('.seances-v2-root');
-  if (!sc) { _sv2_log('ERR: root not findable after insert', true); return; }
-  var seance = sv2GenSeance();
+  var sc = tab.querySelector('.sv-root');
+  if (!sc) return;
+  var seance = svGenSeance();
   var U = window.U || {};
-  var prenom = U.prenom || 'Champion';
-  var readiness = (typeof calcReadiness === 'function') ? calcReadiness() : 70;
-  var streak = U.streak || 1;
-  var sessionsWeek = (U.sessions || []).filter(function(s){
-    var diff = (Date.now() - new Date(s.date).getTime()) / (1000*60*60*24);
-    return diff < 7;
-  });
-  var tonnageWeek = sessionsWeek.reduce(function(t, s){ return t + (s.tonnage || 0); }, 0);
+  var DAYSF = ['L','M','M','J','V','S','D'];
+  var today = new Date().getDay() === 0 ? 6 : new Date().getDay() - 1;
   var html = '';
   if (seance.rest) {
-    html += '<div class="sv2-hero"><div class="sv2-hero-content">'
-      + '<div class="sv2-hero-eyebrow">JOUR DE REPOS</div>'
-      + '<div class="sv2-hero-title">RÉCUPÉRATION</div>'
-      + '<div class="sv2-hero-sub">Le repos fait progresser. Tes muscles se reconstruisent aujourd\'hui.</div>'
-      + '<div class="sv2-hero-meta"><div class="sv2-meta-pill">🌿 Repos actif possible</div></div>'
-      + '<button class="sv2-hero-cta-secondary" onclick="sv2OpenLib()">Voir la bibliothèque d\'exos</button>'
-      + '</div></div>';
+    html = '<div class="sv-hero"><div class="sv-hero-eyebrow">AUJOURD\'HUI</div>'
+      + '<div class="sv-hero-title">REPOS</div>'
+      + '<div class="sv-hero-sub">Le repos fait progresser. Reviens demain.</div>'
+      + '<button class="sv-btn-ghost" onclick="svOpenLib()" style="margin-top:18px;">📚 Voir la bibliothèque</button>'
+      + '</div>';
   } else {
-    var ap = seance.autopilot || { label: '⚡ Adapté à ton état' };
-    html += '<div class="sv2-hero"><div class="sv2-hero-content">'
-      + '<div class="sv2-hero-eyebrow">AUJOURD\'HUI · '+prenom.toUpperCase()+'</div>'
-      + '<div class="sv2-hero-title">'+seance.titre.split(' — ')[0].toUpperCase()+'</div>'
-      + '<div class="sv2-hero-sub">'+(seance.titre.split(' — ')[1] || seance.sub)+'</div>'
-      + '<div class="sv2-hero-meta">'
-      +   '<div class="sv2-meta-pill">⏱ '+seance.duree+' min</div>'
-      +   '<div class="sv2-meta-pill">💪 '+seance.exos.length+' exos</div>'
-      +   '<div class="sv2-meta-pill sv2-meta-pill-readiness">'+ap.label+'</div>'
-      + '</div>'
-      + '<button class="sv2-hero-cta" onclick="sv2OpenDetail()">⚡ Démarrer ma séance</button>'
-      + '<button class="sv2-hero-cta-secondary" onclick="sv2OpenDetail()">Voir le détail</button>'
-      + '</div></div>';
+    var jourFr = ['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche'][today];
+    html = '<div class="sv-hero">'
+      + '<div class="sv-hero-eyebrow">AUJOURD\'HUI · ' + jourFr.toUpperCase() + '</div>'
+      + '<div class="sv-hero-title">' + seance.titre.toUpperCase() + '</div>'
+      + '<div class="sv-hero-sub">' + seance.sub + '</div>'
+      + '<div class="sv-hero-pills"><span class="sv-pill">⏱ ' + seance.duree + ' min</span><span class="sv-pill">💪 ' + seance.exos.length + ' exos</span></div>'
+      + '</div>';
+    // Liste exos directement visible (pas d'écran intermédiaire)
+    html += '<div class="sv-exo-list">';
+    seance.exos.forEach(function(e, i) {
+      var media = svMedia(e.id, e.m, false);
+      var sub = e.sets + '×' + e.reps + (e.isCardio ? 's' : '') + (e.charge > 0 ? ' · ' + e.charge + 'kg' : '');
+      html += '<div class="sv-exo-row">'
+        + '<div class="sv-exo-thumb">' + media + '</div>'
+        + '<div class="sv-exo-meta"><div class="sv-exo-name">' + e.n + '</div><div class="sv-exo-sub">' + sub + '</div></div>'
+        + '</div>';
+    });
+    html += '</div>';
   }
-  var DAYSF = ['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
-  var today = new Date().getDay() === 0 ? 6 : new Date().getDay() - 1;
-  html += '<div class="sv2-sec-title">CETTE SEMAINE</div><div class="sv2-week">';
+  // Semaine simplifiée (7 dots)
+  html += '<div class="sv-week-dots">';
   for (var i = 0; i < 7; i++) {
-    var dseance = sv2GenSeance(i);
-    var isToday = i === today;
-    var done = (U.sessionsByDay && U.sessionsByDay[sv2WeekKey(i)]) ? true : false;
-    var cls = 'sv2-day';
-    if (isToday) cls += ' today';
+    var dseance = svGenSeance(i);
+    var done = (U.sessionsByDay && U.sessionsByDay[svWeekKey(i)]) ? true : false;
+    var cls = 'sv-dot';
+    if (i === today) cls += ' today';
     if (done) cls += ' done';
     if (dseance.rest) cls += ' rest';
-    var icon = done ? '✓' : (dseance.rest ? '🌿' : (isToday ? '⚡' : '·'));
-    html += '<div class="'+cls+'" onclick="sv2OpenDay('+i+')">'
-      + '<div class="sv2-day-name">'+DAYSF[i]+'</div>'
-      + '<div class="sv2-day-num">'+(i+1)+'</div>'
-      + '<div class="sv2-day-icon">'+icon+'</div>'
-      + '</div>';
+    html += '<div class="' + cls + '"><span>' + DAYSF[i] + '</span></div>';
   }
   html += '</div>';
-  html += '<div class="sv2-sec-title">TES PROGRÈS</div>'
-    + '<div class="sv2-stats-row">'
-    +   '<div class="sv2-stat-card"><div class="sv2-stat-val sv2-stat-val-orange">'+sessionsWeek.length+'</div><div class="sv2-stat-lbl">Séances</div></div>'
-    +   '<div class="sv2-stat-card"><div class="sv2-stat-val sv2-stat-val-pink">'+(Math.round(tonnageWeek/1000*10)/10)+'<span style="font-size:14px;">t</span></div><div class="sv2-stat-lbl">Tonnage</div></div>'
-    +   '<div class="sv2-stat-card"><div class="sv2-stat-val sv2-stat-val-lime">'+streak+'</div><div class="sv2-stat-lbl">Streak</div></div>'
+  // CTA principal
+  if (!seance.rest) {
+    html += '<button class="sv-cta-main" onclick="svStartActive()">⚡ DÉMARRER MA SÉANCE</button>';
+    html += '<button class="sv-link" onclick="svAskHIMA()">💬 Adapter avec HIMA</button>';
+  }
+  // Stats
+  var sessionsWeek = (U.sessions || []).filter(function(s){
+    return (Date.now() - new Date(s.date).getTime()) < 7*24*60*60*1000;
+  });
+  var tonnageWeek = sessionsWeek.reduce(function(t,s){ return t + (s.tonnage || 0); },0);
+  html += '<div class="sv-stats-mini">'
+    + '<div class="sv-stat-mini"><div class="sv-stat-mini-val">' + sessionsWeek.length + '</div><div class="sv-stat-mini-lbl">SÉANCES</div></div>'
+    + '<div class="sv-stat-mini"><div class="sv-stat-mini-val">' + (Math.round(tonnageWeek/100)/10) + 't</div><div class="sv-stat-mini-lbl">TONNAGE</div></div>'
+    + '<div class="sv-stat-mini"><div class="sv-stat-mini-val">' + (U.streak || 1) + '</div><div class="sv-stat-mini-lbl">STREAK</div></div>'
     + '</div>';
-  html += '<div class="sv2-sec-title">EXPLORE</div>'
-    + '<button class="sv2-hero-cta-secondary" onclick="sv2OpenLib()" style="margin-top:0;">📚 Bibliothèque · '+Object.keys(window.EXOS_LIB).length+' exercices</button>';
+  html += '<button class="sv-link" onclick="svOpenLib()" style="margin-top:8px;">📚 Bibliothèque · ' + Object.keys(window.SV_EXOS).length + ' exercices</button>';
   sc.innerHTML = html;
+  // Sauvegarde séance courante (au cas où user veut adapter)
+  SV.current = seance.rest ? null : seance;
   // iOS Safari fix : force la hauteur en pixels
   try {
     var vh = window.innerHeight || document.documentElement.clientHeight;
     var navH = 70;
     sc.style.minHeight = (vh - navH) + 'px';
-    sc.style.height = (vh - navH) + 'px';
     tab.style.height = (vh - navH) + 'px';
     tab.style.maxHeight = (vh - navH) + 'px';
     tab.style.overflow = 'hidden';
     tab.style.display = 'block';
   } catch(e) {}
-  document.body.setAttribute('data-sv2', 'ready');
+  document.body.setAttribute('data-sv', 'ready');
 };
 
-// ─── DÉTAIL SÉANCE (vidéos ymove intégrées directement) ───
-window.sv2OpenDetail = function(jourIdx) {
-  var seance = sv2GenSeance(jourIdx);
-  if (seance.rest) { sv2OpenLib(); return; }
-  SV2.current = seance;
-  document.getElementById('sv2-detail-title').textContent = seance.titre;
-  document.getElementById('sv2-detail').setAttribute('data-mode', 'seance');
-  var body = document.getElementById('sv2-detail-body');
-  var html = '<div style="background:rgba(240,240,255,0.03);border:1px solid rgba(240,240,255,0.08);border-radius:18px;padding:18px;margin-bottom:16px;">'
-    + '<div style="display:flex;justify-content:space-between;margin-bottom:14px;">'
-    +   '<div><div style="font-size:11px;color:rgba(240,240,255,0.5);letter-spacing:1px;text-transform:uppercase;font-weight:700;">DURÉE</div><div style="font-family:Bebas Neue,sans-serif;font-size:26px;color:#F0F0FF;">'+seance.duree+' min</div></div>'
-    +   '<div><div style="font-size:11px;color:rgba(240,240,255,0.5);letter-spacing:1px;text-transform:uppercase;font-weight:700;">EXOS</div><div style="font-family:Bebas Neue,sans-serif;font-size:26px;color:#F0F0FF;">'+seance.exos.length+'</div></div>'
-    +   '<div><div style="font-size:11px;color:rgba(240,240,255,0.5);letter-spacing:1px;text-transform:uppercase;font-weight:700;">NIV</div><div style="font-family:Bebas Neue,sans-serif;font-size:26px;color:#F98805;">'+({deb:'DÉB',int:'INT',av:'AV'}[seance.niv]||'DÉB')+'</div></div>'
-    + '</div>'
-    + '<button class="sv2-hero-cta-secondary" onclick="sv2AskCoach()" style="margin-top:0;">💬 Demander à HIMA d\'adapter</button>'
-    + '</div>'
-    + '<div class="sv2-sec-title" style="margin-top:8px;">LES EXERCICES</div>';
-  seance.exos.forEach(function(e, i){
-    var meta = [];
-    meta.push(e.sets+' × '+e.reps+(e.isCardio?'s':''));
-    if (e.charge > 0) meta.push(e.charge+' kg');
-    meta.push(e.rest+'s repos');
-    // PRIORITÉ vidéo ymove, sinon SVG anatomique
-    var media = sv2ExoMedia(e, false);
-    html += '<div class="sv2-exo-card">'
-      + '<div class="sv2-exo-svg" style="overflow:hidden;background:#000;">'+media+'</div>'
-      + '<div class="sv2-exo-info">'
-      +   '<div class="sv2-exo-name">'+(i+1)+'. '+e.n+'</div>'
-      +   '<div class="sv2-exo-meta">'+meta.map(function(m){return '<span>'+m+'</span>';}).join('')+'</div>'
-      + '</div>'
-      + '<div class="sv2-exo-action" onclick="event.stopPropagation();sv2SwapExo('+i+')">⇄</div>'
-      + '</div>';
-  });
-  html += '<div style="height:20px;"></div>';
-  body.innerHTML = html;
-  document.getElementById('sv2-detail').classList.add('on');
-};
-
-window.sv2CloseDetail = function() {
-  document.getElementById('sv2-detail').classList.remove('on');
-  document.getElementById('sv2-detail').setAttribute('data-mode', '');
-};
-window.sv2OpenDay = function(dayIdx) { sv2OpenDetail(dayIdx); };
-
-window.sv2SwapExo = function(idx) {
-  if (!SV2.current) return;
-  var exo = SV2.current.exos[idx];
-  var alts = Object.keys(window.EXOS_LIB).filter(function(k){ return window.EXOS_LIB[k].cat === exo.cat && k !== exo.id; });
-  if (alts.length === 0) return;
-  var nextId = alts[Math.floor(Math.random() * alts.length)];
-  var newE = window.EXOS_LIB[nextId];
-  SV2.current.exos[idx] = {
-    id: nextId, n: newE.n, m: newE.m, m2: newE.m2 || '',
-    sets: exo.sets, reps: exo.reps, rest: exo.rest,
-    charge: sv2EstimateCharge(nextId),
-    tip: newE.tip, cat: newE.cat,
-    isCardio: newE.cat === 'cardio' || newE.cat === 'core',
-    logs: (function(){ var arr=[],ch=sv2EstimateCharge(nextId); for(var k=0;k<exo.sets;k++) arr.push({ reps: exo.reps, charge: ch, done: false }); return arr; })()
-  };
-  sv2OpenDetail();
-};
-
-window.sv2AskCoach = function() {
-  if (!SV2.current) {
-    if (typeof switchTab === 'function') switchTab('t-chat');
-    return;
+// ────────────────────────────────────────────────
+// ÉCRAN 2 — MODE ACTIF
+// ────────────────────────────────────────────────
+window.svStartActive = function() {
+  if (!SV.current) {
+    var seance = svGenSeance();
+    if (seance.rest) return;
+    SV.current = seance;
   }
-  if (typeof sv2CloseDetail === 'function') sv2CloseDetail();
-  if (typeof switchTab === 'function') switchTab('t-chat');
-  setTimeout(function() {
-    var ci = document.getElementById('ci');
-    if (!ci) return;
-    var s = SV2.current;
-    var exosListe = s.exos.map(function(e, i) {
-      return (i+1) + '. ' + e.n + ' (' + e.sets + '×' + e.reps + (e.charge>0 ? ', '+e.charge+'kg' : '') + ')';
-    }).join('\n');
-    var prefill = 'Voici ma séance "' + s.titre + '" (' + s.duree + ' min, niveau ' + ({deb:'débutant',int:'intermédiaire',av:'avancé'}[s.niv] || 'débutant') + ') :\n\n' + exosListe + '\n\nAdapte-la pour : ';
-    ci.value = prefill;
-    ci.focus();
-    if (ci.setSelectionRange) {
-      var len = prefill.length;
-      ci.setSelectionRange(len, len);
-    }
-    ci.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  }, 350);
-};
-
-// ─── MODE ACTIF ───
-window.sv2StartActive = function() {
-  if (!SV2.current) return;
-  sv2CloseDetail();
-  SV2.exoIdx = 0; SV2.setIdx = 0; SV2.startTime = Date.now();
-  SV2.paused = false; SV2.pausedTotal = 0; SV2.log = [];
+  SV.exoIdx = 0; SV.setIdx = 0;
+  SV.startTime = Date.now();
+  SV.paused = false; SV.log = [];
+  SV.bubbleLastShown = 0;
   document.getElementById('sv2-active').classList.add('on');
   document.getElementById('sv2-coach-fab').classList.add('on');
   var nav = document.querySelector('.nav');
   if (nav) nav.style.display = 'none';
-  // Voix : annonce le début si activée
-  if (window.SV2_VOICE.enabled && typeof speakXI === 'function') {
-    setTimeout(function(){ try { speakXI('C\'est parti, on y va.'); } catch(e){} }, 500);
+  if (navigator.vibrate) navigator.vibrate(30);
+  if (SV.voiceOn && typeof speakXI === 'function') {
+    setTimeout(function(){ try { speakXI('C\'est parti.'); } catch(e){} }, 400);
   }
-  sv2RenderActive();
+  svRenderActive();
 };
 
-// ─── RENDER ACTIF (1 seule définition, vidéo + cam button intégrés) ───
-window.sv2RenderActive = function() {
-  var exo = SV2.current && SV2.current.exos[SV2.exoIdx];
-  if (!exo) return sv2FinishSession();
-  var setData = exo.logs[SV2.setIdx];
-  document.getElementById('sv2-active-counter').textContent = 'EXO ' + (SV2.exoIdx+1) + '/' + SV2.current.exos.length;
-  var totalSets = SV2.current.exos.reduce(function(t,e){ return t + e.sets; }, 0);
-  var doneSets = 0;
-  for (var i = 0; i < SV2.exoIdx; i++) doneSets += SV2.current.exos[i].sets;
-  doneSets += SV2.setIdx;
+window.svRenderActive = function() {
+  var exo = SV.current && SV.current.exos[SV.exoIdx];
+  if (!exo) return svFinish();
+  var setData = exo.logs[SV.setIdx];
+  // Header
+  document.getElementById('sv2-active-counter').textContent = 'EXO ' + (SV.exoIdx+1) + '/' + SV.current.exos.length;
+  // Progression
+  var totalSets = 0, doneSets = 0;
+  for (var i = 0; i < SV.current.exos.length; i++) totalSets += SV.current.exos[i].sets;
+  for (var j = 0; j < SV.exoIdx; j++) doneSets += SV.current.exos[j].sets;
+  doneSets += SV.setIdx;
   document.getElementById('sv2-active-bar').style.width = ((doneSets / totalSets) * 100) + '%';
+  // Body
   var body = document.getElementById('sv2-active-body');
-  // PRIORITÉ vidéo ymove, sinon SVG anatomique animé
-  var media = sv2ExoMedia(exo, true);
-  var hasVideo = !!sv2GetVideoURL(exo.id);
-  var mediaCls = hasVideo ? 'sv2-active-video-wrap' : 'sv2-active-svg-wrap';
-  var html = '<div class="'+mediaCls+'">'+media+'</div>'
-    + '<div class="sv2-active-name">'+exo.n+'</div>'
-    + '<div class="sv2-active-tip">💡 '+exo.tip+'</div>'
-    + '<div class="sv2-sets-grid">';
-  exo.logs.forEach(function(s, i){
-    var cls = 'sv2-set';
-    if (i < SV2.setIdx) cls += ' done';
-    if (i === SV2.setIdx) cls += ' current';
-    var val = s.done ? s.reps : exo.reps;
-    var unit = exo.isCardio ? 'sec' : 'reps';
-    html += '<div class="'+cls+'" onclick="sv2JumpToSet('+i+')"><div class="sv2-set-num">SET '+(i+1)+'</div><div class="sv2-set-val">'+val+'</div><div class="sv2-set-unit">'+unit+'</div></div>';
-  });
+  var media = svMedia(exo.id, exo.m, true);
+  var html = '<div class="sv-active-video">' + media + '</div>'
+    + '<div class="sv-active-name">' + exo.n + '</div>'
+    + '<div class="sv-active-muscle">' + exo.m + '</div>'
+    + '<div class="sv-active-tip">💡 ' + exo.tip + '</div>';
+  // Sets en ligne
+  html += '<div class="sv-sets-row">';
+  for (var k = 0; k < exo.sets; k++) {
+    var cls = 'sv-set-pill';
+    if (k < SV.setIdx) cls += ' done';
+    else if (k === SV.setIdx) cls += ' current';
+    html += '<div class="' + cls + '">SET ' + (k+1) + (k < SV.setIdx ? ' ✓' : (k === SV.setIdx ? ' ●' : ' ○')) + '</div>';
+  }
   html += '</div>';
+  // Reps + Charge controls (sauf cardio)
   if (!exo.isCardio) {
-    html += '<div class="sv2-input-row">'
-      + '<div class="sv2-input-group"><div class="sv2-input-lbl">Reps</div><div class="sv2-input-ctrl"><button class="sv2-input-btn" onclick="sv2AdjustRep(-1)">−</button><div class="sv2-input-val" id="sv2-cur-reps">'+setData.reps+'</div><button class="sv2-input-btn" onclick="sv2AdjustRep(1)">+</button></div></div>';
+    html += '<div class="sv-controls-row">';
+    html += '<div class="sv-control"><div class="sv-control-lbl">REPS</div>'
+      + '<div class="sv-control-box"><button class="sv-control-btn" onclick="svAdjReps(-1)">−</button>'
+      + '<div class="sv-control-val" id="sv-cur-reps">' + setData.reps + '</div>'
+      + '<button class="sv-control-btn" onclick="svAdjReps(1)">+</button></div></div>';
     if (exo.charge > 0 || ((window.U && U.lieu === 'salle'))) {
-      html += '<div class="sv2-input-group"><div class="sv2-input-lbl">Charge</div><div class="sv2-input-ctrl"><button class="sv2-input-btn" onclick="sv2AdjustCharge(-2.5)">−</button><div class="sv2-input-val" id="sv2-cur-charge">'+setData.charge+'<span style="font-size:11px;color:rgba(240,240,255,0.5);"> kg</span></div><button class="sv2-input-btn" onclick="sv2AdjustCharge(2.5)">+</button></div></div>';
+      html += '<div class="sv-control"><div class="sv-control-lbl">CHARGE</div>'
+        + '<div class="sv-control-box"><button class="sv-control-btn" onclick="svAdjCharge(-2.5)">−</button>'
+        + '<div class="sv-control-val" id="sv-cur-charge">' + setData.charge + '<span class="sv-unit">kg</span></div>'
+        + '<button class="sv-control-btn" onclick="svAdjCharge(2.5)">+</button></div></div>';
     }
     html += '</div>';
+  } else {
+    html += '<div class="sv-cardio-info"><span class="sv-cardio-time">' + exo.reps + 's</span> · effort soutenu</div>';
   }
-  html += '<button class="sv2-validate-btn" onclick="sv2ValidateSet()">✓ Valider set '+(SV2.setIdx+1)+'</button>';
-  // Bouton cam DORSALE (uniquement pour exos non-cardio avec compteur reps)
-  if (!exo.isCardio) {
-    html += '<button class="sv2-validate-btn skip" onclick="sv2CamOpen(\''+exo.id+'\','+exo.reps+')" style="background:linear-gradient(135deg,rgba(249,136,5,0.18),rgba(243,86,149,0.18));border:1px solid rgba(249,136,5,0.35);color:#F98805;">📷 Compter avec la caméra (dorsale)</button>';
-  }
-  html += '<button class="sv2-validate-btn skip" onclick="sv2SkipExo()">Sauter cet exercice →</button>';
+  // Action principale
+  html += '<button class="sv-cta-validate" onclick="svValidateSet()">✓ SET FAIT</button>';
+  html += '<button class="sv-link" onclick="svSkipExo()">Sauter cet exercice →</button>';
   body.innerHTML = html;
-  // Voix : annonce nouvel exo (cooldown 4s)
-  var now = Date.now();
-  if (window.SV2_VOICE.enabled && SV2.setIdx === 0 && (now - window.SV2_VOICE.lastSpoke) > 4000 && typeof speakXI === 'function') {
-    window.SV2_VOICE.lastSpoke = now;
-    try { speakXI(exo.n + '. Tu es prêt ?'); } catch(e){}
+};
+
+window.svAdjReps = function(delta) {
+  var exo = SV.current.exos[SV.exoIdx];
+  exo.logs[SV.setIdx].reps = Math.max(0, exo.logs[SV.setIdx].reps + delta);
+  document.getElementById('sv-cur-reps').textContent = exo.logs[SV.setIdx].reps;
+  if (navigator.vibrate) navigator.vibrate(10);
+};
+
+window.svAdjCharge = function(delta) {
+  var exo = SV.current.exos[SV.exoIdx];
+  exo.logs[SV.setIdx].charge = Math.max(0, Math.round((exo.logs[SV.setIdx].charge + delta) * 10) / 10);
+  var el = document.getElementById('sv-cur-charge');
+  if (el) el.innerHTML = exo.logs[SV.setIdx].charge + '<span class="sv-unit">kg</span>';
+  if (navigator.vibrate) navigator.vibrate(10);
+};
+
+// ─── BULLES COACH (variables selon contexte) ───
+window.svGetBubble = function(context) {
+  var bubbles = {
+    firstSet:    ['C\'est parti.', 'On y va.'],
+    normal:      ['Bien.', 'Solide.', 'Continue.', 'Bon set.'],
+    underTarget: ['Pas grave.', 'Repose-toi bien.'],
+    overTarget:  ['Tu pousses.', 'Cool, ça envoie.'],
+    chargeUp:    ['+2.5kg, tu sens.', 'Plus lourd, bien.'],
+    lastSet:     ['Dernier set. Tout.', 'On finit fort.'],
+    lastExo:     ['Dernier exo. Allez.', 'On boucle ça.']
+  };
+  var arr = bubbles[context] || bubbles.normal;
+  return arr[Math.floor(Math.random() * arr.length)];
+};
+
+window.svBubbleShow = function(text) {
+  var bubble = document.getElementById('sv2-coach-bubble');
+  if (!bubble) return;
+  document.getElementById('sv2-coach-bubble-text').textContent = text;
+  var actWrap = document.getElementById('sv2-coach-bubble-actions');
+  if (actWrap) actWrap.innerHTML = '';
+  bubble.classList.add('on');
+  SV.bubbleLastShown = Date.now();
+  setTimeout(function(){ svBubbleHide(); }, 4000);
+};
+
+window.svBubbleHide = function() {
+  var b = document.getElementById('sv2-coach-bubble');
+  if (b) b.classList.remove('on');
+};
+
+// ─── VOIX TOGGLE ───
+window.svVoiceToggle = function() {
+  SV.voiceOn = !SV.voiceOn;
+  if (window.U) { U.svVoiceOn = SV.voiceOn; if (typeof save === 'function') save(); }
+  var b = document.getElementById('sv-voice-btn');
+  if (b) b.textContent = SV.voiceOn ? '🔊' : '🔇';
+  if (SV.voiceOn && typeof speakXI === 'function') {
+    try { speakXI('Voix activée.'); } catch(e){}
   }
+  if (navigator.vibrate) navigator.vibrate(20);
 };
 
-window.sv2AdjustRep = function(delta) {
-  var exo = SV2.current.exos[SV2.exoIdx];
-  exo.logs[SV2.setIdx].reps = Math.max(0, exo.logs[SV2.setIdx].reps + delta);
-  document.getElementById('sv2-cur-reps').textContent = exo.logs[SV2.setIdx].reps;
-  if (navigator.vibrate) navigator.vibrate(10);
-};
-
-window.sv2AdjustCharge = function(delta) {
-  var exo = SV2.current.exos[SV2.exoIdx];
-  exo.logs[SV2.setIdx].charge = Math.max(0, Math.round((exo.logs[SV2.setIdx].charge + delta) * 10) / 10);
-  var el = document.getElementById('sv2-cur-charge');
-  if (el) el.innerHTML = exo.logs[SV2.setIdx].charge+'<span style="font-size:11px;color:rgba(240,240,255,0.5);"> kg</span>';
-  if (navigator.vibrate) navigator.vibrate(10);
-};
-
-window.sv2JumpToSet = function(idx) { SV2.setIdx = idx; sv2RenderActive(); };
-
-// ─── VALIDATE SET (1 seule définition, coach proactif intégré) ───
-window.sv2ValidateSet = function() {
-  var exo = SV2.current.exos[SV2.exoIdx];
-  var set = exo.logs[SV2.setIdx];
+// ─── VALIDATE SET (cœur du coaching) ───
+window.svValidateSet = function() {
+  var exo = SV.current.exos[SV.exoIdx];
+  var set = exo.logs[SV.setIdx];
   set.done = true;
-  SV2.log.push({ t: Date.now(), exo: exo.n, set: SV2.setIdx + 1, reps: set.reps, charge: set.charge });
-  // Update PR
+  SV.log.push({ t: Date.now(), exo: exo.n, set: SV.setIdx + 1, reps: set.reps, charge: set.charge });
+  // Update PR Epley
   if (set.charge > 0) {
     var oneRM = set.charge * (1 + set.reps / 30);
     if (!window.U) window.U = {};
@@ -9382,80 +9804,84 @@ window.sv2ValidateSet = function() {
     }
   }
   if (navigator.vibrate) navigator.vibrate([30, 30, 50]);
-  // Coach proactif : si reps < 70% target → suggère -2.5kg, si > 120% → +2.5kg
-  // Cooldown 60s
-  var now = Date.now();
-  if ((now - window.SV2_PROACTIVE.lastShown) > 60000 && set.charge > 0) {
-    var target = exo.reps;
-    var ratio = set.reps / target;
-    if (ratio < 0.7) {
-      window.SV2_PROACTIVE.lastShown = now;
-      sv2CoachBubbleShow(target+' visés, '+set.reps+' faits. Trop lourd. −2.5kg au prochain set ?', [
-        { label: 'OK, baisse', primary: true, fn: function(){ sv2AdjustCharge(-2.5); sv2CoachBubbleHide(); }},
-        { label: 'Je garde', fn: function(){ sv2CoachBubbleHide(); }}
-      ]);
-    } else if (ratio > 1.2 && SV2.setIdx >= 1) {
-      window.SV2_PROACTIVE.lastShown = now;
-      sv2CoachBubbleShow('Tu déchires. +2.5kg au prochain set pour challenger ?', [
-        { label: '+2.5kg', primary: true, fn: function(){ sv2AdjustCharge(2.5); sv2CoachBubbleHide(); }},
-        { label: 'Pas encore', fn: function(){ sv2CoachBubbleHide(); }}
-      ]);
-    }
-  }
-  // Voix : encourage
-  if (window.SV2_VOICE.enabled && (now - window.SV2_VOICE.lastSpoke) > 4000 && typeof speakXI === 'function') {
-    window.SV2_VOICE.lastSpoke = now;
-    var phrases = ['Set bouclé.', 'Bien joué.', 'Continue.', 'Set validé.'];
-    try { speakXI(phrases[Math.floor(Math.random()*phrases.length)]); } catch(e){}
+  // Détermine la bulle selon contexte
+  var bubbleCtx = 'normal';
+  if (SV.setIdx === 0 && SV.exoIdx === 0) bubbleCtx = 'firstSet';
+  else if (set.reps < exo.reps * 0.7) bubbleCtx = 'underTarget';
+  else if (set.reps > exo.reps * 1.2) bubbleCtx = 'overTarget';
+  else if (SV.setIdx === exo.sets - 1 && SV.exoIdx < SV.current.exos.length - 1) bubbleCtx = 'lastSet';
+  else if (SV.setIdx === exo.sets - 1 && SV.exoIdx === SV.current.exos.length - 1) bubbleCtx = 'lastExo';
+  // Voix (cooldown 4s)
+  if (SV.voiceOn && typeof speakXI === 'function') {
+    try { speakXI(svGetBubble(bubbleCtx)); } catch(e){}
   }
   // Next
-  if (SV2.setIdx + 1 < exo.sets) { SV2.setIdx++; sv2StartRest(exo.rest); }
-  else if (SV2.exoIdx + 1 < SV2.current.exos.length) sv2StartRest(exo.rest, true);
-  else sv2FinishSession();
+  if (SV.setIdx + 1 < exo.sets) {
+    SV.setIdx++;
+    svStartRest(exo.rest, false, bubbleCtx);
+  } else if (SV.exoIdx + 1 < SV.current.exos.length) {
+    svStartRest(exo.rest, true, bubbleCtx);
+  } else {
+    svFinish();
+  }
 };
 
-window.sv2SkipExo = function() {
-  if (SV2.exoIdx + 1 < SV2.current.exos.length) {
-    SV2.exoIdx++; SV2.setIdx = 0;
-    sv2RenderActive();
-  } else sv2FinishSession();
+window.svSkipExo = function() {
+  if (SV.exoIdx + 1 < SV.current.exos.length) {
+    SV.exoIdx++; SV.setIdx = 0;
+    svRenderActive();
+  } else svFinish();
 };
 
-// ─── TIMER REPOS ───
-window.sv2StartRest = function(seconds, isExoEnd) {
-  SV2.restRemaining = seconds; SV2.restDefault = seconds;
-  document.getElementById('sv2-rest').classList.add('on');
+// ────────────────────────────────────────────────
+// ÉCRAN 3 — REPOS
+// ────────────────────────────────────────────────
+window.svStartRest = function(seconds, isExoEnd, bubbleCtx) {
+  SV.restRemaining = seconds;
+  SV.restDefault = seconds;
   document.getElementById('sv2-rest-time').textContent = seconds;
+  document.getElementById('sv2-rest').classList.add('on');
+  // Prochain exo info
   var nextWrap = document.getElementById('sv2-rest-next-wrap');
   var nextName = document.getElementById('sv2-rest-next-name');
-  if (isExoEnd && SV2.exoIdx + 1 < SV2.current.exos.length) {
+  if (isExoEnd && SV.exoIdx + 1 < SV.current.exos.length) {
+    var nextExo = SV.current.exos[SV.exoIdx + 1];
     nextWrap.style.display = 'block';
-    nextName.textContent = SV2.current.exos[SV2.exoIdx + 1].n;
-  } else nextWrap.style.display = 'none';
+    var nextLabel = nextExo.n + ' · ' + nextExo.sets + ' × ' + nextExo.reps + (nextExo.isCardio ? 's' : '') + (nextExo.charge > 0 ? ' · ' + nextExo.charge + 'kg' : '');
+    nextName.textContent = nextLabel;
+  } else {
+    nextWrap.style.display = 'none';
+  }
+  // Cercle SVG animé
   var ring = document.getElementById('sv2-rest-ring');
   if (ring) {
     ring.style.transition = 'none';
     ring.setAttribute('stroke-dashoffset', '0');
     setTimeout(function(){
-      ring.style.transition = 'stroke-dashoffset '+seconds+'s linear';
+      ring.style.transition = 'stroke-dashoffset ' + seconds + 's linear';
       ring.setAttribute('stroke-dashoffset', '628');
     }, 50);
   }
-  if (SV2.restTimer) clearInterval(SV2.restTimer);
-  SV2.restTimer = setInterval(function(){
-    SV2.restRemaining--;
-    document.getElementById('sv2-rest-time').textContent = SV2.restRemaining;
-    if (SV2.restRemaining <= 0) sv2EndRest(isExoEnd);
-    else if (SV2.restRemaining === 3 && navigator.vibrate) navigator.vibrate([100, 50, 100]);
+  // Bulle coach après 1s
+  setTimeout(function(){
+    svBubbleShow(svGetBubble(bubbleCtx || 'normal'));
+  }, 1000);
+  // Timer
+  if (SV.restTimer) clearInterval(SV.restTimer);
+  SV.restTimer = setInterval(function(){
+    SV.restRemaining--;
+    var el = document.getElementById('sv2-rest-time');
+    if (el) el.textContent = SV.restRemaining;
+    if (SV.restRemaining <= 0) svEndRest(isExoEnd);
+    else if (SV.restRemaining === 3 && navigator.vibrate) navigator.vibrate(80);
   }, 1000);
 };
 
-// ─── END REST (1 seule définition, voix intégrée) ───
-window.sv2EndRest = function(isExoEnd) {
-  if (SV2.restTimer) clearInterval(SV2.restTimer);
-  SV2.restTimer = null;
+window.svEndRest = function(isExoEnd) {
+  if (SV.restTimer) clearInterval(SV.restTimer);
+  SV.restTimer = null;
   document.getElementById('sv2-rest').classList.remove('on');
-  if (navigator.vibrate) navigator.vibrate([200, 100, 200, 100, 300]);
+  if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
   // Bip Web Audio
   try {
     var ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -9467,226 +9893,68 @@ window.sv2EndRest = function(isExoEnd) {
     osc.start();
     setTimeout(function(){ osc.stop(); ctx.close(); }, 200);
   } catch(e) {}
-  // Voix : annonce reprise
-  var now = Date.now();
-  if (window.SV2_VOICE.enabled && (now - window.SV2_VOICE.lastSpoke) > 4000 && typeof speakXI === 'function') {
-    window.SV2_VOICE.lastSpoke = now;
-    try { speakXI('Allez, on enchaîne.'); } catch(e){}
-  }
-  if (isExoEnd) { SV2.exoIdx++; SV2.setIdx = 0; sv2RenderActive(); }
-  else sv2RenderActive();
+  if (isExoEnd) { SV.exoIdx++; SV.setIdx = 0; }
+  svRenderActive();
 };
 
-window.sv2SkipRest = function() { sv2EndRest(SV2.exoIdx + 1 < SV2.current.exos.length && SV2.setIdx === 0); };
-window.sv2RestAdjust = function(delta) {
-  SV2.restRemaining = Math.max(5, SV2.restRemaining + delta);
-  document.getElementById('sv2-rest-time').textContent = SV2.restRemaining;
+window.svSkipRest = function() {
+  var isExoEnd = SV.setIdx === 0 && SV.exoIdx + 1 < SV.current.exos.length;
+  svEndRest(isExoEnd);
 };
-window.sv2TogglePause = function() {
-  SV2.paused = !SV2.paused;
-  if (SV2.restTimer) {
-    if (SV2.paused) { clearInterval(SV2.restTimer); SV2.restTimer = null; }
-    else sv2StartRest(SV2.restRemaining);
+
+window.svRestAdjust = function(delta) {
+  SV.restRemaining = Math.max(5, SV.restRemaining + delta);
+  document.getElementById('sv2-rest-time').textContent = SV.restRemaining;
+};
+
+window.svTogglePause = function() {
+  SV.paused = !SV.paused;
+  if (SV.restTimer) {
+    if (SV.paused) { clearInterval(SV.restTimer); SV.restTimer = null; }
+    else svStartRest(SV.restRemaining);
   }
 };
-window.sv2QuitActive = function() {
+
+window.svQuitActive = function() {
   if (!confirm('Quitter la séance ? Ta progression sera perdue.')) return;
-  if (SV2.restTimer) { clearInterval(SV2.restTimer); SV2.restTimer = null; }
+  if (SV.restTimer) { clearInterval(SV.restTimer); SV.restTimer = null; }
   document.getElementById('sv2-active').classList.remove('on');
   document.getElementById('sv2-rest').classList.remove('on');
   document.getElementById('sv2-coach-fab').classList.remove('on');
+  svBubbleHide();
   var nav = document.querySelector('.nav');
   if (nav) nav.style.display = 'flex';
-  SV2.current = null;
+  SV.current = null;
 };
-window.sv2OpenCoach = function() {
+
+window.svOpenCoach = function() {
   if (typeof switchTab === 'function') {
     switchTab('t-chat');
     setTimeout(function(){
-      var exo = SV2.current && SV2.current.exos[SV2.exoIdx];
-      var ctx = exo ? '(Pendant ma séance, exo : '+exo.n+', set '+(SV2.setIdx+1)+'/'+exo.sets+') ' : '';
+      var exo = SV.current && SV.current.exos[SV.exoIdx];
+      var ctx = exo ? '(Pendant ma séance, exo : '+exo.n+', set '+(SV.setIdx+1)+'/'+exo.sets+') ' : '';
       var ci = document.getElementById('ci');
       if (ci) { ci.value = ctx; ci.focus(); }
     }, 300);
   }
 };
 
-// ─── BULLE COACH PROACTIF ───
-window.sv2CoachBubbleShow = function(text, actions) {
-  var bubble = document.getElementById('sv2-coach-bubble');
-  if (!bubble) return;
-  document.getElementById('sv2-coach-bubble-text').textContent = text;
-  var actWrap = document.getElementById('sv2-coach-bubble-actions');
-  actWrap.innerHTML = '';
-  (actions || []).forEach(function(a){
-    var btn = document.createElement('button');
-    btn.className = 'sv2-coach-bubble-btn' + (a.primary ? ' primary' : '');
-    btn.textContent = a.label;
-    btn.onclick = a.fn;
-    actWrap.appendChild(btn);
-  });
-  bubble.classList.add('on');
-  // Auto-hide après 8s si pas d'action
-  setTimeout(function(){ sv2CoachBubbleHide(); }, 8000);
-};
-window.sv2CoachBubbleHide = function() {
-  var bubble = document.getElementById('sv2-coach-bubble');
-  if (bubble) bubble.classList.remove('on');
-};
-
-// ─── VOIX COACH ELEVENLABS (toggle) ───
-window.sv2VoiceToggle = function() {
-  window.SV2_VOICE.enabled = !window.SV2_VOICE.enabled;
-  if (window.U) { U.sv2VoiceOn = window.SV2_VOICE.enabled; if (typeof save === 'function') save(); }
-  var btn = document.getElementById('sv2-voice-toggle');
-  if (btn) btn.textContent = window.SV2_VOICE.enabled ? '🔊 Voix ON' : '🔇 Voix OFF';
-  if (window.SV2_VOICE.enabled && typeof speakXI === 'function') {
-    try { speakXI('Voix activée.'); } catch(e){}
-  }
-};
-
-// ─── CAMÉRA DORSALE (1 seule définition, environment exact en priorité) ───
-window.sv2CamOpen = function(exoId, target) {
-  var overlay = document.getElementById('sv2-cam-overlay');
-  if (!overlay) return;
-  window.SV2_CAM.target = target || 10;
-  window.SV2_CAM.reps = 0;
-  window.SV2_CAM.state = 'up';
-  window.SV2_CAM.exoId = exoId;
-  window.SV2_CAM.motion = [];
-  document.getElementById('sv2-cam-num').textContent = '0';
-  document.getElementById('sv2-cam-target').textContent = '/ ' + window.SV2_CAM.target + ' reps';
-  document.getElementById('sv2-cam-status').textContent = 'Démarrage caméra dorsale...';
-  document.getElementById('sv2-cam-status').className = 'sv2-cam-status';
-  overlay.classList.add('on');
-  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-    document.getElementById('sv2-cam-status').textContent = 'Caméra non supportée';
-    document.getElementById('sv2-cam-status').classList.add('feedback-bad');
-    return;
-  }
-  // Caméra DORSALE EXACT > IDEAL > fallback frontale (avec warning)
-  var tryConstraints = [
-    { video: { facingMode: { exact: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false },
-    { video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false },
-    { video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false },
-    { video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false }
-  ];
-  function tryNext(idx) {
-    if (idx >= tryConstraints.length) {
-      document.getElementById('sv2-cam-status').textContent = 'Caméra refusée. Autorise dans les réglages Safari.';
-      document.getElementById('sv2-cam-status').classList.add('feedback-bad');
-      return;
-    }
-    navigator.mediaDevices.getUserMedia(tryConstraints[idx]).then(function(stream) {
-      window.SV2_CAM.stream = stream;
-      var video = document.getElementById('sv2-cam-video');
-      video.srcObject = stream;
-      // Si on est tombé sur 'user' (frontale), prévient l'user
-      if (idx === 3) {
-        document.getElementById('sv2-cam-status').textContent = '⚠️ Caméra frontale (dorsale indispo). Pose le téléphone.';
-      } else {
-        document.getElementById('sv2-cam-status').textContent = 'Pose le téléphone face à toi, démarre l\'exo.';
-      }
-      video.onloadedmetadata = function() {
-        video.play();
-        sv2CamStartLoop();
-      };
-    }).catch(function(err) {
-      console.warn('[SV2.cam] try ' + idx + ' failed:', err && err.name, err && err.message);
-      tryNext(idx + 1);
-    });
-  }
-  tryNext(0);
-};
-
-// ─── CAM LOOP : détection mouvement par luminosité ───
-window.sv2CamStartLoop = function() {
-  var video = document.getElementById('sv2-cam-video');
-  var canvas = document.getElementById('sv2-cam-canvas');
-  if (!video || !canvas) return;
-  var ctx = canvas.getContext('2d');
-  var lastDetect = 0;
-  function frame() {
-    if (!window.SV2_CAM.stream) return;
-    canvas.width = video.videoWidth || 640;
-    canvas.height = video.videoHeight || 480;
-    if (canvas.width === 0) { window.SV2_CAM.raf = requestAnimationFrame(frame); return; }
-    try {
-      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-      // Échantillonne luminosité au centre
-      var sample = ctx.getImageData(canvas.width*0.25, canvas.height*0.25, canvas.width*0.5, canvas.height*0.5);
-      var sum = 0, count = 0;
-      for (var i = 0; i < sample.data.length; i += 16) {
-        sum += (sample.data[i] + sample.data[i+1] + sample.data[i+2]) / 3;
-        count++;
-      }
-      var avg = sum / count;
-      window.SV2_CAM.motion.push(avg);
-      if (window.SV2_CAM.motion.length > 30) window.SV2_CAM.motion.shift();
-      // Détection : range > 8 sur 30 frames
-      if (window.SV2_CAM.motion.length >= 30) {
-        var min = Math.min.apply(null, window.SV2_CAM.motion);
-        var max = Math.max.apply(null, window.SV2_CAM.motion);
-        var range = max - min;
-        if (range > 8) {
-          var threshold = (min + max) / 2;
-          var now = Date.now();
-          if (now - lastDetect > 800) {
-            if (window.SV2_CAM.state === 'up' && avg < threshold - range*0.2) {
-              window.SV2_CAM.state = 'down';
-            } else if (window.SV2_CAM.state === 'down' && avg > threshold + range*0.2) {
-              window.SV2_CAM.state = 'up';
-              window.SV2_CAM.reps++;
-              document.getElementById('sv2-cam-num').textContent = window.SV2_CAM.reps;
-              if (navigator.vibrate) navigator.vibrate(40);
-              lastDetect = now;
-              // Auto-validate à target
-              if (window.SV2_CAM.reps >= window.SV2_CAM.target) {
-                document.getElementById('sv2-cam-status').textContent = '✓ Cible atteinte !';
-                document.getElementById('sv2-cam-status').classList.add('feedback-good');
-                setTimeout(sv2CamValidate, 1200);
-              }
-            }
-          }
-        }
-      }
-    } catch(e) {}
-    window.SV2_CAM.raf = requestAnimationFrame(frame);
-  }
-  frame();
-};
-
-window.sv2CamValidate = function() {
-  // Reporte les reps détectés dans le set actuel
-  if (SV2.current) {
-    var exo = SV2.current.exos[SV2.exoIdx];
-    if (exo && exo.logs[SV2.setIdx]) exo.logs[SV2.setIdx].reps = window.SV2_CAM.reps;
-  }
-  sv2CamClose();
-  if (window.sv2ValidateSet) sv2ValidateSet();
-};
-
-window.sv2CamClose = function() {
-  if (window.SV2_CAM.raf) { cancelAnimationFrame(window.SV2_CAM.raf); window.SV2_CAM.raf = null; }
-  if (window.SV2_CAM.stream) {
-    try { window.SV2_CAM.stream.getTracks().forEach(function(t){ t.stop(); }); } catch(e){}
-    window.SV2_CAM.stream = null;
-  }
-  document.getElementById('sv2-cam-overlay').classList.remove('on');
-};
-
-// ─── RÉCAP FIN SÉANCE ───
-window.sv2FinishSession = function() {
-  if (SV2.restTimer) { clearInterval(SV2.restTimer); SV2.restTimer = null; }
-  var duree = Math.round((Date.now() - SV2.startTime) / 60000);
+// ────────────────────────────────────────────────
+// ÉCRAN 4 — RÉCAP FIN SÉANCE
+// ────────────────────────────────────────────────
+window.svFinish = function() {
+  if (SV.restTimer) { clearInterval(SV.restTimer); SV.restTimer = null; }
+  var duree = Math.round((Date.now() - SV.startTime) / 60000);
   var tonnage = 0, setsCount = 0, newPRs = [];
-  SV2.current.exos.forEach(function(e){
+  SV.current.exos.forEach(function(e){
     e.logs.forEach(function(s){
       if (s.done) { setsCount++; if (s.charge > 0) tonnage += s.charge * s.reps; }
     });
     if (window.U && U.PRs && U.PRs[e.id]) {
       var pr = U.PRs[e.id];
-      if (new Date(pr.date) > new Date(SV2.startTime)) newPRs.push({ exo: e.n, charge: pr.charge, reps: pr.reps, oneRM: pr.oneRM });
+      if (new Date(pr.date) > new Date(SV.startTime)) {
+        newPRs.push({ exo: e.n, charge: pr.charge, reps: pr.reps });
+      }
     }
   });
   var kcal = Math.round(duree * 7.5);
@@ -9694,45 +9962,13 @@ window.sv2FinishSession = function() {
   if (!U.sessions) U.sessions = [];
   if (!U.sessionsByDay) U.sessionsByDay = {};
   var session = {
-    date: new Date().toISOString(), titre: SV2.current.titre, type: SV2.current.type,
+    date: new Date().toISOString(),
+    titre: SV.current.titre, type: SV.current.type,
     duree: duree, tonnage: tonnage, setsCount: setsCount, kcal: kcal,
-    log: SV2.log, felt: null, newPRs: newPRs
+    log: SV.log, felt: null, newPRs: newPRs
   };
   U.sessions.push(session);
-  U.sessionsByDay[sv2WeekKey(new Date().getDay() === 0 ? 6 : new Date().getDay() - 1)] = session;
-  if (typeof save === 'function') save();
-  document.getElementById('sv2-active').classList.remove('on');
-  document.getElementById('sv2-coach-fab').classList.remove('on');
-  document.getElementById('sv2-rec-tonnage').textContent = tonnage > 0 ? Math.round(tonnage) : '—';
-  document.getElementById('sv2-rec-duree').textContent = duree;
-  document.getElementById('sv2-rec-sets').textContent = setsCount;
-  document.getElementById('sv2-rec-kcal').textContent = kcal;
-  var subMsg = duree < 15 ? 'Court mais fait. Mieux que rien.' :
-               duree < 35 ? 'Tu as tenu. C\'est ce qui compte.' :
-               duree < 55 ? 'Belle séance. Solide.' : 'Effort exceptionnel. Bravo.';
-  document.getElementById('sv2-recap-sub').textContent = subMsg;
-  var prWrap = document.getElementById('sv2-rec-pr-wrap');
-  if (newPRs.length > 0) {
-    var pr = newPRs[0];
-    prWrap.innerHTML = '<div class="sv2-recap-pr"><div class="sv2-recap-pr-emoji">🏆</div><div class="sv2-recap-pr-text"><span class="sv2-recap-pr-strong">Nouveau record !</span><br>'+pr.exo+' : '+pr.charge+'kg × '+pr.reps+' reps</div></div>';
-  } else prWrap.innerHTML = '';
-  var prevSimilar = (U.sessions || []).slice(0, -1).filter(function(s){ return s.type === SV2.current.type; }).slice(-1)[0];
-  var vsWrap = document.getElementById('sv2-rec-vs-wrap');
-  if (prevSimilar && prevSimilar.tonnage > 0 && tonnage > 0) {
-    var diff = Math.round((tonnage - prevSimilar.tonnage) / prevSimilar.tonnage * 100);
-    var icon = diff > 0 ? '📈' : (diff < 0 ? '📉' : '➡️');
-    var sign = diff > 0 ? '+' : '';
-    var color = diff > 0 ? '#DDE255' : (diff < 0 ? '#F35695' : '#F0F0FF');
-    vsWrap.innerHTML = '<div style="background:rgba(240,240,255,0.04);border:1px solid rgba(240,240,255,0.08);border-radius:14px;padding:14px;margin-bottom:16px;text-align:center;"><div style="font-size:11px;color:rgba(240,240,255,0.5);font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;">vs séance précédente</div><div style="font-family:Bebas Neue,sans-serif;font-size:22px;color:'+color+';">'+icon+' '+sign+diff+'% de tonnage</div></div>';
-  } else vsWrap.innerHTML = '';
-  sv2Confetti();
-  document.getElementById('sv2-recap').classList.add('on');
-  var nav = document.querySelector('.nav');
-  if (nav) nav.style.display = 'flex';
-  // Voix fin
-  if (window.SV2_VOICE.enabled && typeof speakXI === 'function') {
-    setTimeout(function(){ try { speakXI('Séance terminée. Bravo champion.'); } catch(e){} }, 600);
-  }
+  U.sessionsByDay[svWeekKey(new Date().getDay() === 0 ? 6 : new Date().getDay() - 1)] = session;
   // Streak
   var lastDate = U.lastSeanceDate;
   var todayStr = new Date().toISOString().slice(0,10);
@@ -9740,14 +9976,56 @@ window.sv2FinishSession = function() {
     var yest = new Date(Date.now() - 86400000).toISOString().slice(0,10);
     U.streak = (lastDate === yest) ? (U.streak || 0) + 1 : 1;
     U.lastSeanceDate = todayStr;
-    if (typeof save === 'function') save();
+  }
+  if (typeof save === 'function') save();
+  document.getElementById('sv2-active').classList.remove('on');
+  document.getElementById('sv2-coach-fab').classList.remove('on');
+  svBubbleHide();
+  // Remplit le récap
+  document.getElementById('sv2-rec-tonnage').textContent = tonnage > 0 ? Math.round(tonnage) : '—';
+  document.getElementById('sv2-rec-duree').textContent = duree;
+  document.getElementById('sv2-rec-sets').textContent = setsCount;
+  document.getElementById('sv2-rec-kcal').textContent = kcal;
+  var subMsg = duree < 15 ? 'Court mais fait. Mieux que rien.' :
+               duree < 35 ? 'Tu as tenu. C\'est ce qui compte.' :
+               duree < 55 ? 'Belle séance. Solide.' :
+                            'Effort exceptionnel. Bravo.';
+  document.getElementById('sv2-recap-sub').textContent = subMsg;
+  // PR
+  var prWrap = document.getElementById('sv2-rec-pr-wrap');
+  if (newPRs.length > 0) {
+    var pr = newPRs[0];
+    prWrap.innerHTML = '<div class="sv-recap-pr">🏆 NOUVEAU RECORD<br><span>' + pr.exo + ' : ' + pr.charge + 'kg × ' + pr.reps + ' reps</span></div>';
+  } else {
+    prWrap.innerHTML = '';
+  }
+  // VS précédente
+  var prevSimilar = (U.sessions || []).slice(0, -1).filter(function(s){ return s.type === SV.current.type; }).slice(-1)[0];
+  var vsWrap = document.getElementById('sv2-rec-vs-wrap');
+  if (prevSimilar && prevSimilar.tonnage > 0 && tonnage > 0) {
+    var diff = Math.round((tonnage - prevSimilar.tonnage) / prevSimilar.tonnage * 100);
+    var icon = diff > 0 ? '📈' : (diff < 0 ? '📉' : '➡️');
+    var sign = diff > 0 ? '+' : '';
+    vsWrap.innerHTML = '<div class="sv-recap-vs">' + icon + ' ' + sign + diff + '% vs séance précédente</div>';
+  } else {
+    vsWrap.innerHTML = '';
+  }
+  // Confetti
+  svConfetti();
+  document.getElementById('sv2-recap').classList.add('on');
+  var nav = document.querySelector('.nav');
+  if (nav) nav.style.display = 'flex';
+  // Voix de fin
+  if (SV.voiceOn && typeof speakXI === 'function') {
+    setTimeout(function(){ try { speakXI('Séance terminée. Bravo.'); } catch(e){} }, 600);
   }
 };
 
-window.sv2SetFelt = function(btn, val) {
-  document.querySelectorAll('.sv2-felt-btn').forEach(function(b){ b.classList.remove('selected'); });
+window.svSetFelt = function(btn, val) {
+  var btns = document.querySelectorAll('.sv2-felt-btn');
+  for (var i = 0; i < btns.length; i++) btns[i].classList.remove('selected');
   btn.classList.add('selected');
-  SV2.felt = val;
+  SV.felt = val;
   if (window.U && U.sessions && U.sessions.length > 0) {
     U.sessions[U.sessions.length - 1].felt = val;
     if (!U.feltAfter) U.feltAfter = [];
@@ -9756,25 +10034,30 @@ window.sv2SetFelt = function(btn, val) {
   }
 };
 
-window.sv2DebriefHIMA = function() {
-  sv2CloseRecap();
+window.svDebriefHIMA = function() {
+  svCloseRecap();
   if (typeof switchTab === 'function') switchTab('t-chat');
   setTimeout(function(){
     if (typeof chatQ === 'function' && window.U && U.sessions && U.sessions.length > 0) {
       var s = U.sessions[U.sessions.length - 1];
-      var msg = 'Je viens de faire ma séance "'+s.titre+'" ('+s.duree+' min, '+s.setsCount+' sets'+(s.tonnage>0?', '+Math.round(s.tonnage)+'kg de tonnage':'')+')'+(SV2.felt?', je me sens '+['épuisé','fatigué','correct','bien','en feu'][SV2.felt-1]:'')+'. Ton avis ?';
+      var feltLabels = ['épuisé','fatigué','correct','bien','en feu'];
+      var msg = 'Je viens de faire ma séance "' + s.titre + '" (' + s.duree + ' min, ' + s.setsCount + ' sets';
+      if (s.tonnage > 0) msg += ', ' + Math.round(s.tonnage) + 'kg de tonnage';
+      msg += ')';
+      if (SV.felt) msg += ', je me sens ' + feltLabels[SV.felt-1];
+      msg += '. Ton avis ?';
       chatQ(msg);
     }
   }, 300);
 };
 
-window.sv2CloseRecap = function() {
+window.svCloseRecap = function() {
   document.getElementById('sv2-recap').classList.remove('on');
-  SV2.current = null;
-  buildSeancesV2();
+  SV.current = null;
+  svBuildLanding();
 };
 
-window.sv2Confetti = function() {
+window.svConfetti = function() {
   var existing = document.querySelector('.sv2-confetti');
   if (existing) existing.remove();
   var wrap = document.createElement('div');
@@ -9793,24 +10076,64 @@ window.sv2Confetti = function() {
   setTimeout(function(){ wrap.remove(); }, 4000);
 };
 
-// ─── BIBLIOTHÈQUE EXOS ───
-window.sv2OpenLib = function() {
-  document.getElementById('sv2-detail-title').textContent = 'Bibliothèque d\'exercices';
-  document.getElementById('sv2-detail').setAttribute('data-mode', 'lib');
-  var body = document.getElementById('sv2-detail-body');
-  var html = '<input type="text" class="sv2-lib-search" id="sv2-lib-search" placeholder="Chercher un exercice ou un muscle..." oninput="sv2FilterLib()">'
-    + '<div class="sv2-lib-filters" id="sv2-lib-filters">';
-  var cats = [{k:'all',n:'Tous'},{k:'pousser',n:'Pousser'},{k:'tirer',n:'Tirer'},{k:'jambes',n:'Jambes'},{k:'core',n:'Core'},{k:'cardio',n:'Cardio'},{k:'mobilite',n:'Mobilité'}];
-  cats.forEach(function(c){ html += '<div class="sv2-lib-chip'+(c.k==='all'?' on':'')+'" data-cat="'+c.k+'" onclick="sv2FilterCat(\''+c.k+'\')">'+c.n+'</div>'; });
-  html += '</div><div id="sv2-lib-list">'+sv2RenderLibList('all', '')+'</div>';
-  body.innerHTML = html;
-  document.getElementById('sv2-detail').classList.add('on');
+// ────────────────────────────────────────────────
+// ASK HIMA (depuis landing)
+// ────────────────────────────────────────────────
+window.svAskHIMA = function() {
+  if (!SV.current) {
+    if (typeof switchTab === 'function') switchTab('t-chat');
+    return;
+  }
+  if (typeof switchTab === 'function') switchTab('t-chat');
+  setTimeout(function(){
+    var ci = document.getElementById('ci');
+    if (!ci) return;
+    var s = SV.current;
+    var exosListe = s.exos.map(function(e, i) {
+      return (i+1) + '. ' + e.n + ' (' + e.sets + '×' + e.reps + (e.charge>0 ? ', '+e.charge+'kg' : '') + ')';
+    }).join('\n');
+    var prefill = 'Voici ma séance "' + s.titre + '" (' + s.duree + ' min, niveau ' + ({deb:'débutant',int:'intermédiaire',av:'avancé'}[s.niv] || 'débutant') + ') :\n\n' + exosListe + '\n\nAdapte-la pour : ';
+    ci.value = prefill;
+    ci.focus();
+    if (ci.setSelectionRange) {
+      var len = prefill.length;
+      ci.setSelectionRange(len, len);
+    }
+    ci.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, 350);
 };
 
-window.sv2RenderLibList = function(cat, search) {
-  var keys = Object.keys(window.EXOS_LIB);
+// ────────────────────────────────────────────────
+// BIBLIOTHÈQUE EXOS (overlay simplifié)
+// ────────────────────────────────────────────────
+window.svOpenLib = function() {
+  // On utilise l'overlay sv2-detail existant en mode lib
+  var overlay = document.getElementById('sv2-detail');
+  if (!overlay) {
+    // Si l'overlay n'existe pas (refactor a tout viré), fallback : on bascule vers Coach
+    if (typeof switchTab === 'function') switchTab('t-chat');
+    return;
+  }
+  var titleEl = document.getElementById('sv2-detail-title');
+  if (titleEl) titleEl.textContent = 'Bibliothèque · ' + Object.keys(window.SV_EXOS).length + ' exos';
+  overlay.setAttribute('data-mode', 'lib');
+  var body = document.getElementById('sv2-detail-body');
+  if (!body) return;
+  var html = '<input type="text" class="sv-lib-search" id="sv-lib-search" placeholder="Chercher un exercice ou un muscle..." oninput="svFilterLib()">';
+  html += '<div class="sv-lib-chips">';
+  var cats = [{k:'all',n:'Tous'},{k:'pousser',n:'Pousser'},{k:'tirer',n:'Tirer'},{k:'jambes',n:'Jambes'},{k:'core',n:'Core'},{k:'cardio',n:'Cardio'},{k:'mobilite',n:'Mobilité'}];
+  cats.forEach(function(c){
+    html += '<div class="sv-lib-chip' + (c.k === 'all' ? ' on' : '') + '" data-cat="' + c.k + '" onclick="svFilterCat(\'' + c.k + '\')">' + c.n + '</div>';
+  });
+  html += '</div><div id="sv-lib-list">' + svRenderLibList('all', '') + '</div>';
+  body.innerHTML = html;
+  overlay.classList.add('on');
+};
+
+window.svRenderLibList = function(cat, search) {
+  var keys = Object.keys(window.SV_EXOS);
   var filtered = keys.filter(function(k){
-    var e = window.EXOS_LIB[k];
+    var e = window.SV_EXOS[k];
     if (cat !== 'all' && e.cat !== cat) return false;
     if (search && search.length > 1) {
       var s = search.toLowerCase();
@@ -9818,92 +10141,129 @@ window.sv2RenderLibList = function(cat, search) {
     }
     return true;
   });
-  if (filtered.length === 0) return '<div style="text-align:center;color:rgba(240,240,255,0.4);padding:40px 20px;">Aucun exercice trouvé</div>';
+  if (filtered.length === 0) {
+    return '<div style="text-align:center;color:rgba(240,240,255,0.4);padding:40px 20px;">Aucun exercice</div>';
+  }
   var html = '';
   filtered.forEach(function(k){
-    var e = window.EXOS_LIB[k];
-    // Vidéo si dispo, sinon SVG anatomique
-    var media = sv2ExoMedia({ id: k, m: e.m }, false);
-    html += '<div class="sv2-exo-card" onclick="sv2ShowExoInfo(\''+k+'\')">'
-      + '<div class="sv2-exo-svg" style="overflow:hidden;background:#000;">'+media+'</div>'
-      + '<div class="sv2-exo-info"><div class="sv2-exo-name">'+e.n+'</div><div class="sv2-exo-meta"><span>'+e.m+'</span><span>'+({deb:'Débutant',int:'Intermédiaire',av:'Avancé'}[e.niv])+'</span><span>'+({salle:'Salle',maison:'Maison',both:'Partout'}[e.l])+'</span></div></div>'
-      + '<div class="sv2-exo-action">›</div>'
-      + '</div>';
+    var e = window.SV_EXOS[k];
+    var media = svMedia(k, e.m, false);
+    html += '<div class="sv-lib-row" onclick="svShowExoInfo(\'' + k + '\')">'
+      + '<div class="sv-lib-thumb">' + media + '</div>'
+      + '<div class="sv-lib-meta"><div class="sv-lib-name">' + e.n + '</div>'
+      + '<div class="sv-lib-sub">' + e.m + ' · ' + ({deb:'Débutant',int:'Intermédiaire',av:'Avancé'}[e.niv] || '') + '</div></div>'
+      + '<div class="sv-lib-arrow">›</div></div>';
   });
   return html;
 };
 
-window.sv2FilterLib = function() {
-  var search = document.getElementById('sv2-lib-search').value;
-  var activeCat = document.querySelector('.sv2-lib-chip.on');
+window.svFilterLib = function() {
+  var search = document.getElementById('sv-lib-search').value;
+  var activeCat = document.querySelector('.sv-lib-chip.on');
   var cat = activeCat ? activeCat.getAttribute('data-cat') : 'all';
-  document.getElementById('sv2-lib-list').innerHTML = sv2RenderLibList(cat, search);
+  document.getElementById('sv-lib-list').innerHTML = svRenderLibList(cat, search);
 };
 
-window.sv2FilterCat = function(cat) {
-  document.querySelectorAll('.sv2-lib-chip').forEach(function(c){ c.classList.remove('on'); });
-  var clicked = document.querySelector('.sv2-lib-chip[data-cat="'+cat+'"]');
+window.svFilterCat = function(cat) {
+  var chips = document.querySelectorAll('.sv-lib-chip');
+  for (var i = 0; i < chips.length; i++) chips[i].classList.remove('on');
+  var clicked = document.querySelector('.sv-lib-chip[data-cat="' + cat + '"]');
   if (clicked) clicked.classList.add('on');
-  var search = document.getElementById('sv2-lib-search') ? document.getElementById('sv2-lib-search').value : '';
-  document.getElementById('sv2-lib-list').innerHTML = sv2RenderLibList(cat, search);
+  var sEl = document.getElementById('sv-lib-search');
+  var search = sEl ? sEl.value : '';
+  document.getElementById('sv-lib-list').innerHTML = svRenderLibList(cat, search);
 };
 
-window.sv2ShowExoInfo = function(exoId) {
-  var e = window.EXOS_LIB[exoId];
+window.svShowExoInfo = function(exoId) {
+  var e = window.SV_EXOS[exoId];
   if (!e) return;
   if (typeof switchTab === 'function') {
     switchTab('t-chat');
     setTimeout(function(){
-      if (typeof chatQ === 'function') chatQ('Explique-moi techniquement l\'exercice : '+e.n);
+      if (typeof chatQ === 'function') chatQ('Explique-moi techniquement l\'exercice : ' + e.n);
     }, 300);
   }
-  sv2CloseDetail();
+  var overlay = document.getElementById('sv2-detail');
+  if (overlay) overlay.classList.remove('on');
 };
 
-// ─── HOOK : 1 SEUL OBSERVER, 1 SEUL HOOK buildProg ───
-// Override buildProg (legacy) → délègue à buildSeancesV2
-function _sv2InstallOverride() {
-  if (window.buildProg && window.buildProg._sv2 === true) return;
+// ────────────────────────────────────────────────
+// ALIASES POUR HANDLERS HTML EXISTANTS (sv2X → svX)
+// Le HTML overlay utilise les anciens noms onclick="sv2X()"
+// On crée des aliases pour ne pas casser le HTML.
+// ────────────────────────────────────────────────
+window.sv2RestAdjust    = window.svRestAdjust;
+window.sv2SkipRest      = window.svSkipRest;
+window.sv2TogglePause   = window.svTogglePause;
+window.sv2QuitActive    = window.svQuitActive;
+window.sv2OpenCoach     = window.svOpenCoach;
+window.sv2CoachBubbleHide = window.svBubbleHide;
+window.sv2SetFelt       = window.svSetFelt;
+window.sv2DebriefHIMA   = window.svDebriefHIMA;
+window.sv2CloseRecap    = window.svCloseRecap;
+window.sv2StartActive   = window.svStartActive;
+window.sv2CloseDetail   = function() {
+  var o = document.getElementById('sv2-detail');
+  if (o) o.classList.remove('on');
+};
+window.sv2AskCoach      = window.svAskHIMA;
+// Bouton voix toggle (HTML existant cible #sv2-voice-toggle dans cam overlay)
+// On le remplace par notre svVoiceToggle simplifié.
+window.sv2VoiceToggle   = window.svVoiceToggle;
+// Stub pour éviter erreurs si HTML appelle encore sv2CamClose / sv2CamValidate
+// (on a supprimé la cam, ces appels deviennent no-op)
+window.sv2CamClose      = function() {
+  var o = document.getElementById('sv2-cam-overlay');
+  if (o) o.classList.remove('on');
+};
+window.sv2CamValidate   = function() { sv2CamClose(); svValidateSet(); };
+
+// ────────────────────────────────────────────────
+// HOOK BOOT (1 seul observer, 1 seule init)
+// ────────────────────────────────────────────────
+
+// Override du legacy buildProg
+function _svInstallOverride() {
+  if (window.buildProg && window.buildProg._sv === true) return;
   window.buildProg = function() {
-    try { buildSeancesV2(); }
-    catch(e) { console.error('[SV2] buildSeancesV2 err:', e); }
+    try { svBuildLanding(); }
+    catch(e) { console.error('[SV] build err:', e); }
   };
-  window.buildProg._sv2 = true;
+  window.buildProg._sv = true;
 }
 
-// 1 SEUL MutationObserver (pas 2)
-function _sv2WatchTab() {
+// 1 seul observer (avec garde idempotente)
+function _svWatchTab() {
   var t = document.getElementById('t-prog');
-  if (!t) { setTimeout(_sv2WatchTab, 300); return; }
-  if (t._sv2_observed) return; // déjà observé, on s'arrête
-  t._sv2_observed = true;
+  if (!t) { setTimeout(_svWatchTab, 300); return; }
+  if (t._sv_observed) return;
+  t._sv_observed = true;
   var obs = new MutationObserver(function(){
     if (t.classList.contains('on')) {
-      // Build uniquement si root absent OU vide
-      var root = t.querySelector('.seances-v2-root');
-      if (!root || !root.querySelector('.sv2-hero, .sv2-week')) {
-        try { buildSeancesV2(); } catch(e) { console.error('[SV2] build err:', e); }
+      var root = t.querySelector('.sv-root');
+      if (!root || !root.querySelector('.sv-hero')) {
+        try { svBuildLanding(); } catch(e) { console.error('[SV] build err:', e); }
       }
     }
   });
   obs.observe(t, { attributes: true, attributeFilter: ['class'] });
-  // Build initial si déjà actif
   if (t.classList.contains('on')) {
-    try { buildSeancesV2(); } catch(e) { console.error('[SV2] init build err:', e); }
+    try { svBuildLanding(); } catch(e) { console.error('[SV] init err:', e); }
   }
-  console.log('[SV2] watcher tab t-prog actif (1x)');
+  console.log('[SV] watcher t-prog actif (1x)');
 }
 
-// Init : install override + observer une fois prêt
-_sv2InstallOverride();
+// Bootstrap
+_svInstallOverride();
 if (document.readyState !== 'loading') {
-  setTimeout(_sv2WatchTab, 100);
+  setTimeout(_svWatchTab, 100);
 } else {
-  document.addEventListener('DOMContentLoaded', function(){ setTimeout(_sv2WatchTab, 100); });
+  document.addEventListener('DOMContentLoaded', function(){ setTimeout(_svWatchTab, 100); });
 }
 
-console.log('HIMA Tab Séances v4.0 (refactor propre) ✓ — '+Object.keys(window.EXOS_LIB).length+' exos · '+Object.keys(window.EXOS_VIDEOS).length+' vidéos');
+console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EXOS).length + ' exos · ' + Object.keys(window.SV_VIDS).length + ' vidéos');
 
 })();
+
 </script>
 </html>
