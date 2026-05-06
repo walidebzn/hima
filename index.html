@@ -9596,11 +9596,20 @@ window.svWeekKey = function(dayIdx) {
 // ÉCRAN 1 — LANDING (avec liste exos visible direct)
 // ────────────────────────────────────────────────
 window.svBuildLanding = function() {
+  console.log('[SV-DEBUG] svBuildLanding START', {
+    tabExists: !!document.getElementById('t-prog'),
+    tabHasOn: document.getElementById('t-prog')?.classList?.contains('on'),
+    innerLen_before: document.getElementById('t-prog')?.innerHTML?.length
+  });
   try {
-    return svBuildLandingImpl();
+    var result = svBuildLandingImpl();
+    console.log('[SV-DEBUG] svBuildLanding END OK', {
+      innerLen_after: document.getElementById('t-prog')?.innerHTML?.length,
+      hasHero: !!document.getElementById('t-prog')?.querySelector('.sv-hero')
+    });
+    return result;
   } catch(e) {
-    console.error('[SV] svBuildLanding ERROR:', e);
-    // Fallback diagnostic visible (au lieu d'écran noir)
+    console.error('[SV-DEBUG] svBuildLanding CRASH:', e.message, e.stack);
     var tab = document.getElementById('t-prog');
     if (tab) {
       tab.innerHTML = '<div style="padding:40px 20px;color:#F0F0FF;font-family:DM Sans,sans-serif;line-height:1.6;background:#080810;height:100vh;box-sizing:border-box;">'
@@ -9614,17 +9623,21 @@ window.svBuildLanding = function() {
 };
 
 window.svBuildLandingImpl = function() {
+  console.log('[SV-DEBUG] Impl: tab lookup');
   var tab = document.getElementById('t-prog');
-  if (!tab) return;
-  // Insère root si absent
+  if (!tab) { console.log('[SV-DEBUG] Impl: NO TAB'); return; }
+  console.log('[SV-DEBUG] Impl: tab found, has root:', !!tab.querySelector('.sv-root'));
   var existing = tab.querySelector('.sv-root');
   if (!existing) {
     if (!tab._sv_orig) tab._sv_orig = tab.innerHTML;
     tab.innerHTML = '<div class="sv-root" id="sv-root"></div>';
+    console.log('[SV-DEBUG] Impl: root inserted');
   }
   var sc = tab.querySelector('.sv-root');
-  if (!sc) return;
+  if (!sc) { console.log('[SV-DEBUG] Impl: NO SC after insert'); return; }
+  console.log('[SV-DEBUG] Impl: calling svGenSeance');
   var seance = svGenSeance();
+  console.log('[SV-DEBUG] Impl: seance generated', { rest: seance.rest, titre: seance.titre, exos: seance.exos?.length });
   var U = window.U || {};
   var DAYSF = ['L','M','M','J','V','S','D'];
   var today = new Date().getDay() === 0 ? 6 : new Date().getDay() - 1;
@@ -9683,7 +9696,9 @@ window.svBuildLandingImpl = function() {
     + '<div class="sv-stat-mini"><div class="sv-stat-mini-val">' + (U.streak || 1) + '</div><div class="sv-stat-mini-lbl">STREAK</div></div>'
     + '</div>';
   html += '<button class="sv-link" onclick="svOpenLib()" style="margin-top:8px;">📚 Bibliothèque · ' + Object.keys(window.SV_EXOS).length + ' exercices</button>';
+  console.log('[SV-DEBUG] Impl: html ready, length:', html.length, 'about to write to .sv-root');
   sc.innerHTML = html;
+  console.log('[SV-DEBUG] Impl: html written, sc.children count:', sc.children.length, 'tab.innerHTML.length:', tab.innerHTML.length);
   // Sauvegarde séance courante (au cas où user veut adapter)
   SV.current = seance.rest ? null : seance;
   // iOS Safari fix : force la hauteur en pixels
@@ -10270,31 +10285,36 @@ window.sv2CamValidate   = function() { sv2CamClose(); svValidateSet(); };
 function _svInstallOverride() {
   if (window.buildProg && window.buildProg._sv === true) return;
   window.buildProg = function() {
+    console.log('[SV-DEBUG] buildProg override called');
     try { svBuildLanding(); }
     catch(e) { console.error('[SV] build err:', e); }
   };
   window.buildProg._sv = true;
+  console.log('[SV-DEBUG] override buildProg installed');
 }
 
 // 1 seul observer (avec garde idempotente)
 // Observe à la fois les changements de class (.on) ET les écrasements innerHTML
-// (le buildProg natif est parfois capturé par setTimeout AVANT mon override → écrase)
 function _svWatchTab() {
   var t = document.getElementById('t-prog');
   if (!t) { setTimeout(_svWatchTab, 300); return; }
   if (t._sv_observed) return;
   t._sv_observed = true;
-  var rebuilding = false; // anti-boucle
-  function maybeRebuild() {
-    if (rebuilding) return;
-    if (!t.classList.contains('on')) return;
+  var rebuilding = false;
+  function maybeRebuild(reason) {
+    console.log('[SV-DEBUG] observer fired, reason:', reason, 'on:', t.classList.contains('on'), 'innerLen:', t.innerHTML.length);
+    if (rebuilding) { console.log('[SV-DEBUG] skip, rebuilding'); return; }
+    if (!t.classList.contains('on')) { console.log('[SV-DEBUG] skip, not on'); return; }
     var root = t.querySelector('.sv-root');
-    if (root && root.querySelector('.sv-hero')) return; // déjà OK
+    if (root && root.querySelector('.sv-hero')) { console.log('[SV-DEBUG] skip, already built'); return; }
     rebuilding = true;
     try { svBuildLanding(); } catch(e) { console.error('[SV] build err:', e); }
     setTimeout(function(){ rebuilding = false; }, 50);
   }
-  var obs = new MutationObserver(maybeRebuild);
+  var obs = new MutationObserver(function(muts){
+    var reasons = muts.map(function(m){ return m.type; }).join(',');
+    maybeRebuild(reasons);
+  });
   obs.observe(t, {
     attributes: true,
     attributeFilter: ['class'],
@@ -10302,9 +10322,10 @@ function _svWatchTab() {
     subtree: false
   });
   if (t.classList.contains('on')) {
+    console.log('[SV-DEBUG] init build (already on)');
     try { svBuildLanding(); } catch(e) { console.error('[SV] init err:', e); }
   }
-  console.log('[SV] watcher t-prog actif (1x, renforcé)');
+  console.log('[SV] watcher t-prog actif (1x, instrumenté)');
 }
 
 // Bootstrap
