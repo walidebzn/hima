@@ -2765,9 +2765,7 @@ body:not([data-tab="chat"]) .voice-status { display: none !important; }
 }
 
 
-/* ═══════════════════════════════════════════════════
-   HIMA Tab Séances v5.0 — CSS minimaliste (ajout)
-   ═══════════════════════════════════════════════════ */
+/* HIMA v5 CSS */
 /* ════════════════════════════════════════════════════════
    HIMA TAB SÉANCES v5.0 — CSS minimaliste
    Design tokens : --bg #080810, accents orange #F98805,
@@ -9296,7 +9294,6 @@ console.log('HIMA Conversion Engine v3.1 chargé ✓ — pricing 14,99/24,99 act
   }
 })();
 
-
 /* ════════════════════════════════════════════════════════
    HIMA TAB SÉANCES v5.0 — VERSION MINIMALISTE
    ────────────────────────────────────────────────────────
@@ -9570,6 +9567,24 @@ window.svWeekKey = function(dayIdx) {
 // ÉCRAN 1 — LANDING (avec liste exos visible direct)
 // ────────────────────────────────────────────────
 window.svBuildLanding = function() {
+  try {
+    return svBuildLandingImpl();
+  } catch(e) {
+    console.error('[SV] svBuildLanding ERROR:', e);
+    // Fallback diagnostic visible (au lieu d'écran noir)
+    var tab = document.getElementById('t-prog');
+    if (tab) {
+      tab.innerHTML = '<div style="padding:40px 20px;color:#F0F0FF;font-family:DM Sans,sans-serif;line-height:1.6;background:#080810;height:100vh;box-sizing:border-box;">'
+        + '<h1 style="color:#F35695;font-family:Bebas Neue;font-size:32px;margin-bottom:16px;">Erreur Séances</h1>'
+        + '<p style="margin-bottom:12px;color:rgba(240,240,255,0.8);">Une erreur est survenue dans le tab Séances.</p>'
+        + '<pre style="background:rgba(243,86,149,0.1);border:1px solid rgba(243,86,149,0.3);border-radius:8px;padding:14px;font-size:11px;color:#F35695;overflow:auto;white-space:pre-wrap;word-break:break-all;">' + (e.message || String(e)) + '\n\n' + (e.stack || '').substring(0, 800) + '</pre>'
+        + '<button onclick="location.reload()" style="margin-top:20px;padding:14px 24px;background:linear-gradient(135deg,#F98805,#F35695);border:none;border-radius:14px;color:#fff;font-family:Space Grotesk;font-weight:800;font-size:14px;">Recharger</button>'
+        + '</div>';
+    }
+  }
+};
+
+window.svBuildLandingImpl = function() {
   var tab = document.getElementById('t-prog');
   if (!tab) return;
   // Insère root si absent
