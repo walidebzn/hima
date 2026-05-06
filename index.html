@@ -4886,7 +4886,7 @@ function switchTab(id) {
   if (id==='t-prog') {
     var wk=document.getElementById('wstrip'); if(wk) wk.innerHTML='';
     var ps=document.getElementById('prog-sc'); if(ps) ps.innerHTML='';
-    setTimeout(buildProg, 80);
+    setTimeout(function(){ (window.buildProg || buildProg)(); }, 80);
   }
   if (id==='t-nutr') {
     var ns=document.getElementById('nutr-sc'); if(ns) ns.innerHTML='';
@@ -10277,24 +10277,34 @@ function _svInstallOverride() {
 }
 
 // 1 seul observer (avec garde idempotente)
+// Observe à la fois les changements de class (.on) ET les écrasements innerHTML
+// (le buildProg natif est parfois capturé par setTimeout AVANT mon override → écrase)
 function _svWatchTab() {
   var t = document.getElementById('t-prog');
   if (!t) { setTimeout(_svWatchTab, 300); return; }
   if (t._sv_observed) return;
   t._sv_observed = true;
-  var obs = new MutationObserver(function(){
-    if (t.classList.contains('on')) {
-      var root = t.querySelector('.sv-root');
-      if (!root || !root.querySelector('.sv-hero')) {
-        try { svBuildLanding(); } catch(e) { console.error('[SV] build err:', e); }
-      }
-    }
+  var rebuilding = false; // anti-boucle
+  function maybeRebuild() {
+    if (rebuilding) return;
+    if (!t.classList.contains('on')) return;
+    var root = t.querySelector('.sv-root');
+    if (root && root.querySelector('.sv-hero')) return; // déjà OK
+    rebuilding = true;
+    try { svBuildLanding(); } catch(e) { console.error('[SV] build err:', e); }
+    setTimeout(function(){ rebuilding = false; }, 50);
+  }
+  var obs = new MutationObserver(maybeRebuild);
+  obs.observe(t, {
+    attributes: true,
+    attributeFilter: ['class'],
+    childList: true,
+    subtree: false
   });
-  obs.observe(t, { attributes: true, attributeFilter: ['class'] });
   if (t.classList.contains('on')) {
     try { svBuildLanding(); } catch(e) { console.error('[SV] init err:', e); }
   }
-  console.log('[SV] watcher t-prog actif (1x)');
+  console.log('[SV] watcher t-prog actif (1x, renforcé)');
 }
 
 // Bootstrap
