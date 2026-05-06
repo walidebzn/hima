@@ -4188,6 +4188,35 @@ body:not([data-tab="chat"]) .voice-status { display: none !important; }
 var HIMA_CLAUDE_KEY = '';
 var ELEVENLABS_KEY = 'sk_5f11b4d6f5116d1d00ea9416e9a0a7acc2dd0f32c406d1a4';
 
+// ════════════════════════════════════════════════════
+// HOTFIX — Fonctions critiques manquantes
+// (showAuthError appelée par doAuthEmail/authGoogle/authApple
+//  mais jamais définie → bloquait tout l'app au boot)
+// ════════════════════════════════════════════════════
+window.showAuthError = function(msg) {
+  if (!msg) return;
+  // Cherche une div d'erreur existante, sinon crée un toast
+  var existing = document.getElementById('a-error-toast');
+  if (existing) existing.remove();
+  var toast = document.createElement('div');
+  toast.id = 'a-error-toast';
+  toast.textContent = String(msg);
+  toast.style.cssText = 'position:fixed;left:50%;top:24px;transform:translateX(-50%);max-width:90%;padding:14px 20px;background:rgba(243,86,149,0.95);color:#fff;font-family:DM Sans,sans-serif;font-size:14px;font-weight:600;border-radius:14px;box-shadow:0 8px 24px rgba(243,86,149,0.4);z-index:99999;text-align:center;pointer-events:auto;cursor:pointer;';
+  toast.onclick = function(){ toast.remove(); };
+  document.body.appendChild(toast);
+  setTimeout(function(){ if (toast && toast.parentNode) toast.remove(); }, 5000);
+};
+
+// Safety net : autres fonctions parfois appelées qui pourraient manquer
+if (typeof window.afterAuth === 'undefined') {
+  window.afterAuth = window.afterAuth || function(){
+    try {
+      var sa = document.getElementById('screen-auth');
+      if (sa) sa.style.display = 'none';
+      if (typeof go === 'function') go('app');
+    } catch(e) {}
+  };
+}
 
 
 
