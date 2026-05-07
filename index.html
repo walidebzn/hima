@@ -13059,8 +13059,35 @@ window.sv2CamValidate   = function() { sv2CamClose(); svValidateSet(); };
     var video = document.getElementById('nv3-scan-video');
     if (!video) return;
     try {
-      // Charge zxing dynamiquement (CDN)
-      if (typeof window.ZXing === 'undefined') {
+      // 1. iOS Safari : on déclenche EXPLICITEMENT la demande de permission caméra
+      //    en obtenant un stream nous-mêmes avec contrainte facingMode:'environment' (rear).
+      //    Sinon ZXing peut échouer silencieusement.
+      var stream;
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode: { ideal: 'environment' },
+            width:  { ideal: 1280 },
+            height: { ideal: 720 }
+          },
+          audio: false
+        });
+      } catch(permErr) {
+        console.warn('[nv3] camera permission refused:', permErr.name);
+        var vp1 = document.getElementById('nv3-scan-vp');
+        if (vp1) vp1.innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:rgba(240,240,255,0.6);font-size:13px;text-align:center;padding:20px;line-height:1.5;"><div style="font-size:32px;margin-bottom:12px">📷</div>Caméra refusée ou indisponible.<br>Utilise la saisie manuelle ci-dessous.</div>';
+        return;
+      }
+      _zxingStream = stream;
+      // Branche le stream sur la balise <video>
+      video.srcObject = stream;
+      video.setAttribute('playsinline', 'true');
+      video.setAttribute('autoplay', 'true');
+      video.setAttribute('muted', 'true');
+      try { await video.play(); } catch(e) {}
+
+      // 2. Charge ZXing dynamiquement
+      if (typeof window.ZXing === 'undefined' && typeof window.ZXingBrowser === 'undefined') {
         await new Promise(function(resolve, reject){
           var s = document.createElement('script');
           s.src = 'https://cdn.jsdelivr.net/npm/@zxing/library@0.21.3/umd/index.min.js';
@@ -13069,29 +13096,31 @@ window.sv2CamValidate   = function() { sv2CamClose(); svValidateSet(); };
           document.head.appendChild(s);
         });
       }
-      if (typeof window.ZXing === 'undefined') {
-        console.warn('[nv3] ZXing failed to load');
+      var ZX = window.ZXing || window.ZXingBrowser;
+      if (!ZX || (!ZX.BrowserMultiFormatReader && !ZX.MultiFormatReader)) {
+        console.warn('[nv3] ZXing not loaded properly', { ZXing: !!window.ZXing, ZXingBrowser: !!window.ZXingBrowser });
+        // Caméra continue de tourner (preview), mais pas de décodage auto
+        // → l'utilisateur peut quand même utiliser la saisie manuelle
         return;
       }
-      _zxingReader = new window.ZXing.BrowserMultiFormatReader();
-      // Force la caméra arrière
-      var devices = await _zxingReader.listVideoInputDevices();
-      var deviceId = null;
-      if (devices && devices.length) {
-        var rear = devices.find(function(d){ return /back|rear|environment/i.test(d.label); });
-        deviceId = rear ? rear.deviceId : devices[devices.length - 1].deviceId;
-      }
-      _zxingReader.decodeFromVideoDevice(deviceId, 'nv3-scan-video', function(result, err){
+
+      // 3. Décode depuis l'élément <video> (et non via deviceId, plus fiable iOS)
+      _zxingReader = new ZX.BrowserMultiFormatReader();
+      // decodeFromVideoElement utilise le stream qu'on a déjà attaché
+      _zxingReader.decodeFromVideoElement(video, function(result, err){
         if (result) {
           var code = result.getText();
+          // Vibration + son de feedback
+          try { if (window.navigator.vibrate) window.navigator.vibrate([30, 60, 30]); } catch(e) {}
           nv3ScannerStop();
           nv3ScanLookup(code);
         }
+        // err est NotFoundException la plupart du temps → ignorer (signifie "pas de code visible cette frame")
       });
     } catch(e) {
       console.warn('[nv3] scanner start failed', e);
       var vp = document.getElementById('nv3-scan-vp');
-      if (vp) vp.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:rgba(240,240,255,0.6);font-size:13px;text-align:center;padding:20px;">Camera indisponible.<br>Utilise la saisie manuelle ci-dessous.</div>';
+      if (vp) vp.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:rgba(240,240,255,0.6);font-size:13px;text-align:center;padding:20px;">Erreur scanner.<br>Utilise la saisie manuelle ci-dessous.</div>';
     }
   }
 
@@ -13103,6 +13132,16 @@ window.sv2CamValidate   = function() { sv2CamClose(); svValidateSet(); };
     if (_zxingStream) {
       try { _zxingStream.getTracks().forEach(function(t){ t.stop(); }); } catch(e) {}
       _zxingStream = null;
+    }
+    // Détache le stream de la balise video pour libérer la caméra
+    var v = document.getElementById('nv3-scan-video');
+    if (v) {
+      try {
+        if (v.srcObject) {
+          v.srcObject.getTracks && v.srcObject.getTracks().forEach(function(t){ t.stop(); });
+        }
+        v.srcObject = null;
+      } catch(e) {}
     }
   };
 
