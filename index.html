@@ -5081,7 +5081,9 @@ body:not([data-tab="chat"]) .voice-status { display: none !important; }
 </body>
 <script>
 var HIMA_CLAUDE_KEY = '';
-var ELEVENLABS_KEY = 'sk_5f11b4d6f5116d1d00ea9416e9a0a7acc2dd0f32c406d1a4';
+// SECURITY v3.5 : clé ElevenLabs déplacée côté serveur (/api/voice).
+// Plus aucune clé API n'est exposée dans le code client.
+var ELEVENLABS_KEY = ''; // Conservé vide pour compat des fallbacks ; n'est plus utilisé.
 
 // ════════════════════════════════════════════════════
 // HOTFIX — Fonctions critiques manquantes
@@ -7263,17 +7265,25 @@ async function testXIVoice() {
 }
 
 async function speakXI(text) {
-  if (!xiKey || !text) return speakResponse(text);
+  // SECURITY v3.5 : route via /api/voice (proxy serveur).
+  // L'ancien xiKey utilisateur est déprécié — la clé est gérée serveur-side.
+  if (!text) return speakResponse(text);
   var btn = document.getElementById('xi-btn');
   var state = document.getElementById('xi-state');
   if (btn) btn.classList.add('loading');
   if (state) state.innerHTML = '<span class="xi-wave"><span class="xi-bar"></span><span class="xi-bar"></span><span class="xi-bar"></span><span class="xi-bar"></span><span class="xi-bar"></span></span>';
   try {
     var clean = text.replace(/[*_#►→←•]/g, '').substring(0, 500);
-    var r = await fetch('https://api.elevenlabs.io/v1/text-to-speech/' + xiVoiceId, {
+    var r = await fetch('/api/voice', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'xi-api-key': xiKey },
-      body: JSON.stringify({ text: clean, model_id: 'eleven_multilingual_v2', voice_settings: { stability: 0.5, similarity_boost: 0.8, style: 0.3 } })
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        text: clean,
+        voiceId: xiVoiceId,
+        modelId: 'eleven_multilingual_v2',
+        voiceSettings: { stability: 0.5, similarity_boost: 0.8, style: 0.3 },
+        stream: false
+      })
     });
     if (r.ok) {
       var blob = await r.blob();
@@ -7309,7 +7319,9 @@ function patchAddHForXI() {
     orig(txts);
     if (xiActive && txts && txts.length) {
       var txt = txts[txts.length-1];
-      if (xiKey) speakXI(txt); else speakResponse(txt);
+      // SECURITY v3.5 : speakXI route maintenant via /api/voice (clé serveur).
+      // Plus besoin de tester xiKey côté client.
+      speakXI(txt);
     }
   };
 }
@@ -8856,20 +8868,26 @@ var himaVoicePlaying = false;
 var lastHimaMessage = '';
 
 async function himaSpeak(text) {
-  var key = U.elevenLabsKey || ELEVENLABS_KEY;
-  if (!key) return;
+  // SECURITY v3.5 : passe par /api/voice (clé serveur) au lieu d'appeler ElevenLabs en direct.
+  // Le serveur gère auth, rate-limit, et validation.
   if (himaVoicePlaying) { himaStopVoice(); return; }
   var cleanText = text.replace(/[🌀-🧿]/gu,'').replace(/[✓✗⚠]/g,'').trim();
   if (!cleanText || cleanText.length < 5) return;
   himaVoicePlaying = true;
   document.querySelectorAll('.voice-hima-btn').forEach(function(b){b.classList.add('speaking');});
   try {
-    var resp = await fetch('https://api.elevenlabs.io/v1/text-to-speech/' + (U.himaVoiceId || HIMA_VOICE_ID) + '/stream', {
+    var resp = await fetch('/api/voice', {
       method: 'POST',
-      headers: { 'xi-api-key': key, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text: cleanText, model_id: 'eleven_multilingual_v2', voice_settings: { stability: 0.6, similarity_boost: 0.85, style: 0.3, use_speaker_boost: true } })
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        text: cleanText,
+        voiceId: U.himaVoiceId || HIMA_VOICE_ID,
+        modelId: 'eleven_multilingual_v2',
+        voiceSettings: { stability: 0.6, similarity_boost: 0.85, style: 0.3, use_speaker_boost: true },
+        stream: true
+      })
     });
-    if (!resp.ok) throw new Error('ElevenLabs error');
+    if (!resp.ok) throw new Error('Voice proxy error ' + resp.status);
     var blob = await resp.blob();
     var url = URL.createObjectURL(blob);
     himaAudio = new Audio(url);
