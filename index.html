@@ -3259,6 +3259,375 @@ body:not([data-tab="chat"]) .voice-status { display: none !important; }
 }
 .sv-rest-cta-hima:active { transform: scale(0.98); }
 
+/* ═══════════════════════════════════════════════════════════ */
+/* ═══ TAB NUTRITION v3 — DAILY PLAN IA (Wave 2.1)         ═══ */
+/* ═══════════════════════════════════════════════════════════ */
+
+/* Container racine */
+.nv3-root {
+  padding: 14px 16px 100px;
+}
+
+/* HERO ADAPTATIF */
+.nv3-hero {
+  position: relative;
+  margin-bottom: 18px;
+  padding: 22px 20px;
+  border-radius: 24px;
+  background: linear-gradient(135deg, rgba(249,136,5,0.22) 0%, rgba(243,86,149,0.12) 50%, rgba(8,8,16,0.95) 100%);
+  border: 1px solid rgba(249,136,5,0.25);
+  overflow: hidden;
+}
+.nv3-hero::before {
+  content: "";
+  position: absolute;
+  top: -60px;
+  right: -60px;
+  width: 220px;
+  height: 220px;
+  background: radial-gradient(circle, rgba(249,136,5,0.20) 0%, transparent 70%);
+  pointer-events: none;
+}
+.nv3-hero-eyebrow {
+  position: relative;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 10px;
+  font-weight: 800;
+  color: #F98805;
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.nv3-hero-title {
+  position: relative;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 38px;
+  line-height: 1;
+  letter-spacing: 0.5px;
+  color: #F0F0FF;
+  margin-bottom: 14px;
+}
+.nv3-hero-subtitle {
+  position: relative;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  line-height: 1.5;
+  color: rgba(240,240,255,0.7);
+  margin-bottom: 16px;
+}
+.nv3-hero-state {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: rgba(249,136,5,0.12);
+  border: 1px solid rgba(249,136,5,0.32);
+  border-radius: 999px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  color: #F98805;
+}
+
+/* RING + MACROS */
+.nv3-stats-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 16px;
+}
+.nv3-ring-wrap {
+  position: relative;
+  width: 96px;
+  height: 96px;
+  flex-shrink: 0;
+}
+.nv3-ring-wrap svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.nv3-ring-bg { fill: none; stroke: rgba(240,240,255,0.10); stroke-width: 7; }
+.nv3-ring-fg {
+  fill: none;
+  stroke: url(#nv3RingGrad);
+  stroke-width: 7;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.9s cubic-bezier(0.4, 0, 0.2, 1);
+  filter: drop-shadow(0 0 8px rgba(249,136,5,0.5));
+}
+.nv3-ring-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.nv3-ring-num {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 26px;
+  line-height: 1;
+  color: #F0F0FF;
+}
+.nv3-ring-lbl {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  color: rgba(240,240,255,0.55);
+  letter-spacing: 1.2px;
+  margin-top: 2px;
+}
+
+.nv3-macros-bars {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+.nv3-mb-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.nv3-mb-lbl {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(240,240,255,0.6);
+  width: 56px;
+  flex-shrink: 0;
+}
+.nv3-mb-track {
+  flex: 1;
+  height: 5px;
+  background: rgba(240,240,255,0.08);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.nv3-mb-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.nv3-mb-fill.p { background: linear-gradient(90deg, #F98805, #F35695); }
+.nv3-mb-fill.g { background: linear-gradient(90deg, #DDE255, #F98805); }
+.nv3-mb-fill.l { background: linear-gradient(90deg, #F35695, #DDE255); }
+.nv3-mb-val {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  color: #F0F0FF;
+  min-width: 56px;
+  text-align: right;
+}
+
+/* SECTION HEADERS */
+.nv3-section-hd {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 18px 0 10px;
+}
+.nv3-section-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 11px;
+  font-weight: 800;
+  color: rgba(240,240,255,0.7);
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+}
+.nv3-section-action {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  color: #F98805;
+  cursor: pointer;
+}
+.nv3-section-action:active { opacity: 0.6; }
+
+/* CARDS REPAS */
+.nv3-meal {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  margin-bottom: 10px;
+  background: rgba(240,240,255,0.03);
+  border: 1px solid rgba(240,240,255,0.07);
+  border-radius: 18px;
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+.nv3-meal.done {
+  background: rgba(34,197,94,0.06);
+  border-color: rgba(34,197,94,0.22);
+}
+.nv3-meal-time {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 10px;
+  background: rgba(240,240,255,0.04);
+  border-right: 1px solid rgba(240,240,255,0.07);
+  flex-shrink: 0;
+  min-width: 60px;
+}
+.nv3-meal.done .nv3-meal-time {
+  background: rgba(34,197,94,0.10);
+  border-right-color: rgba(34,197,94,0.18);
+}
+.nv3-meal-icon { font-size: 22px; margin-bottom: 4px; }
+.nv3-meal-hour {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  color: rgba(240,240,255,0.55);
+}
+.nv3-meal-body {
+  flex: 1;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+}
+.nv3-meal-eyebrow {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  color: rgba(240,240,255,0.45);
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+.nv3-meal-name {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: #F0F0FF;
+  line-height: 1.25;
+  margin-bottom: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+.nv3-meal-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.nv3-meal-kcal {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 12px;
+  font-weight: 800;
+  color: #F98805;
+}
+.nv3-meal-tags {
+  display: flex;
+  gap: 6px;
+}
+.nv3-meal-tag {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  color: rgba(240,240,255,0.65);
+  padding: 2px 7px;
+  border: 1px solid rgba(240,240,255,0.12);
+  border-radius: 999px;
+}
+.nv3-meal-actions {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px;
+  flex-shrink: 0;
+}
+.nv3-meal-btn {
+  width: 38px;
+  height: 38px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(240,240,255,0.08);
+  color: #F0F0FF;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.15s ease, background 0.2s ease;
+}
+.nv3-meal-btn.primary {
+  background: linear-gradient(135deg, #F98805, #F35695);
+  box-shadow: 0 4px 12px rgba(249,136,5,0.32);
+}
+.nv3-meal-btn:active { transform: scale(0.92); }
+.nv3-meal.done .nv3-meal-btn.primary {
+  background: linear-gradient(135deg, #22C55E, #16A34A);
+  box-shadow: 0 4px 12px rgba(34,197,94,0.32);
+}
+
+/* LOADING DAILY PLAN */
+.nv3-loading {
+  padding: 28px 16px;
+  text-align: center;
+}
+.nv3-loading-dots {
+  display: inline-flex;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+.nv3-loading-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #F98805;
+  animation: nv3DotPulse 1.4s infinite ease-in-out;
+}
+.nv3-loading-dot:nth-child(2) { animation-delay: 0.2s; }
+.nv3-loading-dot:nth-child(3) { animation-delay: 0.4s; }
+@keyframes nv3DotPulse {
+  0%, 60%, 100% { opacity: 0.3; transform: scale(0.85); }
+  30% { opacity: 1; transform: scale(1.15); }
+}
+.nv3-loading-txt {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  color: rgba(240,240,255,0.6);
+  line-height: 1.5;
+}
+
+/* ERROR STATE */
+.nv3-error {
+  padding: 18px 16px;
+  text-align: center;
+  background: rgba(243,86,149,0.08);
+  border: 1px solid rgba(243,86,149,0.22);
+  border-radius: 16px;
+  margin-bottom: 12px;
+}
+.nv3-error-txt {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  color: rgba(240,240,255,0.7);
+  margin-bottom: 10px;
+}
+.nv3-error-btn {
+  padding: 8px 18px;
+  border: 1px solid rgba(243,86,149,0.4);
+  border-radius: 999px;
+  background: rgba(243,86,149,0.12);
+  color: #F35695;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+/* ═══ FIN TAB NUTRITION v3 (Wave 2.1) ═══ */
+
 /* ═══ MODE ACTIF — VIDÉO ═══ */
 .sv-active-video {
   width: 100%;
@@ -4591,44 +4960,10 @@ body:not([data-tab="chat"]) .voice-status { display: none !important; }
 
   <!-- NUTRITION -->
   <div class="atab" id="t-nutr">
-    <div class="tab-hd">
-      <div class="tab-hd-top">
-        <div>
-          <div class="tab-ey">Nutrition IA</div>
-          <div class="tab-title" id="nutr-title">Mes Macros</div>
-        </div>
-        <button class="scan-btn" onclick="triggerMealPhoto()">📸 Scanner</button>
-      <input type="file" id="meal-photo-input" accept="image/*" capture="environment" style="display:none" onchange="analyseMealPhoto(event)">
-      </div>
-      <div class="macro-ring-wrap">
-        <div style="position:relative;width:80px;height:80px">
-          <svg class="macro-ring-svg" viewBox="0 0 80 80" width="80" height="80">
-            <circle cx="40" cy="40" r="30" fill="none" stroke="rgba(249,136,5,.12)" stroke-width="6"/>
-            <circle id="nutr-ring" cx="40" cy="40" r="30" fill="none" stroke="#F98805" stroke-width="6" stroke-linecap="round" stroke-dasharray="188" stroke-dashoffset="141" style="transform:rotate(-90deg);transform-origin:50% 50%;transition:all 1s"/>
-          </svg>
-          <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
-            <div style="font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:900;color:var(--t1)" id="nutr-pct">0</div>
-            <div style="font-size:9px;color:var(--t4);font-weight:700">kcal</div>
-          </div>
-        </div>
-        <div class="macro-ring-info">
-          <div class="macro-ring-kcal" id="nutr-kcal">0</div>
-          <div class="macro-ring-sub" id="nutr-sub">-- kcal/j · -- g protéines</div>
-          <div class="nutr-macro-cards">
-            <div class="nmc"><div class="nmc-v" id="nutr-p">0<span style="font-size:10px">g</span></div><div class="nmc-l" style="color:#F98805">P</div></div>
-            <div class="nmc"><div class="nmc-v" id="nutr-g">0<span style="font-size:10px">g</span></div><div class="nmc-l" style="color:#F35695">G</div></div>
-            <div class="nmc"><div class="nmc-v" id="nutr-l">0<span style="font-size:10px">g</span></div><div class="nmc-l" style="color:#DDE255">L</div></div>
-          </div>
-        </div>
-      </div>
+    <div class="nv3-root" id="nv3-root">
+      <!-- Contenu généré dynamiquement par nv3BuildLanding() -->
     </div>
-    <div class="nutr-sc" id="nutr-sc"></div>
-    <div style="margin:0 16px 12px">
-      <div style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--t4);margin-bottom:8px">Nutrition péri-entraînement</div>
-      <div class="nutr-daily-card"><div id="daily-log-bars"></div></div>
-    </div>
-    <div class="scan-macros" id="meal-macros"></div>
-    <input type="file" id="meal-photo-input" accept="image/*" style="display:none" onchange="analyseMeal(event)">
+    <input type="file" id="meal-photo-input" accept="image/*" capture="environment" style="display:none" onchange="analyseMealPhoto(event)">
   </div>
 
   <!-- PROGRÈS -->
@@ -6219,35 +6554,14 @@ function renderDay(day) {
 
 // ── NUTRITION ──
 function buildNutr() {
-  var sc = document.getElementById('nutr-sc'); if (!sc) return; sc.innerHTML = '';
-  var m = U.macros || calcM();
-  var sub = document.getElementById('nutr-sub'); if (sub) sub.textContent = m.kcal + ' kcal/j · ' + m.prot + 'g protéines';
-  var pct = Math.min(100, Math.round((m.prot * 4 / m.kcal) * 100));
-  var ringOff = Math.round(226 * (1 - pct / 100));
-  var html = '<div style="background:var(--glass);backdrop-filter:blur(16px);border:var(--glass-s);border-radius:22px;padding:18px;margin-bottom:12px">';
-  html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px"><div style="font-family:Space Grotesk,sans-serif;font-size:19px;color:var(--t1)">MACROS DU JOUR</div><div style="font-size:12px;color:var(--dim2)">' + new Date().toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' }) + '</div></div>';
-  html += '<div style="display:flex;align-items:center;gap:15px"><div style="position:relative;width:88px;height:88px;flex-shrink:0"><svg width="88" height="88" viewBox="0 0 88 88" style="transform:rotate(-90deg)"><circle fill="none" stroke="rgba(255,255,255,.1)" stroke-width="8" cx="44" cy="44" r="36"/><circle fill="none" stroke="var(--orange)" stroke-width="8" stroke-linecap="round" stroke-dasharray="226" stroke-dashoffset="' + ringOff + '" cx="44" cy="44" r="36" style="transition:stroke-dashoffset .9s;filter:drop-shadow(0 0 8px rgba(249,136,5,.5))"/></svg><div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:Space Grotesk,sans-serif;font-size:18px;color:var(--orange)">' + pct + '%</div></div>';
-  html += '<div style="flex:1;display:flex;flex-direction:column;gap:9px">';
-  [['Protéines', m.prot + 'g', 'var(--lime)'], ['Glucides', m.gluc + 'g', 'var(--orange)'], ['Lipides', m.lip + 'g', 'var(--hot)']].forEach(function(r) {
-    html += '<div style="display:flex;justify-content:space-between;align-items:center;font-size:13px"><span style="color:var(--dim2)">' + r[0] + '</span><div style="flex:1;height:4px;background:rgba(255,255,255,.1);border-radius:2px;margin:0 9px;overflow:hidden"><div style="height:100%;background:' + r[2] + ';border-radius:2px;width:' + Math.min(100, Math.round(parseInt(r[1]) / 3)) + '%"></div></div><span style="font-weight:700;color:var(--t1)">' + r[1] + '</span></div>';
-  });
-  html += '</div></div></div>';
-  var meals = [
-    { t: 'Petit-déjeuner', k: Math.round(m.kcal * .25), items: [{ i: '🥣', n: 'Porridge protéiné', q: '350g', p: '28g' }, { i: '☕', n: 'Café', q: '1 tasse', p: '0g' }] },
-    { t: 'Déjeuner', k: Math.round(m.kcal * .35), items: [{ i: '🍗', n: 'Blanc de poulet grillé', q: '180g', p: '40g' }, { i: '🍚', n: 'Riz basmati', q: '200g cuit', p: '4g' }, { i: '🥦', n: 'Brocoli vapeur', q: '150g', p: '5g' }] },
-    { t: 'Collation', k: Math.round(m.kcal * .1), items: [{ i: '🥤', n: 'Shake protéiné', q: '300ml', p: '30g' }] },
-    { t: 'Dîner', k: Math.round(m.kcal * .3), items: [{ i: '🐟', n: 'Saumon ou steak', q: '160g', p: '35g' }, { i: '🥗', n: 'Légumes à volonté', q: '200g', p: '4g' }] },
-  ];
-  meals.forEach(function(meal) {
-    html += '<div style="background:var(--glass);backdrop-filter:blur(16px);border:var(--glass-s);border-radius:19px;padding:17px;margin-bottom:10px">';
-    html += '<div style="display:flex;justify-content:space-between;margin-bottom:11px"><div style="font-family:Space Grotesk,sans-serif;font-size:17px;color:var(--t1)">' + meal.t + '</div><div style="font-size:12px;font-weight:600;color:var(--orange);background:rgba(249,136,5,.1);padding:3px 10px;border-radius:99px">' + meal.k + ' kcal</div></div>';
-    meal.items.forEach(function(item) {
-      html += '<div style="display:flex;align-items:center;gap:9px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.07)"><span style="font-size:19px;flex-shrink:0">' + item.i + '</span><span style="font-size:13px;font-weight:600;flex:1;color:var(--t1)">' + item.n + '</span><span style="font-size:12px;color:var(--dim2)">' + item.q + '</span><span style="font-size:11px;font-weight:700;color:var(--lime);background:rgba(38,68,20,.3);border:1px solid rgba(221,226,85,.2);padding:2px 7px;border-radius:6px">' + item.p + '</span></div>';
-    });
-    html += '</div>';
-  });
-  html += '<button style="width:100%;padding:13px;background:var(--glass);border:var(--glass-s);border-radius:15px;font-family:Space Grotesk,sans-serif;font-size:15px;color:var(--t3);cursor:pointer;margin-top:2px" onclick="chatQ(\'Une recette gourmande ?\')">+ Plus de recettes</button><div style="height:15px"></div>';
-  sc.innerHTML = html;
+  // v3.5 : redirige vers la nouvelle implémentation Daily Plan IA
+  if (typeof window.nv3BuildLanding === 'function') {
+    window.nv3BuildLanding();
+    return;
+  }
+  // Fallback ultra-minimal si nv3 pas encore chargé
+  var sc = document.getElementById('nv3-root');
+  if (sc) sc.innerHTML = '<div class="nv3-loading"><div class="nv3-loading-txt">Chargement…</div></div>';
 }
 
 // ── CORPS ──
@@ -11426,6 +11740,313 @@ window.sv2CamClose      = function() {
   if (o) o.classList.remove('on');
 };
 window.sv2CamValidate   = function() { sv2CamClose(); svValidateSet(); };
+
+// ════════════════════════════════════════════════════════════
+// TAB NUTRITION v3 — DAILY PLAN IA (Wave 2.1)
+// Vision : "HIMA est le coach qui te dit chaque matin quoi manger,
+// adapté à TON état du jour, pas un plan figé."
+// ════════════════════════════════════════════════════════════
+(function(){
+
+  // ── Cache localStorage : 1 plan par jour, regen seulement si demandé ──
+  function nv3DateKey(d) {
+    d = d || new Date();
+    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+  }
+  function nv3LoadPlan() {
+    try {
+      var raw = localStorage.getItem('hima8.nv3.plan.' + nv3DateKey());
+      return raw ? JSON.parse(raw) : null;
+    } catch(e) { return null; }
+  }
+  function nv3SavePlan(plan) {
+    try { localStorage.setItem('hima8.nv3.plan.' + nv3DateKey(), JSON.stringify(plan)); } catch(e) {}
+  }
+
+  // ── État du jour (heuristique simple ; sera enrichi par Tab Corps v3) ──
+  function nv3GetDailyState() {
+    var hour = new Date().getHours();
+    var greeting = hour < 11 ? 'Bonjour' : (hour < 18 ? 'Bon après-midi' : 'Bonsoir');
+    // Streak comme proxy de momentum
+    var st = (typeof streak !== 'undefined') ? streak : 0;
+    // Mode utilisateur (objectif)
+    var mode = U.mode || 'bodybuilding';
+    // État simple : on infère de la séance du jour si dispo
+    var todaySeance = null;
+    try { if (typeof svGenSeance === 'function') {
+      var d = new Date().getDay();
+      var idx = d === 0 ? 6 : d - 1;
+      todaySeance = svGenSeance(idx);
+    }} catch(e) {}
+    return {
+      greeting: greeting,
+      hour: hour,
+      streak: st,
+      mode: mode,
+      isRestDay: todaySeance ? !!todaySeance.rest : false,
+      seanceTitre: todaySeance && !todaySeance.rest ? (todaySeance.titre || '') : null
+    };
+  }
+
+  // ── Génération du plan via Claude ──
+  // Note coût : 1 appel/jour/user max grâce au cache. Avec ~800 tokens out, c'est <0.01€/user/jour.
+  async function nv3GeneratePlan() {
+    var m = U.macros || (typeof calcM === 'function' ? calcM() : {kcal:2200, prot:160, gluc:240, lip:70});
+    var state = nv3GetDailyState();
+    var weekday = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'][new Date().getDay()];
+
+    var system = "Tu es HIMA, coach sportif IA. Génère un plan repas du jour PERSONNALISÉ et adapté.\n\n"
+      + "CONTRAINTES STRICTES :\n"
+      + "- Total kcal du jour : " + m.kcal + " kcal (±5%)\n"
+      + "- Protéines : " + m.prot + "g (±10g)\n"
+      + "- Glucides : " + m.gluc + "g\n"
+      + "- Lipides : " + m.lip + "g\n"
+      + "- 4 repas : petit-déjeuner, déjeuner, snack, dîner\n"
+      + "- Mode utilisateur : " + state.mode + (state.isRestDay ? ' (jour de REPOS)' : ' (jour actif : ' + (state.seanceTitre||'séance') + ')') + "\n"
+      + "- Jour : " + weekday + "\n\n"
+      + "RÈGLES NUTRITIONNELLES :\n"
+      + "- Plats simples, accessibles, français/européens\n"
+      + "- " + (state.isRestDay ? 'Jour repos : moins de glucides au dîner, plus de légumes' : 'Jour actif : glucides répartis pour energy, proté à chaque repas') + "\n"
+      + "- Évite la répétition : varie les sources protéines (volaille, poisson, œufs, légumineuses)\n\n"
+      + "FORMAT DE RÉPONSE — JSON STRICT, AUCUN AUTRE TEXTE :\n"
+      + '{"adapted_for":"phrase courte expliquant l\'adaptation du jour (ex: \'Adapté pour ton jour de repos\')","meals":[{"slot":"breakfast","time":"7h30","icon":"🥣","name":"Nom du repas","kcal":650,"prot":35,"gluc":75,"lip":15,"tags":["protéiné","rapide"]},{"slot":"lunch","time":"13h",...},{"slot":"snack","time":"16h",...},{"slot":"dinner","time":"20h",...}]}\n\n'
+      + "Réponds UNIQUEMENT avec ce JSON, rien d'autre.";
+
+    var userMsg = "Génère mon plan repas pour aujourd'hui.";
+
+    try {
+      var resp = null;
+      // Tente d'abord la voie sécurisée (Firebase Function)
+      if (typeof callClaudeSecure === 'function') {
+        resp = await callClaudeSecure(system, [{role:'user', content:userMsg}]);
+      }
+      // Fallback : /api/chat (proxy Vercel)
+      if (!resp) {
+        try {
+          var r = await fetch('/api/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              system: system,
+              messages: [{ role: 'user', content: userMsg }],
+              max_tokens: 800
+            })
+          });
+          if (r.ok) {
+            var data = await r.json();
+            resp = data.text || data.content || (data.content && data.content[0] && data.content[0].text);
+          }
+        } catch(e) { console.warn('[nv3] /api/chat fallback failed', e); }
+      }
+      if (!resp) throw new Error('Pas de réponse Claude');
+
+      // Parse JSON (Claude peut parfois mettre des ```json fences)
+      var clean = resp.replace(/```json|```/g, '').trim();
+      var jsonStart = clean.indexOf('{');
+      var jsonEnd = clean.lastIndexOf('}');
+      if (jsonStart >= 0 && jsonEnd > jsonStart) clean = clean.substring(jsonStart, jsonEnd + 1);
+      var parsed = JSON.parse(clean);
+      if (!parsed.meals || !Array.isArray(parsed.meals) || parsed.meals.length < 3) {
+        throw new Error('Structure plan invalide');
+      }
+      // Initialise le statut "logged"
+      parsed.meals.forEach(function(meal){ meal.logged = false; });
+      parsed.generated_at = Date.now();
+      parsed.adapted_for = parsed.adapted_for || 'Adapté à ta journée';
+      return parsed;
+    } catch(e) {
+      console.warn('[nv3] generatePlan error:', e.message);
+      return null;
+    }
+  }
+
+  // ── Plan de fallback si Claude indispo (offline / erreur) ──
+  function nv3FallbackPlan() {
+    var m = U.macros || (typeof calcM === 'function' ? calcM() : {kcal:2200, prot:160, gluc:240, lip:70});
+    return {
+      adapted_for: 'Plan de base — connecte-toi pour la version IA',
+      generated_at: Date.now(),
+      fallback: true,
+      meals: [
+        { slot:'breakfast', time:'7h30', icon:'🥣', name:'Porridge protéiné aux fruits rouges', kcal: Math.round(m.kcal*0.25), prot: Math.round(m.prot*0.25), gluc: Math.round(m.gluc*0.30), lip: Math.round(m.lip*0.18), tags:['rapide','protéiné'], logged:false },
+        { slot:'lunch',     time:'13h',  icon:'🍗', name:'Bowl quinoa, poulet grillé, légumes', kcal: Math.round(m.kcal*0.35), prot: Math.round(m.prot*0.35), gluc: Math.round(m.gluc*0.35), lip: Math.round(m.lip*0.30), tags:['équilibré'], logged:false },
+        { slot:'snack',     time:'16h',  icon:'🥜', name:'Pomme + 30g amandes + skyr', kcal: Math.round(m.kcal*0.10), prot: Math.round(m.prot*0.15), gluc: Math.round(m.gluc*0.10), lip: Math.round(m.lip*0.20), tags:['snack'], logged:false },
+        { slot:'dinner',    time:'20h',  icon:'🐟', name:'Saumon, patate douce rôtie, brocolis', kcal: Math.round(m.kcal*0.30), prot: Math.round(m.prot*0.25), gluc: Math.round(m.gluc*0.25), lip: Math.round(m.lip*0.32), tags:['oméga-3'], logged:false }
+      ]
+    };
+  }
+
+  // ── Rendu HTML d'un repas ──
+  function nv3RenderMeal(meal, index) {
+    var slotLabels = {
+      breakfast: 'Petit-déjeuner',
+      lunch: 'Déjeuner',
+      snack: 'Snack',
+      dinner: 'Dîner'
+    };
+    var slotLabel = slotLabels[meal.slot] || meal.slot.toUpperCase();
+    var tagsHtml = '';
+    if (meal.tags && meal.tags.length) {
+      tagsHtml = '<div class="nv3-meal-tags">' + meal.tags.slice(0,2).map(function(t){
+        return '<span class="nv3-meal-tag">' + t + '</span>';
+      }).join('') + '</div>';
+    }
+    var doneCls = meal.logged ? ' done' : '';
+    var btnIcon = meal.logged ? '✓' : '+';
+    return '<div class="nv3-meal' + doneCls + '" data-meal-idx="' + index + '">'
+      + '<div class="nv3-meal-time">'
+      +   '<div class="nv3-meal-icon">' + (meal.icon || '🍽️') + '</div>'
+      +   '<div class="nv3-meal-hour">' + (meal.time || '--') + '</div>'
+      + '</div>'
+      + '<div class="nv3-meal-body">'
+      +   '<div class="nv3-meal-eyebrow">' + slotLabel + '</div>'
+      +   '<div class="nv3-meal-name">' + (meal.name || 'Repas') + '</div>'
+      +   '<div class="nv3-meal-meta">'
+      +     '<span class="nv3-meal-kcal">' + (meal.kcal || 0) + ' kcal</span>'
+      +     tagsHtml
+      +   '</div>'
+      + '</div>'
+      + '<div class="nv3-meal-actions">'
+      +   '<button class="nv3-meal-btn primary" onclick="nv3ToggleMeal(' + index + ')" aria-label="Valider repas">' + btnIcon + '</button>'
+      + '</div>'
+      + '</div>';
+  }
+
+  // ── Rendu HERO + STATS ──
+  function nv3RenderHero(plan) {
+    var m = U.macros || (typeof calcM === 'function' ? calcM() : {kcal:2200, prot:160, gluc:240, lip:70});
+    var state = nv3GetDailyState();
+    var prn = U.prenom || 'Walide';
+
+    // Calcul consommé (somme des repas loggés)
+    var consumed = { kcal:0, prot:0, gluc:0, lip:0 };
+    plan.meals.forEach(function(meal){
+      if (meal.logged) {
+        consumed.kcal += (meal.kcal || 0);
+        consumed.prot += (meal.prot || 0);
+        consumed.gluc += (meal.gluc || 0);
+        consumed.lip  += (meal.lip  || 0);
+      }
+    });
+    var pctKcal = Math.min(100, Math.round((consumed.kcal / m.kcal) * 100));
+    var ringDash = 226;
+    var ringOff = Math.round(ringDash * (1 - pctKcal / 100));
+
+    var pctP = Math.min(100, Math.round((consumed.prot / m.prot) * 100));
+    var pctG = Math.min(100, Math.round((consumed.gluc / m.gluc) * 100));
+    var pctL = Math.min(100, Math.round((consumed.lip  / m.lip)  * 100));
+
+    return '<div class="nv3-hero">'
+      + '<div class="nv3-hero-eyebrow">Nutrition · ' + state.greeting + '</div>'
+      + '<div class="nv3-hero-title">TA JOURNÉE</div>'
+      + '<div class="nv3-hero-subtitle">' + (plan.adapted_for || 'Plan adapté à ton état du jour.') + '</div>'
+      + (plan.fallback ? '' : '<div class="nv3-hero-state">✨ Adapté par HIMA</div>')
+      + '<div class="nv3-stats-row">'
+      +   '<div class="nv3-ring-wrap">'
+      +     '<svg viewBox="0 0 80 80">'
+      +       '<defs><linearGradient id="nv3RingGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#F98805"/><stop offset="100%" stop-color="#F35695"/></linearGradient></defs>'
+      +       '<circle class="nv3-ring-bg" cx="40" cy="40" r="36"/>'
+      +       '<circle class="nv3-ring-fg" cx="40" cy="40" r="36" stroke-dasharray="' + ringDash + '" stroke-dashoffset="' + ringOff + '"/>'
+      +     '</svg>'
+      +     '<div class="nv3-ring-center">'
+      +       '<div class="nv3-ring-num">' + consumed.kcal + '</div>'
+      +       '<div class="nv3-ring-lbl">/ ' + m.kcal + ' kcal</div>'
+      +     '</div>'
+      +   '</div>'
+      +   '<div class="nv3-macros-bars">'
+      +     nv3MacroBar('Protéines', consumed.prot, m.prot, pctP, 'p')
+      +     nv3MacroBar('Glucides',  consumed.gluc, m.gluc, pctG, 'g')
+      +     nv3MacroBar('Lipides',   consumed.lip,  m.lip,  pctL, 'l')
+      +   '</div>'
+      + '</div>'
+      + '</div>';
+  }
+  function nv3MacroBar(lbl, consumed, target, pct, cls) {
+    return '<div class="nv3-mb-row">'
+      + '<div class="nv3-mb-lbl">' + lbl + '</div>'
+      + '<div class="nv3-mb-track"><div class="nv3-mb-fill ' + cls + '" style="width:' + pct + '%"></div></div>'
+      + '<div class="nv3-mb-val">' + consumed + ' / ' + target + 'g</div>'
+      + '</div>';
+  }
+
+  // ── Rendu liste repas ──
+  function nv3RenderMeals(plan) {
+    var html = '<div class="nv3-section-hd">'
+      + '<div class="nv3-section-title">Repas du jour</div>'
+      + '<div class="nv3-section-action" onclick="nv3RegeneratePlan()">↻ Régénérer</div>'
+      + '</div>';
+    plan.meals.forEach(function(meal, i){
+      html += nv3RenderMeal(meal, i);
+    });
+    return html;
+  }
+
+  // ── Toggle meal logged ──
+  window.nv3ToggleMeal = function(idx) {
+    var plan = window._nv3CurrentPlan;
+    if (!plan || !plan.meals[idx]) return;
+    plan.meals[idx].logged = !plan.meals[idx].logged;
+    nv3SavePlan(plan);
+    // Petit feedback haptique sur iOS
+    try { if (window.navigator.vibrate) window.navigator.vibrate(plan.meals[idx].logged ? 35 : 15); } catch(e) {}
+    // Re-render full landing (ring update + état carte)
+    window.nv3BuildLanding();
+  };
+
+  // ── Régénération du plan (force regen via Claude) ──
+  window.nv3RegeneratePlan = async function() {
+    var root = document.getElementById('nv3-root');
+    if (!root) return;
+    if (!confirm('Générer un nouveau plan repas pour aujourd\'hui ?')) return;
+    // Invalide le cache
+    try { localStorage.removeItem('hima8.nv3.plan.' + nv3DateKey()); } catch(e) {}
+    window._nv3CurrentPlan = null;
+    window.nv3BuildLanding();
+  };
+
+  // ── ENTRY POINT : nv3BuildLanding ──
+  window.nv3BuildLanding = async function() {
+    var root = document.getElementById('nv3-root');
+    if (!root) return;
+
+    // 1. Cache hit → render immédiat
+    var cached = nv3LoadPlan();
+    if (cached && cached.meals && cached.meals.length) {
+      window._nv3CurrentPlan = cached;
+      root.innerHTML = nv3RenderHero(cached) + nv3RenderMeals(cached);
+      return;
+    }
+
+    // 2. Pas de cache → loading state + génération
+    root.innerHTML = '<div class="nv3-loading">'
+      + '<div class="nv3-loading-dots"><span class="nv3-loading-dot"></span><span class="nv3-loading-dot"></span><span class="nv3-loading-dot"></span></div>'
+      + '<div class="nv3-loading-txt">HIMA prépare ton plan repas adapté à ta journée…</div>'
+      + '</div>';
+
+    var plan = await nv3GeneratePlan();
+    if (!plan) {
+      // 3a. Fallback (Claude KO)
+      plan = nv3FallbackPlan();
+      root.innerHTML = '<div class="nv3-error">'
+        + '<div class="nv3-error-txt">Connexion limitée. Plan de base affiché. Réessaie plus tard pour la version IA.</div>'
+        + '<button class="nv3-error-btn" onclick="nv3RegeneratePlan()">Réessayer</button>'
+        + '</div>'
+        + nv3RenderHero(plan)
+        + nv3RenderMeals(plan);
+      window._nv3CurrentPlan = plan;
+      nv3SavePlan(plan);
+      return;
+    }
+    // 3b. Succès → cache + render
+    window._nv3CurrentPlan = plan;
+    nv3SavePlan(plan);
+    root.innerHTML = nv3RenderHero(plan) + nv3RenderMeals(plan);
+  };
+
+})();
+// ════════════════════════════════════════════════════════════
+// FIN TAB NUTRITION v3 — Wave 2.1
+// ════════════════════════════════════════════════════════════
 
 // ────────────────────────────────────────────────
 // HOOK BOOT (1 seul observer, 1 seule init)
