@@ -3263,7 +3263,29 @@ body:not([data-tab="chat"]) .voice-status { display: none !important; }
 /* ═══ TAB NUTRITION v3 — DAILY PLAN IA (Wave 2.1)         ═══ */
 /* ═══════════════════════════════════════════════════════════ */
 
-/* Container racine */
+/* iOS Safari fix scroll : même pattern que #t-prog pour éviter le scroll bloqué */
+#t-nutr.atab.on {
+  display: block !important;
+  height: calc(100vh - 70px) !important;
+  min-height: calc(100vh - 70px) !important;
+  max-height: calc(100vh - 70px) !important;
+  overflow: hidden !important;
+  position: relative !important;
+}
+#t-nutr .nv3-root {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: #080810;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+  padding: calc(20px + env(safe-area-inset-top, 0px)) 16px calc(110px + env(safe-area-inset-bottom, 0px)) 16px;
+  box-sizing: border-box;
+  position: relative;
+}
+#t-nutr .nv3-root::-webkit-scrollbar { display: none; }
+
+/* Container racine (override du padding de base, le scroll handler le gère maintenant) */
 .nv3-root {
   padding: 14px 16px 100px;
 }
