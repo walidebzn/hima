@@ -7321,7 +7321,6 @@ function toggleXIVoice() {
       var Ctx = window.AudioContext || window.webkitAudioContext;
       if (Ctx) {
         var ctx = new Ctx();
-        // Joue un buffer silencieux ultra-court pour débloquer iOS
         var buf = ctx.createBuffer(1, 1, 22050);
         var src = ctx.createBufferSource();
         src.buffer = buf;
@@ -7331,13 +7330,53 @@ function toggleXIVoice() {
       }
     } catch(e) { /* silencieux : best effort */ }
 
-    // Mini feedback : confirme l'activation par un toast (et joue un mot court
-    // pour valider que tout fonctionne et débloquer l'audio HTML5)
     if (typeof toast === 'function') toast('🔊 Voix HIMA activée');
     setTimeout(function(){ speakXI('Voix activée.'); }, 100);
+
+    // Démarre le watcher des nouveaux messages (une seule fois)
+    installXIVoiceWatcher();
   } else if (!xiActive && typeof toast === 'function') {
     toast('🔇 Voix HIMA désactivée');
   }
+}
+
+// ────────────────────────────────────────────────
+// XI VOICE WATCHER (Wave 1.5+)
+// MutationObserver sur #msgs : déclenche la voix sur chaque nouveau message HIMA.
+// Plus robuste que de wrapper addH (qui a des problèmes de référence selon les moteurs JS).
+// ────────────────────────────────────────────────
+function installXIVoiceWatcher() {
+  if (window._xiWatcherInstalled) return;
+  var msgsEl = document.getElementById('msgs');
+  if (!msgsEl) {
+    // Le tab Coach n'est peut-être pas encore monté ; on retente sous peu
+    setTimeout(installXIVoiceWatcher, 500);
+    return;
+  }
+  window._xiWatcherInstalled = true;
+
+  var observer = new MutationObserver(function(mutations) {
+    if (!xiActive) return;
+    mutations.forEach(function(m) {
+      m.addedNodes.forEach(function(node) {
+        if (node.nodeType !== 1) return;                // pas un Element
+        if (!node.classList || !node.classList.contains('mg')) return;
+        if (node.classList.contains('u')) return;       // message user → on ignore
+        if (node.id === 'typ') return;                   // indicateur "typing" → ignore
+        // Extraction du texte des bulles
+        var bubbles = node.querySelectorAll('.mbs .b');
+        if (!bubbles || !bubbles.length) return;
+        // On prend le DERNIER bubble (le message principal final de HIMA)
+        var lastBubble = bubbles[bubbles.length - 1];
+        var txt = (lastBubble.innerText || lastBubble.textContent || '').trim();
+        if (!txt || txt.length < 3) return;
+        // Petit debounce : si plusieurs messages s'ajoutent en rafale, on ne joue que le dernier
+        if (window._xiDebounce) clearTimeout(window._xiDebounce);
+        window._xiDebounce = setTimeout(function(){ speakXI(txt); }, 150);
+      });
+    });
+  });
+  observer.observe(msgsEl, { childList: true });
 }
 
 // Patch addH to use XI voice when active
