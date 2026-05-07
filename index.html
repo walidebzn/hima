@@ -1107,6 +1107,11 @@ body::after { display:none !important; }
   cursor: pointer !important;
   flex-shrink: 0 !important;
 }
+/* État actif voix HIMA (Wave 1.5) : bat le !important par double spécificité */
+.cinpb .xi-btn.xi-active {
+  background: linear-gradient(135deg, #22C55E, #16A34A) !important;
+  box-shadow: 0 0 14px rgba(34,197,94,0.45) !important;
+}
 .cinpb .cinp {
   flex: 1 !important;
   background: #0E0E1C !important;
@@ -7307,7 +7312,32 @@ var xiActive = false;
 function toggleXIVoice() {
   xiActive = !xiActive;
   var btn = document.getElementById('xi-btn');
-  if (btn) btn.style.background = xiActive ? 'linear-gradient(135deg,#22C55E,#16A34A)' : 'linear-gradient(135deg,#F98805,#F35695)';
+  if (btn) btn.classList.toggle('xi-active', xiActive);
+
+  // iOS Safari : débloque l'AudioContext lors du tap utilisateur (sinon les voix
+  // suivantes ne pourront pas jouer car déclenchées par fetch async).
+  if (xiActive && !window._xiAudioUnlocked) {
+    try {
+      var Ctx = window.AudioContext || window.webkitAudioContext;
+      if (Ctx) {
+        var ctx = new Ctx();
+        // Joue un buffer silencieux ultra-court pour débloquer iOS
+        var buf = ctx.createBuffer(1, 1, 22050);
+        var src = ctx.createBufferSource();
+        src.buffer = buf;
+        src.connect(ctx.destination);
+        src.start(0);
+        window._xiAudioUnlocked = true;
+      }
+    } catch(e) { /* silencieux : best effort */ }
+
+    // Mini feedback : confirme l'activation par un toast (et joue un mot court
+    // pour valider que tout fonctionne et débloquer l'audio HTML5)
+    if (typeof toast === 'function') toast('🔊 Voix HIMA activée');
+    setTimeout(function(){ speakXI('Voix activée.'); }, 100);
+  } else if (!xiActive && typeof toast === 'function') {
+    toast('🔇 Voix HIMA désactivée');
+  }
 }
 
 // Patch addH to use XI voice when active
