@@ -3975,10 +3975,26 @@ body:not([data-tab="chat"]) .voice-status { display: none !important; }
   margin: 6px 0 14px;
 }
 .nv3-scan-viewport video {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+}
+/* html5-qrcode injecte sa propre structure dans #nv3-scan-vp */
+#nv3-scan-vp {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  background: #000;
 }
+#nv3-scan-vp > div { /* le wrapper que html5-qrcode crée */
+  width: 100% !important;
+  height: 100% !important;
+}
+/* La librairie ajoute parfois une bordure visible — on la masque pour rester clean */
+#nv3-scan-vp video, #nv3-scan-vp canvas {
+  border: none !important;
+  outline: none !important;
+}
+.nv3-scan-corners { z-index: 5; }
 .nv3-scan-line {
   position: absolute;
   left: 8%;
@@ -13033,17 +13049,14 @@ window.sv2CamValidate   = function() { sv2CamClose(); svValidateSet(); };
   // ────────────────────────────────────────
   // SCANNER CODE-BARRES
   // ────────────────────────────────────────
-  var _zxingReader = null;
-  var _zxingStream = null;
 
   window.nv3ScannerOpen = function() {
     var html = '<div class="nv3-md-eyebrow">Scanner un produit</div>'
       + '<div class="nv3-md-title" style="font-size:22px;margin-bottom:8px">Code-barres</div>'
       + '<div id="nv3-scan-status" style="font-family:DM Sans,sans-serif;font-size:12px;color:#DDE255;margin-bottom:10px;min-height:18px;font-weight:600;">Initialisation…</div>'
-      + '<div class="nv3-scan-viewport" id="nv3-scan-vp">'
-      +   '<video id="nv3-scan-video" autoplay playsinline muted></video>'
+      + '<div class="nv3-scan-viewport">'
+      +   '<div id="nv3-scan-vp" style="width:100%;height:100%"></div>'
       +   '<div class="nv3-scan-corners"><div class="nv3-scan-corner tl"></div><div class="nv3-scan-corner tr"></div><div class="nv3-scan-corner bl"></div><div class="nv3-scan-corner br"></div></div>'
-      +   '<div class="nv3-scan-line"></div>'
       + '</div>'
       + '<div class="nv3-scan-fallback">'
       +   '<div class="nv3-scan-fallback-lbl">Saisie manuelle</div>'
@@ -13053,40 +13066,34 @@ window.sv2CamValidate   = function() { sv2CamClose(); svValidateSet(); };
       +   '</div>'
       + '</div>';
     nv3ModalOpen(html);
-    setTimeout(nv3ScannerStart, 200);
+    setTimeout(nv3ScannerStart, 300);
   };
 
-  // Charge ZXing avec stratégie multi-CDN robuste
-  async function nv3LoadZXing() {
-    // Si déjà chargé sous l'un des namespaces, return direct
-    if (typeof window.ZXing !== 'undefined' && window.ZXing.BrowserMultiFormatReader) return window.ZXing;
-    if (typeof window.ZXingBrowser !== 'undefined' && window.ZXingBrowser.BrowserMultiFormatReader) return window.ZXingBrowser;
+  // ════════════════════════════════════════════════════════════
+  // SCANNER CODE-BARRES (html5-qrcode v2.3.8 — robuste iOS Safari)
+  // ════════════════════════════════════════════════════════════
+  var _h5qrScanner = null;
 
-    // Liste de CDN à essayer en cascade (premier qui marche gagne)
+  // Charge html5-qrcode depuis CDN avec fallback
+  async function nv3LoadH5QR() {
+    if (typeof window.Html5Qrcode !== 'undefined') return window.Html5Qrcode;
     var sources = [
-      'https://unpkg.com/@zxing/browser@0.1.5/umd/index.min.js',
-      'https://cdn.jsdelivr.net/npm/@zxing/browser@0.1.5/umd/index.min.js',
-      'https://unpkg.com/@zxing/library@0.21.3/umd/index.min.js',
-      'https://cdn.jsdelivr.net/npm/@zxing/library@0.21.3/umd/index.min.js'
+      'https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js',
+      'https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js'
     ];
-
     for (var i = 0; i < sources.length; i++) {
       try {
         await new Promise(function(resolve, reject){
           var s = document.createElement('script');
           s.src = sources[i];
-          s.onload = resolve;
-          s.onerror = reject;
-          // Timeout 6s par CDN
           var t = setTimeout(function(){ reject(new Error('timeout')); }, 6000);
           s.onload = function(){ clearTimeout(t); resolve(); };
+          s.onerror = function(){ clearTimeout(t); reject(new Error('load error')); };
           document.head.appendChild(s);
         });
-        // Vérifie si l'un des namespaces est dispo
-        var ZX = window.ZXingBrowser || window.ZXing;
-        if (ZX && ZX.BrowserMultiFormatReader) {
-          console.log('[nv3] ZXing loaded from:', sources[i]);
-          return ZX;
+        if (typeof window.Html5Qrcode !== 'undefined') {
+          console.log('[nv3] html5-qrcode loaded from:', sources[i]);
+          return window.Html5Qrcode;
         }
       } catch(e) {
         console.warn('[nv3] CDN failed:', sources[i], e.message);
@@ -13095,7 +13102,7 @@ window.sv2CamValidate   = function() { sv2CamClose(); svValidateSet(); };
     return null;
   }
 
-  // Affiche un statut visible directement dans la modal scanner (pas besoin de DevTools)
+  // Affiche un statut visible directement dans la modal scanner
   function nv3ScanStatus(msg, isError) {
     var el = document.getElementById('nv3-scan-status');
     if (el) {
@@ -13105,154 +13112,82 @@ window.sv2CamValidate   = function() { sv2CamClose(); svValidateSet(); };
   }
 
   async function nv3ScannerStart() {
-    var video = document.getElementById('nv3-scan-video');
-    if (!video) return;
-    nv3ScanStatus('Initialisation caméra…');
+    nv3ScanStatus('Chargement du décodeur…');
 
-    try {
-      // 1. Permission + stream caméra arrière
-      var stream;
-      try {
-        stream = await navigator.mediaDevices.getUserMedia({
-          video: {
-            facingMode: { ideal: 'environment' },
-            width:  { ideal: 1280 },
-            height: { ideal: 720 }
-          },
-          audio: false
-        });
-      } catch(permErr) {
-        console.warn('[nv3] camera permission refused:', permErr.name);
-        var vp1 = document.getElementById('nv3-scan-vp');
-        if (vp1) vp1.innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:rgba(240,240,255,0.6);font-size:13px;text-align:center;padding:20px;line-height:1.5;"><div style="font-size:32px;margin-bottom:12px">📷</div>Caméra refusée ou indisponible.<br>Utilise la saisie manuelle ci-dessous.</div>';
-        nv3ScanStatus('Caméra refusée', true);
-        return;
-      }
-      _zxingStream = stream;
-      video.srcObject = stream;
-      video.setAttribute('playsinline', 'true');
-      video.setAttribute('autoplay', 'true');
-      video.setAttribute('muted', 'true');
-      try { await video.play(); } catch(e) {}
-      nv3ScanStatus('Chargement du décodeur…');
-
-      // 2. Charge ZXing (multi-CDN)
-      var ZX = await nv3LoadZXing();
-      if (!ZX) {
-        nv3ScanStatus('Décodeur indisponible — utilise la saisie manuelle', true);
-        // Affiche le bouton "prendre une photo" comme fallback ultime
-        nv3ShowCaptureFallback();
-        return;
-      }
-
-      // 3. Démarre le décodage
-      _zxingReader = new ZX.BrowserMultiFormatReader();
-      nv3ScanStatus('🔍 Vise un code-barres');
-
-      // decodeFromVideoElement avec callback (compatibilité large)
-      try {
-        _zxingReader.decodeFromVideoElement(video, function(result, err){
-          if (result) {
-            var code = result.getText();
-            nv3ScanStatus('✓ ' + code);
-            try { if (window.navigator.vibrate) window.navigator.vibrate([30, 60, 30]); } catch(e) {}
-            nv3ScannerStop();
-            nv3ScanLookup(code);
-          }
-          // err normal = NotFoundException (pas de code dans la frame) → on ignore
-        });
-      } catch(decodeErr) {
-        // Certaines versions n'ont pas decodeFromVideoElement, fallback sur decodeContinuously
-        console.warn('[nv3] decodeFromVideoElement failed, trying decodeContinuously', decodeErr);
-        try {
-          _zxingReader.decodeContinuously(video, function(result, err){
-            if (result) {
-              var code = result.getText();
-              nv3ScanStatus('✓ ' + code);
-              try { if (window.navigator.vibrate) window.navigator.vibrate([30, 60, 30]); } catch(e) {}
-              nv3ScannerStop();
-              nv3ScanLookup(code);
-            }
-          });
-        } catch(e2) {
-          console.warn('[nv3] both decode methods failed', e2);
-          nv3ScanStatus('Décodage auto indisponible — capture une photo', true);
-          nv3ShowCaptureFallback();
-        }
-      }
-    } catch(e) {
-      console.warn('[nv3] scanner start failed', e);
-      nv3ScanStatus('Erreur scanner — utilise la saisie manuelle', true);
+    // 1. Charge html5-qrcode
+    var Html5Qrcode = await nv3LoadH5QR();
+    if (!Html5Qrcode) {
+      nv3ScanStatus('Décodeur indisponible — utilise la saisie manuelle', true);
+      return;
     }
-  }
 
-  // Fallback : capture photo + décodage one-shot (plus fiable iOS si le décodage continu plante)
-  function nv3ShowCaptureFallback() {
-    var vp = document.getElementById('nv3-scan-vp');
-    if (!vp) return;
-    var existing = document.getElementById('nv3-scan-capture-btn');
-    if (existing) return;
-    var btn = document.createElement('button');
-    btn.id = 'nv3-scan-capture-btn';
-    btn.textContent = '📸 Prendre une photo du code';
-    btn.style.cssText = 'position:absolute;bottom:12px;left:50%;transform:translateX(-50%);padding:10px 18px;background:linear-gradient(135deg,#F98805,#F35695);border:none;border-radius:999px;color:#FFF;font-family:Space Grotesk,sans-serif;font-size:13px;font-weight:800;cursor:pointer;z-index:10;box-shadow:0 6px 18px rgba(249,136,5,0.45);';
-    btn.onclick = nv3CapturePhoto;
-    vp.appendChild(btn);
-  }
-
-  async function nv3CapturePhoto() {
-    var video = document.getElementById('nv3-scan-video');
-    if (!video || !video.videoWidth) return;
-    nv3ScanStatus('Analyse de la photo…');
+    // 2. Vérifie qu'il y a une caméra
+    nv3ScanStatus('Détection caméra…');
+    var cameras;
     try {
-      var canvas = document.createElement('canvas');
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-      var ctx = canvas.getContext('2d');
-      ctx.drawImage(video, 0, 0);
+      cameras = await Html5Qrcode.getCameras();
+    } catch(e) {
+      console.warn('[nv3] getCameras error', e);
+      nv3ScanStatus('Caméra refusée ou indisponible', true);
+      return;
+    }
+    if (!cameras || !cameras.length) {
+      nv3ScanStatus('Aucune caméra détectée', true);
+      return;
+    }
+    // Cherche la caméra arrière (back/rear/environment dans le label)
+    var backCam = cameras.find(function(c){ return /back|rear|environment|arrière/i.test(c.label); });
+    var camId = backCam ? backCam.id : cameras[cameras.length - 1].id;
 
-      var ZX = await nv3LoadZXing();
-      if (!ZX) {
-        nv3ScanStatus('Décodeur indisponible', true);
-        return;
-      }
-      var reader = new ZX.BrowserMultiFormatReader();
-      try {
-        var result = await reader.decodeFromCanvas(canvas);
-        if (result) {
-          var code = result.getText();
-          nv3ScanStatus('✓ ' + code);
+    // 3. Démarre le scanner
+    nv3ScanStatus('🔍 Vise un code-barres');
+    try {
+      _h5qrScanner = new Html5Qrcode('nv3-scan-vp', { verbose: false });
+      await _h5qrScanner.start(
+        camId,
+        {
+          fps: 10,
+          qrbox: function(viewfinderWidth, viewfinderHeight) {
+            // Zone de scan : 80% largeur, 50% hauteur centrée
+            var minEdge = Math.min(viewfinderWidth, viewfinderHeight);
+            var w = Math.floor(minEdge * 0.85);
+            var h = Math.floor(minEdge * 0.55);
+            return { width: w, height: h };
+          },
+          aspectRatio: 1.333,
+          disableFlip: false
+        },
+        function onSuccess(decodedText, decodedResult) {
+          nv3ScanStatus('✓ ' + decodedText);
           try { if (window.navigator.vibrate) window.navigator.vibrate([30, 60, 30]); } catch(e) {}
           nv3ScannerStop();
-          nv3ScanLookup(code);
+          nv3ScanLookup(decodedText);
+        },
+        function onError(errorMessage) {
+          // Erreurs normales pendant le scan = "pas de code détecté cette frame"
+          // → on ignore silencieusement
         }
-      } catch(e) {
-        nv3ScanStatus('Aucun code détecté — réessaye', true);
-      }
+      );
     } catch(e) {
-      console.warn('[nv3] capture failed', e);
-      nv3ScanStatus('Erreur capture', true);
+      console.warn('[nv3] scanner start failed', e);
+      nv3ScanStatus('Erreur démarrage scanner — saisie manuelle disponible', true);
+      // Si la lib pose la div en error state, on la nettoie
+      _h5qrScanner = null;
     }
   }
 
   window.nv3ScannerStop = function() {
-    if (_zxingReader) {
-      try { _zxingReader.reset(); } catch(e) {}
-      _zxingReader = null;
-    }
-    if (_zxingStream) {
-      try { _zxingStream.getTracks().forEach(function(t){ t.stop(); }); } catch(e) {}
-      _zxingStream = null;
-    }
-    // Détache le stream de la balise video pour libérer la caméra
-    var v = document.getElementById('nv3-scan-video');
-    if (v) {
+    if (_h5qrScanner) {
       try {
-        if (v.srcObject) {
-          v.srcObject.getTracks && v.srcObject.getTracks().forEach(function(t){ t.stop(); });
+        if (_h5qrScanner.isScanning) {
+          _h5qrScanner.stop().then(function(){
+            try { _h5qrScanner.clear(); } catch(e) {}
+          }).catch(function(){});
+        } else {
+          try { _h5qrScanner.clear(); } catch(e) {}
         }
-        v.srcObject = null;
       } catch(e) {}
+      _h5qrScanner = null;
     }
   };
 
