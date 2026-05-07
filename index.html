@@ -3650,6 +3650,522 @@ body:not([data-tab="chat"]) .voice-status { display: none !important; }
 
 /* ═══ FIN TAB NUTRITION v3 (Wave 2.1) ═══ */
 
+/* ═══════════════════════════════════════════════════════════ */
+/* ═══ TAB NUTRITION v3 — Wave 2.2 : LOGGING & SCANNER     ═══ */
+/* ═══════════════════════════════════════════════════════════ */
+
+/* STICKY ACTIONS BAR — 3 boutons rapides */
+.nv3-actions {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin: 14px 0 18px;
+}
+.nv3-action-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 12px 6px;
+  background: rgba(240,240,255,0.04);
+  border: 1px solid rgba(240,240,255,0.08);
+  border-radius: 16px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.nv3-action-btn:active { transform: scale(0.96); background: rgba(240,240,255,0.08); }
+.nv3-action-icon { font-size: 22px; }
+.nv3-action-lbl {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 10px;
+  font-weight: 800;
+  color: rgba(240,240,255,0.75);
+  letter-spacing: 0.6px;
+}
+
+/* HYDRATATION CARD */
+.nv3-water {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 14px;
+  padding: 14px 16px;
+  background: linear-gradient(135deg, rgba(56,189,248,0.10), rgba(34,197,94,0.04));
+  border: 1px solid rgba(56,189,248,0.22);
+  border-radius: 18px;
+}
+.nv3-water-ring {
+  position: relative;
+  width: 58px;
+  height: 58px;
+  flex-shrink: 0;
+}
+.nv3-water-ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.nv3-water-ring-bg { fill: none; stroke: rgba(240,240,255,0.10); stroke-width: 6; }
+.nv3-water-ring-fg {
+  fill: none;
+  stroke: url(#nv3WaterGrad);
+  stroke-width: 6;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.nv3-water-ring-icon {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+}
+.nv3-water-meta { flex: 1; min-width: 0; }
+.nv3-water-eyebrow {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 10px;
+  font-weight: 800;
+  color: rgba(56,189,248,0.85);
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+}
+.nv3-water-num {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 22px;
+  color: #F0F0FF;
+  line-height: 1.1;
+  margin-top: 2px;
+}
+.nv3-water-num small {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  color: rgba(240,240,255,0.5);
+  font-weight: 600;
+}
+.nv3-water-btns {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.nv3-water-btn {
+  padding: 8px 11px;
+  border: 1px solid rgba(56,189,248,0.32);
+  border-radius: 999px;
+  background: rgba(56,189,248,0.10);
+  color: #38BDF8;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform 0.12s ease;
+}
+.nv3-water-btn:active { transform: scale(0.92); }
+.nv3-water-reset {
+  margin-top: 4px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 10px;
+  color: rgba(240,240,255,0.4);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px 0;
+}
+
+/* MODAL GENERIC (réutilisable détails repas + scanner) */
+.nv3-modal-bg {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.75);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 9998;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+.nv3-modal-bg.on { opacity: 1; pointer-events: auto; }
+.nv3-modal {
+  position: fixed;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%) translateY(100%);
+  width: 100%;
+  max-width: 520px;
+  max-height: 88vh;
+  background: linear-gradient(180deg, #14141C 0%, #080810 100%);
+  border-top: 1px solid rgba(240,240,255,0.10);
+  border-radius: 24px 24px 0 0;
+  z-index: 9999;
+  transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+.nv3-modal.on { transform: translateX(-50%) translateY(0); }
+.nv3-modal-handle {
+  width: 40px;
+  height: 4px;
+  background: rgba(240,240,255,0.20);
+  border-radius: 999px;
+  margin: 10px auto 14px;
+}
+.nv3-modal-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(240,240,255,0.08);
+  border: none;
+  color: #F0F0FF;
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+}
+.nv3-modal-close:active { transform: scale(0.92); }
+.nv3-modal-body { padding: 6px 20px 24px; }
+
+/* MODAL DÉTAILS REPAS */
+.nv3-md-icon {
+  font-size: 44px;
+  margin-bottom: 10px;
+}
+.nv3-md-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 28px;
+  line-height: 1.1;
+  color: #F0F0FF;
+  margin-bottom: 6px;
+}
+.nv3-md-eyebrow {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 10px;
+  font-weight: 800;
+  color: rgba(249,136,5,0.85);
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.nv3-md-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  margin: 16px 0;
+  padding: 14px;
+  background: rgba(240,240,255,0.03);
+  border: 1px solid rgba(240,240,255,0.07);
+  border-radius: 14px;
+}
+.nv3-md-stat { text-align: center; }
+.nv3-md-stat-val {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 22px;
+  color: #F0F0FF;
+  line-height: 1;
+}
+.nv3-md-stat-lbl {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  color: rgba(240,240,255,0.5);
+  letter-spacing: 1px;
+  margin-top: 4px;
+  text-transform: uppercase;
+}
+.nv3-md-section-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 11px;
+  font-weight: 800;
+  color: rgba(240,240,255,0.7);
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  margin: 18px 0 10px;
+}
+.nv3-md-ing-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+.nv3-md-ing {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  background: rgba(240,240,255,0.03);
+  border-radius: 12px;
+  border: 1px solid rgba(240,240,255,0.05);
+}
+.nv3-md-ing-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #F98805, #F35695);
+  flex-shrink: 0;
+}
+.nv3-md-ing-name {
+  flex: 1;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: #F0F0FF;
+}
+.nv3-md-ing-qty {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  color: rgba(240,240,255,0.55);
+}
+.nv3-md-tips {
+  padding: 12px 14px;
+  background: rgba(221,226,85,0.06);
+  border: 1px solid rgba(221,226,85,0.18);
+  border-radius: 12px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  line-height: 1.55;
+  color: rgba(240,240,255,0.78);
+  margin-bottom: 18px;
+}
+.nv3-md-cta-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.nv3-md-cta {
+  padding: 14px;
+  border-radius: 14px;
+  border: none;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+.nv3-md-cta:active { transform: scale(0.97); }
+.nv3-md-cta.primary {
+  background: linear-gradient(135deg, #F98805, #F35695);
+  color: #FFF;
+  box-shadow: 0 6px 18px rgba(249,136,5,0.32);
+}
+.nv3-md-cta.ghost {
+  background: rgba(240,240,255,0.05);
+  border: 1px solid rgba(240,240,255,0.10);
+  color: #F0F0FF;
+}
+.nv3-md-loading {
+  text-align: center;
+  padding: 40px 16px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  color: rgba(240,240,255,0.55);
+}
+
+/* MODAL SCANNER */
+.nv3-scan-viewport {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  background: #000;
+  border-radius: 16px;
+  overflow: hidden;
+  margin: 6px 0 14px;
+}
+.nv3-scan-viewport video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.nv3-scan-line {
+  position: absolute;
+  left: 8%;
+  right: 8%;
+  top: 50%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #F98805 20%, #F35695 80%, transparent);
+  box-shadow: 0 0 18px rgba(249,136,5,0.7);
+  animation: nv3ScanPulse 2.4s ease-in-out infinite;
+}
+@keyframes nv3ScanPulse {
+  0%, 100% { transform: translateY(-40px); opacity: 0.4; }
+  50% { transform: translateY(40px); opacity: 1; }
+}
+.nv3-scan-corners {
+  position: absolute;
+  inset: 12%;
+  pointer-events: none;
+}
+.nv3-scan-corner {
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  border: 3px solid #F98805;
+}
+.nv3-scan-corner.tl { top: 0; left: 0; border-right: none; border-bottom: none; border-radius: 4px 0 0 0; }
+.nv3-scan-corner.tr { top: 0; right: 0; border-left: none; border-bottom: none; border-radius: 0 4px 0 0; }
+.nv3-scan-corner.bl { bottom: 0; left: 0; border-right: none; border-top: none; border-radius: 0 0 0 4px; }
+.nv3-scan-corner.br { bottom: 0; right: 0; border-left: none; border-top: none; border-radius: 0 0 4px 0; }
+
+.nv3-scan-fallback {
+  margin-top: 6px;
+  padding: 12px;
+  background: rgba(240,240,255,0.03);
+  border: 1px solid rgba(240,240,255,0.07);
+  border-radius: 12px;
+}
+.nv3-scan-fallback-lbl {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 10px;
+  font-weight: 800;
+  color: rgba(240,240,255,0.6);
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.nv3-scan-fallback-row {
+  display: flex;
+  gap: 8px;
+}
+.nv3-scan-input {
+  flex: 1;
+  padding: 11px 14px;
+  background: #0E0E1C;
+  border: 1px solid rgba(240,240,255,0.10);
+  border-radius: 12px;
+  color: #F0F0FF;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  outline: none;
+}
+.nv3-scan-input:focus { border-color: rgba(249,136,5,0.4); }
+.nv3-scan-search-btn {
+  padding: 0 16px;
+  background: linear-gradient(135deg, #F98805, #F35695);
+  border: none;
+  border-radius: 12px;
+  color: #FFF;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.nv3-scan-search-btn:active { transform: scale(0.95); }
+
+/* SCAN RESULT (produit trouvé) */
+.nv3-scan-result {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  background: rgba(34,197,94,0.06);
+  border: 1px solid rgba(34,197,94,0.22);
+  border-radius: 14px;
+  margin-bottom: 14px;
+}
+.nv3-scan-product-img {
+  width: 56px;
+  height: 56px;
+  border-radius: 10px;
+  object-fit: cover;
+  background: rgba(240,240,255,0.05);
+  flex-shrink: 0;
+}
+.nv3-scan-product-name {
+  flex: 1;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: #F0F0FF;
+  line-height: 1.25;
+}
+.nv3-scan-product-brand {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px;
+  color: rgba(240,240,255,0.55);
+  margin-top: 2px;
+}
+.nv3-scan-qty-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+  padding: 12px 14px;
+  background: rgba(240,240,255,0.03);
+  border-radius: 12px;
+}
+.nv3-scan-qty-label {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(240,240,255,0.7);
+  flex-shrink: 0;
+}
+.nv3-scan-qty-input {
+  flex: 1;
+  padding: 9px 12px;
+  background: #0E0E1C;
+  border: 1px solid rgba(240,240,255,0.10);
+  border-radius: 10px;
+  color: #F0F0FF;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  text-align: center;
+  outline: none;
+  width: 80px;
+  flex-grow: 0;
+}
+.nv3-scan-qty-unit {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  color: rgba(240,240,255,0.55);
+  flex-shrink: 0;
+}
+.nv3-scan-meal-select {
+  width: 100%;
+  padding: 11px 14px;
+  background: #0E0E1C;
+  border: 1px solid rgba(240,240,255,0.10);
+  border-radius: 12px;
+  color: #F0F0FF;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  outline: none;
+  margin-bottom: 12px;
+}
+
+/* TOAST haptic-style */
+.nv3-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 90px;
+  transform: translateX(-50%) translateY(20px);
+  padding: 12px 20px;
+  background: linear-gradient(135deg, #F98805, #F35695);
+  color: #FFF;
+  border-radius: 999px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  box-shadow: 0 8px 24px rgba(249,136,5,0.45);
+  z-index: 10000;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.nv3-toast.on {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+}
+
+/* ═══ FIN TAB NUTRITION v3 — Wave 2.2 ═══ */
+
 /* ═══ MODE ACTIF — VIDÉO ═══ */
 .sv-active-video {
   width: 100%;
@@ -11944,11 +12460,11 @@ window.sv2CamValidate   = function() { sv2CamClose(); svValidateSet(); };
     var doneCls = meal.logged ? ' done' : '';
     var btnIcon = meal.logged ? '✓' : '+';
     return '<div class="nv3-meal' + doneCls + '" data-meal-idx="' + index + '">'
-      + '<div class="nv3-meal-time">'
+      + '<div class="nv3-meal-time" onclick="nv3OpenMealDetail(' + index + ')" style="cursor:pointer">'
       +   '<div class="nv3-meal-icon">' + (meal.icon || '🍽️') + '</div>'
       +   '<div class="nv3-meal-hour">' + (meal.time || '--') + '</div>'
       + '</div>'
-      + '<div class="nv3-meal-body">'
+      + '<div class="nv3-meal-body" onclick="nv3OpenMealDetail(' + index + ')" style="cursor:pointer">'
       +   '<div class="nv3-meal-eyebrow">' + slotLabel + '</div>'
       +   '<div class="nv3-meal-name">' + (meal.name || 'Repas') + '</div>'
       +   '<div class="nv3-meal-meta">'
@@ -11957,7 +12473,7 @@ window.sv2CamValidate   = function() { sv2CamClose(); svValidateSet(); };
       +   '</div>'
       + '</div>'
       + '<div class="nv3-meal-actions">'
-      +   '<button class="nv3-meal-btn primary" onclick="nv3ToggleMeal(' + index + ')" aria-label="Valider repas">' + btnIcon + '</button>'
+      +   '<button class="nv3-meal-btn primary" onclick="event.stopPropagation();nv3ToggleMeal(' + index + ')" aria-label="Valider repas">' + btnIcon + '</button>'
       + '</div>'
       + '</div>';
   }
@@ -11968,7 +12484,7 @@ window.sv2CamValidate   = function() { sv2CamClose(); svValidateSet(); };
     var state = nv3GetDailyState();
     var prn = U.prenom || 'Walide';
 
-    // Calcul consommé (somme des repas loggés)
+    // Calcul consommé (somme des repas loggés + logs scannés Wave 2.2)
     var consumed = { kcal:0, prot:0, gluc:0, lip:0 };
     plan.meals.forEach(function(meal){
       if (meal.logged) {
@@ -11978,6 +12494,18 @@ window.sv2CamValidate   = function() { sv2CamClose(); svValidateSet(); };
         consumed.lip  += (meal.lip  || 0);
       }
     });
+    // Wave 2.2 : ajoute les produits scannés
+    if (typeof window.nv3GetScannedLogsTotal === 'function') {
+      var scannedTotals = window.nv3GetScannedLogsTotal();
+      consumed.kcal += scannedTotals.kcal || 0;
+      consumed.prot += scannedTotals.prot || 0;
+      consumed.gluc += scannedTotals.gluc || 0;
+      consumed.lip  += scannedTotals.lip  || 0;
+    }
+    consumed.kcal = Math.round(consumed.kcal);
+    consumed.prot = Math.round(consumed.prot * 10) / 10;
+    consumed.gluc = Math.round(consumed.gluc * 10) / 10;
+    consumed.lip  = Math.round(consumed.lip  * 10) / 10;
     var pctKcal = Math.min(100, Math.round((consumed.kcal / m.kcal) * 100));
     var ringDash = 226;
     var ringOff = Math.round(ringDash * (1 - pctKcal / 100));
@@ -12059,11 +12587,17 @@ window.sv2CamValidate   = function() { sv2CamClose(); svValidateSet(); };
     var root = document.getElementById('nv3-root');
     if (!root) return;
 
+    // Helper qui assemble la page complète avec Wave 2.1 + 2.2 extras
+    function nv3FullRender(plan) {
+      var extras = (typeof window.nv3RenderExtras === 'function') ? window.nv3RenderExtras() : '';
+      return nv3RenderHero(plan) + extras + nv3RenderMeals(plan);
+    }
+
     // 1. Cache hit → render immédiat (seulement si plan IA, pas fallback)
     var cached = nv3LoadPlan();
     if (cached && cached.meals && cached.meals.length && !cached.fallback) {
       window._nv3CurrentPlan = cached;
-      root.innerHTML = nv3RenderHero(cached) + nv3RenderMeals(cached);
+      root.innerHTML = nv3FullRender(cached);
       return;
     }
 
@@ -12084,8 +12618,7 @@ window.sv2CamValidate   = function() { sv2CamClose(); svValidateSet(); };
         + '<div class="nv3-error-txt">⚡ Plan de base affiché — l\'IA n\'a pas pu se connecter cette fois. Réessaye dans un instant.</div>'
         + '<button class="nv3-error-btn" onclick="nv3RegeneratePlan()">↻ Réessayer maintenant</button>'
         + '</div>'
-        + nv3RenderHero(plan)
-        + nv3RenderMeals(plan);
+        + nv3FullRender(plan);
       // Ajout du position:relative sur l'erreur pour le bouton close
       var errEl = document.getElementById('nv3-error-banner');
       if (errEl) errEl.style.position = 'relative';
@@ -12094,12 +12627,665 @@ window.sv2CamValidate   = function() { sv2CamClose(); svValidateSet(); };
     // 3b. Succès → cache + render (PAS de bandeau d'erreur)
     window._nv3CurrentPlan = plan;
     nv3SavePlan(plan);
-    root.innerHTML = nv3RenderHero(plan) + nv3RenderMeals(plan);
+    root.innerHTML = nv3FullRender(plan);
   };
 
 })();
 // ════════════════════════════════════════════════════════════
 // FIN TAB NUTRITION v3 — Wave 2.1
+// ════════════════════════════════════════════════════════════
+
+// ════════════════════════════════════════════════════════════
+// TAB NUTRITION v3 — Wave 2.2 : LOGGING & SCANNER
+// ════════════════════════════════════════════════════════════
+(function(){
+
+  function nv3DateKey() {
+    var d = new Date();
+    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+  }
+
+  // ────────────────────────────────────────
+  // TOAST helper (feedback rapide)
+  // ────────────────────────────────────────
+  window.nv3Toast = function(msg) {
+    var existing = document.getElementById('nv3-toast');
+    if (existing) existing.remove();
+    var t = document.createElement('div');
+    t.id = 'nv3-toast';
+    t.className = 'nv3-toast';
+    t.textContent = msg;
+    document.body.appendChild(t);
+    requestAnimationFrame(function(){ t.classList.add('on'); });
+    setTimeout(function(){
+      t.classList.remove('on');
+      setTimeout(function(){ if (t.parentNode) t.parentNode.removeChild(t); }, 350);
+    }, 1800);
+    try { if (window.navigator.vibrate) window.navigator.vibrate(20); } catch(e) {}
+  };
+
+  // ────────────────────────────────────────
+  // HYDRATATION
+  // ────────────────────────────────────────
+  function nv3WaterTarget() {
+    var poids = (U && U.poids) || 75;
+    return Math.round(poids * 35); // ml
+  }
+  function nv3WaterLoad() {
+    try {
+      var raw = localStorage.getItem('hima8.nv3.water.' + nv3DateKey());
+      return raw ? parseInt(raw, 10) || 0 : 0;
+    } catch(e) { return 0; }
+  }
+  function nv3WaterSave(ml) {
+    try { localStorage.setItem('hima8.nv3.water.' + nv3DateKey(), String(ml)); } catch(e) {}
+  }
+
+  window.nv3AddWater = function(ml) {
+    var current = nv3WaterLoad();
+    var next = Math.max(0, current + ml);
+    nv3WaterSave(next);
+    var target = nv3WaterTarget();
+    if (next >= target && current < target) {
+      nv3Toast('💧 Objectif hydratation atteint !');
+    } else {
+      nv3Toast('+' + ml + ' ml · ' + (next/1000).toFixed(1) + ' L');
+    }
+    nv3RenderWater();
+  };
+
+  window.nv3ResetWater = function() {
+    if (!confirm('Réinitialiser ton hydratation du jour ?')) return;
+    nv3WaterSave(0);
+    nv3RenderWater();
+  };
+
+  function nv3WaterCardHTML() {
+    var ml = nv3WaterLoad();
+    var target = nv3WaterTarget();
+    var pct = Math.min(100, Math.round((ml / target) * 100));
+    var dash = 163; // périmètre du circle r=26
+    var off = Math.round(dash * (1 - pct / 100));
+    return '<div class="nv3-water" id="nv3-water-card">'
+      + '<div class="nv3-water-ring">'
+      +   '<svg viewBox="0 0 58 58">'
+      +     '<defs><linearGradient id="nv3WaterGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#38BDF8"/><stop offset="100%" stop-color="#22C55E"/></linearGradient></defs>'
+      +     '<circle class="nv3-water-ring-bg" cx="29" cy="29" r="26"/>'
+      +     '<circle class="nv3-water-ring-fg" cx="29" cy="29" r="26" stroke-dasharray="' + dash + '" stroke-dashoffset="' + off + '"/>'
+      +   '</svg>'
+      +   '<div class="nv3-water-ring-icon">💧</div>'
+      + '</div>'
+      + '<div class="nv3-water-meta">'
+      +   '<div class="nv3-water-eyebrow">Hydratation</div>'
+      +   '<div class="nv3-water-num">' + (ml/1000).toFixed(1) + ' L <small>/ ' + (target/1000).toFixed(1) + ' L</small></div>'
+      +   (ml > 0 ? '<button class="nv3-water-reset" onclick="nv3ResetWater()">↺ Reset</button>' : '')
+      + '</div>'
+      + '<div class="nv3-water-btns">'
+      +   '<button class="nv3-water-btn" onclick="nv3AddWater(250)">+250</button>'
+      +   '<button class="nv3-water-btn" onclick="nv3AddWater(500)">+500</button>'
+      + '</div>'
+      + '</div>';
+  }
+
+  function nv3RenderWater() {
+    var card = document.getElementById('nv3-water-card');
+    if (!card) return;
+    // Re-render uniquement la card hydratation pour éviter de tout reconstruire
+    var wrapper = document.createElement('div');
+    wrapper.innerHTML = nv3WaterCardHTML();
+    card.parentNode.replaceChild(wrapper.firstChild, card);
+  }
+
+  // ────────────────────────────────────────
+  // STICKY ACTIONS
+  // ────────────────────────────────────────
+  window.nv3OpenScanner = function() {
+    nv3ScannerOpen();
+  };
+  window.nv3OpenMealAdd = function() {
+    // Ouvre directement le scanner avec un message "Ajoute un aliment"
+    nv3ScannerOpen();
+  };
+
+  function nv3ActionsHTML() {
+    return '<div class="nv3-actions">'
+      + '<button class="nv3-action-btn" onclick="nv3OpenScanner()">'
+      +   '<div class="nv3-action-icon">📷</div>'
+      +   '<div class="nv3-action-lbl">Scanner</div>'
+      + '</button>'
+      + '<button class="nv3-action-btn" onclick="nv3AddWater(250)">'
+      +   '<div class="nv3-action-icon">💧</div>'
+      +   '<div class="nv3-action-lbl">+250 ml</div>'
+      + '</button>'
+      + '<button class="nv3-action-btn" onclick="nv3OpenMealAdd()">'
+      +   '<div class="nv3-action-icon">➕</div>'
+      +   '<div class="nv3-action-lbl">Ajouter</div>'
+      + '</button>'
+      + '</div>';
+  }
+
+  // Expose for nv3BuildLanding to call
+  window.nv3RenderExtras = function() {
+    return nv3ActionsHTML() + nv3WaterCardHTML();
+  };
+
+  // ────────────────────────────────────────
+  // MODAL GENERIC (helper)
+  // ────────────────────────────────────────
+  function nv3ModalEnsure() {
+    var bg = document.getElementById('nv3-modal-bg');
+    var modal = document.getElementById('nv3-modal');
+    if (bg && modal) return { bg: bg, modal: modal };
+    bg = document.createElement('div');
+    bg.id = 'nv3-modal-bg';
+    bg.className = 'nv3-modal-bg';
+    bg.onclick = function() { nv3ModalClose(); };
+    document.body.appendChild(bg);
+    modal = document.createElement('div');
+    modal.id = 'nv3-modal';
+    modal.className = 'nv3-modal';
+    document.body.appendChild(modal);
+    return { bg: bg, modal: modal };
+  }
+  window.nv3ModalOpen = function(html) {
+    var m = nv3ModalEnsure();
+    m.modal.innerHTML = '<div class="nv3-modal-handle"></div>'
+      + '<button class="nv3-modal-close" onclick="nv3ModalClose()">×</button>'
+      + '<div class="nv3-modal-body">' + html + '</div>';
+    requestAnimationFrame(function(){
+      m.bg.classList.add('on');
+      m.modal.classList.add('on');
+    });
+    document.body.style.overflow = 'hidden';
+  };
+  window.nv3ModalClose = function() {
+    var m = nv3ModalEnsure();
+    m.bg.classList.remove('on');
+    m.modal.classList.remove('on');
+    document.body.style.overflow = '';
+    // Stop scanner si ouvert
+    nv3ScannerStop();
+  };
+
+  // ────────────────────────────────────────
+  // MODAL DÉTAILS REPAS
+  // ────────────────────────────────────────
+  window.nv3OpenMealDetail = async function(idx) {
+    var plan = window._nv3CurrentPlan;
+    if (!plan || !plan.meals[idx]) return;
+    var meal = plan.meals[idx];
+
+    // Affiche d'abord avec ce qu'on a, puis enrichit avec ingrédients via Claude
+    var loadingHtml = '<div class="nv3-md-loading">HIMA détaille la recette…</div>';
+    var hasIngredients = meal.ingredients && meal.ingredients.length;
+
+    var bodyHtml = nv3MealDetailBody(meal, idx, !hasIngredients);
+    nv3ModalOpen(bodyHtml);
+
+    if (!hasIngredients) {
+      // Récupère ingrédients via Claude (cache localement dans le plan)
+      var enriched = await nv3FetchMealDetails(meal);
+      if (enriched) {
+        meal.ingredients = enriched.ingredients || [];
+        meal.tip = enriched.tip || '';
+        // Sauve dans le plan
+        try {
+          var raw = localStorage.getItem('hima8.nv3.plan.' + nv3DateKey());
+          if (raw) {
+            var parsed = JSON.parse(raw);
+            if (parsed.meals && parsed.meals[idx]) {
+              parsed.meals[idx].ingredients = meal.ingredients;
+              parsed.meals[idx].tip = meal.tip;
+              localStorage.setItem('hima8.nv3.plan.' + nv3DateKey(), JSON.stringify(parsed));
+            }
+          }
+        } catch(e) {}
+        // Re-render le body de la modal
+        var body = document.querySelector('#nv3-modal .nv3-modal-body');
+        if (body) body.innerHTML = nv3MealDetailBody(meal, idx, false);
+      } else {
+        var body2 = document.querySelector('#nv3-modal .nv3-modal-body');
+        if (body2) body2.innerHTML = nv3MealDetailBody(meal, idx, false);
+      }
+    }
+  };
+
+  function nv3MealDetailBody(meal, idx, isLoading) {
+    var slotLabels = { breakfast:'Petit-déjeuner', lunch:'Déjeuner', snack:'Snack', dinner:'Dîner' };
+    var html = '<div class="nv3-md-eyebrow">' + (slotLabels[meal.slot] || 'Repas') + ' · ' + (meal.time || '') + '</div>'
+      + '<div class="nv3-md-icon">' + (meal.icon || '🍽️') + '</div>'
+      + '<div class="nv3-md-title">' + (meal.name || 'Repas') + '</div>';
+
+    html += '<div class="nv3-md-stats">'
+      + '<div class="nv3-md-stat"><div class="nv3-md-stat-val">' + (meal.kcal || 0) + '</div><div class="nv3-md-stat-lbl">kcal</div></div>'
+      + '<div class="nv3-md-stat"><div class="nv3-md-stat-val">' + (meal.prot || 0) + 'g</div><div class="nv3-md-stat-lbl">Protéines</div></div>'
+      + '<div class="nv3-md-stat"><div class="nv3-md-stat-val">' + (meal.gluc || 0) + 'g</div><div class="nv3-md-stat-lbl">Glucides</div></div>'
+      + '<div class="nv3-md-stat"><div class="nv3-md-stat-val">' + (meal.lip || 0) + 'g</div><div class="nv3-md-stat-lbl">Lipides</div></div>'
+      + '</div>';
+
+    html += '<div class="nv3-md-section-title">Ingrédients</div>';
+    if (isLoading) {
+      html += '<div class="nv3-md-loading">HIMA détaille la recette…</div>';
+    } else if (meal.ingredients && meal.ingredients.length) {
+      html += '<div class="nv3-md-ing-list">';
+      meal.ingredients.forEach(function(ing){
+        html += '<div class="nv3-md-ing">'
+          + '<div class="nv3-md-ing-dot"></div>'
+          + '<div class="nv3-md-ing-name">' + (ing.name || '') + '</div>'
+          + '<div class="nv3-md-ing-qty">' + (ing.qty || '') + '</div>'
+          + '</div>';
+      });
+      html += '</div>';
+      if (meal.tip) {
+        html += '<div class="nv3-md-tips">💡 ' + meal.tip + '</div>';
+      }
+    } else {
+      html += '<div class="nv3-md-loading">Détails indisponibles pour ce repas.</div>';
+    }
+
+    html += '<div class="nv3-md-cta-row">'
+      + '<button class="nv3-md-cta primary" onclick="nv3LogMealFromDetail(' + idx + ')">' + (meal.logged ? '✓ Logué' : '✓ Logger') + '</button>'
+      + '<button class="nv3-md-cta ghost" onclick="nv3ReplaceMeal(' + idx + ')">↻ Remplacer</button>'
+      + '</div>';
+
+    return html;
+  }
+
+  window.nv3LogMealFromDetail = function(idx) {
+    var plan = window._nv3CurrentPlan;
+    if (!plan || !plan.meals[idx]) return;
+    plan.meals[idx].logged = !plan.meals[idx].logged;
+    try { localStorage.setItem('hima8.nv3.plan.' + nv3DateKey(), JSON.stringify(plan)); } catch(e) {}
+    try { if (window.navigator.vibrate) window.navigator.vibrate(35); } catch(e) {}
+    nv3Toast(plan.meals[idx].logged ? '✓ Repas logué' : '✗ Repas dé-logué');
+    nv3ModalClose();
+    if (typeof window.nv3BuildLanding === 'function') window.nv3BuildLanding();
+  };
+
+  // ────────────────────────────────────────
+  // FETCH DÉTAILS REPAS via Claude
+  // ────────────────────────────────────────
+  async function nv3FetchMealDetails(meal) {
+    var system = "Tu es HIMA, coach nutrition. Détaille le repas suivant en JSON STRICT.\n"
+      + "Repas : " + meal.name + " (" + (meal.kcal||0) + " kcal, " + (meal.prot||0) + "g prot, "
+      + (meal.gluc||0) + "g glucides, " + (meal.lip||0) + "g lipides)\n\n"
+      + "Réponds UNIQUEMENT avec ce JSON, rien d'autre :\n"
+      + '{"ingredients":[{"name":"Nom ingrédient","qty":"100g"},{"name":"...","qty":"..."}],"tip":"Astuce courte de 1-2 phrases pour bien préparer ce repas (max 120 caractères)"}';
+
+    try {
+      var resp = null;
+      if (typeof callClaudeSecure === 'function') {
+        resp = await callClaudeSecure(system, [{role:'user', content:'Détaille ce repas.'}]);
+      }
+      if (!resp) {
+        try {
+          var r = await fetch('/api/chat', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ system: system, messages: [{role:'user',content:'Détaille ce repas.'}], max_tokens: 400 })
+          });
+          if (r.ok) {
+            var data = await r.json();
+            resp = data.text || data.message || (data.content && Array.isArray(data.content) && data.content[0] && data.content[0].text) || data.content || data.completion;
+          }
+        } catch(e) {}
+      }
+      if (!resp) return null;
+
+      var parsed = null;
+      if (typeof resp === 'object' && resp !== null) {
+        if (resp.ingredients) parsed = resp;
+        else if (resp.text) resp = resp.text;
+        else { try { resp = JSON.stringify(resp); } catch(e) {} }
+      }
+      if (!parsed && typeof resp === 'string') {
+        var clean = resp.replace(/```json|```/g,'').trim();
+        var s = clean.indexOf('{'), e2 = clean.lastIndexOf('}');
+        if (s >= 0 && e2 > s) clean = clean.substring(s, e2+1);
+        try { parsed = JSON.parse(clean); } catch(err) { return null; }
+      }
+      if (!parsed || !Array.isArray(parsed.ingredients)) return null;
+      return parsed;
+    } catch(e) { console.warn('[nv3] fetchMealDetails error', e); return null; }
+  }
+
+  // ────────────────────────────────────────
+  // REMPLACER UN REPAS
+  // ────────────────────────────────────────
+  window.nv3ReplaceMeal = async function(idx) {
+    var plan = window._nv3CurrentPlan;
+    if (!plan || !plan.meals[idx]) return;
+    if (!confirm('HIMA va proposer une alternative pour ce repas. Continuer ?')) return;
+
+    var body = document.querySelector('#nv3-modal .nv3-modal-body');
+    if (body) body.innerHTML = '<div class="nv3-md-loading">HIMA cherche une alternative…</div>';
+
+    var meal = plan.meals[idx];
+    var slotLabels = { breakfast:'petit-déjeuner', lunch:'déjeuner', snack:'snack', dinner:'dîner' };
+    var slot = slotLabels[meal.slot] || 'repas';
+
+    var system = "Tu es HIMA, coach nutrition. Propose une ALTERNATIVE au repas suivant, totalement différente mais avec macros similaires.\n"
+      + "Repas actuel : " + meal.name + " (" + (meal.kcal||0) + " kcal, " + (meal.prot||0) + "g prot)\n"
+      + "Slot : " + slot + " · Time : " + (meal.time || '') + "\n\n"
+      + "RÈGLES :\n"
+      + "- Cuisine française/européenne accessible\n"
+      + "- Macros à ±10% du repas actuel\n"
+      + "- Plat différent en goût et ingrédients\n\n"
+      + "Réponds UNIQUEMENT avec ce JSON :\n"
+      + '{"icon":"🍽️","name":"Nom du plat","kcal":' + (meal.kcal||0) + ',"prot":' + (meal.prot||0) + ',"gluc":' + (meal.gluc||0) + ',"lip":' + (meal.lip||0) + ',"tags":["tag1","tag2"]}';
+
+    try {
+      var resp = null;
+      if (typeof callClaudeSecure === 'function') {
+        resp = await callClaudeSecure(system, [{role:'user', content:'Propose une alternative.'}]);
+      }
+      if (!resp) {
+        try {
+          var r = await fetch('/api/chat', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ system: system, messages: [{role:'user',content:'Propose une alternative.'}], max_tokens: 250 })
+          });
+          if (r.ok) {
+            var data = await r.json();
+            resp = data.text || data.message || (data.content && Array.isArray(data.content) && data.content[0] && data.content[0].text) || data.content || data.completion;
+          }
+        } catch(e) {}
+      }
+      if (!resp) throw new Error('Pas de réponse');
+
+      var parsed = null;
+      if (typeof resp === 'object' && resp !== null) {
+        if (resp.name) parsed = resp;
+        else if (resp.text) resp = resp.text;
+        else resp = JSON.stringify(resp);
+      }
+      if (!parsed && typeof resp === 'string') {
+        var clean = resp.replace(/```json|```/g,'').trim();
+        var s = clean.indexOf('{'), e2 = clean.lastIndexOf('}');
+        if (s >= 0 && e2 > s) clean = clean.substring(s, e2+1);
+        parsed = JSON.parse(clean);
+      }
+      if (!parsed || !parsed.name) throw new Error('Structure invalide');
+
+      // Applique le nouveau repas (conserve slot/time, reset ingredients pour re-fetch si besoin)
+      plan.meals[idx] = {
+        slot: meal.slot,
+        time: meal.time,
+        icon: parsed.icon || meal.icon || '🍽️',
+        name: parsed.name,
+        kcal: parsed.kcal || meal.kcal,
+        prot: parsed.prot || meal.prot,
+        gluc: parsed.gluc || meal.gluc,
+        lip:  parsed.lip  || meal.lip,
+        tags: parsed.tags || [],
+        logged: false
+      };
+      try { localStorage.setItem('hima8.nv3.plan.' + nv3DateKey(), JSON.stringify(plan)); } catch(e) {}
+      nv3Toast('✨ Repas remplacé');
+      nv3ModalClose();
+      if (typeof window.nv3BuildLanding === 'function') window.nv3BuildLanding();
+    } catch(err) {
+      console.warn('[nv3] replaceMeal error', err);
+      var body2 = document.querySelector('#nv3-modal .nv3-modal-body');
+      if (body2) body2.innerHTML = '<div class="nv3-md-loading">Impossible de générer une alternative. Réessaye plus tard.</div>';
+    }
+  };
+
+  // ────────────────────────────────────────
+  // SCANNER CODE-BARRES
+  // ────────────────────────────────────────
+  var _zxingReader = null;
+  var _zxingStream = null;
+
+  window.nv3ScannerOpen = function() {
+    var html = '<div class="nv3-md-eyebrow">Scanner un produit</div>'
+      + '<div class="nv3-md-title" style="font-size:22px;margin-bottom:14px">Code-barres</div>'
+      + '<div class="nv3-scan-viewport" id="nv3-scan-vp">'
+      +   '<video id="nv3-scan-video" autoplay playsinline muted></video>'
+      +   '<div class="nv3-scan-corners"><div class="nv3-scan-corner tl"></div><div class="nv3-scan-corner tr"></div><div class="nv3-scan-corner bl"></div><div class="nv3-scan-corner br"></div></div>'
+      +   '<div class="nv3-scan-line"></div>'
+      + '</div>'
+      + '<div class="nv3-scan-fallback">'
+      +   '<div class="nv3-scan-fallback-lbl">Saisie manuelle</div>'
+      +   '<div class="nv3-scan-fallback-row">'
+      +     '<input class="nv3-scan-input" id="nv3-scan-manual" type="number" inputmode="numeric" placeholder="Code-barres ou nom du produit">'
+      +     '<button class="nv3-scan-search-btn" onclick="nv3ScanManualSearch()">Chercher</button>'
+      +   '</div>'
+      + '</div>';
+    nv3ModalOpen(html);
+    setTimeout(nv3ScannerStart, 200);
+  };
+
+  async function nv3ScannerStart() {
+    var video = document.getElementById('nv3-scan-video');
+    if (!video) return;
+    try {
+      // Charge zxing dynamiquement (CDN)
+      if (typeof window.ZXing === 'undefined') {
+        await new Promise(function(resolve, reject){
+          var s = document.createElement('script');
+          s.src = 'https://cdn.jsdelivr.net/npm/@zxing/library@0.21.3/umd/index.min.js';
+          s.onload = resolve;
+          s.onerror = reject;
+          document.head.appendChild(s);
+        });
+      }
+      if (typeof window.ZXing === 'undefined') {
+        console.warn('[nv3] ZXing failed to load');
+        return;
+      }
+      _zxingReader = new window.ZXing.BrowserMultiFormatReader();
+      // Force la caméra arrière
+      var devices = await _zxingReader.listVideoInputDevices();
+      var deviceId = null;
+      if (devices && devices.length) {
+        var rear = devices.find(function(d){ return /back|rear|environment/i.test(d.label); });
+        deviceId = rear ? rear.deviceId : devices[devices.length - 1].deviceId;
+      }
+      _zxingReader.decodeFromVideoDevice(deviceId, 'nv3-scan-video', function(result, err){
+        if (result) {
+          var code = result.getText();
+          nv3ScannerStop();
+          nv3ScanLookup(code);
+        }
+      });
+    } catch(e) {
+      console.warn('[nv3] scanner start failed', e);
+      var vp = document.getElementById('nv3-scan-vp');
+      if (vp) vp.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:rgba(240,240,255,0.6);font-size:13px;text-align:center;padding:20px;">Camera indisponible.<br>Utilise la saisie manuelle ci-dessous.</div>';
+    }
+  }
+
+  window.nv3ScannerStop = function() {
+    if (_zxingReader) {
+      try { _zxingReader.reset(); } catch(e) {}
+      _zxingReader = null;
+    }
+    if (_zxingStream) {
+      try { _zxingStream.getTracks().forEach(function(t){ t.stop(); }); } catch(e) {}
+      _zxingStream = null;
+    }
+  };
+
+  window.nv3ScanManualSearch = function() {
+    var inp = document.getElementById('nv3-scan-manual');
+    if (!inp || !inp.value) return;
+    var val = inp.value.trim();
+    if (!val) return;
+    // Si que des chiffres → code-barres ; sinon recherche par nom
+    if (/^\d{6,14}$/.test(val)) nv3ScanLookup(val);
+    else nv3ScanSearchByName(val);
+  };
+
+  // ────────────────────────────────────────
+  // OPEN FOOD FACTS
+  // ────────────────────────────────────────
+  async function nv3ScanLookup(barcode) {
+    var body = document.querySelector('#nv3-modal .nv3-modal-body');
+    if (body) body.innerHTML = '<div class="nv3-md-loading">Recherche du produit ' + barcode + '…</div>';
+    try {
+      var r = await fetch('https://world.openfoodfacts.org/api/v2/product/' + encodeURIComponent(barcode) + '.json');
+      var data = await r.json();
+      if (!data || data.status !== 1 || !data.product) {
+        if (body) body.innerHTML = nv3ScanNotFoundHTML(barcode);
+        return;
+      }
+      nv3ScanShowProduct(data.product);
+    } catch(e) {
+      console.warn('[nv3] OFF lookup failed', e);
+      if (body) body.innerHTML = nv3ScanNotFoundHTML(barcode);
+    }
+  }
+
+  async function nv3ScanSearchByName(name) {
+    var body = document.querySelector('#nv3-modal .nv3-modal-body');
+    if (body) body.innerHTML = '<div class="nv3-md-loading">Recherche "' + name + '"…</div>';
+    try {
+      var r = await fetch('https://world.openfoodfacts.org/cgi/search.pl?search_terms=' + encodeURIComponent(name) + '&search_simple=1&action=process&json=1&page_size=1');
+      var data = await r.json();
+      if (!data || !data.products || !data.products.length) {
+        if (body) body.innerHTML = nv3ScanNotFoundHTML(name);
+        return;
+      }
+      nv3ScanShowProduct(data.products[0]);
+    } catch(e) {
+      if (body) body.innerHTML = nv3ScanNotFoundHTML(name);
+    }
+  }
+
+  function nv3ScanNotFoundHTML(query) {
+    return '<div class="nv3-md-eyebrow">Produit introuvable</div>'
+      + '<div class="nv3-md-title" style="font-size:22px">Aucun résultat</div>'
+      + '<div style="margin:14px 0;font-family:DM Sans,sans-serif;font-size:13px;color:rgba(240,240,255,0.65);line-height:1.5">'
+      +   'Pas de match pour <strong>"' + query + '"</strong> dans Open Food Facts.<br>'
+      +   'Essaie un autre code-barres ou demande à HIMA dans le chat.'
+      + '</div>'
+      + '<button class="nv3-md-cta ghost" onclick="nv3ScannerOpen()" style="width:100%">↻ Réessayer</button>';
+  }
+
+  function nv3ScanShowProduct(product) {
+    var name = product.product_name || product.product_name_fr || product.generic_name || 'Produit';
+    var brand = product.brands || '';
+    var img = product.image_thumb_url || product.image_url || '';
+    var nutr = product.nutriments || {};
+    // Valeurs pour 100g
+    var per100 = {
+      kcal: Math.round(nutr['energy-kcal_100g'] || nutr['energy-kcal'] || 0),
+      prot: Math.round((nutr.proteins_100g || nutr.proteins || 0) * 10) / 10,
+      gluc: Math.round((nutr.carbohydrates_100g || nutr.carbohydrates || 0) * 10) / 10,
+      lip:  Math.round((nutr.fat_100g || nutr.fat || 0) * 10) / 10
+    };
+    if (per100.kcal === 0) {
+      // Estime depuis macros si dispo
+      per100.kcal = Math.round(per100.prot * 4 + per100.gluc * 4 + per100.lip * 9);
+    }
+
+    // Stocke pour log
+    window._nv3ScanPending = { name: name, brand: brand, img: img, per100: per100, code: product.code || product._id };
+
+    var imgHtml = img
+      ? '<img class="nv3-scan-product-img" src="' + img + '" alt="">'
+      : '<div class="nv3-scan-product-img" style="display:flex;align-items:center;justify-content:center;font-size:24px">🥫</div>';
+
+    var html = '<div class="nv3-md-eyebrow">Produit trouvé</div>'
+      + '<div class="nv3-scan-result" style="margin-top:10px">'
+      +   imgHtml
+      +   '<div style="flex:1;min-width:0">'
+      +     '<div class="nv3-scan-product-name">' + name + '</div>'
+      +     (brand ? '<div class="nv3-scan-product-brand">' + brand + '</div>' : '')
+      +   '</div>'
+      + '</div>'
+      + '<div class="nv3-md-section-title">Quantité consommée</div>'
+      + '<div class="nv3-scan-qty-row">'
+      +   '<div class="nv3-scan-qty-label">Quantité</div>'
+      +   '<input class="nv3-scan-qty-input" id="nv3-scan-qty" type="number" inputmode="numeric" value="100" min="1" oninput="nv3ScanRecalc()">'
+      +   '<div class="nv3-scan-qty-unit">g</div>'
+      + '</div>'
+      + '<div class="nv3-md-section-title">Repas associé</div>'
+      + '<select class="nv3-scan-meal-select" id="nv3-scan-meal">'
+      +   '<option value="snack">Snack</option>'
+      +   '<option value="breakfast">Petit-déjeuner</option>'
+      +   '<option value="lunch">Déjeuner</option>'
+      +   '<option value="dinner">Dîner</option>'
+      + '</select>'
+      + '<div class="nv3-md-stats" id="nv3-scan-preview">'
+      +   nv3ScanStatsHTML(per100, 100)
+      + '</div>'
+      + '<button class="nv3-md-cta primary" onclick="nv3LogScannedProduct()" style="width:100%">✓ Logger ce produit</button>';
+
+    nv3ModalOpen(html);
+  }
+
+  function nv3ScanStatsHTML(per100, qty) {
+    var ratio = qty / 100;
+    return '<div class="nv3-md-stat"><div class="nv3-md-stat-val">' + Math.round(per100.kcal * ratio) + '</div><div class="nv3-md-stat-lbl">kcal</div></div>'
+      + '<div class="nv3-md-stat"><div class="nv3-md-stat-val">' + Math.round(per100.prot * ratio * 10)/10 + 'g</div><div class="nv3-md-stat-lbl">Prot</div></div>'
+      + '<div class="nv3-md-stat"><div class="nv3-md-stat-val">' + Math.round(per100.gluc * ratio * 10)/10 + 'g</div><div class="nv3-md-stat-lbl">Gluc</div></div>'
+      + '<div class="nv3-md-stat"><div class="nv3-md-stat-val">' + Math.round(per100.lip * ratio * 10)/10 + 'g</div><div class="nv3-md-stat-lbl">Lip</div></div>';
+  }
+
+  window.nv3ScanRecalc = function() {
+    var qty = parseFloat(document.getElementById('nv3-scan-qty').value) || 0;
+    var prev = document.getElementById('nv3-scan-preview');
+    if (!prev || !window._nv3ScanPending) return;
+    prev.innerHTML = nv3ScanStatsHTML(window._nv3ScanPending.per100, qty);
+  };
+
+  window.nv3LogScannedProduct = function() {
+    var pending = window._nv3ScanPending;
+    if (!pending) return;
+    var qty = parseFloat(document.getElementById('nv3-scan-qty').value) || 100;
+    var slot = document.getElementById('nv3-scan-meal').value || 'snack';
+    var ratio = qty / 100;
+
+    // Ajoute aux logs du jour
+    var logKey = 'hima8.nv3.logs.' + nv3DateKey();
+    var logs = [];
+    try { logs = JSON.parse(localStorage.getItem(logKey) || '[]'); } catch(e) {}
+    logs.push({
+      timestamp: Date.now(),
+      source: 'scan',
+      name: pending.name,
+      brand: pending.brand || '',
+      qty: qty,
+      slot: slot,
+      kcal: Math.round(pending.per100.kcal * ratio),
+      prot: Math.round(pending.per100.prot * ratio * 10)/10,
+      gluc: Math.round(pending.per100.gluc * ratio * 10)/10,
+      lip:  Math.round(pending.per100.lip  * ratio * 10)/10,
+      code: pending.code || ''
+    });
+    try { localStorage.setItem(logKey, JSON.stringify(logs)); } catch(e) {}
+
+    nv3Toast('✓ ' + pending.name + ' logué');
+    window._nv3ScanPending = null;
+    nv3ModalClose();
+    if (typeof window.nv3BuildLanding === 'function') window.nv3BuildLanding();
+  };
+
+  // ────────────────────────────────────────
+  // EXPOSE : helper pour additionner les logs scannés au hero
+  // (le hero du Wave 2.1 prend en compte plan.meals[].logged uniquement.
+  //  On expose ici une fonction pour les futurs hero qui voudront sommer
+  //  plan + logs scannés)
+  // ────────────────────────────────────────
+  window.nv3GetScannedLogsTotal = function() {
+    var logKey = 'hima8.nv3.logs.' + nv3DateKey();
+    var total = { kcal: 0, prot: 0, gluc: 0, lip: 0 };
+    try {
+      var logs = JSON.parse(localStorage.getItem(logKey) || '[]');
+      logs.forEach(function(l){
+        total.kcal += l.kcal || 0;
+        total.prot += l.prot || 0;
+        total.gluc += l.gluc || 0;
+        total.lip  += l.lip  || 0;
+      });
+    } catch(e) {}
+    return total;
+  };
+
+})();
+// ════════════════════════════════════════════════════════════
+// FIN TAB NUTRITION v3 — Wave 2.2
 // ════════════════════════════════════════════════════════════
 
 // ────────────────────────────────────────────────
