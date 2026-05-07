@@ -11834,19 +11834,47 @@ window.sv2CamValidate   = function() { sv2CamClose(); svValidateSet(); };
           });
           if (r.ok) {
             var data = await r.json();
-            resp = data.text || data.content || (data.content && data.content[0] && data.content[0].text);
+            // /api/chat peut retourner différentes shapes selon la version du proxy
+            resp = data.text
+                || data.message
+                || (data.content && Array.isArray(data.content) && data.content[0] && data.content[0].text)
+                || data.content
+                || data.completion
+                || data;
           }
         } catch(e) { console.warn('[nv3] /api/chat fallback failed', e); }
       }
       if (!resp) throw new Error('Pas de réponse Claude');
 
-      // Parse JSON (Claude peut parfois mettre des ```json fences)
-      var clean = resp.replace(/```json|```/g, '').trim();
-      var jsonStart = clean.indexOf('{');
-      var jsonEnd = clean.lastIndexOf('}');
-      if (jsonStart >= 0 && jsonEnd > jsonStart) clean = clean.substring(jsonStart, jsonEnd + 1);
-      var parsed = JSON.parse(clean);
-      if (!parsed.meals || !Array.isArray(parsed.meals) || parsed.meals.length < 3) {
+      // ── Parser robuste : accepte string OU objet ──
+      // Cas 1 : déjà un objet (certaines versions de l'API renvoient parsé)
+      var parsed = null;
+      if (typeof resp === 'object' && resp !== null) {
+        // Si c'est déjà la structure attendue
+        if (resp.meals && Array.isArray(resp.meals)) {
+          parsed = resp;
+        } else if (resp.text && typeof resp.text === 'string') {
+          // Wrapper { text: "..." }
+          resp = resp.text;
+        } else {
+          // Objet inattendu : on essaie de stringifier
+          try { resp = JSON.stringify(resp); } catch(e) { resp = String(resp); }
+        }
+      }
+      // Cas 2 : string → on extrait le JSON
+      if (!parsed && typeof resp === 'string') {
+        var clean = resp.replace(/```json|```/g, '').trim();
+        var jsonStart = clean.indexOf('{');
+        var jsonEnd = clean.lastIndexOf('}');
+        if (jsonStart >= 0 && jsonEnd > jsonStart) clean = clean.substring(jsonStart, jsonEnd + 1);
+        try {
+          parsed = JSON.parse(clean);
+        } catch(parseErr) {
+          console.warn('[nv3] JSON parse failed, raw response:', clean.substring(0, 200));
+          throw new Error('JSON invalide');
+        }
+      }
+      if (!parsed || !parsed.meals || !Array.isArray(parsed.meals) || parsed.meals.length < 3) {
         throw new Error('Structure plan invalide');
       }
       // Initialise le statut "logged"
@@ -12009,15 +12037,15 @@ window.sv2CamValidate   = function() { sv2CamClose(); svValidateSet(); };
     var root = document.getElementById('nv3-root');
     if (!root) return;
 
-    // 1. Cache hit → render immédiat
+    // 1. Cache hit → render immédiat (seulement si plan IA, pas fallback)
     var cached = nv3LoadPlan();
-    if (cached && cached.meals && cached.meals.length) {
+    if (cached && cached.meals && cached.meals.length && !cached.fallback) {
       window._nv3CurrentPlan = cached;
       root.innerHTML = nv3RenderHero(cached) + nv3RenderMeals(cached);
       return;
     }
 
-    // 2. Pas de cache → loading state + génération
+    // 2. Pas de cache valide → loading state + génération
     root.innerHTML = '<div class="nv3-loading">'
       + '<div class="nv3-loading-dots"><span class="nv3-loading-dot"></span><span class="nv3-loading-dot"></span><span class="nv3-loading-dot"></span></div>'
       + '<div class="nv3-loading-txt">HIMA prépare ton plan repas adapté à ta journée…</div>'
@@ -12025,19 +12053,23 @@ window.sv2CamValidate   = function() { sv2CamClose(); svValidateSet(); };
 
     var plan = await nv3GeneratePlan();
     if (!plan) {
-      // 3a. Fallback (Claude KO)
+      // 3a. Fallback (Claude KO) : on N'enregistre PAS dans le cache
+      // → prochaine ouverture retentera la vraie génération IA
       plan = nv3FallbackPlan();
-      root.innerHTML = '<div class="nv3-error">'
-        + '<div class="nv3-error-txt">Connexion limitée. Plan de base affiché. Réessaie plus tard pour la version IA.</div>'
-        + '<button class="nv3-error-btn" onclick="nv3RegeneratePlan()">Réessayer</button>'
+      window._nv3CurrentPlan = plan;
+      root.innerHTML = '<div class="nv3-error" id="nv3-error-banner">'
+        + '<button onclick="document.getElementById(\'nv3-error-banner\').remove()" style="position:absolute;top:8px;right:10px;background:none;border:none;color:rgba(240,240,255,0.5);font-size:18px;cursor:pointer;line-height:1;padding:4px;" aria-label="Fermer">×</button>'
+        + '<div class="nv3-error-txt">⚡ Plan de base affiché — l\'IA n\'a pas pu se connecter cette fois. Réessaye dans un instant.</div>'
+        + '<button class="nv3-error-btn" onclick="nv3RegeneratePlan()">↻ Réessayer maintenant</button>'
         + '</div>'
         + nv3RenderHero(plan)
         + nv3RenderMeals(plan);
-      window._nv3CurrentPlan = plan;
-      nv3SavePlan(plan);
+      // Ajout du position:relative sur l'erreur pour le bouton close
+      var errEl = document.getElementById('nv3-error-banner');
+      if (errEl) errEl.style.position = 'relative';
       return;
     }
-    // 3b. Succès → cache + render
+    // 3b. Succès → cache + render (PAS de bandeau d'erreur)
     window._nv3CurrentPlan = plan;
     nv3SavePlan(plan);
     root.innerHTML = nv3RenderHero(plan) + nv3RenderMeals(plan);
