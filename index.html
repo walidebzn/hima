@@ -15135,7 +15135,7 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
 <script>
 /* ═══════════════════════════════════════════════════════════════
    HIMA — WAVE 3 / TAB CORPS v3 (5 sub-waves) + PATCH NAV 6 boutons
-   Injecté le 09/05/2026 · kill switches: window.SV2_FLAGS.corps31..35
+   v0.2 — fix host targeting (corps-sc) + retry patchNav robuste
    ═══════════════════════════════════════════════════════════════ */
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -15201,11 +15201,22 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
      Compresse les flex pour tenir sur largeur iPhone. */
   function patchNav(){
     var nav = document.getElementById('bottom-nav');
-    if (!nav) { setTimeout(patchNav, 200); return; }
-    if (document.getElementById('nb-corps')) return; // déjà présent
+    if (!nav) {
+      // Retry agressif tant que la nav n'existe pas
+      setTimeout(patchNav, 200);
+      return;
+    }
+    if (document.getElementById('nb-corps')) {
+      log('nav corps already injected, skip');
+      return;
+    }
 
     var nbPrf = document.getElementById('nb-prf');
-    if (!nbPrf) return;
+    if (!nbPrf) {
+      log('nb-prf not found, retry');
+      setTimeout(patchNav, 300);
+      return;
+    }
 
     var nbCorps = document.createElement('div');
     nbCorps.className = 'nb';
@@ -15223,24 +15234,31 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
     nav.insertBefore(nbCorps, nbPrf);
 
     // Compression flex pour 6 boutons sur iPhone
-    var st = document.createElement('style');
-    st.id = 'nav-6btns-fix';
-    st.textContent = ''+
-      '.nav .nb { flex: 1 !important; padding: 6px 2px !important; min-width: 0; }'+
-      '.nav .nb-chat-center { flex: 1.1 !important; }'+
-      '.nav .nb-lbl, .nav .nb span { font-size: 9.5px !important; letter-spacing: 0 !important; white-space: nowrap; }'+
-      '.nav .nb svg { width: 20px !important; height: 20px !important; }'+
-      '@media (max-width: 360px){ .nav .nb-lbl, .nav .nb span { font-size: 9px !important; } }';
-    if (!document.getElementById('nav-6btns-fix')) document.head.appendChild(st);
+    if (!document.getElementById('nav-6btns-fix')){
+      var st = document.createElement('style');
+      st.id = 'nav-6btns-fix';
+      st.textContent = ''+
+        '.nav .nb { flex: 1 !important; padding: 6px 2px !important; min-width: 0; }'+
+        '.nav .nb-chat-center { flex: 1.1 !important; }'+
+        '.nav .nb-lbl, .nav .nb span { font-size: 9.5px !important; letter-spacing: 0 !important; white-space: nowrap; }'+
+        '.nav .nb svg { width: 20px !important; height: 20px !important; }'+
+        '@media (max-width: 360px){ .nav .nb-lbl, .nav .nb span { font-size: 9px !important; } }';
+      document.head.appendChild(st);
+    }
 
-    log('nav corps button injected');
+    log('✓ nav corps button injected');
+    console.log('[CORPS3] Nav 6 boutons injecté ✓');
   }
 
+  // Retry jusqu'à 5s si la nav arrive tardivement
   if (document.readyState === 'loading'){
     document.addEventListener('DOMContentLoaded', function(){ setTimeout(patchNav, 100); });
   } else {
     setTimeout(patchNav, 100);
   }
+  // Filet de sécurité : retry à 1s, 2s, 3s
+  setTimeout(patchNav, 1000);
+  setTimeout(patchNav, 2500);
 
 })();
 
@@ -15442,7 +15460,7 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
   }
 
   function renderInto(){
-    var host = document.getElementById('t-corps');
+    var host = document.getElementById('corps-sc') || document.getElementById('t-corps');
     if (!host) return;
     var slot = host.querySelector('#c31-slot');
     if (!slot){
@@ -15678,7 +15696,7 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
   }
 
   function renderInto(){
-    var host = document.getElementById('t-corps');
+    var host = document.getElementById('corps-sc') || document.getElementById('t-corps');
     if (!host) return;
     var slot = host.querySelector('#c32-slot');
     if (!slot){
@@ -15687,7 +15705,7 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
       // Après c31-slot
       var c31 = host.querySelector('#c31-slot');
       if (c31 && c31.nextSibling) host.insertBefore(slot, c31.nextSibling);
-      else host.appendChild(slot);
+      else host.insertBefore(slot, host.firstChild);
     }
 
     var stats = computeStats();
@@ -15883,7 +15901,7 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
   var currentPeriod = 30;
 
   function renderInto(){
-    var host = document.getElementById('t-corps');
+    var host = document.getElementById('corps-sc') || document.getElementById('t-corps');
     if (!host) return;
     var slot = host.querySelector('#c33-slot');
     if (!slot){
@@ -15891,7 +15909,7 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
       slot.id = 'c33-slot';
       var prev = host.querySelector('#c32-slot') || host.querySelector('#c31-slot');
       if (prev && prev.nextSibling) host.insertBefore(slot, prev.nextSibling);
-      else host.appendChild(slot);
+      else host.insertBefore(slot, host.firstChild);
     }
 
     var series = getWeightSeries(currentPeriod);
@@ -16162,7 +16180,7 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
   var selA = null, selB = null;
 
   function renderInto(){
-    var host = document.getElementById('t-corps');
+    var host = document.getElementById('corps-sc') || document.getElementById('t-corps');
     if (!host) return;
     var slot = host.querySelector('#c34-slot');
     if (!slot){
@@ -16170,7 +16188,7 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
       slot.id = 'c34-slot';
       var prev = host.querySelector('#c33-slot') || host.querySelector('#c32-slot') || host.querySelector('#c31-slot');
       if (prev && prev.nextSibling) host.insertBefore(slot, prev.nextSibling);
-      else host.appendChild(slot);
+      else host.insertBefore(slot, host.firstChild);
     }
 
     var photos = getPhotos();
@@ -16400,7 +16418,7 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
   }
 
   function renderInto(){
-    var host = document.getElementById('t-corps');
+    var host = document.getElementById('corps-sc') || document.getElementById('t-corps');
     if (!host) return;
     var slot = host.querySelector('#c35-slot');
     if (!slot){
@@ -16408,7 +16426,7 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
       slot.id = 'c35-slot';
       var prev = host.querySelector('#c34-slot') || host.querySelector('#c33-slot') || host.querySelector('#c32-slot') || host.querySelector('#c31-slot');
       if (prev && prev.nextSibling) host.insertBefore(slot, prev.nextSibling);
-      else host.appendChild(slot);
+      else host.insertBefore(slot, host.firstChild);
     }
 
     var cached = getCached();
