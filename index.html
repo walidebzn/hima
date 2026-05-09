@@ -15133,10 +15133,10 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
 </script>
 
 <script>
-/* ═══════════════════════════════════════════════════════════════
+/* ═════════════════════════════════════════════════════════════════
    HIMA — WAVE 3 / TAB CORPS v3 (5 sub-waves) + PATCH NAV 6 boutons
-   v0.2 — fix host targeting (corps-sc) + retry patchNav robuste
-   ═══════════════════════════════════════════════════════════════ */
+   v0.3 — fix SVG NaN guards + patchNav avec MutationObserver
+   ═════════════════════════════════════════════════════════════════ */
 
 /* ═══════════════════════════════════════════════════════════════════════════
    HIMA — WAVE 3 / TAB CORPS v3 (5 sub-waves)
@@ -15199,66 +15199,91 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
   /* ─── PATCH NAV : ajouter bouton Corps (6 boutons) ─────────
      Idempotent. Insère #nb-corps entre nb-nutr et nb-prf.
      Compresse les flex pour tenir sur largeur iPhone. */
+  var _navAttempts = 0;
   function patchNav(){
+    _navAttempts++;
     var nav = document.getElementById('bottom-nav');
     if (!nav) {
-      // Retry agressif tant que la nav n'existe pas
-      setTimeout(patchNav, 200);
+      if (_navAttempts < 50){
+        setTimeout(patchNav, 200);
+      } else {
+        console.error('[CORPS3] ❌ Nav not found after 50 attempts (10s) — abandoning');
+      }
       return;
     }
     if (document.getElementById('nb-corps')) {
-      log('nav corps already injected, skip');
+      console.log('[CORPS3] Nav corps already injected, skip');
       return;
     }
 
     var nbPrf = document.getElementById('nb-prf');
     if (!nbPrf) {
-      log('nb-prf not found, retry');
-      setTimeout(patchNav, 300);
+      console.warn('[CORPS3] nb-prf not found, retry');
+      if (_navAttempts < 50) setTimeout(patchNav, 300);
       return;
     }
 
-    var nbCorps = document.createElement('div');
-    nbCorps.className = 'nb';
-    nbCorps.id = 'nb-corps';
-    nbCorps.setAttribute('onclick', "switchTab('t-corps')");
-    nbCorps.innerHTML = ''+
-      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+
-        '<circle cx="12" cy="5" r="2.2"/>'+
-        '<path d="M12 7.2v3.5"/>'+
-        '<path d="M8 11h8l-1 4h-6z"/>'+
-        '<path d="M9 15l-1 5"/>'+
-        '<path d="M15 15l1 5"/>'+
-      '</svg>'+
-      '<span class="nb-lbl">Corps</span>';
-    nav.insertBefore(nbCorps, nbPrf);
+    try {
+      var nbCorps = document.createElement('div');
+      nbCorps.className = 'nb';
+      nbCorps.id = 'nb-corps';
+      nbCorps.setAttribute('onclick', "switchTab('t-corps')");
+      nbCorps.innerHTML = ''+
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+
+          '<circle cx="12" cy="5" r="2.2"/>'+
+          '<path d="M12 7.2v3.5"/>'+
+          '<path d="M8 11h8l-1 4h-6z"/>'+
+          '<path d="M9 15l-1 5"/>'+
+          '<path d="M15 15l1 5"/>'+
+        '</svg>'+
+        '<span class="nb-lbl">Corps</span>';
+      nav.insertBefore(nbCorps, nbPrf);
 
-    // Compression flex pour 6 boutons sur iPhone
-    if (!document.getElementById('nav-6btns-fix')){
-      var st = document.createElement('style');
-      st.id = 'nav-6btns-fix';
-      st.textContent = ''+
-        '.nav .nb { flex: 1 !important; padding: 6px 2px !important; min-width: 0; }'+
-        '.nav .nb-chat-center { flex: 1.1 !important; }'+
-        '.nav .nb-lbl, .nav .nb span { font-size: 9.5px !important; letter-spacing: 0 !important; white-space: nowrap; }'+
-        '.nav .nb svg { width: 20px !important; height: 20px !important; }'+
-        '@media (max-width: 360px){ .nav .nb-lbl, .nav .nb span { font-size: 9px !important; } }';
-      document.head.appendChild(st);
+      // Compression flex pour 6 boutons sur iPhone
+      if (!document.getElementById('nav-6btns-fix')){
+        var st = document.createElement('style');
+        st.id = 'nav-6btns-fix';
+        st.textContent = ''+
+          '.nav .nb { flex: 1 !important; padding: 6px 2px !important; min-width: 0; }'+
+          '.nav .nb-chat-center { flex: 1.1 !important; }'+
+          '.nav .nb-lbl, .nav .nb span { font-size: 9.5px !important; letter-spacing: 0 !important; white-space: nowrap; }'+
+          '.nav .nb svg { width: 20px !important; height: 20px !important; }'+
+          '@media (max-width: 360px){ .nav .nb-lbl, .nav .nb span { font-size: 9px !important; } }';
+        document.head.appendChild(st);
+      }
+
+      console.log('[CORPS3] ✅ Nav 6 boutons injecté (Corps inséré avant Profil)');
+    } catch(e){
+      console.error('[CORPS3] ❌ patchNav fail:', e);
     }
-
-    log('✓ nav corps button injected');
-    console.log('[CORPS3] Nav 6 boutons injecté ✓');
   }
 
-  // Retry jusqu'à 5s si la nav arrive tardivement
+  // Multi-strategy : DOM ready + retries + observer
   if (document.readyState === 'loading'){
     document.addEventListener('DOMContentLoaded', function(){ setTimeout(patchNav, 100); });
   } else {
-    setTimeout(patchNav, 100);
+    setTimeout(patchNav, 50);
   }
-  // Filet de sécurité : retry à 1s, 2s, 3s
-  setTimeout(patchNav, 1000);
-  setTimeout(patchNav, 2500);
+  // Filets de sécurité
+  setTimeout(patchNav, 500);
+  setTimeout(patchNav, 1500);
+  setTimeout(patchNav, 3000);
+  setTimeout(patchNav, 6000);
+
+  // Observer : si la nav est ajoutée plus tard
+  if (typeof MutationObserver === 'function'){
+    var navObs = new MutationObserver(function(){
+      if (document.getElementById('bottom-nav') && !document.getElementById('nb-corps')){
+        patchNav();
+      }
+    });
+    if (document.body) navObs.observe(document.body, { childList: true, subtree: true });
+    else document.addEventListener('DOMContentLoaded', function(){
+      navObs.observe(document.body, { childList: true, subtree: true });
+    });
+  }
+
+  console.log('[CORPS3] bootCorpsV3 loaded — flags:', window.SV2_FLAGS);
 
 })();
 
@@ -15866,17 +15891,27 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
   }
 
   function svgLineChart(series, w, h, color){
+    // Filter out invalid points
+    series = (series || []).filter(function(p){
+      return p && typeof p.val === 'number' && !isNaN(p.val) && isFinite(p.val);
+    });
     if (!series.length) return '<div class="c33-empty">Pas encore de poids saisi</div>';
     if (series.length === 1){
-      return '<div class="c33-empty">Saisis ton poids 2x pour voir la courbe</div>';
+      return '<div class="c33-empty">Saisis ton poids 2x pour voir la courbe (1 mesure: '+series[0].val.toFixed(1)+'kg)</div>';
     }
     var pad = 12;
-    var min = Math.min.apply(null, series.map(function(p){return p.val;}));
-    var max = Math.max.apply(null, series.map(function(p){return p.val;}));
+    var vals = series.map(function(p){return p.val;});
+    var min = Math.min.apply(null, vals);
+    var max = Math.max.apply(null, vals);
+    if (!isFinite(min) || !isFinite(max)){
+      return '<div class="c33-empty">Données invalides</div>';
+    }
     var span = Math.max(0.5, max - min);
     var minY = min - span*0.2, maxY = max + span*0.2;
-    function x(i){ return pad + (i / (series.length - 1)) * (w - pad*2); }
-    function y(v){ return h - pad - ((v - minY) / (maxY - minY)) * (h - pad*2); }
+    var denomX = Math.max(1, series.length - 1);
+    var denomY = Math.max(0.001, maxY - minY);
+    function x(i){ return pad + (i / denomX) * (w - pad*2); }
+    function y(v){ return h - pad - ((v - minY) / denomY) * (h - pad*2); }
     var path = series.map(function(p,i){ return (i?'L':'M')+x(i).toFixed(1)+' '+y(p.val).toFixed(1); }).join(' ');
     var area = path + ' L'+x(series.length-1).toFixed(1)+' '+(h-pad)+' L'+pad+' '+(h-pad)+' Z';
     return ''+
