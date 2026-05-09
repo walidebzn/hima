@@ -4182,6 +4182,514 @@ body:not([data-tab="chat"]) .voice-status { display: none !important; }
 
 /* ═══ FIN TAB NUTRITION v3 — Wave 2.2 ═══ */
 
+/* ═══════════════════════════════════════════════════════════ */
+/* ═══ TAB NUTRITION v3 — Wave 2.3 : INSIGHTS & COMPLIANCE ═══ */
+/* ═══════════════════════════════════════════════════════════ */
+
+/* ACTIONS BAR étendue : 4 colonnes au lieu de 3 */
+.nv3-actions.nv3-actions-4 {
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+.nv3-actions.nv3-actions-4 .nv3-action-btn {
+  padding: 10px 4px;
+  gap: 3px;
+}
+.nv3-actions.nv3-actions-4 .nv3-action-icon { font-size: 19px; }
+.nv3-actions.nv3-actions-4 .nv3-action-lbl { font-size: 9px; }
+
+/* Bouton "J'ai craqué" — style alerte/empathique */
+.nv3-action-btn.nv3-action-rescue {
+  background: linear-gradient(135deg, rgba(243,86,149,0.14), rgba(249,136,5,0.06));
+  border: 1px solid rgba(243,86,149,0.30);
+}
+.nv3-action-btn.nv3-action-rescue .nv3-action-lbl {
+  color: #F35695;
+}
+
+/* CARD "DÎNER CE SOIR" */
+.nv3-dinner-card {
+  margin-bottom: 14px;
+  padding: 16px 18px;
+  background: linear-gradient(135deg, rgba(168,85,247,0.10), rgba(243,86,149,0.06));
+  border: 1px solid rgba(168,85,247,0.25);
+  border-radius: 18px;
+  position: relative;
+  overflow: hidden;
+}
+.nv3-dinner-card::before {
+  content: "";
+  position: absolute;
+  top: -40px;
+  right: -40px;
+  width: 140px;
+  height: 140px;
+  background: radial-gradient(circle, rgba(168,85,247,0.15) 0%, transparent 70%);
+  pointer-events: none;
+}
+.nv3-dinner-eyebrow {
+  position: relative;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 10px;
+  font-weight: 800;
+  color: #A855F7;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.nv3-dinner-title {
+  position: relative;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: #F0F0FF;
+  margin-bottom: 4px;
+  line-height: 1.25;
+}
+.nv3-dinner-sub {
+  position: relative;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  color: rgba(240,240,255,0.65);
+  line-height: 1.5;
+  margin-bottom: 12px;
+}
+.nv3-dinner-cta {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 16px;
+  background: linear-gradient(135deg, #A855F7, #F35695);
+  border: none;
+  border-radius: 999px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 12px;
+  font-weight: 800;
+  color: #FFF;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+  box-shadow: 0 6px 16px rgba(168,85,247,0.32);
+}
+.nv3-dinner-cta:active { transform: scale(0.96); }
+
+/* COMPLIANCE 7 JOURS */
+.nv3-compliance {
+  margin-bottom: 14px;
+  padding: 16px 18px;
+  background: rgba(240,240,255,0.03);
+  border: 1px solid rgba(240,240,255,0.08);
+  border-radius: 18px;
+}
+.nv3-compliance-hd {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+.nv3-compliance-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 11px;
+  font-weight: 800;
+  color: rgba(240,240,255,0.7);
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+}
+.nv3-compliance-score {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 20px;
+  background: linear-gradient(135deg, #DDE255, #22C55E);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}
+.nv3-compliance-bars {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+  height: 90px;
+  align-items: end;
+  margin-bottom: 12px;
+}
+.nv3-cb-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  height: 100%;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+.nv3-cb-col:active { transform: scale(0.93); }
+.nv3-cb-track {
+  flex: 1;
+  width: 100%;
+  background: rgba(240,240,255,0.04);
+  border-radius: 8px 8px 4px 4px;
+  position: relative;
+  overflow: hidden;
+}
+.nv3-cb-fill {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  border-radius: 4px;
+  transition: height 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.nv3-cb-fill.good {
+  background: linear-gradient(180deg, #22C55E, #16A34A);
+  box-shadow: 0 0 10px rgba(34,197,94,0.40) inset;
+}
+.nv3-cb-fill.medium {
+  background: linear-gradient(180deg, #F98805, #EA580C);
+  box-shadow: 0 0 10px rgba(249,136,5,0.32) inset;
+}
+.nv3-cb-fill.bad {
+  background: linear-gradient(180deg, #F35695, #BE123C);
+  box-shadow: 0 0 10px rgba(243,86,149,0.32) inset;
+}
+.nv3-cb-fill.neutral {
+  background: rgba(240,240,255,0.10);
+}
+.nv3-cb-day {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  color: rgba(240,240,255,0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+.nv3-cb-col.today .nv3-cb-day {
+  color: #F98805;
+}
+.nv3-cb-col.today .nv3-cb-track {
+  outline: 1px solid rgba(249,136,5,0.45);
+  outline-offset: 2px;
+}
+.nv3-compliance-summary {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  line-height: 1.55;
+  color: rgba(240,240,255,0.7);
+  padding: 10px 0 0;
+  border-top: 1px solid rgba(240,240,255,0.06);
+}
+.nv3-compliance-summary strong {
+  color: #DDE255;
+  font-weight: 700;
+}
+
+/* INSIGHT IA */
+.nv3-insight {
+  margin-bottom: 14px;
+  padding: 16px 18px;
+  background: linear-gradient(135deg, rgba(56,189,248,0.10), rgba(34,197,94,0.04));
+  border: 1px solid rgba(56,189,248,0.22);
+  border-radius: 18px;
+  position: relative;
+  overflow: hidden;
+}
+.nv3-insight-hd {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.nv3-insight-icon {
+  font-size: 18px;
+}
+.nv3-insight-eyebrow {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 10px;
+  font-weight: 800;
+  color: #38BDF8;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+}
+.nv3-insight-text {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  line-height: 1.55;
+  color: rgba(240,240,255,0.85);
+  margin-bottom: 12px;
+}
+.nv3-insight-actions {
+  display: flex;
+  gap: 8px;
+}
+.nv3-insight-btn {
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: none;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+.nv3-insight-btn.primary {
+  background: linear-gradient(135deg, #38BDF8, #22C55E);
+  color: #FFF;
+}
+.nv3-insight-btn.ghost {
+  background: rgba(240,240,255,0.05);
+  border: 1px solid rgba(240,240,255,0.10);
+  color: rgba(240,240,255,0.7);
+}
+.nv3-insight-btn:active { transform: scale(0.95); }
+
+/* MODAL "J'AI CRAQUÉ" — empathique */
+.nv3-rescue-icon {
+  font-size: 44px;
+  margin-bottom: 10px;
+}
+.nv3-rescue-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 28px;
+  line-height: 1.1;
+  color: #F0F0FF;
+  margin-bottom: 6px;
+}
+.nv3-rescue-eyebrow {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 10px;
+  font-weight: 800;
+  color: #F35695;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.nv3-rescue-message {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  line-height: 1.6;
+  color: rgba(240,240,255,0.78);
+  margin-bottom: 16px;
+}
+.nv3-rescue-textarea {
+  width: 100%;
+  min-height: 100px;
+  padding: 14px;
+  background: #0E0E1C;
+  border: 1px solid rgba(240,240,255,0.10);
+  border-radius: 14px;
+  color: #F0F0FF;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  resize: vertical;
+  outline: none;
+  margin-bottom: 12px;
+  box-sizing: border-box;
+}
+.nv3-rescue-textarea:focus {
+  border-color: rgba(243,86,149,0.4);
+}
+.nv3-rescue-quick {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+.nv3-rescue-chip {
+  padding: 7px 12px;
+  background: rgba(240,240,255,0.04);
+  border: 1px solid rgba(240,240,255,0.08);
+  border-radius: 999px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  color: rgba(240,240,255,0.7);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.nv3-rescue-chip:active {
+  transform: scale(0.95);
+  background: rgba(243,86,149,0.10);
+  border-color: rgba(243,86,149,0.30);
+  color: #F35695;
+}
+.nv3-rescue-cta {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(135deg, #F35695, #F98805);
+  border: none;
+  border-radius: 14px;
+  color: #FFF;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+  box-shadow: 0 6px 18px rgba(243,86,149,0.32);
+}
+.nv3-rescue-cta:active { transform: scale(0.97); }
+.nv3-rescue-response {
+  padding: 16px;
+  background: rgba(34,197,94,0.06);
+  border: 1px solid rgba(34,197,94,0.22);
+  border-radius: 14px;
+  margin-top: 14px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  line-height: 1.6;
+  color: rgba(240,240,255,0.85);
+}
+.nv3-rescue-response strong {
+  color: #22C55E;
+  font-weight: 700;
+}
+
+/* MODAL "DÎNER CE SOIR" */
+.nv3-dinner-mod-icon {
+  font-size: 44px;
+  margin-bottom: 10px;
+}
+.nv3-dinner-mod-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 28px;
+  line-height: 1.1;
+  color: #F0F0FF;
+  margin-bottom: 14px;
+}
+.nv3-dinner-mod-section {
+  margin-bottom: 14px;
+}
+.nv3-dinner-mod-label {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 10px;
+  font-weight: 800;
+  color: rgba(240,240,255,0.6);
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.nv3-dinner-mod-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+.nv3-dinner-chip {
+  padding: 12px 6px;
+  background: rgba(240,240,255,0.04);
+  border: 1px solid rgba(240,240,255,0.08);
+  border-radius: 12px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  color: #F0F0FF;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.nv3-dinner-chip-icon { font-size: 22px; }
+.nv3-dinner-chip.selected {
+  background: rgba(168,85,247,0.14);
+  border-color: rgba(168,85,247,0.45);
+  color: #A855F7;
+}
+.nv3-dinner-chip:active { transform: scale(0.95); }
+.nv3-dinner-time-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+.nv3-dinner-time-chip {
+  padding: 10px 4px;
+  background: rgba(240,240,255,0.04);
+  border: 1px solid rgba(240,240,255,0.08);
+  border-radius: 10px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: #F0F0FF;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.nv3-dinner-time-chip.selected {
+  background: rgba(168,85,247,0.14);
+  border-color: rgba(168,85,247,0.45);
+  color: #A855F7;
+}
+.nv3-dinner-time-chip:active { transform: scale(0.95); }
+.nv3-dinner-suggestions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 14px;
+}
+.nv3-dinner-suggestion {
+  padding: 14px;
+  background: rgba(240,240,255,0.03);
+  border: 1px solid rgba(240,240,255,0.07);
+  border-radius: 14px;
+}
+.nv3-dinner-suggestion-name {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: #F0F0FF;
+  margin-bottom: 4px;
+}
+.nv3-dinner-suggestion-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+.nv3-dinner-suggestion-kcal {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 12px;
+  font-weight: 800;
+  color: #A855F7;
+}
+.nv3-dinner-suggestion-tip {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  line-height: 1.5;
+  color: rgba(240,240,255,0.65);
+}
+
+/* MODAL "DÉTAILS COMPLIANCE D'UN JOUR" */
+.nv3-day-detail-stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin: 14px 0;
+}
+.nv3-day-detail-stat {
+  padding: 12px;
+  background: rgba(240,240,255,0.03);
+  border: 1px solid rgba(240,240,255,0.06);
+  border-radius: 12px;
+  text-align: center;
+}
+.nv3-day-detail-stat-val {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 22px;
+  color: #F0F0FF;
+  line-height: 1;
+}
+.nv3-day-detail-stat-lbl {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  color: rgba(240,240,255,0.5);
+  letter-spacing: 1px;
+  margin-top: 4px;
+  text-transform: uppercase;
+}
+
+/* ═══ FIN TAB NUTRITION v3 — Wave 2.3 ═══ */
+
 /* ═══ MODE ACTIF — VIDÉO ═══ */
 .sv-active-video {
   width: 100%;
@@ -13371,6 +13879,617 @@ window.sv2CamValidate   = function() { sv2CamClose(); svValidateSet(); };
 })();
 // ════════════════════════════════════════════════════════════
 // FIN TAB NUTRITION v3 — Wave 2.2
+// ════════════════════════════════════════════════════════════
+
+// ════════════════════════════════════════════════════════════
+// TAB NUTRITION v3 — Wave 2.3 : INSIGHTS & COMPLIANCE
+// Vision : "HIMA s'adapte en temps réel à TA vie. Aucun coach
+// humain ne peut faire ça à 23h47 quand tu craques."
+// ════════════════════════════════════════════════════════════
+(function(){
+
+  function nv3DateKey(d) {
+    d = d || new Date();
+    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+  }
+
+  function nv3PrevDateKey(daysAgo) {
+    var d = new Date();
+    d.setDate(d.getDate() - daysAgo);
+    return nv3DateKey(d);
+  }
+
+  // ════════════════════════════════════════════════
+  // 🚨 J'AI CRAQUÉ — Le moment magique A
+  // ════════════════════════════════════════════════
+  window.nv3OpenRescue = function() {
+    var html = '<div class="nv3-rescue-eyebrow">Sauve-moi</div>'
+      + '<div class="nv3-rescue-icon">🤍</div>'
+      + '<div class="nv3-rescue-title">Pas grave, on ajuste.</div>'
+      + '<div class="nv3-rescue-message">Raconte-moi ce qui s\'est passé. Pas de jugement, juste une stratégie pour absorber ça intelligemment sur les prochains jours.</div>'
+      + '<textarea class="nv3-rescue-textarea" id="nv3-rescue-input" placeholder="Ex: J\'ai mangé 2 parts de pizza et un dessert ce soir, j\'étais stressé après une journée difficile..."></textarea>'
+      + '<div class="nv3-rescue-quick">'
+      +   '<div class="nv3-rescue-chip" onclick="nv3RescueQuickFill(this, \'2 parts de pizza\')">🍕 2 parts pizza</div>'
+      +   '<div class="nv3-rescue-chip" onclick="nv3RescueQuickFill(this, \'Tablette de chocolat entière\')">🍫 Tablette chocolat</div>'
+      +   '<div class="nv3-rescue-chip" onclick="nv3RescueQuickFill(this, \'Menu McDo complet\')">🍟 Menu fast-food</div>'
+      +   '<div class="nv3-rescue-chip" onclick="nv3RescueQuickFill(this, \'Bouteille de vin\')">🍷 Bouteille vin</div>'
+      +   '<div class="nv3-rescue-chip" onclick="nv3RescueQuickFill(this, \'Apéro avec des amis, charcuterie/fromage/alcool\')">🥂 Apéro</div>'
+      + '</div>'
+      + '<button class="nv3-rescue-cta" onclick="nv3RescueSubmit()">✨ Demande à HIMA d\'ajuster</button>'
+      + '<div id="nv3-rescue-result"></div>';
+    nv3ModalOpen(html);
+  };
+
+  window.nv3RescueQuickFill = function(chip, txt) {
+    var area = document.getElementById('nv3-rescue-input');
+    if (!area) return;
+    area.value = area.value ? area.value + ' + ' + txt : txt;
+    area.focus();
+    try { if (window.navigator.vibrate) window.navigator.vibrate(20); } catch(e) {}
+  };
+
+  window.nv3RescueSubmit = async function() {
+    var area = document.getElementById('nv3-rescue-input');
+    var input = area && area.value.trim();
+    if (!input) {
+      area && area.focus();
+      return;
+    }
+    var resultEl = document.getElementById('nv3-rescue-result');
+    if (resultEl) resultEl.innerHTML = '<div class="nv3-md-loading" style="text-align:center;padding:20px">HIMA analyse et ajuste ton plan…</div>';
+
+    var m = U.macros || (typeof calcM === 'function' ? calcM() : {kcal:2200, prot:160});
+    var system = "Tu es HIMA, coach IA bienveillant et SANS JUGEMENT. L'utilisateur a craqué.\n\n"
+      + "OBJECTIFS quotidiens : " + m.kcal + " kcal, " + m.prot + "g protéines\n\n"
+      + "RÈGLES DE RÉPONSE (très importantes) :\n"
+      + "1. NE JAMAIS faire de morale, NE JAMAIS culpabiliser\n"
+      + "2. Commencer par rassurer en 1 phrase chaleureuse\n"
+      + "3. Estimer l'écart calorique approximatif du craquage\n"
+      + "4. Donner un plan concret de récupération sur 2-3 jours (sans diète restrictive — juste un retour intelligent)\n"
+      + "5. Conclure par une phrase qui remet en perspective (1 craquage ne casse pas tes progrès)\n\n"
+      + "FORMAT — JSON STRICT, AUCUN AUTRE TEXTE :\n"
+      + '{"reassurance":"Phrase chaleureuse 1 ligne","estimated_excess_kcal":850,"plan":["Action concrète demain","Action concrète après-demain","Action concrète J+3"],"perspective":"Phrase qui remet en perspective"}';
+
+    try {
+      var resp = null;
+      if (typeof callClaudeSecure === 'function') {
+        resp = await callClaudeSecure(system, [{role:'user', content: input}]);
+      }
+      if (!resp) {
+        try {
+          var r = await fetch('/api/chat', {
+            method: 'POST', headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({ system: system, messages: [{role:'user', content: input}], max_tokens: 500 })
+          });
+          if (r.ok) {
+            var data = await r.json();
+            resp = data.text || data.message || (data.content && data.content[0] && data.content[0].text) || data.content || data.completion;
+          }
+        } catch(e) {}
+      }
+      if (!resp) throw new Error('Pas de réponse');
+
+      var parsed = null;
+      if (typeof resp === 'object' && resp !== null) {
+        if (resp.reassurance) parsed = resp;
+        else if (resp.text) resp = resp.text;
+        else resp = JSON.stringify(resp);
+      }
+      if (!parsed && typeof resp === 'string') {
+        var clean = resp.replace(/```json|```/g,'').trim();
+        var s = clean.indexOf('{'), e2 = clean.lastIndexOf('}');
+        if (s >= 0 && e2 > s) clean = clean.substring(s, e2+1);
+        parsed = JSON.parse(clean);
+      }
+      if (!parsed || !parsed.reassurance) throw new Error('Structure invalide');
+
+      // Sauve l'événement craquage
+      try {
+        var rescueKey = 'hima8.nv3.rescues.' + nv3DateKey();
+        var existing = JSON.parse(localStorage.getItem(rescueKey) || '[]');
+        existing.push({
+          timestamp: Date.now(),
+          input: input,
+          excess: parsed.estimated_excess_kcal || 0,
+          plan: parsed.plan || []
+        });
+        localStorage.setItem(rescueKey, JSON.stringify(existing));
+      } catch(e) {}
+
+      var planHtml = '';
+      if (parsed.plan && parsed.plan.length) {
+        planHtml = '<div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(240,240,255,0.08)">'
+          + '<div style="font-family:Space Grotesk,sans-serif;font-size:10px;font-weight:800;color:#22C55E;letter-spacing:1.2px;text-transform:uppercase;margin-bottom:8px">Plan de récup</div>';
+        parsed.plan.forEach(function(step, i){
+          planHtml += '<div style="display:flex;gap:10px;margin-bottom:6px;font-size:13px"><span style="color:#22C55E;font-weight:800;flex-shrink:0">J+' + (i+1) + '</span><span style="color:rgba(240,240,255,0.85)">' + step + '</span></div>';
+        });
+        planHtml += '</div>';
+      }
+
+      if (resultEl) {
+        resultEl.innerHTML = '<div class="nv3-rescue-response">'
+          + '<strong>' + parsed.reassurance + '</strong>'
+          + (parsed.estimated_excess_kcal ? '<div style="margin-top:8px;font-size:12px;color:rgba(240,240,255,0.6)">Écart estimé : ~' + parsed.estimated_excess_kcal + ' kcal</div>' : '')
+          + planHtml
+          + (parsed.perspective ? '<div style="margin-top:12px;padding-top:10px;border-top:1px solid rgba(240,240,255,0.08);font-style:italic;color:rgba(240,240,255,0.7);font-size:12px;line-height:1.6">' + parsed.perspective + '</div>' : '')
+          + '</div>';
+      }
+      try { if (window.navigator.vibrate) window.navigator.vibrate([20, 60, 20]); } catch(e) {}
+      // Disable submit button après envoi
+      var btn = document.querySelector('.nv3-rescue-cta');
+      if (btn) {
+        btn.textContent = '✓ HIMA est avec toi';
+        btn.disabled = true;
+        btn.style.opacity = '0.6';
+      }
+    } catch(err) {
+      console.warn('[nv3] rescue error', err);
+      if (resultEl) resultEl.innerHTML = '<div class="nv3-rescue-response" style="background:rgba(243,86,149,0.06);border-color:rgba(243,86,149,0.22)">Connexion limitée. Réessaye dans un instant — HIMA veut t\'aider correctement.</div>';
+    }
+  };
+
+  // ════════════════════════════════════════════════
+  // 🍽️ J'AI UN DÎNER CE SOIR — Moment C
+  // ════════════════════════════════════════════════
+  var _nv3DinnerState = { type: null, time: null };
+
+  window.nv3OpenDinner = function() {
+    _nv3DinnerState = { type: null, time: null };
+    var html = '<div class="nv3-md-eyebrow">Soirée spéciale</div>'
+      + '<div class="nv3-dinner-mod-icon">🍽️</div>'
+      + '<div class="nv3-dinner-mod-title">Tu as un dîner ce soir ?</div>'
+      + '<div style="font-family:DM Sans,sans-serif;font-size:13px;color:rgba(240,240,255,0.65);line-height:1.5;margin-bottom:18px">HIMA va adapter tes autres repas et te suggérer 3 plats compatibles avec ton plan.</div>'
+      + '<div class="nv3-dinner-mod-section">'
+      +   '<div class="nv3-dinner-mod-label">Type de cuisine</div>'
+      +   '<div class="nv3-dinner-mod-grid">'
+      +     '<div class="nv3-dinner-chip" onclick="nv3DinnerSelectType(this, \'italien\')"><div class="nv3-dinner-chip-icon">🍝</div>Italien</div>'
+      +     '<div class="nv3-dinner-chip" onclick="nv3DinnerSelectType(this, \'asiatique\')"><div class="nv3-dinner-chip-icon">🍜</div>Asiatique</div>'
+      +     '<div class="nv3-dinner-chip" onclick="nv3DinnerSelectType(this, \'français\')"><div class="nv3-dinner-chip-icon">🥖</div>Français</div>'
+      +     '<div class="nv3-dinner-chip" onclick="nv3DinnerSelectType(this, \'libanais\')"><div class="nv3-dinner-chip-icon">🥙</div>Libanais</div>'
+      +     '<div class="nv3-dinner-chip" onclick="nv3DinnerSelectType(this, \'mexicain\')"><div class="nv3-dinner-chip-icon">🌮</div>Mexicain</div>'
+      +     '<div class="nv3-dinner-chip" onclick="nv3DinnerSelectType(this, \'burger\')"><div class="nv3-dinner-chip-icon">🍔</div>Burger</div>'
+      +     '<div class="nv3-dinner-chip" onclick="nv3DinnerSelectType(this, \'sushi\')"><div class="nv3-dinner-chip-icon">🍣</div>Sushi</div>'
+      +     '<div class="nv3-dinner-chip" onclick="nv3DinnerSelectType(this, \'maison\')"><div class="nv3-dinner-chip-icon">🏠</div>Maison</div>'
+      +     '<div class="nv3-dinner-chip" onclick="nv3DinnerSelectType(this, \'autre\')"><div class="nv3-dinner-chip-icon">🍴</div>Autre</div>'
+      +   '</div>'
+      + '</div>'
+      + '<div class="nv3-dinner-mod-section">'
+      +   '<div class="nv3-dinner-mod-label">Heure du dîner</div>'
+      +   '<div class="nv3-dinner-time-row">'
+      +     '<div class="nv3-dinner-time-chip" onclick="nv3DinnerSelectTime(this, \'19h\')">19h</div>'
+      +     '<div class="nv3-dinner-time-chip" onclick="nv3DinnerSelectTime(this, \'20h\')">20h</div>'
+      +     '<div class="nv3-dinner-time-chip" onclick="nv3DinnerSelectTime(this, \'21h\')">21h</div>'
+      +     '<div class="nv3-dinner-time-chip" onclick="nv3DinnerSelectTime(this, \'22h+\')">22h+</div>'
+      +   '</div>'
+      + '</div>'
+      + '<button class="nv3-rescue-cta" style="background:linear-gradient(135deg,#A855F7,#F35695);box-shadow:0 6px 18px rgba(168,85,247,0.32)" onclick="nv3DinnerSubmit()">✨ Génère mes suggestions</button>'
+      + '<div id="nv3-dinner-result"></div>';
+    nv3ModalOpen(html);
+  };
+
+  window.nv3DinnerSelectType = function(chip, type) {
+    document.querySelectorAll('.nv3-dinner-chip').forEach(function(c){ c.classList.remove('selected'); });
+    chip.classList.add('selected');
+    _nv3DinnerState.type = type;
+    try { if (window.navigator.vibrate) window.navigator.vibrate(15); } catch(e) {}
+  };
+  window.nv3DinnerSelectTime = function(chip, time) {
+    document.querySelectorAll('.nv3-dinner-time-chip').forEach(function(c){ c.classList.remove('selected'); });
+    chip.classList.add('selected');
+    _nv3DinnerState.time = time;
+    try { if (window.navigator.vibrate) window.navigator.vibrate(15); } catch(e) {}
+  };
+
+  window.nv3DinnerSubmit = async function() {
+    if (!_nv3DinnerState.type || !_nv3DinnerState.time) {
+      nv3Toast('Choisis un type et une heure');
+      return;
+    }
+    var resultEl = document.getElementById('nv3-dinner-result');
+    if (resultEl) resultEl.innerHTML = '<div class="nv3-md-loading" style="text-align:center;padding:20px">HIMA prépare 3 suggestions adaptées…</div>';
+
+    var m = U.macros || (typeof calcM === 'function' ? calcM() : {kcal:2200, prot:160});
+    // Calcul kcal restantes (estimation simple : on suppose 2/3 du quota disponible pour le dîner si on est avant midi, sinon 1/3)
+    var hour = new Date().getHours();
+    var remainingPct = hour < 14 ? 0.45 : (hour < 18 ? 0.40 : 0.35);
+    var dinnerBudget = Math.round(m.kcal * remainingPct);
+
+    var system = "Tu es HIMA, coach nutrition. L'utilisateur va dîner au restaurant " + _nv3DinnerState.type + " à " + _nv3DinnerState.time + ".\n\n"
+      + "Budget calorique disponible pour ce dîner : ~" + dinnerBudget + " kcal\n"
+      + "Cible protéines journée : " + m.prot + "g\n\n"
+      + "MISSION : Propose 3 plats typiques de ce restaurant compatibles avec son plan.\n\n"
+      + "RÈGLES :\n"
+      + "- Plats RÉELS qu'on trouve dans ce type de resto\n"
+      + "- Macros estimées réalistes (souvent + caloriques qu'à la maison)\n"
+      + "- Une astuce courte par plat (ex: 'demande la sauce à part', 'évite le pain', etc.)\n\n"
+      + "FORMAT — JSON STRICT :\n"
+      + '{"adjustment":"Phrase courte sur l\'ajustement de la journée","suggestions":[{"name":"Nom du plat","kcal":650,"prot":35,"tip":"Astuce pratique"},{...},{...}]}';
+
+    try {
+      var resp = null;
+      if (typeof callClaudeSecure === 'function') {
+        resp = await callClaudeSecure(system, [{role:'user', content: 'Suggestions pour ' + _nv3DinnerState.type + ' à ' + _nv3DinnerState.time}]);
+      }
+      if (!resp) {
+        try {
+          var r = await fetch('/api/chat', {
+            method: 'POST', headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({ system: system, messages: [{role:'user', content: 'Suggestions'}], max_tokens: 500 })
+          });
+          if (r.ok) {
+            var data = await r.json();
+            resp = data.text || data.message || (data.content && data.content[0] && data.content[0].text) || data.content || data.completion;
+          }
+        } catch(e) {}
+      }
+      if (!resp) throw new Error('Pas de réponse');
+
+      var parsed = null;
+      if (typeof resp === 'object' && resp !== null) {
+        if (resp.suggestions) parsed = resp;
+        else if (resp.text) resp = resp.text;
+        else resp = JSON.stringify(resp);
+      }
+      if (!parsed && typeof resp === 'string') {
+        var clean = resp.replace(/```json|```/g,'').trim();
+        var s2 = clean.indexOf('{'), e3 = clean.lastIndexOf('}');
+        if (s2 >= 0 && e3 > s2) clean = clean.substring(s2, e3+1);
+        parsed = JSON.parse(clean);
+      }
+      if (!parsed || !parsed.suggestions) throw new Error('Structure invalide');
+
+      var suggestionsHtml = '<div class="nv3-dinner-suggestions">';
+      if (parsed.adjustment) {
+        suggestionsHtml += '<div style="font-size:12px;color:rgba(240,240,255,0.7);font-style:italic;line-height:1.5;margin-bottom:4px">' + parsed.adjustment + '</div>';
+      }
+      parsed.suggestions.forEach(function(sug){
+        suggestionsHtml += '<div class="nv3-dinner-suggestion">'
+          + '<div class="nv3-dinner-suggestion-name">' + sug.name + '</div>'
+          + '<div class="nv3-dinner-suggestion-meta">'
+          +   '<span class="nv3-dinner-suggestion-kcal">' + (sug.kcal || 0) + ' kcal</span>'
+          +   '<span style="font-size:11px;color:rgba(240,240,255,0.55)">' + (sug.prot || 0) + 'g protéines</span>'
+          + '</div>'
+          + (sug.tip ? '<div class="nv3-dinner-suggestion-tip">💡 ' + sug.tip + '</div>' : '')
+          + '</div>';
+      });
+      suggestionsHtml += '</div>';
+
+      if (resultEl) resultEl.innerHTML = suggestionsHtml;
+      try { if (window.navigator.vibrate) window.navigator.vibrate([20, 50, 20]); } catch(e) {}
+      // Disable submit
+      var btn = document.querySelector('.nv3-rescue-cta');
+      if (btn) {
+        btn.textContent = '✓ Suggestions générées';
+        btn.disabled = true;
+        btn.style.opacity = '0.6';
+      }
+    } catch(err) {
+      console.warn('[nv3] dinner error', err);
+      if (resultEl) resultEl.innerHTML = '<div class="nv3-rescue-response" style="background:rgba(243,86,149,0.06);border-color:rgba(243,86,149,0.22)">Connexion limitée. Réessaye dans un instant.</div>';
+    }
+  };
+
+  // ════════════════════════════════════════════════
+  // 📊 COMPLIANCE 7 JOURS
+  // ════════════════════════════════════════════════
+  function nv3GetDayCompliance(daysAgo) {
+    // Récupère les logs + plan validé du jour
+    var dateKey = nv3PrevDateKey(daysAgo);
+    var planRaw = null, logsRaw = [];
+    try { planRaw = JSON.parse(localStorage.getItem('hima8.nv3.plan.' + dateKey) || 'null'); } catch(e) {}
+    try { logsRaw = JSON.parse(localStorage.getItem('hima8.nv3.logs.' + dateKey) || '[]'); } catch(e) {}
+
+    var consumed = 0;
+    if (planRaw && planRaw.meals) {
+      planRaw.meals.forEach(function(m){ if (m.logged) consumed += (m.kcal || 0); });
+    }
+    logsRaw.forEach(function(l){ consumed += (l.kcal || 0); });
+
+    var target = (U.macros && U.macros.kcal) || (typeof calcM === 'function' ? calcM().kcal : 2200);
+    var ratio = target > 0 ? consumed / target : 0;
+    // Status :
+    // 0 = pas de data ce jour-là (neutral)
+    // 1 = good (90-110% du target)
+    // 2 = medium (75-89% ou 111-130%)
+    // 3 = bad (>130% ou <75%)
+    var status = 'neutral';
+    var pctFill = 0;
+    if (consumed === 0) {
+      status = 'neutral';
+      pctFill = 0;
+    } else if (ratio >= 0.9 && ratio <= 1.1) {
+      status = 'good';
+      pctFill = Math.min(100, ratio * 100);
+    } else if ((ratio >= 0.75 && ratio < 0.9) || (ratio > 1.1 && ratio <= 1.3)) {
+      status = 'medium';
+      pctFill = Math.min(100, ratio * 100);
+    } else {
+      status = 'bad';
+      pctFill = Math.min(100, ratio * 100);
+    }
+    return { dateKey: dateKey, consumed: Math.round(consumed), target: target, ratio: ratio, status: status, pctFill: pctFill, daysAgo: daysAgo };
+  }
+
+  window.nv3OpenDayDetail = function(daysAgo) {
+    var data = nv3GetDayCompliance(daysAgo);
+    var DAYS = ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
+    var d = new Date();
+    d.setDate(d.getDate() - daysAgo);
+    var dayName = DAYS[d.getDay()];
+    var dateStr = d.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+
+    var statusEmoji = { good: '✅', medium: '⚠️', bad: '🚨', neutral: '—' }[data.status];
+    var statusLabel = { good: 'Plan respecté', medium: 'Léger écart', bad: 'Gros écart', neutral: 'Pas de données' }[data.status];
+
+    var html = '<div class="nv3-md-eyebrow">' + dateStr + '</div>'
+      + '<div class="nv3-md-title" style="font-size:24px;margin-bottom:10px">' + statusEmoji + ' ' + statusLabel + '</div>'
+      + '<div class="nv3-day-detail-stats">'
+      +   '<div class="nv3-day-detail-stat">'
+      +     '<div class="nv3-day-detail-stat-val">' + data.consumed + '</div>'
+      +     '<div class="nv3-day-detail-stat-lbl">kcal consommées</div>'
+      +   '</div>'
+      +   '<div class="nv3-day-detail-stat">'
+      +     '<div class="nv3-day-detail-stat-val">' + data.target + '</div>'
+      +     '<div class="nv3-day-detail-stat-lbl">kcal cible</div>'
+      +   '</div>'
+      +   '<div class="nv3-day-detail-stat">'
+      +     '<div class="nv3-day-detail-stat-val">' + Math.round(data.ratio * 100) + '%</div>'
+      +     '<div class="nv3-day-detail-stat-lbl">Compliance</div>'
+      +   '</div>'
+      +   '<div class="nv3-day-detail-stat">'
+      +     '<div class="nv3-day-detail-stat-val" style="color:' + (data.consumed > data.target ? '#F35695' : '#22C55E') + '">' + (data.consumed > data.target ? '+' : '') + (data.consumed - data.target) + '</div>'
+      +     '<div class="nv3-day-detail-stat-lbl">Écart kcal</div>'
+      +   '</div>'
+      + '</div>'
+      + '<button class="nv3-md-cta ghost" style="width:100%" onclick="nv3ModalClose()">Fermer</button>';
+    nv3ModalOpen(html);
+  };
+
+  window.nv3RenderCompliance = function() {
+    var DAYS_SHORT = ['D','L','M','M','J','V','S'];
+    var todayIdx = new Date().getDay();
+    var weekData = [];
+    var goodDays = 0, dataDays = 0;
+
+    for (var i = 6; i >= 0; i--) {
+      var data = nv3GetDayCompliance(i);
+      weekData.push(data);
+      if (data.status !== 'neutral') {
+        dataDays++;
+        if (data.status === 'good') goodDays++;
+      }
+    }
+
+    var avgPct = dataDays > 0 ? Math.round((goodDays / dataDays) * 100) : 0;
+    var summary = '';
+    if (dataDays === 0) {
+      summary = 'Commence à logger tes repas pour voir ta compliance.';
+    } else {
+      summary = '<strong>' + goodDays + ' jour' + (goodDays > 1 ? 's' : '') + ' sur ' + dataDays + '</strong> dans ton plan adapté.';
+    }
+
+    var barsHtml = '';
+    weekData.forEach(function(data, idx){
+      // idx 0 = il y a 6 jours, idx 6 = aujourd'hui
+      var d = new Date();
+      d.setDate(d.getDate() - (6 - idx));
+      var dayLetter = DAYS_SHORT[d.getDay()];
+      var isToday = idx === 6;
+      barsHtml += '<div class="nv3-cb-col' + (isToday ? ' today' : '') + '" onclick="nv3OpenDayDetail(' + (6 - idx) + ')">'
+        + '<div class="nv3-cb-track">'
+        +   '<div class="nv3-cb-fill ' + data.status + '" style="height:' + data.pctFill + '%"></div>'
+        + '</div>'
+        + '<div class="nv3-cb-day">' + dayLetter + '</div>'
+        + '</div>';
+    });
+
+    return '<div class="nv3-compliance">'
+      + '<div class="nv3-compliance-hd">'
+      +   '<div class="nv3-compliance-title">Cette semaine</div>'
+      +   '<div class="nv3-compliance-score">' + avgPct + '%</div>'
+      + '</div>'
+      + '<div class="nv3-compliance-bars">' + barsHtml + '</div>'
+      + '<div class="nv3-compliance-summary">' + summary + '</div>'
+      + '</div>';
+  };
+
+  // ════════════════════════════════════════════════
+  // 💡 INSIGHT IA DU JOUR
+  // ════════════════════════════════════════════════
+  // Cache 24h pour éviter de spammer Claude
+  function nv3LoadInsight() {
+    try {
+      var raw = localStorage.getItem('hima8.nv3.insight.' + nv3DateKey());
+      return raw ? JSON.parse(raw) : null;
+    } catch(e) { return null; }
+  }
+  function nv3SaveInsight(insight) {
+    try { localStorage.setItem('hima8.nv3.insight.' + nv3DateKey(), JSON.stringify(insight)); } catch(e) {}
+  }
+
+  async function nv3GenerateInsight() {
+    // Cache hit
+    var cached = nv3LoadInsight();
+    if (cached && cached.text) return cached;
+
+    // Collecte les données des 7 derniers jours
+    var weekData = [];
+    for (var i = 6; i >= 0; i--) {
+      weekData.push(nv3GetDayCompliance(i));
+    }
+    var dataDays = weekData.filter(function(d){ return d.status !== 'neutral'; });
+    if (dataDays.length < 3) {
+      // Pas assez de data pour un insight pertinent
+      return null;
+    }
+
+    var m = U.macros || (typeof calcM === 'function' ? calcM() : {kcal:2200, prot:160});
+    var summary = dataDays.map(function(d){
+      var date = new Date();
+      date.setDate(date.getDate() - d.daysAgo);
+      var dayName = ['dimanche','lundi','mardi','mercredi','jeudi','vendredi','samedi'][date.getDay()];
+      return dayName + ' : ' + d.consumed + '/' + d.target + ' kcal (' + Math.round(d.ratio * 100) + '%)';
+    }).join('\n');
+
+    var system = "Tu es HIMA, coach IA. Analyse les 7 derniers jours de l'utilisateur et trouve UN insight pertinent et actionnable.\n\n"
+      + "Données semaine :\n" + summary + "\n\n"
+      + "MISSION : Trouve UN pattern intéressant (jour de craquage récurrent, sous-alimentation weekend, etc.) ET propose une action concrète.\n\n"
+      + "RÈGLES :\n"
+      + "1. Texte court (max 2 phrases)\n"
+      + "2. Pas de jugement, ton bienveillant et observateur\n"
+      + "3. Action concrète proposable en 1 tap\n\n"
+      + "FORMAT — JSON STRICT :\n"
+      + '{"observation":"Texte court d\'observation (1-2 phrases max)","action_label":"Texte du bouton ex: Ajuste mes weekends","action_prompt":"Question à poser à HIMA pour appliquer l\'ajustement"}';
+
+    try {
+      var resp = null;
+      if (typeof callClaudeSecure === 'function') {
+        resp = await callClaudeSecure(system, [{role:'user', content: 'Donne-moi un insight'}]);
+      }
+      if (!resp) {
+        try {
+          var r = await fetch('/api/chat', {
+            method: 'POST', headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({ system: system, messages: [{role:'user', content: 'Insight'}], max_tokens: 250 })
+          });
+          if (r.ok) {
+            var data = await r.json();
+            resp = data.text || data.message || (data.content && data.content[0] && data.content[0].text) || data.content || data.completion;
+          }
+        } catch(e) {}
+      }
+      if (!resp) return null;
+
+      var parsed = null;
+      if (typeof resp === 'object' && resp !== null) {
+        if (resp.observation) parsed = resp;
+        else if (resp.text) resp = resp.text;
+        else resp = JSON.stringify(resp);
+      }
+      if (!parsed && typeof resp === 'string') {
+        var clean = resp.replace(/```json|```/g,'').trim();
+        var s = clean.indexOf('{'), e2 = clean.lastIndexOf('}');
+        if (s >= 0 && e2 > s) clean = clean.substring(s, e2+1);
+        try { parsed = JSON.parse(clean); } catch(err) { return null; }
+      }
+      if (!parsed || !parsed.observation) return null;
+
+      var insight = {
+        text: parsed.observation,
+        action_label: parsed.action_label || 'En savoir plus',
+        action_prompt: parsed.action_prompt || parsed.observation,
+        generated_at: Date.now()
+      };
+      nv3SaveInsight(insight);
+      return insight;
+    } catch(e) {
+      console.warn('[nv3] insight error', e);
+      return null;
+    }
+  }
+
+  window.nv3RenderInsightPlaceholder = function() {
+    return '<div id="nv3-insight-slot"></div>';
+  };
+
+  window.nv3LoadInsightAsync = async function() {
+    var slot = document.getElementById('nv3-insight-slot');
+    if (!slot) return;
+    var insight = await nv3GenerateInsight();
+    if (!insight) {
+      slot.innerHTML = '';
+      return;
+    }
+    slot.innerHTML = '<div class="nv3-insight">'
+      + '<div class="nv3-insight-hd">'
+      +   '<span class="nv3-insight-icon">💡</span>'
+      +   '<span class="nv3-insight-eyebrow">Insight HIMA</span>'
+      + '</div>'
+      + '<div class="nv3-insight-text">' + insight.text + '</div>'
+      + '<div class="nv3-insight-actions">'
+      +   '<button class="nv3-insight-btn primary" onclick="nv3InsightAction(\'' + (insight.action_prompt.replace(/'/g, "\\'")) + '\')">' + insight.action_label + '</button>'
+      +   '<button class="nv3-insight-btn ghost" onclick="nv3InsightDismiss()">Pas maintenant</button>'
+      + '</div>'
+      + '</div>';
+  };
+
+  window.nv3InsightAction = function(prompt) {
+    // Bascule vers le tab Coach avec le prompt pré-rempli
+    if (typeof switchTab === 'function') switchTab('t-chat');
+    setTimeout(function(){
+      var ci = document.getElementById('ci');
+      if (!ci) return;
+      ci.value = prompt;
+      ci.focus();
+    }, 350);
+  };
+
+  window.nv3InsightDismiss = function() {
+    var slot = document.getElementById('nv3-insight-slot');
+    if (slot) slot.style.display = 'none';
+  };
+
+  // ════════════════════════════════════════════════
+  // OVERRIDE nv3RenderExtras pour intégrer Wave 2.3
+  // ════════════════════════════════════════════════
+  // Sauve la fonction Wave 2.2 originale
+  var _nv3RenderExtras_v22 = window.nv3RenderExtras;
+
+  window.nv3RenderExtras = function() {
+    // Wave 2.2 = actions (3 boutons) + water card
+    // Wave 2.3 = remplace les 3 actions par 4 + ajoute compliance + insight + dinner card
+    var html = '';
+
+    // 1. Actions étendues (4 boutons)
+    html += '<div class="nv3-actions nv3-actions-4">'
+      + '<button class="nv3-action-btn" onclick="nv3OpenScanner()">'
+      +   '<div class="nv3-action-icon">📷</div>'
+      +   '<div class="nv3-action-lbl">Scanner</div>'
+      + '</button>'
+      + '<button class="nv3-action-btn" onclick="nv3AddWater(250)">'
+      +   '<div class="nv3-action-icon">💧</div>'
+      +   '<div class="nv3-action-lbl">+250 ml</div>'
+      + '</button>'
+      + '<button class="nv3-action-btn" onclick="nv3OpenDinner()">'
+      +   '<div class="nv3-action-icon">🍽️</div>'
+      +   '<div class="nv3-action-lbl">Dîner</div>'
+      + '</button>'
+      + '<button class="nv3-action-btn nv3-action-rescue" onclick="nv3OpenRescue()">'
+      +   '<div class="nv3-action-icon">🤍</div>'
+      +   '<div class="nv3-action-lbl">J\'ai craqué</div>'
+      + '</button>'
+      + '</div>';
+
+    // 2. Hydratation (réutilise la water card de Wave 2.2 via le helper exposé)
+    if (typeof nv3WaterCardHTML !== 'undefined') {
+      // Pas accessible : c'était une fonction interne. On regénère ici.
+    }
+    // Essaye d'appeler l'ancien renderExtras pour avoir la water card
+    if (typeof _nv3RenderExtras_v22 === 'function') {
+      // _nv3RenderExtras_v22 retourne actions + water — on n'utilise QUE la water
+      var oldHtml = _nv3RenderExtras_v22();
+      // Extraire UNIQUEMENT le bloc nv3-water (depuis '<div class="nv3-water"' jusqu'à son '</div>' fermant)
+      var waterMatch = oldHtml.match(/<div class="nv3-water"[\s\S]*?<\/div>\s*<\/div>/);
+      if (waterMatch) {
+        html += waterMatch[0];
+      }
+    }
+
+    // 3. Compliance 7 jours
+    html += window.nv3RenderCompliance();
+
+    // 4. Insight placeholder (rempli en async)
+    html += window.nv3RenderInsightPlaceholder();
+
+    // Lance le chargement async de l'insight
+    setTimeout(function(){ window.nv3LoadInsightAsync(); }, 300);
+
+    return html;
+  };
+
+})();
+// ════════════════════════════════════════════════════════════
+// FIN TAB NUTRITION v3 — Wave 2.3
 // ════════════════════════════════════════════════════════════
 
 // ────────────────────────────────────────────────
