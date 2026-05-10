@@ -15133,20 +15133,19 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
 </script>
 
 <script>
-/* ═════════════════════════════════════════════════════════════════
-   HIMA — WAVE 3 / TAB CORPS v3 (5 sub-waves) + PATCH NAV 6 boutons
-   v0.3 — fix SVG NaN guards + patchNav avec MutationObserver
-   ═════════════════════════════════════════════════════════════════ */
+/* HIMA - WAVE 3 / TAB CORPS v3 (5 sub-waves) + PATCH NAV 6 boutons
+   v0.4 - ASCII-only header to fix syntax error at boot
+*/
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   HIMA — WAVE 3 / TAB CORPS v3 (5 sub-waves)
-   ───────────────────────────────────────────────────────────────────────────
-   Architecture : 5 IIFE indépendantes, override buildCorps (append en fin).
+/* ===========================================================================
+   HIMA - WAVE 3 / TAB CORPS v3 (5 sub-waves)
+   ---------------------------------------------------------------------------
+   Architecture : 5 IIFE independantes, override buildCorps (append en fin).
    Kill switches : window.SV2_FLAGS.corps31 / corps32 / corps33 / corps34 / corps35
-   Storage : hima8 → U.corps3 = { daily, measures, weights, prs, photos }
-   Coller en bloc juste avant </script> final. Ordre = 3.1 → 3.5.
-   Aucune cascade : si une sub-wave casse, désactive son flag et les autres tournent.
-   ═══════════════════════════════════════════════════════════════════════════ */
+   Storage : hima8 -> U.corps3 = { daily, measures, weights, prs, photos }
+   Coller en bloc juste avant </script> final. Ordre = 3.1 -> 3.5.
+   Aucune cascade : si une sub-wave casse, desactive son flag et les autres tournent.
+   =========================================================================== */
 
 (function bootCorpsV3(){
   'use strict';
@@ -15154,17 +15153,17 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
   // Flags globaux (kill switches)
   window.SV2_FLAGS = window.SV2_FLAGS || {};
   Object.assign(window.SV2_FLAGS, {
-    corps31: window.SV2_FLAGS.corps31 !== false, // Hero + État jour
+    corps31: window.SV2_FLAGS.corps31 !== false, // Hero + Etat jour
     corps32: window.SV2_FLAGS.corps32 !== false, // Mensurations
-    corps33: window.SV2_FLAGS.corps33 !== false, // Évo poids + 1RM
-    corps34: window.SV2_FLAGS.corps34 !== false, // Timeline + Avant/Après
+    corps33: window.SV2_FLAGS.corps33 !== false, // Evo poids + 1RM
+    corps34: window.SV2_FLAGS.corps34 !== false, // Timeline + Avant/Apres
     corps35: window.SV2_FLAGS.corps35 !== false  // Coach IA
   });
 
-  // Logger debug (réutilise _sv2_log si présent)
+  // Logger debug (reutilise _sv2_log si present)
   var log = window._sv2_log || function(){};
 
-  // Helpers storage centralisés
+  // Helpers storage centralises
   var KEY = 'hima8';
   function getU(){
     try { return JSON.parse(localStorage.getItem(KEY) || '{}') || {}; }
@@ -15196,8 +15195,8 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
   ensureCorps3();
   window.HIMA_CORPS3 = { getU, setU, ensureCorps3, todayKey, dayKeyOffset, log };
 
-  /* ─── PATCH NAV : ajouter bouton Corps (6 boutons) ─────────
-     Idempotent. Insère #nb-corps entre nb-nutr et nb-prf.
+  /* --- PATCH NAV : ajouter bouton Corps (6 boutons) ---------
+     Idempotent. Insere #nb-corps entre nb-nutr et nb-prf.
      Compresse les flex pour tenir sur largeur iPhone. */
   var _navAttempts = 0;
   function patchNav(){
@@ -15207,7 +15206,7 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
       if (_navAttempts < 50){
         setTimeout(patchNav, 200);
       } else {
-        console.error('[CORPS3] ❌ Nav not found after 50 attempts (10s) — abandoning');
+        console.error('[CORPS3] ❌ Nav not found after 50 attempts (10s) - abandoning');
       }
       return;
     }
@@ -15252,7 +15251,7 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
         document.head.appendChild(st);
       }
 
-      console.log('[CORPS3] ✅ Nav 6 boutons injecté (Corps inséré avant Profil)');
+      console.log('[CORPS3] ✅ Nav 6 boutons injecte (Corps insere avant Profil)');
     } catch(e){
       console.error('[CORPS3] ❌ patchNav fail:', e);
     }
@@ -15264,13 +15263,13 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
   } else {
     setTimeout(patchNav, 50);
   }
-  // Filets de sécurité
+  // Filets de securite
   setTimeout(patchNav, 500);
   setTimeout(patchNav, 1500);
   setTimeout(patchNav, 3000);
   setTimeout(patchNav, 6000);
 
-  // Observer : si la nav est ajoutée plus tard
+  // Observer : si la nav est ajoutee plus tard
   if (typeof MutationObserver === 'function'){
     var navObs = new MutationObserver(function(){
       if (document.getElementById('bottom-nav') && !document.getElementById('nb-corps')){
@@ -15283,21 +15282,21 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
     });
   }
 
-  console.log('[CORPS3] bootCorpsV3 loaded — flags:', window.SV2_FLAGS);
+  console.log('[CORPS3] bootCorpsV3 loaded - flags:', window.SV2_FLAGS);
 
 })();
 
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   WAVE 3.1 — Hero Readiness + État jour 3-tap
-   ───────────────────────────────────────────────────────────────────────────
-   • Hero "TON CORPS" Bebas + Readiness Score SVG (0-100)
-   • Carte 3-tap : Sommeil / Énergie / Stress
-   • Side-effects :
-       - Nutrition : ajuste kcal ±5% si fatigue/stress élevé
-       - Séances : signal lu par Autopilot existant
-   • Storage : U.corps3.daily[YYYY-MM-DD] = { sleep, energy, stress, ts }
-   ═══════════════════════════════════════════════════════════════════════════ */
+/* ===========================================================================
+   WAVE 3.1 - Hero Readiness + Etat jour 3-tap
+   ---------------------------------------------------------------------------
+   * Hero "TON CORPS" Bebas + Readiness Score SVG (0-100)
+   * Carte 3-tap : Sommeil / Energie / Stress
+   * Side-effects :
+       - Nutrition : ajuste kcal +/-5% si fatigue/stress eleve
+       - Seances : signal lu par Autopilot existant
+   * Storage : U.corps3.daily[YYYY-MM-DD] = { sleep, energy, stress, ts }
+   =========================================================================== */
 
 (function corps31_HeroEtatJour(){
   'use strict';
@@ -15311,15 +15310,15 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
     var d = u.corps3 && u.corps3.daily && u.corps3.daily[H.todayKey()];
     var base = 70;
     if (!d){
-      // Pas saisi aujourd'hui → on regarde streak séances + récup
+      // Pas saisi aujourd'hui -> on regarde streak seances + recup
       var streak = (u.streak && u.streak.current) || 0;
       base = 50 + Math.min(20, streak * 2);
     } else {
-      // Sleep 1-3, Energy 1-3, Stress 1-3 (1=mauvais, 3=bon — sauf stress inversé)
+      // Sleep 1-3, Energy 1-3, Stress 1-3 (1=mauvais, 3=bon - sauf stress inverse)
       var s = d.sleep || 2, e = d.energy || 2, st = (4 - (d.stress || 2));
       base = Math.round(((s + e + st) / 9) * 100);
     }
-    // Pénalité si dernière séance > 72h
+    // Penalite si derniere seance > 72h
     var lastSession = u.sv2 && u.sv2.lastSessionTs;
     if (lastSession){
       var hours = (Date.now() - lastSession) / 36e5;
@@ -15336,16 +15335,16 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
   }
   function readinessLabel(s){
     if (s >= 80) return 'EN FEU';
-    if (s >= 65) return 'PRÊT';
+    if (s >= 65) return 'PRET';
     if (s >= 45) return 'CORRECT';
-    if (s >= 30) return 'ENTAMÉ';
-    return 'À RÉCUP';
+    if (s >= 30) return 'ENTAME';
+    return 'A RECUP';
   }
 
   // SVG ring readiness
   function renderRing(score){
     var c = readinessColor(score);
-    var dash = (score / 100) * 314.16; // 2π × 50
+    var dash = (score / 100) * 314.16; // 2pi x 50
     return ''+
       '<svg viewBox="0 0 120 120" style="width:140px;height:140px;display:block;margin:0 auto">'+
         '<defs>'+
@@ -15365,7 +15364,7 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
       '</svg>';
   }
 
-  // 3-tap state cards (Sommeil / Énergie / Stress)
+  // 3-tap state cards (Sommeil / Energie / Stress)
   function renderTapCard(label, emoji, key, current){
     var opts = {
       sleep:  [{v:1,e:'😴',l:'Mal'},{v:2,e:'😐',l:'OK'},{v:3,e:'😊',l:'Top'}],
@@ -15392,7 +15391,7 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
     var label = readinessLabel(score);
     var pname = (u.profile && u.profile.prenom) || 'Champion';
     var done = today.sleep && today.energy && today.stress;
-    var adapted = done ? '<span class="c31-adapt">✨ Adapté par HIMA</span>' : '';
+    var adapted = done ? '<span class="c31-adapt">✨ Adapte par HIMA</span>' : '';
 
     return ''+
       '<style>'+
@@ -15419,14 +15418,14 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
       '<div class="c31-wrap">'+
         '<div class="c31-hero">'+
           '<h1>TON CORPS</h1>'+
-          '<p>Salut '+pname+', voilà ton état du jour</p>'+
+          '<p>Salut '+pname+', voila ton etat du jour</p>'+
         '</div>'+
         '<div class="c31-ring-wrap">'+renderRing(score)+'</div>'+
         '<div class="c31-label">'+label+'</div>'+
         '<div class="c31-card">'+
           '<div class="c31-card-h">Comment tu te sens ?</div>'+
           renderTapCard('Sommeil', '🌙', 'sleep', today.sleep)+
-          renderTapCard('Énergie', '⚡', 'energy', today.energy)+
+          renderTapCard('Energie', '⚡', 'energy', today.energy)+
           renderTapCard('Stress', '🌊', 'stress', today.stress)+
           adapted+
         '</div>'+
@@ -15442,27 +15441,27 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
     u.corps3.daily[t].ts = Date.now();
     H.setU(u);
 
-    // SIDE-EFFECT 1 : Nutrition kcal ±5%
+    // SIDE-EFFECT 1 : Nutrition kcal +/-5%
     try {
       var d = u.corps3.daily[t];
       if (d.energy && d.stress){
         var modifier = 0;
-        if (d.energy === 1) modifier -= 0.05;        // énergie basse → -5%
-        if (d.stress === 3) modifier -= 0.03;        // stress haut → -3%
-        if (d.sleep === 1)  modifier -= 0.02;        // mal dormi → -2%
-        if (d.energy === 3 && d.sleep === 3) modifier += 0.05; // au top → +5%
+        if (d.energy === 1) modifier -= 0.05;        // energie basse -> -5%
+        if (d.stress === 3) modifier -= 0.03;        // stress haut -> -3%
+        if (d.sleep === 1)  modifier -= 0.02;        // mal dormi -> -2%
+        if (d.energy === 3 && d.sleep === 3) modifier += 0.05; // au top -> +5%
         u.nv3 = u.nv3 || {};
         u.nv3.kcalModifier = Math.max(-0.10, Math.min(0.10, modifier));
         u.nv3.kcalModifierTs = Date.now();
         H.setU(u);
-        // Trigger re-render Nutrition si fonction présente
+        // Trigger re-render Nutrition si fonction presente
         if (typeof window.nv3RenderExtras === 'function'){
           try { window.nv3RenderExtras(); } catch(e){ log('nv3 rerender fail', e); }
         }
       }
     } catch(e){ log('side-effect nutrition fail', e); }
 
-    // SIDE-EFFECT 2 : Séances Autopilot (signal)
+    // SIDE-EFFECT 2 : Seances Autopilot (signal)
     try {
       window.SV2 = window.SV2 || {};
       window.SV2.dailyState = u.corps3.daily[t];
@@ -15491,14 +15490,14 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
     if (!slot){
       slot = document.createElement('div');
       slot.id = 'c31-slot';
-      // Insérer en TÊTE de t-corps (au-dessus du buildCorps existant)
+      // Inserer en TETE de t-corps (au-dessus du buildCorps existant)
       host.insertBefore(slot, host.firstChild);
     }
     slot.innerHTML = renderBlock();
     bind(slot);
   }
 
-  // Hook : override buildCorps (append en fin = 3.1 d'abord, contenu v2 après)
+  // Hook : override buildCorps (append en fin = 3.1 d'abord, contenu v2 apres)
   var _origBuildCorps = window.buildCorps;
   window.buildCorps = function(){
     try { if (typeof _origBuildCorps === 'function') _origBuildCorps.apply(this, arguments); }
@@ -15507,7 +15506,7 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
   };
 
   // Hook switchTab pour render au passage sur Corps
-  // NOTE: switchTab reçoit 't-corps' (préfixe t-)
+  // NOTE: switchTab recoit 't-corps' (prefixe t-)
   var _origSwitch = window.switchTab;
   if (typeof _origSwitch === 'function'){
     window.switchTab = function(name){
@@ -15519,7 +15518,7 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
     };
   }
 
-  // Render immédiat si déjà sur l'onglet (body[data-tab="corps"] strippé du t-)
+  // Render immediat si deja sur l'onglet (body[data-tab="corps"] strippe du t-)
   if (document.body && document.body.dataset.tab === 'corps'){
     setTimeout(renderInto, 50);
   }
@@ -15528,14 +15527,14 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
 })();
 
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   WAVE 3.2 — Mensurations 8 zones + Stats
-   ───────────────────────────────────────────────────────────────────────────
-   • 8 zones : poids, taille (cm), cou, épaules, poitrine, ventre, hanches, cuisse, biceps
-   • Modal saisie par zone avec ↑↓ delta vs dernière mesure
-   • Stats auto : IMC, ratio taille/hanches, masse maigre estimée
-   • Storage : U.corps3.measures[YYYY-MM-DD] = { weight, height, neck, ... }
-   ═══════════════════════════════════════════════════════════════════════════ */
+/* ===========================================================================
+   WAVE 3.2 - Mensurations 8 zones + Stats
+   ---------------------------------------------------------------------------
+   * 8 zones : poids, taille (cm), cou, epaules, poitrine, ventre, hanches, cuisse, biceps
+   * Modal saisie par zone avec ^v delta vs derniere mesure
+   * Stats auto : IMC, ratio taille/hanches, masse maigre estimee
+   * Storage : U.corps3.measures[YYYY-MM-DD] = { weight, height, neck, ... }
+   =========================================================================== */
 
 (function corps32_Mensurations(){
   'use strict';
@@ -15544,10 +15543,10 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
   var log = H.log;
 
   var ZONES = [
-    {k:'weight',   l:'Poids',     u:'kg',  emoji:'⚖️', step:0.1, range:[30,200]},
+    {k:'weight',   l:'Poids',     u:'kg',  emoji:'⚖', step:0.1, range:[30,200]},
     {k:'height',   l:'Taille',    u:'cm',  emoji:'📏', step:1,   range:[100,230]},
     {k:'neck',     l:'Cou',       u:'cm',  emoji:'🦒', step:0.5, range:[20,60]},
-    {k:'shoulders',l:'Épaules',   u:'cm',  emoji:'💪', step:1,   range:[70,160]},
+    {k:'shoulders',l:'Epaules',   u:'cm',  emoji:'💪', step:1,   range:[70,160]},
     {k:'chest',    l:'Poitrine',  u:'cm',  emoji:'🎯', step:0.5, range:[60,160]},
     {k:'waist',    l:'Ventre',    u:'cm',  emoji:'🪢', step:0.5, range:[50,160]},
     {k:'hips',     l:'Hanches',   u:'cm',  emoji:'🍑', step:0.5, range:[60,180]},
@@ -15555,7 +15554,7 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
     {k:'biceps',   l:'Biceps',    u:'cm',  emoji:'💥', step:0.5, range:[20,55]}
   ];
 
-  // Récupère dernière mesure d'une zone
+  // Recupere derniere mesure d'une zone
   function lastValue(k){
     var u = H.getU();
     var dates = Object.keys(u.corps3.measures || {}).sort().reverse();
@@ -15583,7 +15582,7 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
     return null;
   }
 
-  // Stats dérivées
+  // Stats derivees
   function computeStats(){
     var w = lastValue('weight'); var h = lastValue('height');
     var waist = lastValue('waist'); var hips = lastValue('hips'); var neck = lastValue('neck');
@@ -15597,7 +15596,7 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
         if (v < 18.5) return 'Maigre';
         if (v < 25) return 'Normal';
         if (v < 30) return 'Surpoids';
-        return 'Obésité';
+        return 'Obesite';
       })(parseFloat(stats.imc));
     }
     if (waist && hips){
@@ -15652,9 +15651,9 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
         '<div class="c32-ttl">'+zone.l.toUpperCase()+'</div>'+
         '<div class="c32-sub">SAISIS TA MESURE</div>'+
         '<div class="c32-disp"><span id="c32-val">'+startVal.toFixed(zone.step<1?1:0)+'</span><span class="c32-unit">'+zone.u+'</span></div>'+
-        '<div class="c32-delta flat" id="c32-delta">—</div>'+
+        '<div class="c32-delta flat" id="c32-delta">-</div>'+
         '<div class="c32-stepper">'+
-          '<button class="c32-step" data-d="-1">−</button>'+
+          '<button class="c32-step" data-d="-1">-</button>'+
           '<button class="c32-step" data-d="1">+</button>'+
         '</div>'+
         '<div class="c32-actions">'+
@@ -15670,9 +15669,9 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
     function refresh(){
       modal.querySelector('#c32-val').textContent = current.toFixed(zone.step<1?1:0);
       var d = modal.querySelector('#c32-delta');
-      if (refLast == null){ d.textContent = '— première mesure'; d.className = 'c32-delta flat'; return; }
+      if (refLast == null){ d.textContent = '- premiere mesure'; d.className = 'c32-delta flat'; return; }
       var diff = current - refLast;
-      if (Math.abs(diff) < 0.01){ d.textContent = '= dernière mesure'; d.className = 'c32-delta flat'; }
+      if (Math.abs(diff) < 0.01){ d.textContent = '= derniere mesure'; d.className = 'c32-delta flat'; }
       else if (diff > 0){ d.textContent = '+'+diff.toFixed(1)+zone.u; d.className = 'c32-delta up'; }
       else { d.textContent = diff.toFixed(1)+zone.u; d.className = 'c32-delta dn'; }
     }
@@ -15708,14 +15707,14 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
       // Sync poids dans U.weights aussi (pour Wave 3.3 graph)
       if (zone.k === 'weight'){
         u.corps3.weights[t] = current;
-        // Sync profile pour cohérence avec reste app
+        // Sync profile pour coherence avec reste app
         u.profile = u.profile || {};
         u.profile.poids = current;
       }
       H.setU(u);
       modal.remove();
       renderInto();
-      // Trigger 3.3 si présent
+      // Trigger 3.3 si present
       try { if (typeof window.corps33Render === 'function') window.corps33Render(); } catch(e){}
     });
   }
@@ -15727,7 +15726,7 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
     if (!slot){
       slot = document.createElement('div');
       slot.id = 'c32-slot';
-      // Après c31-slot
+      // Apres c31-slot
       var c31 = host.querySelector('#c31-slot');
       if (c31 && c31.nextSibling) host.insertBefore(slot, c31.nextSibling);
       else host.insertBefore(slot, host.firstChild);
@@ -15736,7 +15735,7 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
     var stats = computeStats();
     var statsHtml = '';
     if (stats.imc){
-      statsHtml += '<div class="c32-stat"><div class="c32-stat-v">'+stats.imc+'</div><div class="c32-stat-l">IMC · '+stats.imcLabel+'</div></div>';
+      statsHtml += '<div class="c32-stat"><div class="c32-stat-v">'+stats.imc+'</div><div class="c32-stat-l">IMC . '+stats.imcLabel+'</div></div>';
     }
     if (stats.whr){
       statsHtml += '<div class="c32-stat"><div class="c32-stat-v">'+stats.whr+'</div><div class="c32-stat-l">RATIO T/H</div></div>';
@@ -15760,7 +15759,7 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
           deltaHtml = '<span class="c32-z-delta '+dir+'">'+(d>0?'+':'')+d.toFixed(1)+'</span>';
         }
       }
-      var v = last ? last.val.toFixed(z.step<1?1:0) : '—';
+      var v = last ? last.val.toFixed(z.step<1?1:0) : '-';
       return '<button class="c32-z" data-zone="'+z.k+'">'+
         '<div class="c32-z-emj">'+z.emoji+'</div>'+
         '<div class="c32-z-l">'+z.l+'</div>'+
@@ -15826,13 +15825,13 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
 })();
 
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   WAVE 3.3 — Évolution poids + 1RM tracker
-   ───────────────────────────────────────────────────────────────────────────
-   • Graph poids 30j SVG (line + zone) + tendance kg/sem
-   • 1RM des 5 lifts core sync depuis SV2 séances (Epley déjà calculé)
-   • Switcher période 30j / 90j / 365j
-   ═══════════════════════════════════════════════════════════════════════════ */
+/* ===========================================================================
+   WAVE 3.3 - Evolution poids + 1RM tracker
+   ---------------------------------------------------------------------------
+   * Graph poids 30j SVG (line + zone) + tendance kg/sem
+   * 1RM des 5 lifts core sync depuis SV2 seances (Epley deja calcule)
+   * Switcher periode 30j / 90j / 365j
+   =========================================================================== */
 
 (function corps33_EvoPoidsRM(){
   'use strict';
@@ -15841,10 +15840,10 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
   var log = H.log;
 
   var BIG_LIFTS = [
-    {k:'squat',  l:'Squat',          emoji:'🏋️'},
-    {k:'bench',  l:'Développé couché', emoji:'💪'},
-    {k:'deadlift',l:'Soulevé de terre',emoji:'🔥'},
-    {k:'ohp',    l:'OHP',            emoji:'☝️'},
+    {k:'squat',  l:'Squat',          emoji:'🏋'},
+    {k:'bench',  l:'Developpe couche', emoji:'💪'},
+    {k:'deadlift',l:'Souleve de terre',emoji:'🔥'},
+    {k:'ohp',    l:'OHP',            emoji:'☝'},
     {k:'row',    l:'Rowing',         emoji:'🚣'}
   ];
 
@@ -15867,7 +15866,7 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
   }
 
   function getPRs(){
-    // Lit window.SV2.history si présent (séances v3 stocke 1RM Epley)
+    // Lit window.SV2.history si present (seances v3 stocke 1RM Epley)
     var u = H.getU();
     var stored = u.corps3.prs || {};
     try {
@@ -15904,7 +15903,7 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
     var min = Math.min.apply(null, vals);
     var max = Math.max.apply(null, vals);
     if (!isFinite(min) || !isFinite(max)){
-      return '<div class="c33-empty">Données invalides</div>';
+      return '<div class="c33-empty">Donnees invalides</div>';
     }
     var span = Math.max(0.5, max - min);
     var minY = min - span*0.2, maxY = max + span*0.2;
@@ -15951,7 +15950,7 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
     var trend = trendKgPerWeek(series);
     var trendHtml = '';
     if (trend != null){
-      var arrow = trend > 0.05 ? '↑' : trend < -0.05 ? '↓' : '→';
+      var arrow = trend > 0.05 ? '^' : trend < -0.05 ? 'v' : '->';
       var cls = Math.abs(trend) < 0.05 ? 'flat' : (trend > 0 ? 'up' : 'dn');
       trendHtml = '<div class="c33-trend '+cls+'">'+arrow+' '+(trend>0?'+':'')+trend.toFixed(2)+' kg/sem</div>';
     }
@@ -15959,7 +15958,7 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
     var prs = getPRs();
     var prsHtml = BIG_LIFTS.map(function(L){
       var pr = prs[L.k];
-      var v = pr ? Math.round(pr.val) : '—';
+      var v = pr ? Math.round(pr.val) : '-';
       var dt = pr ? pr.date : '';
       return '<div class="c33-pr">'+
         '<div class="c33-pr-emj">'+L.emoji+'</div>'+
@@ -15995,7 +15994,7 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
         '<div class="c33-h">PROGRESSION<div class="c33-h-line"></div></div>'+
         '<div class="c33-card">'+
           '<div class="c33-row">'+
-            '<div class="c33-row-l">Évolution poids</div>'+
+            '<div class="c33-row-l">Evolution poids</div>'+
             '<div class="c33-periods">'+
               '<button class="c33-pp'+(currentPeriod===30?' on':'')+'" data-p="30">30J</button>'+
               '<button class="c33-pp'+(currentPeriod===90?' on':'')+'" data-p="90">90J</button>'+
@@ -16039,13 +16038,13 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
 })();
 
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   WAVE 3.4 — Timeline photos + Avant/Après slider
-   ───────────────────────────────────────────────────────────────────────────
-   • Timeline photos hebdo (lecture U.weeklyPhotos ou U.corps3.photos)
-   • Slider Avant/Après drag horizontal (CSS clip-path)
-   • Export carte partage canvas → blob → navigator.share
-   ═══════════════════════════════════════════════════════════════════════════ */
+/* ===========================================================================
+   WAVE 3.4 - Timeline photos + Avant/Apres slider
+   ---------------------------------------------------------------------------
+   * Timeline photos hebdo (lecture U.weeklyPhotos ou U.corps3.photos)
+   * Slider Avant/Apres drag horizontal (CSS clip-path)
+   * Export carte partage canvas -> blob -> navigator.share
+   =========================================================================== */
 
 (function corps34_TimelinePhotos(){
   'use strict';
@@ -16055,11 +16054,11 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
 
   function getPhotos(){
     var u = H.getU();
-    // Source 1 : Tab Accueil photos hebdo si présent
+    // Source 1 : Tab Accueil photos hebdo si present
     var fromAccueil = u.weeklyPhotos || u.photosHebdo || [];
     var fromCorps = u.corps3 && u.corps3.photos || {};
     var arr = [];
-    // Format unifié : { date: 'YYYY-MM-DD', dataUrl: '...' }
+    // Format unifie : { date: 'YYYY-MM-DD', dataUrl: '...' }
     if (Array.isArray(fromAccueil)){
       fromAccueil.forEach(function(p){
         if (p && p.dataUrl) arr.push({ date: p.date || H.todayKey(), dataUrl: p.dataUrl });
@@ -16119,8 +16118,8 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
         '.c34-tag.r{right:14px}'+
       '</style>'+
       '<div class="c34-top">'+
-        '<button class="c34-close" id="c34-x">×</button>'+
-        '<div class="c34-ttl">AVANT / APRÈS</div>'+
+        '<button class="c34-close" id="c34-x">x</button>'+
+        '<div class="c34-ttl">AVANT / APRES</div>'+
         '<button class="c34-share" id="c34-shr">Partager</button>'+
       '</div>'+
       '<div class="c34-stage" id="c34-stg">'+
@@ -16128,7 +16127,7 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
         '<img class="c34-img c34-after" id="c34-after" src="'+b.dataUrl+'"/>'+
         '<div class="c34-tag l">'+a.date+'</div>'+
         '<div class="c34-tag r">'+b.date+'</div>'+
-        '<div class="c34-handle" id="c34-h"><div class="c34-grip">↔</div></div>'+
+        '<div class="c34-handle" id="c34-h"><div class="c34-grip"><-></div></div>'+
       '</div>';
     document.body.appendChild(modal);
 
@@ -16174,10 +16173,10 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
       ctx.fillStyle = '#F0F0FF';
       ctx.font = 'bold 60px sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText('AVANT / APRÈS', 540, 80);
+      ctx.fillText('AVANT / APRES', 540, 80);
       ctx.font = '24px sans-serif';
       ctx.fillStyle = 'rgba(240,240,255,0.5)';
-      ctx.fillText('HIMA · ton transformeur', 540, 115);
+      ctx.fillText('HIMA . ton transformeur', 540, 115);
       // Charge images
       var imA = new Image(), imB = new Image();
       var loaded = 0;
@@ -16197,9 +16196,9 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
         ctx.fillText('hima.app', 540, 1020);
 
         c.toBlob(function(blob){
-          if (!blob) return alert('Export raté');
+          if (!blob) return alert('Export rate');
           if (navigator.share && navigator.canShare && navigator.canShare({files:[new File([blob],'avant-apres.png',{type:'image/png'})]})){
-            navigator.share({ files:[new File([blob],'avant-apres.png',{type:'image/png'})], title:'Mon avant/après HIMA' });
+            navigator.share({ files:[new File([blob],'avant-apres.png',{type:'image/png'})], title:'Mon avant/apres HIMA' });
           } else {
             var url = URL.createObjectURL(blob);
             var a = document.createElement('a'); a.href = url; a.download = 'avant-apres.png'; a.click();
@@ -16229,7 +16228,7 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
     var photos = getPhotos();
     var emptyHtml = '';
     if (!photos.length){
-      emptyHtml = '<div class="c34-empty">Pas de photo hebdo encore.<br><span>Prends une photo pour démarrer ta transformation.</span></div>';
+      emptyHtml = '<div class="c34-empty">Pas de photo hebdo encore.<br><span>Prends une photo pour demarrer ta transformation.</span></div>';
     }
 
     var thumbs = photos.map(function(p, i){
@@ -16245,9 +16244,9 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
     var canCompare = (selA != null && selB != null && selA !== selB);
     var compareBtn = '';
     if (canCompare){
-      compareBtn = '<button class="c34-cmp" id="c34-go">Comparer ↔</button>';
+      compareBtn = '<button class="c34-cmp" id="c34-go">Comparer <-></button>';
     } else if (photos.length >= 2){
-      compareBtn = '<div class="c34-hint">Sélectionne 2 photos pour comparer</div>';
+      compareBtn = '<div class="c34-hint">Selectionne 2 photos pour comparer</div>';
     }
 
     slot.innerHTML = ''+
@@ -16312,15 +16311,15 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
 })();
 
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   WAVE 3.5 — Coach Mode IA (analyse transformation)
-   ───────────────────────────────────────────────────────────────────────────
-   • Bouton "Analyser ma transformation"
-   • Call /api/chat avec stats agrégées (poids, mensurations, état jour)
-   • + dernière photo (base64) si dispo (modèle vision via API serveur)
-   • Output : 3 insights structurés + 1 plan d'action
-   • Cache 24h pour éviter spam API
-   ═══════════════════════════════════════════════════════════════════════════ */
+/* ===========================================================================
+   WAVE 3.5 - Coach Mode IA (analyse transformation)
+   ---------------------------------------------------------------------------
+   * Bouton "Analyser ma transformation"
+   * Call /api/chat avec stats agregees (poids, mensurations, etat jour)
+   * + derniere photo (base64) si dispo (modele vision via API serveur)
+   * Output : 3 insights structures + 1 plan d'action
+   * Cache 24h pour eviter spam API
+   =========================================================================== */
 
 (function corps35_CoachIA(){
   'use strict';
@@ -16380,11 +16379,11 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
     return ''+
       'Tu es coach HIMA expert. Analyse cette transformation en 3 insights + 1 plan action.\n\n'+
       'Profil: '+JSON.stringify(ctx.profile)+'\n'+
-      'Mensurations (première vs dernière): '+JSON.stringify(ctx.measures)+'\n'+
+      'Mensurations (premiere vs derniere): '+JSON.stringify(ctx.measures)+'\n'+
       'Tendance poids: '+(ctx.weightTrend ? ctx.weightTrend+'kg' : 'inconnue')+'\n'+
-      'État aujourd\'hui (sleep/energy/stress 1-3): '+JSON.stringify(ctx.dailyState)+'\n'+
+      'Etat aujourd\'hui (sleep/energy/stress 1-3): '+JSON.stringify(ctx.dailyState)+'\n'+
       'Streak: '+ctx.streak+' jours\n\n'+
-      'Réponds STRICTEMENT en JSON sans texte autour:\n'+
+      'Reponds STRICTEMENT en JSON sans texte autour:\n'+
       '{\n'+
       '  "verdict": "1 phrase tutoiement max 80c",\n'+
       '  "insights": [\n'+
@@ -16392,7 +16391,7 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
       '    {"emoji":"⚡","title":"3-4 mots","detail":"1 phrase max 100c"},\n'+
       '    {"emoji":"🔥","title":"3-4 mots","detail":"1 phrase max 100c"}\n'+
       '  ],\n'+
-      '  "action": {"title":"plan 3-5 mots","steps":["étape 1","étape 2","étape 3"]}\n'+
+      '  "action": {"title":"plan 3-5 mots","steps":["etape 1","etape 2","etape 3"]}\n'+
       '}';
   }
 
@@ -16403,7 +16402,7 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        system: 'Tu réponds UNIQUEMENT en JSON valide. Pas de markdown, pas de préambule.',
+        system: 'Tu reponds UNIQUEMENT en JSON valide. Pas de markdown, pas de preambule.',
         messages: [{ role: 'user', content: prompt }],
         max_tokens: 600
       })
@@ -16412,7 +16411,7 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
       if (j.content && Array.isArray(j.content)){
         txt = j.content.filter(function(x){return x.type==='text';}).map(function(x){return x.text;}).join('');
       } else if (j.text){ txt = j.text; }
-      // Strip ```json fences si présents
+      // Strip ```json fences si presents
       txt = txt.replace(/```json|```/g, '').trim();
       var data = JSON.parse(txt);
       setCached(data);
@@ -16426,10 +16425,10 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
       verdict: 'Continue, t\'es sur la bonne voie.',
       insights: [
         { emoji:'🎯', title:'Cap maintenu', detail: ctx.streak ? 'Streak '+ctx.streak+' jours, garde le rythme.' : 'Lance ta routine pour activer les insights.' },
-        { emoji:'⚡', title:'Énergie OK', detail: 'Surveille ton sommeil pour pousser plus fort.' },
-        { emoji:'🔥', title:'Prochaine palier', detail: 'Vise +1 séance cette semaine pour casser le plateau.' }
+        { emoji:'⚡', title:'Energie OK', detail: 'Surveille ton sommeil pour pousser plus fort.' },
+        { emoji:'🔥', title:'Prochaine palier', detail: 'Vise +1 seance cette semaine pour casser le plateau.' }
       ],
-      action: { title: 'Plan 7 jours', steps: ['3 séances cette semaine', 'Saisir poids 2x', 'Photo dimanche matin'] }
+      action: { title: 'Plan 7 jours', steps: ['3 seances cette semaine', 'Saisir poids 2x', 'Photo dimanche matin'] }
     };
   }
 
@@ -16445,10 +16444,10 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
           }).join('')+
         '</div>'+
         (data.action ? '<div class="c35-action">'+
-          '<div class="c35-action-t">▸ '+(data.action.title||'PLAN')+'</div>'+
+          '<div class="c35-action-t">> '+(data.action.title||'PLAN')+'</div>'+
           '<ul>'+(data.action.steps||[]).map(function(s){return '<li>'+s+'</li>';}).join('')+'</ul>'+
         '</div>' : '')+
-        '<div class="c35-meta">Généré il y a quelques instants · re-analyse dispo dans 24h</div>'+
+        '<div class="c35-meta">Genere il y a quelques instants . re-analyse dispo dans 24h</div>'+
       '</div>';
   }
 
