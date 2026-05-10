@@ -15133,9 +15133,7 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
 </script>
 
 <script>
-/* HIMA - WAVE 3 / TAB CORPS v3 (5 sub-waves) + PATCH NAV 6 boutons
-   v0.4 - ASCII-only header to fix syntax error at boot
-*/
+/* HIMA - WAVE 3 / TAB CORPS v3 - v0.5 - escape /script in comments */
 
 /* ===========================================================================
    HIMA - WAVE 3 / TAB CORPS v3 (5 sub-waves)
@@ -15143,7 +15141,7 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
    Architecture : 5 IIFE independantes, override buildCorps (append en fin).
    Kill switches : window.SV2_FLAGS.corps31 / corps32 / corps33 / corps34 / corps35
    Storage : hima8 -> U.corps3 = { daily, measures, weights, prs, photos }
-   Coller en bloc juste avant </script> final. Ordre = 3.1 -> 3.5.
+   Coller en bloc juste avant <\/script> final. Ordre = 3.1 -> 3.5.
    Aucune cascade : si une sub-wave casse, desactive son flag et les autres tournent.
    =========================================================================== */
 
