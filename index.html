@@ -17555,6 +17555,593 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
 
 </script>
 
+<script>
+/* HIMA - WAVE 6.3 - REPLAY VIDEO ANNOTE
+   v6.3.0 - patches W61 (blob capture) + W62 (timestamps) + replay UI
+*/
+
+/* HIMA - WAVE 6.3 - REPLAY VIDEO ANNOTE
+   - Patche Wave 6.1 : stocke le blob video (pas seulement les frames)
+   - Patche Wave 6.2 : prompt enrichi avec timestamps + annotations spatiales
+   - Nouveau modal replay : video loop + overlays SVG + sous-titres timestampes + timeline
+   - Controle vitesse 0.25x / 0.5x / 1x (default 0.5x)
+   - Kill switch : window.SV2_FLAGS.formCheckReplay
+*/
+
+(function wave6_3_AnnotatedReplay(){
+  'use strict';
+  window.SV2_FLAGS = window.SV2_FLAGS || {};
+  if (window.SV2_FLAGS.formCheckReplay === false) return;
+  window.SV2_FLAGS.formCheckReplay = true;
+
+  var KEY = 'hima8';
+  function getU(){
+    try { return JSON.parse(localStorage.getItem(KEY) || '{}') || {}; }
+    catch(e){ return {}; }
+  }
+  function setU(u){
+    try { localStorage.setItem(KEY, JSON.stringify(u)); } catch(e){}
+  }
+
+  // --- PATCH WAVE 6.1 : capture blob video URL ----------
+  // On installe un sniffer sur Wave 6.1 pour recuperer le blob avant qu'il
+  // soit garbage collecte. On stocke un objectURL temporaire (memoire seulement,
+  // pas localStorage car video trop lourde).
+  var lastVideoBlob = null;
+  var lastVideoURL = null;
+
+  function installW61Patch(){
+    if (window.__w63_w61_patched) return;
+    if (!window.HIMA_FORM_CHECK){
+      setTimeout(installW61Patch, 200);
+      return;
+    }
+
+    // Sniffer : on intercepte la creation du Blob dans onRecordingStopped
+    // En pratique, le plus propre est de patcher extractFramesFromBlob
+    // mais on n'a pas acces direct. On va utiliser une autre approche :
+    // detecter quand un nouveau form check est sauve en localStorage
+    // et associer le blob courant.
+
+    // Approche simple : intercepter MediaRecorder.prototype.stop pour
+    // capturer le dernier blob avant qu'il parte en analyse
+    var origMR = window.MediaRecorder;
+    if (!origMR || origMR.__w63_patched) {
+      window.__w63_w61_patched = true;
+      return;
+    }
+
+    // Ne pas re-patcher MediaRecorder (risque). Plutot : exposer une fct
+    // que Wave 6.1 peut appeler. On patche en monkey-patching via setter.
+    window.__w63_captureBlob = function(blob){
+      try {
+        if (lastVideoURL) URL.revokeObjectURL(lastVideoURL);
+        lastVideoBlob = blob;
+        lastVideoURL = URL.createObjectURL(blob);
+        console.log('[W63] blob captured, size:', (blob.size/1024).toFixed(1)+'KB');
+      } catch(e){ console.error('[W63] capture fail', e); }
+    };
+
+    window.__w63_w61_patched = true;
+    console.log('[W63] capture hook ready');
+  }
+
+  // Pour que ce patch soit utile, il faut que Wave 6.1 appelle
+  // window.__w63_captureBlob(blob) avant onRecordingStopped.
+  // Solution alternative : on observe la creation de l'URL avec un hook
+  // sur Blob constructor... trop intrusif.
+  // BEST APPROACH : on remplace la fonction onRecordingStopped via Object.defineProperty
+  // ou on remonkey-patch HIMA_FORM_CHECK.
+  // SIMPLEST : on patche en surveillant la prop `state.chunks` exposee.
+  // En pratique Wave 6.1 ne l'expose pas. Donc on intercepte via MediaRecorder
+  // event listener push.
+
+  // Patch MediaRecorder pour capter automatiquement
+  function patchMediaRecorder(){
+    if (window.MediaRecorder && !window.MediaRecorder.__w63_patched){
+      var OriginalMR = window.MediaRecorder;
+      var Wrapped = function(stream, opts){
+        var mr = new OriginalMR(stream, opts);
+        var chunks = [];
+        var origAddEventListener = mr.addEventListener.bind(mr);
+        var dataHandler = function(e){
+          if (e.data && e.data.size > 0) chunks.push(e.data);
+        };
+        var stopHandler = function(){
+          try {
+            if (chunks.length){
+              var blob = new Blob(chunks, { type: mr.mimeType || 'video/webm' });
+              if (window.__w63_captureBlob) window.__w63_captureBlob(blob);
+            }
+          } catch(e){}
+        };
+        mr.addEventListener('dataavailable', dataHandler);
+        mr.addEventListener('stop', stopHandler);
+        return mr;
+      };
+      // Copy static methods (isTypeSupported)
+      Wrapped.isTypeSupported = OriginalMR.isTypeSupported.bind(OriginalMR);
+      Wrapped.prototype = OriginalMR.prototype;
+      Wrapped.__w63_patched = true;
+      window.MediaRecorder = Wrapped;
+      console.log('[W63] MediaRecorder wrapped for blob capture');
+    }
+  }
+
+  // Init patches
+  if (document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', function(){
+      installW61Patch();
+      patchMediaRecorder();
+    });
+  } else {
+    installW61Patch();
+    patchMediaRecorder();
+  }
+
+  // --- PATCH WAVE 6.2 : enriched prompt + replay trigger -
+  function patchWave62(){
+    if (window.__w63_w62_patched) return;
+    if (typeof window.w62AnalyzeFormCheck !== 'function'){
+      setTimeout(patchWave62, 200);
+      return;
+    }
+
+    var origAnalyze = window.w62AnalyzeFormCheck;
+
+    window.w62AnalyzeFormCheck = function(exoCtx, frames){
+      // Enrichir l'exoCtx pour passer la duree video au prompt
+      var u = getU();
+      var arr = u.formChecks && u.formChecks[(exoCtx && exoCtx.exoId) || 'unknown'];
+      var duration = 15; // default
+      if (arr && arr.length){
+        duration = (arr[arr.length-1].duration || 15000) / 1000;
+      }
+      exoCtx = exoCtx || {};
+      exoCtx.__videoDuration = duration;
+      exoCtx.__videoURL = lastVideoURL;
+
+      // Stocker l'URL temp dans le formCheck recent
+      try {
+        if (lastVideoURL && arr && arr.length){
+          arr[arr.length-1].videoURL = lastVideoURL; // memoire seulement
+        }
+      } catch(e){}
+
+      // Patch fetch de Wave 6.2 : intercepter pour ajouter timestamps au prompt
+      var origFetch = window.fetch;
+      var pendingFix = true;
+      window.fetch = function(url, opts){
+        if (pendingFix && url === '/api/chat' && opts && opts.body){
+          try {
+            var body = JSON.parse(opts.body);
+            // Verifier si c'est un appel form check (presence d'image + prompt JSON form)
+            var lastMsg = body.messages && body.messages[body.messages.length-1];
+            if (lastMsg && Array.isArray(lastMsg.content)){
+              var hasImage = lastMsg.content.some(function(c){return c.type==='image';});
+              var textContent = lastMsg.content.find(function(c){return c.type==='text';});
+              if (hasImage && textContent && /score.*verdict.*points/i.test(textContent.text)){
+                // ENRICHIR LE PROMPT
+                textContent.text = enrichedPrompt(exoCtx, duration);
+                opts.body = JSON.stringify(body);
+                pendingFix = false;
+                window.fetch = origFetch; // restaurer
+                console.log('[W63] prompt enriched with timestamps');
+              }
+            }
+          } catch(e){
+            console.warn('[W63] prompt enrichment failed', e);
+            window.fetch = origFetch;
+          }
+        }
+        return origFetch.apply(this, arguments);
+      };
+
+      // Restaurer le fetch apres 5s au cas ou l'interception ne match pas
+      setTimeout(function(){
+        if (window.fetch !== origFetch) window.fetch = origFetch;
+      }, 5000);
+
+      // Hook le rendu pour ajouter le bouton "Voir replay annote"
+      patchResultRender(exoCtx);
+
+      return origAnalyze.apply(this, arguments);
+    };
+
+    window.__w63_w62_patched = true;
+    console.log('[W63] Wave 6.2 patched');
+  }
+
+  function enrichedPrompt(exoCtx, duration){
+    var u = getU();
+    var profile = u.profile || {};
+    var sex = profile.sexe || 'M';
+    var age = profile.age || '';
+    var weight = profile.poids || '';
+    var goal = profile.objectif || 'forme';
+    var exoName = (exoCtx && exoCtx.exoName) || 'exercice';
+    var dur = (duration || 15).toFixed(1);
+
+    return ''+
+      'Tu es coach sportif expert (formation kine + S&C). Analyse ces 6 frames d\'un set de "'+exoName+'". '+
+      'Profil: '+sex+', '+age+'ans, '+weight+'kg, objectif '+goal+'. '+
+      'Sois pedagogue mais precis (style kine pro, pas pote). Tutoiement obligatoire. '+
+      'Termes techniques OK si necessaire.\n\n'+
+      'IMPORTANT: La video dure '+dur+'s. Les 6 frames sont reparties dans la video aux timestamps:\n'+
+      '- Frame 1: '+(dur/12).toFixed(1)+'s\n'+
+      '- Frame 2: '+(dur*3/12).toFixed(1)+'s\n'+
+      '- Frame 3: '+(dur*5/12).toFixed(1)+'s\n'+
+      '- Frame 4: '+(dur*7/12).toFixed(1)+'s\n'+
+      '- Frame 5: '+(dur*9/12).toFixed(1)+'s\n'+
+      '- Frame 6: '+(dur*11/12).toFixed(1)+'s\n\n'+
+      'Reponds STRICTEMENT en JSON valide, sans texte autour, sans markdown:\n'+
+      '{\n'+
+      '  "score": <0-100>,\n'+
+      '  "verdict": "<1-2 phrases bilan, max 140c>",\n'+
+      '  "points": [\n'+
+      '    {\n'+
+      '      "type": "good|warn|tip",\n'+
+      '      "emoji": "<emoji>",\n'+
+      '      "title": "<3-4 mots>",\n'+
+      '      "detail": "<obs precise + correction technique, max 100c>",\n'+
+      '      "timestamp": <seconde precise dans la video ou ce point est visible, ex 2.8>,\n'+
+      '      "zone": "<haut|milieu|bas>-<gauche|centre|droite>",\n'+
+      '      "annotation": "<texte court qui pop a ce timestamp, max 30c>"\n'+
+      '    }\n'+
+      '  ],\n'+
+      '  "muscles_engaged": ["<muscle1>", "<muscle2>"],\n'+
+      '  "missing_engagement": ["<muscle a activer plus>"],\n'+
+      '  "next_set_action": "<consigne pour le prochain set, 1 phrase>"\n'+
+      '}\n\n'+
+      'Donne 3 a 5 points avec timestamps precis (pas tous au meme moment). '+
+      'Le timestamp DOIT correspondre au moment exact ou le point est visible dans la video. '+
+      'La zone localise spatialement (haut/milieu/bas du corps, et gauche/centre/droite). '+
+      'L\'annotation est un texte court qui apparaitra en overlay au timestamp donne (ex: "Genou rentre", "Dos rond", "Bonne profondeur").\n\n'+
+      'Si cadrage insuffisant, reponds:\n'+
+      '{"score":0,"verdict":"Cadrage insuffisant. Refilme en pied.","points":[],"muscles_engaged":[],"missing_engagement":[],"next_set_action":"Pose le tel plus loin et cadre tout ton corps."}';
+  }
+
+  // --- PATCH RESULT RENDER : add "View replay" button ----
+  function patchResultRender(exoCtx){
+    // On observe quand le modal Wave 6.2 affiche un resultat,
+    // et on injecte un bouton "Voir replay annote"
+    var attempts = 0;
+    var checkInterval = setInterval(function(){
+      attempts++;
+      if (attempts > 60){ clearInterval(checkInterval); return; } // 30s timeout
+
+      var resultActions = document.querySelector('.w62-actions');
+      if (resultActions && !resultActions.querySelector('.w63-replay-btn')){
+        // Inject le bouton
+        var btn = document.createElement('button');
+        btn.className = 'w62-btn w63-replay-btn';
+        btn.style.cssText = 'grid-column:1/-1;background:linear-gradient(135deg,rgba(221,226,85,0.18),rgba(249,136,5,0.18));border:1px solid rgba(221,226,85,0.4);color:#F0F0FF;margin-top:8px';
+        btn.textContent = '> VOIR LE REPLAY ANNOTE';
+        btn.addEventListener('click', function(){
+          var u = getU();
+          var arr = u.formChecks && u.formChecks[(exoCtx && exoCtx.exoId) || 'unknown'];
+          if (!arr || !arr.length){
+            alert('Pas de donnees pour le replay.');
+            return;
+          }
+          var fc = arr[arr.length-1];
+          openReplay(fc, exoCtx);
+        });
+        resultActions.appendChild(btn);
+        clearInterval(checkInterval);
+        console.log('[W63] replay button injected');
+      }
+    }, 500);
+  }
+
+  // --- REPLAY MODAL -------------------------------------
+  function injectStyles(){
+    if (document.getElementById('w63-style')) return;
+    var s = document.createElement('style');
+    s.id = 'w63-style';
+    s.textContent = ''+
+      '.w63-modal{position:fixed;inset:0;z-index:10000;background:#000;display:none;'+
+      'flex-direction:column;animation:w63fade 0.25s}'+
+      '.w63-modal.on{display:flex}'+
+      '@keyframes w63fade{from{opacity:0}to{opacity:1}}'+
+
+      '.w63-top{position:absolute;top:0;left:0;right:0;padding:14px 16px;display:flex;'+
+      'justify-content:space-between;align-items:center;z-index:20;'+
+      'background:linear-gradient(180deg,rgba(0,0,0,0.7),transparent)}'+
+      '.w63-close{background:rgba(0,0,0,0.5);border:none;color:#fff;width:36px;height:36px;'+
+      'border-radius:50%;font-size:18px;cursor:pointer;backdrop-filter:blur(10px)}'+
+      '.w63-ttl{font-family:Bebas Neue,sans-serif;font-size:16px;letter-spacing:2px;color:#fff}'+
+
+      '.w63-stage{flex:1;position:relative;background:#000;display:flex;align-items:center;'+
+      'justify-content:center;overflow:hidden}'+
+      '.w63-video{max-width:100%;max-height:100%;width:auto;height:auto;display:block}'+
+      '.w63-svg-overlay{position:absolute;inset:0;pointer-events:none;width:100%;height:100%}'+
+
+      '.w63-subtitle{position:absolute;bottom:140px;left:50%;transform:translateX(-50%);'+
+      'background:rgba(0,0,0,0.85);backdrop-filter:blur(10px);color:#fff;padding:10px 18px;'+
+      'border-radius:14px;font-family:DM Sans;font-size:14px;font-weight:600;text-align:center;'+
+      'max-width:85%;line-height:1.4;border-left:3px solid #F98805;'+
+      'opacity:0;transition:opacity 0.3s;letter-spacing:0.3px;z-index:15}'+
+      '.w63-subtitle.on{opacity:1}'+
+      '.w63-subtitle.good{border-left-color:#DDE255}'+
+      '.w63-subtitle.warn{border-left-color:#F98805}'+
+      '.w63-subtitle.tip{border-left-color:#F35695}'+
+
+      '.w63-controls{position:absolute;bottom:0;left:0;right:0;padding:18px 16px 28px;'+
+      'background:linear-gradient(0deg,rgba(0,0,0,0.85),transparent);z-index:20}'+
+
+      '.w63-timeline{position:relative;height:36px;margin-bottom:14px}'+
+      '.w63-timeline-bg{position:absolute;left:0;right:0;top:50%;height:3px;background:rgba(255,255,255,0.15);'+
+      'transform:translateY(-50%);border-radius:2px}'+
+      '.w63-timeline-progress{position:absolute;left:0;top:50%;height:3px;background:#F98805;'+
+      'transform:translateY(-50%);border-radius:2px;width:0%;transition:width 0.05s linear}'+
+      '.w63-marker{position:absolute;top:50%;width:14px;height:14px;border-radius:50%;'+
+      'transform:translate(-50%,-50%);cursor:pointer;border:2px solid #fff}'+
+      '.w63-marker.good{background:#DDE255}'+
+      '.w63-marker.warn{background:#F98805}'+
+      '.w63-marker.tip{background:#F35695}'+
+      '.w63-marker:active{transform:translate(-50%,-50%) scale(1.3)}'+
+      '.w63-time{display:flex;justify-content:space-between;font-family:DM Sans;font-size:10px;'+
+      'color:rgba(255,255,255,0.55);margin-bottom:8px;letter-spacing:1px}'+
+
+      '.w63-row{display:flex;justify-content:space-between;align-items:center;gap:12px}'+
+      '.w63-play{width:54px;height:54px;border-radius:50%;background:#F98805;border:none;color:#fff;'+
+      'font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center}'+
+      '.w63-play:active{transform:scale(0.94)}'+
+      '.w63-speeds{display:flex;gap:6px}'+
+      '.w63-speed{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);'+
+      'color:#fff;font-family:DM Sans;font-size:11px;padding:6px 10px;border-radius:10px;'+
+      'cursor:pointer;letter-spacing:0.5px}'+
+      '.w63-speed.on{background:rgba(249,136,5,0.25);border-color:#F98805}'+
+
+      // Annotation circles SVG
+      '.w63-anno-circle{fill:none;stroke-width:3;animation:w63pulse 1.2s ease-out infinite}'+
+      '.w63-anno-circle.good{stroke:#DDE255}'+
+      '.w63-anno-circle.warn{stroke:#F98805}'+
+      '.w63-anno-circle.tip{stroke:#F35695}'+
+      '@keyframes w63pulse{0%{r:8;opacity:1}100%{r:60;opacity:0}}';
+    document.head.appendChild(s);
+  }
+
+  var modal = null;
+  var replayState = {
+    video: null,
+    points: [],
+    duration: 0,
+    speed: 0.5,
+    activeTimers: []
+  };
+
+  function ensureModal(){
+    if (modal && document.body.contains(modal)) return modal;
+    modal = document.createElement('div');
+    modal.id = 'w63-modal';
+    modal.className = 'w63-modal';
+    document.body.appendChild(modal);
+    return modal;
+  }
+
+  // --- Position annotations dans la zone ----------------
+  function zoneToCoords(zone){
+    // zone format: "haut-gauche", "milieu-centre", "bas-droite", etc.
+    var parts = (zone || 'milieu-centre').split('-');
+    var vert = parts[0] || 'milieu';
+    var horiz = parts[1] || 'centre';
+    var x = horiz === 'gauche' ? 25 : horiz === 'droite' ? 75 : 50;
+    var y = vert === 'haut' ? 25 : vert === 'bas' ? 75 : 50;
+    return { x: x, y: y };
+  }
+
+  function openReplay(formCheck, exoCtx){
+    injectStyles();
+    ensureModal();
+
+    var analysis = formCheck.analysis;
+    if (!analysis){
+      alert('Analyse non disponible. Refais le form check.');
+      return;
+    }
+
+    var videoURL = formCheck.videoURL || lastVideoURL;
+    if (!videoURL){
+      alert('Video non disponible (rechargement de page ?). Refilme un nouveau set.');
+      return;
+    }
+
+    var points = (analysis.points || []).filter(function(p){
+      return typeof p.timestamp === 'number' && p.timestamp >= 0;
+    }).sort(function(a,b){ return a.timestamp - b.timestamp; });
+
+    replayState.points = points;
+    replayState.speed = 0.5;
+
+    modal.innerHTML = ''+
+      '<div class="w63-top">'+
+        '<button class="w63-close" id="w63-close">x</button>'+
+        '<div class="w63-ttl">REPLAY ANNOTE</div>'+
+        '<div style="width:36px"></div>'+
+      '</div>'+
+      '<div class="w63-stage">'+
+        '<video class="w63-video" id="w63-video" loop muted playsinline></video>'+
+        '<svg class="w63-svg-overlay" id="w63-svg" viewBox="0 0 100 100" preserveAspectRatio="none"></svg>'+
+        '<div class="w63-subtitle" id="w63-sub"></div>'+
+      '</div>'+
+      '<div class="w63-controls">'+
+        '<div class="w63-time"><span id="w63-cur">0.0s</span><span id="w63-tot">0.0s</span></div>'+
+        '<div class="w63-timeline" id="w63-timeline">'+
+          '<div class="w63-timeline-bg"></div>'+
+          '<div class="w63-timeline-progress" id="w63-progress"></div>'+
+        '</div>'+
+        '<div class="w63-row">'+
+          '<button class="w63-play" id="w63-play">||</button>'+
+          '<div class="w63-speeds">'+
+            '<button class="w63-speed" data-s="0.25">0.25x</button>'+
+            '<button class="w63-speed on" data-s="0.5">0.5x</button>'+
+            '<button class="w63-speed" data-s="1">1x</button>'+
+          '</div>'+
+        '</div>'+
+      '</div>';
+
+    modal.classList.add('on');
+
+    var video = modal.querySelector('#w63-video');
+    var svg = modal.querySelector('#w63-svg');
+    var sub = modal.querySelector('#w63-sub');
+    var progress = modal.querySelector('#w63-progress');
+    var curTime = modal.querySelector('#w63-cur');
+    var totTime = modal.querySelector('#w63-tot');
+    var playBtn = modal.querySelector('#w63-play');
+    var timeline = modal.querySelector('#w63-timeline');
+
+    replayState.video = video;
+    video.src = videoURL;
+    video.playbackRate = replayState.speed;
+
+    video.addEventListener('loadedmetadata', function(){
+      replayState.duration = video.duration;
+      totTime.textContent = video.duration.toFixed(1)+'s';
+
+      // Place markers on timeline
+      var existing = timeline.querySelectorAll('.w63-marker');
+      existing.forEach(function(e){ e.remove(); });
+      points.forEach(function(p, i){
+        var pct = (p.timestamp / video.duration) * 100;
+        if (pct < 0 || pct > 100) return;
+        var marker = document.createElement('div');
+        marker.className = 'w63-marker '+(p.type || 'tip');
+        marker.style.left = pct+'%';
+        marker.title = (p.title || '')+' '+p.timestamp+'s';
+        marker.addEventListener('click', function(){
+          video.currentTime = p.timestamp;
+        });
+        timeline.appendChild(marker);
+      });
+
+      video.play().catch(function(){
+        // iOS necessite parfois un user gesture
+        playBtn.textContent = '|>';
+      });
+    });
+
+    video.addEventListener('play', function(){ playBtn.textContent = '||'; });
+    video.addEventListener('pause', function(){ playBtn.textContent = '|>'; });
+
+    video.addEventListener('timeupdate', function(){
+      if (!replayState.duration) return;
+      var pct = (video.currentTime / replayState.duration) * 100;
+      progress.style.width = pct+'%';
+      curTime.textContent = video.currentTime.toFixed(1)+'s';
+
+      // Trouve le point actif (timestamp dans une fenetre de +/- 0.4s)
+      var windowSize = 0.6;
+      var active = points.find(function(p){
+        return Math.abs(p.timestamp - video.currentTime) < windowSize;
+      });
+
+      if (active){
+        showAnnotation(active);
+      } else {
+        hideAnnotation();
+      }
+    });
+
+    // Click timeline to seek
+    timeline.addEventListener('click', function(e){
+      if (!replayState.duration) return;
+      var rect = timeline.getBoundingClientRect();
+      var pct = (e.clientX - rect.left) / rect.width;
+      video.currentTime = Math.max(0, Math.min(replayState.duration, pct * replayState.duration));
+    });
+
+    // Play / pause
+    playBtn.addEventListener('click', function(){
+      if (video.paused) video.play(); else video.pause();
+    });
+
+    // Speed buttons
+    modal.querySelectorAll('.w63-speed').forEach(function(b){
+      b.addEventListener('click', function(){
+        modal.querySelectorAll('.w63-speed').forEach(function(x){ x.classList.remove('on'); });
+        b.classList.add('on');
+        replayState.speed = parseFloat(b.dataset.s);
+        video.playbackRate = replayState.speed;
+      });
+    });
+
+    // Close
+    modal.querySelector('#w63-close').addEventListener('click', closeReplay);
+  }
+
+  function showAnnotation(point){
+    var sub = modal.querySelector('#w63-sub');
+    var svg = modal.querySelector('#w63-svg');
+    if (!sub || !svg) return;
+
+    // Subtitle text
+    var text = point.annotation || point.title || '';
+    if (sub.dataset.current !== text){
+      sub.textContent = text;
+      sub.className = 'w63-subtitle on '+(point.type || 'tip');
+      sub.dataset.current = text;
+    }
+
+    // SVG annotation circle
+    if (svg.dataset.current !== (point.zone || '')){
+      svg.innerHTML = '';
+      if (point.zone){
+        var c = zoneToCoords(point.zone);
+        var circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        circle.setAttribute('cx', c.x);
+        circle.setAttribute('cy', c.y);
+        circle.setAttribute('r', '8');
+        circle.setAttribute('class', 'w63-anno-circle '+(point.type || 'tip'));
+        svg.appendChild(circle);
+        // Doublon pulse
+        var circle2 = circle.cloneNode();
+        circle2.style.animationDelay = '0.6s';
+        svg.appendChild(circle2);
+      }
+      svg.dataset.current = point.zone || '';
+    }
+  }
+
+  function hideAnnotation(){
+    var sub = modal.querySelector('#w63-sub');
+    var svg = modal.querySelector('#w63-svg');
+    if (sub) {
+      sub.classList.remove('on');
+      delete sub.dataset.current;
+    }
+    if (svg) {
+      svg.innerHTML = '';
+      delete svg.dataset.current;
+    }
+  }
+
+  function closeReplay(){
+    if (replayState.video){
+      try { replayState.video.pause(); replayState.video.src = ''; } catch(e){}
+    }
+    if (modal) modal.classList.remove('on');
+  }
+
+  // Init
+  setTimeout(patchWave62, 500);
+  setTimeout(patchWave62, 2000);
+
+  window.HIMA_FORM_REPLAY = {
+    open: openReplay,
+    close: closeReplay,
+    getLastBlobURL: function(){ return lastVideoURL; }
+  };
+
+  console.log('[W63] Annotated Replay loaded');
+})();
+
+</script>
+
+
+
 
 
 
