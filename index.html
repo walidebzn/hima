@@ -17557,7 +17557,7 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
 
 <script>
 /* HIMA - WAVE 6.3 - REPLAY VIDEO ANNOTE
-   v6.3.0 - patches W61 (blob capture) + W62 (timestamps) + replay UI
+   v6.3.1 - default speed 1x (was 0.5x)
 */
 
 /* HIMA - WAVE 6.3 - REPLAY VIDEO ANNOTE
@@ -17953,7 +17953,7 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
     }).sort(function(a,b){ return a.timestamp - b.timestamp; });
 
     replayState.points = points;
-    replayState.speed = 0.5;
+    replayState.speed = 1;
 
     modal.innerHTML = ''+
       '<div class="w63-top">'+
@@ -17976,8 +17976,8 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
           '<button class="w63-play" id="w63-play">||</button>'+
           '<div class="w63-speeds">'+
             '<button class="w63-speed" data-s="0.25">0.25x</button>'+
-            '<button class="w63-speed on" data-s="0.5">0.5x</button>'+
-            '<button class="w63-speed" data-s="1">1x</button>'+
+            '<button class="w63-speed" data-s="0.5">0.5x</button>'+
+            '<button class="w63-speed on" data-s="1">1x</button>'+
           '</div>'+
         '</div>'+
       '</div>';
@@ -18139,6 +18139,672 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
 })();
 
 </script>
+
+<script>
+/* HIMA - WAVE 6.4+6.5+6.6 - GHOST POSE CORRIGE
+   v6.G.0 - MediaPipe + biomechanical rules + skeleton overlay
+*/
+
+/* HIMA - WAVE 6.4 + 6.5 + 6.6 - GHOST POSE CORRIGE
+   - W6.4: MediaPipe Pose Landmarker (lazy load, background process)
+   - W6.5: Regles biomecaniques par exo + calcul pose corrigee
+   - W6.6: UI replay avec toggle ghost (toi rouge + ghost vert)
+
+   Strategie : on demarre la detection en background des que le replay s'ouvre.
+   L'utilisateur regarde son replay normal, le toggle "Activer ghost" apparait
+   quand le calcul est pret (~10-15s).
+
+   Stack :
+   - MediaPipe Tasks Vision via CDN (lazy)
+   - Detection 33 landmarks par frame
+   - Echantillonnage : 10 frames sur la duree de la video (suffisant pour ghost)
+   - Cache result dans U.formChecks[exoId][n].pose
+
+   Kill switch : window.SV2_FLAGS.formCheckGhost
+*/
+
+(function wave6_ghost(){
+  'use strict';
+  window.SV2_FLAGS = window.SV2_FLAGS || {};
+  if (window.SV2_FLAGS.formCheckGhost === false) return;
+  window.SV2_FLAGS.formCheckGhost = true;
+
+  var KEY = 'hima8';
+  function getU(){
+    try { return JSON.parse(localStorage.getItem(KEY) || '{}') || {}; }
+    catch(e){ return {}; }
+  }
+  function setU(u){
+    try { localStorage.setItem(KEY, JSON.stringify(u)); } catch(e){}
+  }
+
+  // --- MEDIAPIPE LAZY LOADER ----------------------------
+  var mpReady = false;
+  var mpLoading = false;
+  var mpLandmarker = null;
+  var mpLoadPromise = null;
+
+  function loadMediaPipe(){
+    if (mpReady) return Promise.resolve(mpLandmarker);
+    if (mpLoading && mpLoadPromise) return mpLoadPromise;
+    mpLoading = true;
+
+    mpLoadPromise = (async function(){
+      try {
+        // Charge le module ESM via dynamic import
+        var vision = await import('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/vision_bundle.mjs');
+        var FilesetResolver = vision.FilesetResolver;
+        var PoseLandmarker = vision.PoseLandmarker;
+
+        var fileset = await FilesetResolver.forVisionTasks(
+          'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm'
+        );
+
+        mpLandmarker = await PoseLandmarker.createFromOptions(fileset, {
+          baseOptions: {
+            modelAssetPath: 'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task',
+            delegate: 'GPU'
+          },
+          runningMode: 'VIDEO',
+          numPoses: 1,
+          minPoseDetectionConfidence: 0.5,
+          minPosePresenceConfidence: 0.5,
+          minTrackingConfidence: 0.5
+        });
+
+        mpReady = true;
+        console.log('[W64] MediaPipe Pose ready');
+        return mpLandmarker;
+      } catch(e){
+        mpLoading = false;
+        console.error('[W64] MediaPipe load failed', e);
+        throw e;
+      }
+    })();
+
+    return mpLoadPromise;
+  }
+
+  // --- DETECTION POSE SUR VIDEO -------------------------
+  // Echantillonne N frames repartis dans la video et detecte les landmarks
+  async function detectPosesInVideo(videoURL, nSamples){
+    nSamples = nSamples || 10;
+    var landmarker = await loadMediaPipe();
+
+    return new Promise(function(resolve, reject){
+      var video = document.createElement('video');
+      video.muted = true;
+      video.playsInline = true;
+      video.preload = 'auto';
+      video.crossOrigin = 'anonymous';
+      video.src = videoURL;
+
+      var poses = [];
+      var idx = 0;
+      var times = [];
+
+      video.onloadedmetadata = function(){
+        var dur = video.duration;
+        if (!isFinite(dur) || dur <= 0){
+          reject(new Error('Video duration invalide'));
+          return;
+        }
+        for (var i = 0; i < nSamples; i++){
+          times.push((i + 0.5) / nSamples * dur);
+        }
+        nextFrame();
+      };
+
+      video.onerror = function(){
+        reject(new Error('Video load error'));
+      };
+
+      function nextFrame(){
+        if (idx >= times.length){
+          resolve({
+            samples: poses,
+            duration: video.duration,
+            videoWidth: video.videoWidth,
+            videoHeight: video.videoHeight
+          });
+          return;
+        }
+        video.currentTime = times[idx];
+      }
+
+      video.onseeked = function(){
+        try {
+          var ts = Math.round(video.currentTime * 1000);
+          var result = landmarker.detectForVideo(video, ts);
+          if (result && result.landmarks && result.landmarks.length){
+            poses.push({
+              t: video.currentTime,
+              landmarks: result.landmarks[0], // [{x,y,z,visibility}, ...] x 33
+              worldLandmarks: result.worldLandmarks ? result.worldLandmarks[0] : null
+            });
+          } else {
+            poses.push({ t: video.currentTime, landmarks: null });
+          }
+          idx++;
+          nextFrame();
+        } catch(e){
+          console.warn('[W64] frame detect error', e);
+          idx++;
+          nextFrame();
+        }
+      };
+    });
+  }
+
+  // --- REGLES BIOMECANIQUES (W6.5) ----------------------
+  // Indices MediaPipe Pose Landmarker (33 points) :
+  // 0=nose, 11=L_shoulder, 12=R_shoulder, 13=L_elbow, 14=R_elbow,
+  // 15=L_wrist, 16=R_wrist, 23=L_hip, 24=R_hip, 25=L_knee, 26=R_knee,
+  // 27=L_ankle, 28=R_ankle, 29=L_heel, 30=R_heel, 31=L_foot, 32=R_foot
+
+  var L = {
+    NOSE: 0, L_SHOULDER: 11, R_SHOULDER: 12, L_ELBOW: 13, R_ELBOW: 14,
+    L_WRIST: 15, R_WRIST: 16, L_HIP: 23, R_HIP: 24, L_KNEE: 25, R_KNEE: 26,
+    L_ANKLE: 27, R_ANKLE: 28
+  };
+
+  function angle3pts(a, b, c){
+    // Angle au point b entre a et c, en degres
+    if (!a || !b || !c) return null;
+    var v1x = a.x - b.x, v1y = a.y - b.y;
+    var v2x = c.x - b.x, v2y = c.y - b.y;
+    var dot = v1x*v2x + v1y*v2y;
+    var mag1 = Math.sqrt(v1x*v1x + v1y*v1y);
+    var mag2 = Math.sqrt(v2x*v2x + v2y*v2y);
+    if (mag1 === 0 || mag2 === 0) return null;
+    var cos = Math.max(-1, Math.min(1, dot / (mag1 * mag2)));
+    return Math.acos(cos) * 180 / Math.PI;
+  }
+
+  function midpoint(a, b){
+    if (!a || !b) return null;
+    return { x: (a.x+b.x)/2, y: (a.y+b.y)/2, z: ((a.z||0)+(b.z||0))/2 };
+  }
+
+  // Detecte le type d'exo a partir du nom (matching simple)
+  function detectExoType(exoName){
+    if (!exoName) return 'generic';
+    var n = exoName.toLowerCase();
+    if (/squat/.test(n)) return 'squat';
+    if (/bench|developpe couche|d\u00e9velopp\u00e9 couch\u00e9|dc/.test(n)) return 'bench';
+    if (/deadlift|souleve|soulev\u00e9|sdt/.test(n)) return 'deadlift';
+    if (/ohp|developpe militaire|d\u00e9velopp\u00e9 militaire|press|epaule.*press/.test(n)) return 'ohp';
+    if (/row|rowing|tirage horizontal/.test(n)) return 'row';
+    return 'generic';
+  }
+
+  // Calcule la pose corrigee pour CHAQUE landmark
+  // Garde tes proportions, corrige uniquement les angles fautifs
+  function correctPose(landmarks, exoType){
+    if (!landmarks || landmarks.length < 33) return null;
+    // Clone profond
+    var corrected = landmarks.map(function(lm){
+      return lm ? { x: lm.x, y: lm.y, z: lm.z || 0, visibility: lm.visibility || 0 } : null;
+    });
+
+    if (exoType === 'squat'){
+      corrected = correctSquat(corrected, landmarks);
+    } else if (exoType === 'bench'){
+      corrected = correctBench(corrected, landmarks);
+    } else if (exoType === 'deadlift'){
+      corrected = correctDeadlift(corrected, landmarks);
+    } else if (exoType === 'ohp'){
+      corrected = correctOHP(corrected, landmarks);
+    } else if (exoType === 'row'){
+      corrected = correctRow(corrected, landmarks);
+    }
+    // generic : pas de correction (return as-is)
+    return corrected;
+  }
+
+  // --- SQUAT : correction knee valgus + dos vertical + profondeur
+  function correctSquat(c, raw){
+    // 1. Genou valgus (rentre vers l'interieur) :
+    //    Le genou doit etre aligne avec la pointe du pied (sur axe X)
+    //    Si knee.x < ankle.x (cote gauche) ou knee.x > ankle.x (cote droit)
+    //    on remet le knee.x = ankle.x
+    if (raw[L.L_KNEE] && raw[L.L_ANKLE]){
+      // Cote gauche : knee doit etre legerement plus a gauche que ankle (perspective frontale)
+      // Heuristique : aligner knee.x sur ankle.x avec une petite tolerance
+      var diffL = raw[L.L_KNEE].x - raw[L.L_ANKLE].x;
+      // Si genou rentre vers le centre (diff vers droite alors qu'il devrait etre a gauche)
+      // On corrige en alignant
+      c[L.L_KNEE].x = raw[L.L_ANKLE].x - 0.01; // legerement vers ext
+    }
+    if (raw[L.R_KNEE] && raw[L.R_ANKLE]){
+      var diffR = raw[L.R_KNEE].x - raw[L.R_ANKLE].x;
+      c[L.R_KNEE].x = raw[L.R_ANKLE].x + 0.01;
+    }
+
+    // 2. Dos vertical : redresser l'angle epaule-hanche
+    //    L'angle entre vertical et axe epaules-hanches doit etre minimal
+    //    (cad epaules au-dessus des hanches)
+    var midShoulder = midpoint(raw[L.L_SHOULDER], raw[L.R_SHOULDER]);
+    var midHip = midpoint(raw[L.L_HIP], raw[L.R_HIP]);
+    if (midShoulder && midHip){
+      // Si shoulders.x est decale vs hips.x, on aligne
+      var dx = midShoulder.x - midHip.x;
+      // Aligner shoulders au-dessus des hips (corriger seulement sur X)
+      var corrShoulderX = midHip.x;
+      var shiftX = corrShoulderX - midShoulder.x;
+      // Appliquer le shift uniquement aux epaules + tete (pas aux bras)
+      [L.L_SHOULDER, L.R_SHOULDER, L.NOSE].forEach(function(idx){
+        if (c[idx]) c[idx].x += shiftX;
+      });
+    }
+
+    return c;
+  }
+
+  // --- BENCH PRESS : coudes ~45 deg, poignet aligne coude
+  function correctBench(c, raw){
+    // Coude flare : coude doit etre a ~45 deg du buste, pas a 90
+    // Heuristique : si elbow.y < shoulder.y (coude au niveau epaule, vue de face)
+    // -> coude trop ouvert, on ramene legerement
+    if (raw[L.L_ELBOW] && raw[L.L_SHOULDER] && raw[L.L_HIP]){
+      // Position ideale coude : a mi-chemin entre shoulder.y et hip.y (45 deg approx)
+      var idealY = raw[L.L_SHOULDER].y + (raw[L.L_HIP].y - raw[L.L_SHOULDER].y) * 0.3;
+      c[L.L_ELBOW].y = idealY;
+    }
+    if (raw[L.R_ELBOW] && raw[L.R_SHOULDER] && raw[L.R_HIP]){
+      var idealYR = raw[L.R_SHOULDER].y + (raw[L.R_HIP].y - raw[L.R_SHOULDER].y) * 0.3;
+      c[L.R_ELBOW].y = idealYR;
+    }
+
+    // Poignet doit etre aligne au-dessus du coude (vue de cote)
+    // En vue de face, on aligne wrist.x sur elbow.x
+    if (raw[L.L_WRIST] && raw[L.L_ELBOW]){
+      c[L.L_WRIST].x = c[L.L_ELBOW].x;
+    }
+    if (raw[L.R_WRIST] && raw[L.R_ELBOW]){
+      c[L.R_WRIST].x = c[L.R_ELBOW].x;
+    }
+    return c;
+  }
+
+  // --- DEADLIFT : dos plat, hanches charnieres
+  function correctDeadlift(c, raw){
+    // Dos rond = epaules en avant des hanches sur axe Z (depth)
+    // En 2D on regarde si shoulders sont en arriere des hips sur X (vue de cote)
+    var midShoulder = midpoint(raw[L.L_SHOULDER], raw[L.R_SHOULDER]);
+    var midHip = midpoint(raw[L.L_HIP], raw[L.R_HIP]);
+    var midKnee = midpoint(raw[L.L_KNEE], raw[L.R_KNEE]);
+
+    if (midShoulder && midHip && midKnee){
+      // Aligner les epaules sur la verticale des knees (dos plat penche)
+      var idealShoulderX = midKnee.x;
+      var shiftX = idealShoulderX - midShoulder.x;
+      [L.L_SHOULDER, L.R_SHOULDER, L.NOSE, L.L_ELBOW, L.R_ELBOW, L.L_WRIST, L.R_WRIST].forEach(function(idx){
+        if (c[idx]) c[idx].x += shiftX;
+      });
+    }
+    return c;
+  }
+
+  // --- OHP : barre au-dessus crane, gainage
+  function correctOHP(c, raw){
+    // Wrists doivent etre directement au-dessus des epaules
+    if (raw[L.L_WRIST] && raw[L.L_SHOULDER]){
+      c[L.L_WRIST].x = raw[L.L_SHOULDER].x;
+    }
+    if (raw[L.R_WRIST] && raw[L.R_SHOULDER]){
+      c[L.R_WRIST].x = raw[L.R_SHOULDER].x;
+    }
+    // Coudes : aligner a mi-chemin
+    if (raw[L.L_ELBOW] && raw[L.L_SHOULDER] && raw[L.L_WRIST]){
+      c[L.L_ELBOW].x = (raw[L.L_SHOULDER].x + raw[L.L_WRIST].x) / 2;
+    }
+    if (raw[L.R_ELBOW] && raw[L.R_SHOULDER] && raw[L.R_WRIST]){
+      c[L.R_ELBOW].x = (raw[L.R_SHOULDER].x + raw[L.R_WRIST].x) / 2;
+    }
+    return c;
+  }
+
+  // --- ROW : dos a 45 deg, coudes pres du corps
+  function correctRow(c, raw){
+    // Coudes doivent rester pres du buste
+    if (raw[L.L_ELBOW] && raw[L.L_SHOULDER]){
+      // Elbow doit etre proche du corps : x proche de shoulder.x
+      var diff = raw[L.L_ELBOW].x - raw[L.L_SHOULDER].x;
+      // Reduire le diff de 50%
+      c[L.L_ELBOW].x = raw[L.L_SHOULDER].x + diff * 0.5;
+    }
+    if (raw[L.R_ELBOW] && raw[L.R_SHOULDER]){
+      var diffR = raw[L.R_ELBOW].x - raw[L.R_SHOULDER].x;
+      c[L.R_ELBOW].x = raw[L.R_SHOULDER].x + diffR * 0.5;
+    }
+    return c;
+  }
+
+  // --- DESSIN SQUELETTE SVG (W6.6) ----------------------
+  // Connections entre landmarks pour dessiner le squelette
+  var SKELETON_CONNECTIONS = [
+    // Bras gauche
+    [L.L_SHOULDER, L.L_ELBOW], [L.L_ELBOW, L.L_WRIST],
+    // Bras droit
+    [L.R_SHOULDER, L.R_ELBOW], [L.R_ELBOW, L.R_WRIST],
+    // Epaules
+    [L.L_SHOULDER, L.R_SHOULDER],
+    // Buste
+    [L.L_SHOULDER, L.L_HIP], [L.R_SHOULDER, L.R_HIP],
+    // Hanches
+    [L.L_HIP, L.R_HIP],
+    // Jambe gauche
+    [L.L_HIP, L.L_KNEE], [L.L_KNEE, L.L_ANKLE],
+    // Jambe droite
+    [L.R_HIP, L.R_KNEE], [L.R_KNEE, L.R_ANKLE]
+  ];
+
+  function renderSkeletonSVG(landmarks, color, idPrefix){
+    if (!landmarks) return '';
+    var parts = [];
+    // Lines (connections)
+    SKELETON_CONNECTIONS.forEach(function(c, i){
+      var a = landmarks[c[0]], b = landmarks[c[1]];
+      if (!a || !b) return;
+      if (a.visibility < 0.3 || b.visibility < 0.3) return;
+      parts.push(
+        '<line x1="'+(a.x*100).toFixed(2)+'" y1="'+(a.y*100).toFixed(2)+
+        '" x2="'+(b.x*100).toFixed(2)+'" y2="'+(b.y*100).toFixed(2)+
+        '" stroke="'+color+'" stroke-width="0.6" stroke-linecap="round" opacity="0.9"/>'
+      );
+    });
+    // Joints (circles)
+    [L.L_SHOULDER, L.R_SHOULDER, L.L_ELBOW, L.R_ELBOW, L.L_WRIST, L.R_WRIST,
+     L.L_HIP, L.R_HIP, L.L_KNEE, L.R_KNEE, L.L_ANKLE, L.R_ANKLE].forEach(function(idx){
+      var lm = landmarks[idx];
+      if (!lm || lm.visibility < 0.3) return;
+      parts.push(
+        '<circle cx="'+(lm.x*100).toFixed(2)+'" cy="'+(lm.y*100).toFixed(2)+
+        '" r="0.8" fill="'+color+'" opacity="1"/>'
+      );
+    });
+    return parts.join('');
+  }
+
+  // Interpole entre 2 frames pour un timestamp donne
+  function interpolatePose(samples, t){
+    if (!samples || !samples.length) return null;
+    if (samples.length === 1) return samples[0].landmarks;
+
+    // Trouver les 2 samples qui encadrent t
+    var before = null, after = null;
+    for (var i = 0; i < samples.length; i++){
+      if (samples[i].t <= t) before = samples[i];
+      if (samples[i].t >= t && !after){ after = samples[i]; break; }
+    }
+    if (!before) before = samples[0];
+    if (!after) after = samples[samples.length-1];
+    if (!before.landmarks) return after.landmarks;
+    if (!after.landmarks) return before.landmarks;
+    if (before === after) return before.landmarks;
+
+    // Lerp
+    var span = after.t - before.t;
+    var alpha = span > 0 ? (t - before.t) / span : 0;
+    alpha = Math.max(0, Math.min(1, alpha));
+
+    var result = [];
+    for (var j = 0; j < 33; j++){
+      var a = before.landmarks[j];
+      var b = after.landmarks[j];
+      if (!a || !b){
+        result.push(a || b);
+        continue;
+      }
+      result.push({
+        x: a.x + (b.x - a.x) * alpha,
+        y: a.y + (b.y - a.y) * alpha,
+        z: (a.z||0) + ((b.z||0) - (a.z||0)) * alpha,
+        visibility: Math.min(a.visibility||1, b.visibility||1)
+      });
+    }
+    return result;
+  }
+
+  // --- INTEGRATION DANS WAVE 6.3 (replay modal) ---------
+  // Patch le modal replay pour ajouter :
+  // - Un overlay SVG ghost (cache par defaut)
+  // - Un toggle "Activer ghost"
+  // - Le calcul background demarre quand le replay s'ouvre
+
+  var ghostState = {
+    poseData: null,        // result of detectPosesInVideo
+    correctedPoses: null,  // map t -> corrected landmarks
+    exoType: null,
+    enabled: false,
+    processing: false,
+    failed: false,
+    currentReplay: null    // {video, exoCtx, formCheck}
+  };
+
+  function injectGhostStyles(){
+    if (document.getElementById('w6g-style')) return;
+    var s = document.createElement('style');
+    s.id = 'w6g-style';
+    s.textContent = ''+
+      '.w6g-svg{position:absolute;inset:0;pointer-events:none;width:100%;height:100%;display:none}'+
+      '.w6g-svg.on{display:block}'+
+      '.w6g-toggle{position:absolute;top:62px;right:14px;background:rgba(0,0,0,0.65);'+
+      'backdrop-filter:blur(10px);color:#fff;border:1px solid rgba(255,255,255,0.15);'+
+      'border-radius:18px;padding:6px 12px;font-family:DM Sans;font-size:11px;font-weight:600;'+
+      'cursor:pointer;letter-spacing:0.5px;z-index:25;display:none;align-items:center;gap:6px;'+
+      'transition:all 0.2s}'+
+      '.w6g-toggle.show{display:inline-flex}'+
+      '.w6g-toggle.on{background:rgba(221,226,85,0.85);color:#0f0f1f;border-color:#DDE255}'+
+      '.w6g-toggle:active{transform:scale(0.95)}'+
+      '.w6g-dot{width:6px;height:6px;border-radius:50%;background:#DDE255}'+
+      '.w6g-toggle.on .w6g-dot{background:#0f0f1f}'+
+      '.w6g-status{position:absolute;top:62px;right:14px;background:rgba(0,0,0,0.65);'+
+      'backdrop-filter:blur(10px);color:#fff;border-radius:18px;padding:6px 12px;'+
+      'font-family:DM Sans;font-size:10px;letter-spacing:0.5px;z-index:25;display:none;'+
+      'align-items:center;gap:6px}'+
+      '.w6g-status.on{display:inline-flex}'+
+      '.w6g-status-dot{width:6px;height:6px;border-radius:50%;background:#F98805;animation:w6gpulse 1s infinite}'+
+      '@keyframes w6gpulse{0%,100%{opacity:1}50%{opacity:0.3}}'+
+      '.w6g-legend{position:absolute;bottom:200px;left:14px;background:rgba(0,0,0,0.65);'+
+      'backdrop-filter:blur(10px);color:#fff;border-radius:12px;padding:8px 12px;'+
+      'font-family:DM Sans;font-size:10px;letter-spacing:0.3px;z-index:24;display:none;'+
+      'flex-direction:column;gap:4px;line-height:1.5}'+
+      '.w6g-legend.on{display:flex}'+
+      '.w6g-legend-item{display:flex;align-items:center;gap:8px}'+
+      '.w6g-legend-line{width:18px;height:3px;border-radius:2px}';
+    document.head.appendChild(s);
+  }
+
+  function patchReplay(){
+    if (window.__w6g_replay_patched) return;
+    if (typeof window.HIMA_FORM_REPLAY === 'undefined' || !window.HIMA_FORM_REPLAY.open){
+      setTimeout(patchReplay, 300);
+      return;
+    }
+
+    injectGhostStyles();
+
+    var origOpen = window.HIMA_FORM_REPLAY.open;
+    window.HIMA_FORM_REPLAY.open = function(formCheck, exoCtx){
+      var r = origOpen.apply(this, arguments);
+
+      // Une fois le modal ouvert, ajouter le toggle + lancer detection
+      setTimeout(function(){
+        var modal = document.getElementById('w63-modal');
+        if (!modal || !modal.classList.contains('on')) return;
+        installGhostUI(modal, formCheck, exoCtx);
+      }, 100);
+
+      return r;
+    };
+
+    window.__w6g_replay_patched = true;
+    console.log('[W6G] Replay patched for ghost');
+  }
+
+  function installGhostUI(modal, formCheck, exoCtx){
+    // Reset state
+    ghostState.poseData = null;
+    ghostState.correctedPoses = null;
+    ghostState.exoType = detectExoType(exoCtx && exoCtx.exoName);
+    ghostState.enabled = false;
+    ghostState.processing = false;
+    ghostState.failed = false;
+    ghostState.currentReplay = { exoCtx: exoCtx, formCheck: formCheck };
+
+    var stage = modal.querySelector('.w63-stage');
+    var video = modal.querySelector('#w63-video');
+    if (!stage || !video) return;
+
+    // Inject SVG ghost overlay (sous le SVG de Wave 6.3)
+    if (!stage.querySelector('.w6g-svg')){
+      var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      svg.classList.add('w6g-svg');
+      svg.setAttribute('viewBox', '0 0 100 100');
+      svg.setAttribute('preserveAspectRatio', 'none');
+      stage.appendChild(svg);
+    }
+
+    // Inject status badge (loading)
+    if (!modal.querySelector('.w6g-status')){
+      var status = document.createElement('div');
+      status.className = 'w6g-status on';
+      status.innerHTML = '<div class="w6g-status-dot"></div>Calcul du ghost...';
+      stage.appendChild(status);
+    }
+
+    // Inject toggle button (cache jusqu'a fin du calcul)
+    if (!modal.querySelector('.w6g-toggle')){
+      var toggle = document.createElement('button');
+      toggle.className = 'w6g-toggle';
+      toggle.innerHTML = '<div class="w6g-dot"></div>Ghost OFF';
+      toggle.addEventListener('click', function(){
+        ghostState.enabled = !ghostState.enabled;
+        toggle.classList.toggle('on', ghostState.enabled);
+        toggle.innerHTML = '<div class="w6g-dot"></div>Ghost ' + (ghostState.enabled ? 'ON' : 'OFF');
+        var svg = modal.querySelector('.w6g-svg');
+        var legend = modal.querySelector('.w6g-legend');
+        if (svg) svg.classList.toggle('on', ghostState.enabled);
+        if (legend) legend.classList.toggle('on', ghostState.enabled);
+      });
+      stage.appendChild(toggle);
+    }
+
+    // Legend (montre code couleur quand ghost ON)
+    if (!modal.querySelector('.w6g-legend')){
+      var legend = document.createElement('div');
+      legend.className = 'w6g-legend';
+      legend.innerHTML = ''+
+        '<div class="w6g-legend-item"><div class="w6g-legend-line" style="background:#F35695"></div>Toi</div>'+
+        '<div class="w6g-legend-item"><div class="w6g-legend-line" style="background:#DDE255"></div>Execution corrigee</div>';
+      stage.appendChild(legend);
+    }
+
+    // Bind l'update SVG sur timeupdate
+    video.addEventListener('timeupdate', function onTU(){
+      if (!ghostState.enabled || !ghostState.poseData) return;
+      var t = video.currentTime;
+      updateGhostFrame(modal, t);
+    });
+
+    // Cas exo non supporte
+    if (ghostState.exoType === 'generic'){
+      var status = modal.querySelector('.w6g-status');
+      if (status){
+        status.innerHTML = 'Ghost dispo bientot (squat/DC/SDT/OHP/row)';
+        setTimeout(function(){
+          if (status) status.classList.remove('on');
+        }, 3500);
+      }
+      return;
+    }
+
+    // Lancer le calcul background
+    if (formCheck.videoURL || window.HIMA_FORM_REPLAY.getLastBlobURL()){
+      var url = formCheck.videoURL || window.HIMA_FORM_REPLAY.getLastBlobURL();
+      processGhost(modal, url, ghostState.exoType);
+    } else {
+      var status = modal.querySelector('.w6g-status');
+      if (status){
+        status.innerHTML = 'Pas de video pour calculer le ghost';
+        setTimeout(function(){ if(status) status.classList.remove('on'); }, 3000);
+      }
+    }
+  }
+
+  async function processGhost(modal, videoURL, exoType){
+    var status = modal.querySelector('.w6g-status');
+    var toggle = modal.querySelector('.w6g-toggle');
+
+    ghostState.processing = true;
+    try {
+      var result = await detectPosesInVideo(videoURL, 10);
+      ghostState.poseData = result;
+
+      // Pre-calculer les poses corrigees pour chaque sample
+      var corrected = result.samples.map(function(s){
+        if (!s.landmarks) return { t: s.t, landmarks: null };
+        return {
+          t: s.t,
+          landmarks: correctPose(s.landmarks, exoType)
+        };
+      });
+      ghostState.correctedPoses = corrected;
+      ghostState.processing = false;
+
+      // UI : hide loading, show toggle
+      if (status) status.classList.remove('on');
+      if (toggle) toggle.classList.add('show');
+
+      console.log('[W6G] Ghost ready, samples:', result.samples.length);
+    } catch(e){
+      console.error('[W6G] Ghost processing failed', e);
+      ghostState.failed = true;
+      ghostState.processing = false;
+      if (status){
+        status.innerHTML = 'Ghost indisponible (detection echouee)';
+        setTimeout(function(){ if(status) status.classList.remove('on'); }, 3500);
+      }
+    }
+  }
+
+  function updateGhostFrame(modal, t){
+    var svg = modal.querySelector('.w6g-svg');
+    if (!svg) return;
+
+    // Pose user (raw) en rose
+    var userPose = interpolatePose(ghostState.poseData.samples, t);
+    // Pose corrigee en lime
+    var correctedPose = interpolatePose(ghostState.correctedPoses, t);
+
+    var html = '';
+    if (userPose) html += renderSkeletonSVG(userPose, '#F35695', 'user');
+    if (correctedPose) html += renderSkeletonSVG(correctedPose, '#DDE255', 'corrected');
+    svg.innerHTML = html;
+  }
+
+  // Init patches
+  setTimeout(patchReplay, 500);
+  setTimeout(patchReplay, 2500);
+  setTimeout(patchReplay, 6000);
+
+  // Public API
+  window.HIMA_FORM_GHOST = {
+    state: ghostState,
+    loadMP: loadMediaPipe,
+    detectPoses: detectPosesInVideo,
+    correctPose: correctPose,
+    detectExoType: detectExoType
+  };
+
+  console.log('[W6G] Ghost system loaded');
+})();
+
+</script>
+
+
 
 
 
