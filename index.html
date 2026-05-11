@@ -19647,7 +19647,7 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
 
 <script>
 /* HIMA - WAVE 7 - NUTRITION COACH AVANCEE
-   v7.0.0 - meal plan IA + grocery + recipes + plate analysis
+   v7.1.0 - fix JSON parsing robust + max_tokens 8000
 */
 
 /* HIMA - WAVE 7 - NUTRITION COACH AVANCEE
@@ -19787,7 +19787,7 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
       body: JSON.stringify({
         system: 'Tu reponds UNIQUEMENT en JSON valide. Pas de markdown, pas de preambule.',
         messages: [{ role: 'user', content: prompt }],
-        max_tokens: 3500,
+        max_tokens: 8000,
         model: 'claude-sonnet-4-6'
       })
     }).then(function(r){
@@ -19799,14 +19799,76 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
         txt = j.content.filter(function(x){return x.type==='text';}).map(function(x){return x.text;}).join('');
       }
       txt = txt.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
-      try { return JSON.parse(txt); }
-      catch(e){
-        var s = txt.indexOf('{');
-        var e2 = txt.lastIndexOf('}');
-        if (s >= 0 && e2 > s) return JSON.parse(txt.slice(s, e2+1));
-        throw new Error('JSON parse fail');
-      }
+      return parseRobustJSON(txt);
     });
+  }
+
+  function parseRobustJSON(txt){
+    // Tentative 1 : parse direct
+    try { return JSON.parse(txt); } catch(e){}
+
+    // Tentative 2 : strip text avant '{' et apres '}'
+    var s = txt.indexOf('{');
+    var e2 = txt.lastIndexOf('}');
+    if (s >= 0 && e2 > s){
+      var clean = txt.slice(s, e2+1);
+      try { return JSON.parse(clean); } catch(e){}
+      // Tentative 3 : retirer trailing commas
+      var noTrailing = clean.replace(/,(\s*[}\]])/g, '$1');
+      try { return JSON.parse(noTrailing); } catch(e){}
+    }
+
+    // Tentative 4 : JSON tronque - essayer de fermer les structures ouvertes
+    var truncated = txt.slice(s >= 0 ? s : 0);
+    // Couper a la derniere ',' ou ']' ou '}' complete
+    var lastValid = Math.max(
+      truncated.lastIndexOf('},'),
+      truncated.lastIndexOf('}]'),
+      truncated.lastIndexOf('}]\n'),
+      truncated.lastIndexOf(']}'),
+      truncated.lastIndexOf('},'),
+      truncated.lastIndexOf('},')
+    );
+    if (lastValid > 0){
+      // Compter les { et } pour savoir combien fermer
+      var slice = truncated.slice(0, lastValid+1);
+      var openBraces = (slice.match(/{/g) || []).length;
+      var closeBraces = (slice.match(/}/g) || []).length;
+      var openBrackets = (slice.match(/\[/g) || []).length;
+      var closeBrackets = (slice.match(/]/g) || []).length;
+      var fixed = slice;
+      // Si on est en plein milieu d'un array, couper jusqu'au dernier element complet
+      // Strategie : on remonte caractere par caractere pour trouver un point sain
+      var safeEnd = -1;
+      for (var i = fixed.length - 1; i >= 0; i--){
+        if (fixed[i] === '}' && (i === fixed.length-1 || fixed[i+1] === ',' || fixed[i+1] === ']' || /\s/.test(fixed[i+1]))){
+          safeEnd = i + 1;
+          break;
+        }
+      }
+      if (safeEnd > 0){
+        fixed = fixed.slice(0, safeEnd);
+      }
+      // Fermer les arrays/objects
+      var nBrackets = openBrackets - closeBrackets;
+      var nBraces = openBraces - closeBraces;
+      // Recompter avec fixed
+      nBrackets = (fixed.match(/\[/g) || []).length - (fixed.match(/]/g) || []).length;
+      nBraces = (fixed.match(/{/g) || []).length - (fixed.match(/}/g) || []).length;
+      for (var b = 0; b < nBrackets; b++) fixed += ']';
+      for (var b = 0; b < nBraces; b++) fixed += '}';
+      // Retirer trailing commas dans fixed
+      fixed = fixed.replace(/,(\s*[}\]])/g, '$1');
+      try {
+        var result = JSON.parse(fixed);
+        console.warn('[W7.1] JSON tronque repare, jours recuperes:', (result.days||[]).length);
+        return result;
+      } catch(e){
+        console.error('[W7.1] Repair failed:', e.message);
+      }
+    }
+
+    throw new Error('JSON irrecuperable. Reessaie la generation.');
   }
 
   // --- Cache check -------------------------------------
