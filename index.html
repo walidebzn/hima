@@ -19645,6 +19645,1351 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
 
 </script>
 
+<script>
+/* HIMA - WAVE 7 - NUTRITION COACH AVANCEE
+   v7.0.0 - meal plan IA + grocery + recipes + plate analysis
+*/
+
+/* HIMA - WAVE 7 - NUTRITION COACH AVANCEE
+   7.1 - Meal Plan Hebdo IA (1 gen/sem, cache 7j)
+   7.2 - Liste de Courses auto (agrege ingredients)
+   7.3 - Recettes guidees etape par etape + timer
+   7.4 - Photo Plate Analysis (Claude Vision)
+
+   Architecture :
+   - 1 IIFE bootstrap
+   - 4 IIFE features independantes
+   - Kill switches : window.SV2_FLAGS.wave71 / wave72 / wave73 / wave74
+   - Storage : U.wave7 = { mealPlan, groceries, recipes, plateAnalyses }
+
+   Lecon Wave 3 : 100% ASCII, no <\/script> in JS code
+*/
+
+(function wave7_boot(){
+  'use strict';
+  window.SV2_FLAGS = window.SV2_FLAGS || {};
+  Object.assign(window.SV2_FLAGS, {
+    wave71: window.SV2_FLAGS.wave71 !== false,
+    wave72: window.SV2_FLAGS.wave72 !== false,
+    wave73: window.SV2_FLAGS.wave73 !== false,
+    wave74: window.SV2_FLAGS.wave74 !== false
+  });
+
+  var KEY = 'hima8';
+  function getU(){
+    try { return JSON.parse(localStorage.getItem(KEY) || '{}') || {}; }
+    catch(e){ return {}; }
+  }
+  function setU(u){
+    try { localStorage.setItem(KEY, JSON.stringify(u)); } catch(e){}
+  }
+  function ensureWave7(){
+    var u = getU();
+    u.wave7 = u.wave7 || {};
+    u.wave7.mealPlan = u.wave7.mealPlan || null;
+    u.wave7.groceries = u.wave7.groceries || null;
+    u.wave7.recipes = u.wave7.recipes || {};
+    u.wave7.plateAnalyses = u.wave7.plateAnalyses || [];
+    setU(u);
+    return u;
+  }
+  function todayKey(){
+    var d = new Date();
+    return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  }
+  function dayOfWeek(){
+    return new Date().getDay(); // 0=dim, 1=lun, ...
+  }
+  function dayName(idx){
+    return ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'][idx % 7];
+  }
+  function dayFullName(idx){
+    return ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'][idx % 7];
+  }
+
+  ensureWave7();
+  window.HIMA_WAVE7 = {
+    getU: getU, setU: setU, ensureWave7: ensureWave7,
+    todayKey: todayKey, dayOfWeek: dayOfWeek,
+    dayName: dayName, dayFullName: dayFullName
+  };
+  console.log('[W7] Bootstrap loaded');
+})();
+
+
+/* WAVE 7.1 - MEAL PLAN HEBDO IA
+   - Genere 7 jours x 4 repas (matin, midi, snack, soir)
+   - Calibre sur macros perso (kcal, prot, gluc, lip)
+   - Cache 7 jours, regeneration possible
+   - Affichage swipeable jour par jour
+*/
+
+(function wave7_1_mealPlan(){
+  'use strict';
+  if (!window.SV2_FLAGS.wave71) return;
+  var H = window.HIMA_WAVE7;
+
+  // --- Build prompt pour Claude ------------------------
+  function buildPrompt(){
+    var u = H.getU();
+    var profile = u.profile || {};
+    var macros = u.nv3 && u.nv3.macros || {};
+    var goal = profile.objectif || 'forme';
+    var kcal = macros.kcal || profile.kcal || 2200;
+    var prot = macros.prot || Math.round(kcal * 0.3 / 4);
+    var gluc = macros.gluc || Math.round(kcal * 0.45 / 4);
+    var lip = macros.lip || Math.round(kcal * 0.25 / 9);
+    var allergies = profile.allergies || '';
+    var preferences = profile.preferences || '';
+    var niveau = profile.cuisine || 'intermediaire';
+
+    return ''+
+      'Tu es nutritionniste-coach HIMA. Genere un PLAN REPAS HEBDOMADAIRE (7 jours, 4 repas/jour: matin, midi, snack, soir).\n\n'+
+      'PROFIL:\n'+
+      '- Objectif: '+goal+'\n'+
+      '- Macros cible/jour: '+kcal+'kcal, '+prot+'g prot, '+gluc+'g gluc, '+lip+'g lip\n'+
+      '- Niveau cuisine: '+niveau+'\n'+
+      (allergies ? '- Allergies/exclusions: '+allergies+'\n' : '')+
+      (preferences ? '- Preferences: '+preferences+'\n' : '')+
+      '\n'+
+      'CONTRAINTES:\n'+
+      '- VARIETE: aucun repas identique sur la semaine\n'+
+      '- REALISTE: ingredients trouvables en supermarche\n'+
+      '- BUDGET: pas de produits luxe ou trop chers\n'+
+      '- TEMPS: max 30min cuisine pour midi/soir, 5min snacks\n'+
+      '- MACROS: la somme journaliere doit etre proche de la cible (+/- 10%)\n\n'+
+      'Reponds STRICTEMENT en JSON, sans markdown, sans texte autour:\n'+
+      '{\n'+
+      '  "weekId": "'+H.todayKey()+'",\n'+
+      '  "days": [\n'+
+      '    {\n'+
+      '      "dayIdx": 1,\n'+
+      '      "dayName": "Lundi",\n'+
+      '      "totalKcal": <kcal jour>,\n'+
+      '      "meals": [\n'+
+      '        {"slot":"matin","name":"<nom court>","kcal":<n>,"prot":<n>,"gluc":<n>,"lip":<n>,"ingredients":[{"name":"<ing>","qty":<n>,"unit":"<g|ml|piece>"}],"emoji":"<emoji aliment>"},\n'+
+      '        {"slot":"midi", ...},\n'+
+      '        {"slot":"snack", ...},\n'+
+      '        {"slot":"soir", ...}\n'+
+      '      ]\n'+
+      '    },\n'+
+      '    ... 7 jours du Lundi au Dimanche\n'+
+      '  ]\n'+
+      '}';
+  }
+
+  // --- Call API ----------------------------------------
+  function callMealPlanAPI(){
+    var prompt = buildPrompt();
+    return fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        system: 'Tu reponds UNIQUEMENT en JSON valide. Pas de markdown, pas de preambule.',
+        messages: [{ role: 'user', content: prompt }],
+        max_tokens: 3500,
+        model: 'claude-sonnet-4-6'
+      })
+    }).then(function(r){
+      if (!r.ok) return r.json().then(function(e){ throw new Error('API '+r.status+': '+JSON.stringify(e).slice(0,200)); });
+      return r.json();
+    }).then(function(j){
+      var txt = '';
+      if (j.content && Array.isArray(j.content)){
+        txt = j.content.filter(function(x){return x.type==='text';}).map(function(x){return x.text;}).join('');
+      }
+      txt = txt.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
+      try { return JSON.parse(txt); }
+      catch(e){
+        var s = txt.indexOf('{');
+        var e2 = txt.lastIndexOf('}');
+        if (s >= 0 && e2 > s) return JSON.parse(txt.slice(s, e2+1));
+        throw new Error('JSON parse fail');
+      }
+    });
+  }
+
+  // --- Cache check -------------------------------------
+  function isCacheValid(){
+    var u = H.getU();
+    var mp = u.wave7 && u.wave7.mealPlan;
+    if (!mp || !mp.generatedAt) return false;
+    var age = Date.now() - mp.generatedAt;
+    return age < 7 * 24 * 3600 * 1000; // 7 jours
+  }
+
+  function saveMealPlan(plan){
+    var u = H.ensureWave7();
+    u.wave7.mealPlan = {
+      generatedAt: Date.now(),
+      data: plan
+    };
+    H.setU(u);
+  }
+
+  function getCurrentPlan(){
+    var u = H.getU();
+    var mp = u.wave7 && u.wave7.mealPlan;
+    if (!mp || !mp.data) return null;
+    return mp.data;
+  }
+
+  // --- UI Styles ---------------------------------------
+  function injectStyles(){
+    if (document.getElementById('w71-style')) return;
+    var s = document.createElement('style');
+    s.id = 'w71-style';
+    s.textContent = ''+
+      '.w71-section{margin:18px 16px 12px;padding:0}'+
+      '.w71-h{font-family:Bebas Neue,sans-serif;font-size:22px;letter-spacing:2px;color:#F0F0FF;margin:0 0 12px;display:flex;align-items:center;gap:8px}'+
+      '.w71-h-line{flex:1;height:1px;background:linear-gradient(90deg,rgba(240,240,255,0.15),transparent)}'+
+
+      '.w71-empty{background:linear-gradient(140deg,rgba(249,136,5,0.08),rgba(243,86,149,0.06));border:1px solid rgba(249,136,5,0.25);border-radius:18px;padding:20px;text-align:center}'+
+      '.w71-empty-h{font-family:Bebas Neue,sans-serif;font-size:18px;letter-spacing:2px;color:#F0F0FF;margin-bottom:6px}'+
+      '.w71-empty-p{font-family:DM Sans;font-size:12px;color:rgba(240,240,255,0.7);line-height:1.5;margin-bottom:14px;max-width:300px;margin-left:auto;margin-right:auto}'+
+
+      '.w71-cta{background:linear-gradient(135deg,#F98805,#F35695);border:none;color:#fff;font-family:Space Grotesk,sans-serif;font-size:13px;font-weight:600;padding:13px 22px;border-radius:14px;cursor:pointer;letter-spacing:1px;width:100%;max-width:280px}'+
+      '.w71-cta:active{transform:scale(0.97)}'+
+      '.w71-cta-small{padding:10px 18px;font-size:12px;background:rgba(240,240,255,0.06);color:rgba(240,240,255,0.8)}'+
+
+      '.w71-card{background:linear-gradient(140deg,rgba(240,240,255,0.04),rgba(240,240,255,0.02));border:1px solid rgba(240,240,255,0.06);border-radius:18px;padding:14px;margin-bottom:12px}'+
+
+      '.w71-days{display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;margin-bottom:12px;padding:4px 0}'+
+      '.w71-days::-webkit-scrollbar{display:none}'+
+      '.w71-day{flex-shrink:0;background:rgba(240,240,255,0.04);border:1px solid rgba(240,240,255,0.06);border-radius:12px;padding:8px 12px;cursor:pointer;text-align:center;min-width:44px}'+
+      '.w71-day.on{background:linear-gradient(135deg,rgba(249,136,5,0.2),rgba(243,86,149,0.15));border-color:#F98805}'+
+      '.w71-day-n{font-family:DM Sans;font-size:9px;color:rgba(240,240,255,0.6);letter-spacing:1px;text-transform:uppercase}'+
+      '.w71-day-i{font-family:Bebas Neue,sans-serif;font-size:18px;color:#F0F0FF;letter-spacing:1px;margin-top:2px}'+
+      '.w71-day.on .w71-day-i{color:#F98805}'+
+
+      '.w71-day-summary{font-family:DM Sans;font-size:11px;color:rgba(240,240,255,0.55);margin-bottom:12px;letter-spacing:0.5px}'+
+      '.w71-day-summary b{color:#DDE255}'+
+
+      '.w71-meals{display:flex;flex-direction:column;gap:8px}'+
+      '.w71-meal{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:10px;background:rgba(240,240,255,0.04);border:1px solid rgba(240,240,255,0.06);border-radius:12px;cursor:pointer;transition:transform 0.15s}'+
+      '.w71-meal:active{transform:scale(0.98)}'+
+      '.w71-meal-emj{font-size:22px}'+
+      '.w71-meal-mid{min-width:0}'+
+      '.w71-meal-slot{font-family:DM Sans;font-size:9px;color:rgba(240,240,255,0.55);letter-spacing:1.5px;text-transform:uppercase}'+
+      '.w71-meal-name{font-family:Space Grotesk;font-size:13px;font-weight:600;color:#F0F0FF;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}'+
+      '.w71-meal-macros{font-family:DM Sans;font-size:10px;color:rgba(240,240,255,0.5);margin-top:2px}'+
+      '.w71-meal-kcal{text-align:right}'+
+      '.w71-meal-kcal-v{font-family:Bebas Neue,sans-serif;font-size:18px;letter-spacing:1px;color:#F98805;line-height:1}'+
+      '.w71-meal-kcal-l{font-family:DM Sans;font-size:9px;color:rgba(240,240,255,0.5);letter-spacing:1px}'+
+
+      '.w71-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}'+
+      '.w71-action{background:rgba(240,240,255,0.04);border:1px solid rgba(240,240,255,0.06);color:#F0F0FF;font-family:DM Sans;font-size:11px;font-weight:600;padding:10px;border-radius:12px;cursor:pointer;letter-spacing:0.5px}'+
+      '.w71-action:active{transform:scale(0.97)}'+
+      '.w71-action.primary{background:linear-gradient(135deg,rgba(221,226,85,0.2),rgba(249,136,5,0.15));border-color:rgba(221,226,85,0.4)}'+
+
+      '.w71-loading{padding:30px 20px;text-align:center}'+
+      '.w71-loading-ring{width:50px;height:50px;border-radius:50%;border:3px solid rgba(240,240,255,0.1);border-top-color:#F98805;margin:0 auto 14px;animation:w71spin 1s linear infinite}'+
+      '@keyframes w71spin{to{transform:rotate(360deg)}}'+
+      '.w71-loading-msg{font-family:Bebas Neue,sans-serif;font-size:16px;letter-spacing:2px;color:#F0F0FF;margin-bottom:4px}'+
+      '.w71-loading-sub{font-family:DM Sans;font-size:11px;color:rgba(240,240,255,0.55);line-height:1.4}';
+    document.head.appendChild(s);
+  }
+
+  // --- State ----------------------------------------
+  var state = {
+    selectedDay: -1, // -1 = aujourd'hui
+    generating: false
+  };
+
+  // --- Render principal ----------------------------
+  function renderInto(){
+    var host = document.getElementById('nv3-root');
+    if (!host) return;
+
+    var slot = host.querySelector('#w71-slot');
+    if (!slot){
+      slot = document.createElement('div');
+      slot.id = 'w71-slot';
+      host.appendChild(slot);
+    }
+
+    var plan = isCacheValid() ? getCurrentPlan() : null;
+
+    if (state.generating){
+      slot.innerHTML = ''+
+        '<div class="w71-section">'+
+          '<div class="w71-h">PLAN REPAS<div class="w71-h-line"></div></div>'+
+          '<div class="w71-card">'+
+            '<div class="w71-loading">'+
+              '<div class="w71-loading-ring"></div>'+
+              '<div class="w71-loading-msg">GENERATION EN COURS</div>'+
+              '<div class="w71-loading-sub">HIMA cree ton plan repas perso pour 7 jours.<br>~10 sec.</div>'+
+            '</div>'+
+          '</div>'+
+        '</div>';
+      return;
+    }
+
+    if (!plan){
+      slot.innerHTML = ''+
+        '<div class="w71-section">'+
+          '<div class="w71-h">PLAN REPAS<div class="w71-h-line"></div></div>'+
+          '<div class="w71-empty">'+
+            '<div class="w71-empty-h">PAS ENCORE DE PLAN</div>'+
+            '<div class="w71-empty-p">Genere ton plan repas hebdomadaire perso. 7 jours, 4 repas/jour, calibres sur tes macros.</div>'+
+            '<button class="w71-cta" id="w71-gen">Generer mon plan</button>'+
+          '</div>'+
+        '</div>';
+      var b = slot.querySelector('#w71-gen');
+      if (b) b.addEventListener('click', generatePlan);
+      return;
+    }
+
+    // Plan dispo : render
+    renderPlan(slot, plan);
+  }
+
+  function renderPlan(slot, plan){
+    var todayIdx = new Date().getDay(); // 0=dim, on remap 1-7
+    var todayMapped = todayIdx === 0 ? 7 : todayIdx;
+
+    var selectedIdx = state.selectedDay === -1 ? todayMapped : state.selectedDay;
+    var selectedDay = (plan.days || []).find(function(d){ return d.dayIdx === selectedIdx; });
+    if (!selectedDay) selectedDay = plan.days && plan.days[0];
+
+    var daysTabsHtml = (plan.days || []).map(function(d){
+      var on = d.dayIdx === selectedIdx ? 'on' : '';
+      return '<div class="w71-day '+on+'" data-idx="'+d.dayIdx+'">'+
+        '<div class="w71-day-n">'+(d.dayName ? d.dayName.slice(0,3) : '?')+'</div>'+
+        '<div class="w71-day-i">'+d.dayIdx+'</div>'+
+      '</div>';
+    }).join('');
+
+    var mealsHtml = '';
+    if (selectedDay && selectedDay.meals){
+      mealsHtml = selectedDay.meals.map(function(m, mIdx){
+        return '<div class="w71-meal" data-day="'+selectedDay.dayIdx+'" data-meal="'+mIdx+'">'+
+          '<div class="w71-meal-emj">'+(m.emoji || '?')+'</div>'+
+          '<div class="w71-meal-mid">'+
+            '<div class="w71-meal-slot">'+(m.slot||'').toUpperCase()+'</div>'+
+            '<div class="w71-meal-name">'+(m.name||'')+'</div>'+
+            '<div class="w71-meal-macros">P '+(m.prot||0)+'g . G '+(m.gluc||0)+'g . L '+(m.lip||0)+'g</div>'+
+          '</div>'+
+          '<div class="w71-meal-kcal">'+
+            '<div class="w71-meal-kcal-v">'+(m.kcal||0)+'</div>'+
+            '<div class="w71-meal-kcal-l">KCAL</div>'+
+          '</div>'+
+        '</div>';
+      }).join('');
+    }
+
+    var ageDays = Math.floor((Date.now() - new Date(plan.weekId).getTime()) / 86400000);
+
+    slot.innerHTML = ''+
+      '<div class="w71-section">'+
+        '<div class="w71-h">PLAN REPAS<div class="w71-h-line"></div></div>'+
+        '<div class="w71-card">'+
+          '<div class="w71-days">'+daysTabsHtml+'</div>'+
+          (selectedDay ? '<div class="w71-day-summary">'+selectedDay.dayName+' . <b>'+(selectedDay.totalKcal||0)+' kcal</b> total</div>' : '')+
+          '<div class="w71-meals">'+mealsHtml+'</div>'+
+          '<div class="w71-actions">'+
+            '<button class="w71-action" id="w71-regen">Regenerer (' + (7 - ageDays) + 'j restants)</button>'+
+            '<button class="w71-action primary" id="w71-grocery">Liste courses</button>'+
+          '</div>'+
+        '</div>'+
+      '</div>';
+
+    // Bind events
+    slot.querySelectorAll('.w71-day').forEach(function(d){
+      d.addEventListener('click', function(){
+        state.selectedDay = parseInt(d.dataset.idx, 10);
+        renderInto();
+      });
+    });
+    slot.querySelectorAll('.w71-meal').forEach(function(m){
+      m.addEventListener('click', function(){
+        var dIdx = parseInt(m.dataset.day, 10);
+        var mIdx = parseInt(m.dataset.meal, 10);
+        openRecipe(dIdx, mIdx);
+      });
+    });
+    var regenBtn = slot.querySelector('#w71-regen');
+    if (regenBtn) regenBtn.addEventListener('click', function(){
+      if (confirm('Regenerer le plan ? L\'ancien sera remplace.')) generatePlan();
+    });
+    var groceryBtn = slot.querySelector('#w71-grocery');
+    if (groceryBtn) groceryBtn.addEventListener('click', function(){
+      if (window.HIMA_W72 && window.HIMA_W72.openGrocery) window.HIMA_W72.openGrocery();
+    });
+  }
+
+  function openRecipe(dayIdx, mealIdx){
+    if (window.HIMA_W73 && window.HIMA_W73.openRecipe){
+      window.HIMA_W73.openRecipe(dayIdx, mealIdx);
+    } else {
+      console.warn('[W7.1] Wave 7.3 (recipes) non chargee');
+    }
+  }
+
+  function generatePlan(){
+    state.generating = true;
+    renderInto();
+
+    callMealPlanAPI().then(function(plan){
+      saveMealPlan(plan);
+      state.generating = false;
+      renderInto();
+    }).catch(function(e){
+      console.error('[W7.1] Generation failed', e);
+      state.generating = false;
+      alert('Erreur generation plan : ' + e.message);
+      renderInto();
+    });
+  }
+
+  // --- Init -----------------------------------------
+  injectStyles();
+
+  // Hook switchTab nutrition
+  var _origSwitch = window.switchTab;
+  if (typeof _origSwitch === 'function'){
+    window.switchTab = function(name){
+      var r = _origSwitch.apply(this, arguments);
+      if (name === 't-nutr' || name === 'nutr' || name === 't-nutrition'){
+        setTimeout(renderInto, 150);
+      }
+      return r;
+    };
+  }
+
+  if (document.body && document.body.dataset.tab === 'nutr'){
+    setTimeout(renderInto, 200);
+  }
+
+  // Public API
+  window.HIMA_W71 = {
+    render: renderInto,
+    generate: generatePlan,
+    getCurrentPlan: getCurrentPlan,
+    isCacheValid: isCacheValid
+  };
+
+  console.log('[W7.1] Meal Plan IA loaded');
+})();
+
+
+/* WAVE 7.2 - LISTE DE COURSES
+   - Agrege tous les ingredients du meal plan
+   - Regroupe par rayon (frais / sec / surgele / autre)
+   - Quantites totalisees
+   - Tap pour cocher, export texte
+*/
+
+(function wave7_2_grocery(){
+  'use strict';
+  if (!window.SV2_FLAGS.wave72) return;
+  var H = window.HIMA_WAVE7;
+
+  // --- Categorisation par rayon --------------------
+  function categorize(ingredientName){
+    var n = (ingredientName || '').toLowerCase();
+    // Frais
+    if (/poulet|boeuf|viande|porc|veau|agneau|saucisse|jambon|lardon|charcuterie|escalope|steak|hache/.test(n)) return 'Frais - Viande';
+    if (/poisson|saumon|thon|cabillaud|merlu|sardine|maquereau|crevette|fruits de mer/.test(n)) return 'Frais - Poisson';
+    if (/oeuf|fromage|yaourt|lait|beurre|creme|skyr|cottage|mozzarella|feta|parmesan|emmental|chevre/.test(n)) return 'Frais - Cremerie';
+    if (/salade|epinard|tomate|concombre|poivron|courgette|brocoli|chou|carotte|oignon|ail|champignon|aubergine|haricot|petit pois|avocat|asperge|radis|celeri|fenouil|poireau/.test(n)) return 'Frais - Legumes';
+    if (/pomme|banane|orange|fraise|framboise|myrtille|kiwi|raisin|pasteque|melon|peche|ananas|mangue|citron|pamplemousse|abricot|cerise|poire/.test(n)) return 'Frais - Fruits';
+
+    // Sec
+    if (/riz|pates|spaghetti|penne|fusilli|quinoa|boulgour|couscous|semoule|millet|sarrasin|orge/.test(n)) return 'Sec - Feculents';
+    if (/pain|baguette|biscotte|wrap|tortilla|pita|brioche/.test(n)) return 'Sec - Boulangerie';
+    if (/lentille|haricot sec|pois chiche|feve|edamame/.test(n)) return 'Sec - Legumineuses';
+    if (/amande|noix|noisette|cajou|pistache|pignon|graine|chia|lin|tournesol|sesame/.test(n)) return 'Sec - Oleagineux';
+    if (/huile|vinaigre|sauce|moutarde|mayonnaise|ketchup|soja|tabasco|tahini|pesto/.test(n)) return 'Sec - Condiments';
+    if (/sel|poivre|cumin|paprika|curcuma|herbes|thym|romarin|basilic|persil|origan|cannelle|muscade|gingembre|piment/.test(n)) return 'Sec - Epices';
+    if (/cereales|muesli|granola|flocon|porridge|avoine/.test(n)) return 'Sec - Petit-dejeuner';
+    if (/confiture|miel|sirop|sucre|farine|levure|chocolat|cacao/.test(n)) return 'Sec - Sucre/Patisserie';
+
+    // Surgele
+    if (/surgel|congel|glace|sorbet/.test(n)) return 'Surgele';
+
+    // Boissons
+    if (/eau|jus|boisson|the|cafe|infusion|biere|vin|alcool|sirop/.test(n)) return 'Boissons';
+
+    // Default
+    return 'Autres';
+  }
+
+  function aggregateIngredients(){
+    var plan = window.HIMA_W71 && window.HIMA_W71.getCurrentPlan && window.HIMA_W71.getCurrentPlan();
+    if (!plan || !plan.days) return {};
+    var agg = {}; // key = "name|unit", value = { name, unit, total, category }
+    plan.days.forEach(function(d){
+      (d.meals || []).forEach(function(m){
+        (m.ingredients || []).forEach(function(ing){
+          var key = (ing.name || '').toLowerCase() + '|' + (ing.unit || '');
+          if (!agg[key]){
+            agg[key] = {
+              name: ing.name,
+              unit: ing.unit || '',
+              total: 0,
+              category: categorize(ing.name)
+            };
+          }
+          agg[key].total += parseFloat(ing.qty || 0);
+        });
+      });
+    });
+    // Grouper par categorie
+    var byCat = {};
+    Object.values(agg).forEach(function(item){
+      byCat[item.category] = byCat[item.category] || [];
+      byCat[item.category].push(item);
+    });
+    return byCat;
+  }
+
+  function getCheckedState(){
+    var u = H.getU();
+    return (u.wave7 && u.wave7.groceries && u.wave7.groceries.checked) || {};
+  }
+
+  function setCheckedState(checked){
+    var u = H.ensureWave7();
+    u.wave7.groceries = u.wave7.groceries || {};
+    u.wave7.groceries.checked = checked;
+    H.setU(u);
+  }
+
+  // --- UI Modal -------------------------------------
+  function injectStyles(){
+    if (document.getElementById('w72-style')) return;
+    var s = document.createElement('style');
+    s.id = 'w72-style';
+    s.textContent = ''+
+      '.w72-modal{position:fixed;inset:0;z-index:9999;background:#080810;display:none;flex-direction:column;animation:w72fade 0.2s}'+
+      '.w72-modal.on{display:flex}'+
+      '@keyframes w72fade{from{opacity:0}to{opacity:1}}'+
+
+      '.w72-top{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid rgba(240,240,255,0.06)}'+
+      '.w72-close{background:rgba(240,240,255,0.08);border:none;color:#F0F0FF;width:36px;height:36px;border-radius:50%;font-size:18px;cursor:pointer}'+
+      '.w72-ttl{font-family:Bebas Neue,sans-serif;font-size:18px;letter-spacing:2px;color:#F0F0FF}'+
+      '.w72-export{background:linear-gradient(135deg,#F98805,#F35695);border:none;color:#fff;font-family:Space Grotesk;font-size:11px;font-weight:600;padding:8px 14px;border-radius:10px;cursor:pointer;letter-spacing:1px}'+
+
+      '.w72-body{flex:1;overflow-y:auto;padding:14px 16px 24px;-webkit-overflow-scrolling:touch}'+
+      '.w72-body::-webkit-scrollbar{display:none}'+
+
+      '.w72-empty{padding:40px 20px;text-align:center;font-family:DM Sans;font-size:13px;color:rgba(240,240,255,0.6);line-height:1.5}'+
+
+      '.w72-cat{margin-bottom:18px}'+
+      '.w72-cat-h{font-family:Bebas Neue,sans-serif;font-size:14px;letter-spacing:2px;color:#F98805;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid rgba(249,136,5,0.2)}'+
+      '.w72-items{display:flex;flex-direction:column;gap:6px}'+
+      '.w72-item{display:flex;align-items:center;gap:12px;padding:10px 12px;background:rgba(240,240,255,0.04);border:1px solid rgba(240,240,255,0.06);border-radius:10px;cursor:pointer;transition:all 0.15s}'+
+      '.w72-item.checked{opacity:0.45;background:rgba(221,226,85,0.06);border-color:rgba(221,226,85,0.15)}'+
+      '.w72-item.checked .w72-item-name{text-decoration:line-through}'+
+      '.w72-check{width:22px;height:22px;border-radius:6px;border:2px solid rgba(240,240,255,0.3);display:flex;align-items:center;justify-content:center;flex-shrink:0;background:transparent;color:#DDE255;font-size:14px;font-weight:700}'+
+      '.w72-item.checked .w72-check{background:#DDE255;border-color:#DDE255;color:#0f0f1f}'+
+      '.w72-item-name{flex:1;font-family:Space Grotesk;font-size:13px;color:#F0F0FF;text-transform:capitalize}'+
+      '.w72-item-qty{font-family:Bebas Neue,sans-serif;font-size:14px;letter-spacing:1px;color:#F98805}';
+    document.head.appendChild(s);
+  }
+
+  function formatQty(item){
+    var q = item.total;
+    if (q >= 1000 && item.unit === 'g') return (q/1000).toFixed(1).replace(/\.0$/,'')+' kg';
+    if (q >= 1000 && item.unit === 'ml') return (q/1000).toFixed(1).replace(/\.0$/,'')+' L';
+    if (item.unit === 'piece' || item.unit === 'unite' || item.unit === '') return Math.round(q) + ' x';
+    return Math.round(q) + (item.unit ? ' '+item.unit : '');
+  }
+
+  var modal = null;
+
+  function ensureModal(){
+    if (modal && document.body.contains(modal)) return modal;
+    modal = document.createElement('div');
+    modal.id = 'w72-modal';
+    modal.className = 'w72-modal';
+    document.body.appendChild(modal);
+    return modal;
+  }
+
+  function exportGrocery(byCat){
+    var lines = ['LISTE DE COURSES HIMA', '====================', ''];
+    Object.keys(byCat).sort().forEach(function(cat){
+      lines.push('-- ' + cat + ' --');
+      byCat[cat].forEach(function(item){
+        lines.push('[ ] ' + formatQty(item) + ' . ' + item.name);
+      });
+      lines.push('');
+    });
+    var txt = lines.join('\n');
+    if (navigator.share){
+      navigator.share({ title: 'Courses HIMA', text: txt }).catch(function(){
+        copyToClipboard(txt);
+      });
+    } else {
+      copyToClipboard(txt);
+    }
+  }
+
+  function copyToClipboard(txt){
+    try {
+      if (navigator.clipboard) navigator.clipboard.writeText(txt);
+      else {
+        var ta = document.createElement('textarea');
+        ta.value = txt;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+      }
+      alert('Liste copiee dans le presse-papier');
+    } catch(e){ alert('Copie impossible. Voici la liste:\n\n' + txt); }
+  }
+
+  function openGrocery(){
+    ensureModal();
+    var byCat = aggregateIngredients();
+    var checked = getCheckedState();
+    var catKeys = Object.keys(byCat).sort();
+
+    var bodyHtml = '';
+    if (!catKeys.length){
+      bodyHtml = '<div class="w72-empty">Pas de plan repas pour le moment.<br>Genere d\'abord ton plan pour voir ta liste de courses.</div>';
+    } else {
+      bodyHtml = catKeys.map(function(cat){
+        return '<div class="w72-cat">'+
+          '<div class="w72-cat-h">'+cat+'</div>'+
+          '<div class="w72-items">'+
+            byCat[cat].map(function(item, i){
+              var key = item.name+'|'+item.unit;
+              var isChecked = !!checked[key];
+              return '<div class="w72-item '+(isChecked?'checked':'')+'" data-key="'+key.replace(/"/g,'')+'">'+
+                '<div class="w72-check">'+(isChecked?'OK':'')+'</div>'+
+                '<div class="w72-item-name">'+item.name+'</div>'+
+                '<div class="w72-item-qty">'+formatQty(item)+'</div>'+
+              '</div>';
+            }).join('')+
+          '</div>'+
+        '</div>';
+      }).join('');
+    }
+
+    modal.innerHTML = ''+
+      '<div class="w72-top">'+
+        '<button class="w72-close" id="w72-close">x</button>'+
+        '<div class="w72-ttl">COURSES</div>'+
+        '<button class="w72-export" id="w72-export">Partager</button>'+
+      '</div>'+
+      '<div class="w72-body">'+bodyHtml+'</div>';
+
+    modal.classList.add('on');
+
+    modal.querySelector('#w72-close').addEventListener('click', function(){ modal.classList.remove('on'); });
+    var exp = modal.querySelector('#w72-export');
+    if (exp) exp.addEventListener('click', function(){ exportGrocery(byCat); });
+
+    modal.querySelectorAll('.w72-item').forEach(function(el){
+      el.addEventListener('click', function(){
+        var key = el.dataset.key;
+        var c = getCheckedState();
+        c[key] = !c[key];
+        setCheckedState(c);
+        el.classList.toggle('checked', c[key]);
+        el.querySelector('.w72-check').textContent = c[key] ? 'OK' : '';
+      });
+    });
+  }
+
+  injectStyles();
+
+  // Public API
+  window.HIMA_W72 = {
+    openGrocery: openGrocery,
+    aggregate: aggregateIngredients
+  };
+
+  console.log('[W7.2] Grocery list loaded');
+})();
+
+
+/* WAVE 7.3 - RECETTES GUIDEES + TIMER
+   - Tap sur un repas du plan -> modal recette
+   - Genere les etapes via Claude (cache)
+   - Timer integre par etape
+   - Bouton "J'ai cuisine" -> log auto
+*/
+
+(function wave7_3_recipes(){
+  'use strict';
+  if (!window.SV2_FLAGS.wave73) return;
+  var H = window.HIMA_WAVE7;
+
+  function getCachedRecipe(dayIdx, mealIdx){
+    var u = H.getU();
+    var key = dayIdx + '-' + mealIdx;
+    return u.wave7 && u.wave7.recipes && u.wave7.recipes[key];
+  }
+  function cacheRecipe(dayIdx, mealIdx, recipe){
+    var u = H.ensureWave7();
+    u.wave7.recipes = u.wave7.recipes || {};
+    u.wave7.recipes[dayIdx + '-' + mealIdx] = recipe;
+    H.setU(u);
+  }
+
+  function buildPrompt(meal){
+    var ingHtml = (meal.ingredients || []).map(function(i){
+      return '- ' + (i.qty || '?') + ' ' + (i.unit || '') + ' ' + (i.name || '');
+    }).join('\n');
+
+    return ''+
+      'Tu es chef cuisinier coach HIMA. Genere une recette etape par etape pour:\n\n'+
+      'PLAT: '+meal.name+'\n'+
+      'INGREDIENTS:\n'+ingHtml+'\n\n'+
+      'CONTRAINTES:\n'+
+      '- 5 a 8 etapes claires et simples\n'+
+      '- Indique le temps en secondes pour les etapes avec cuisson/repos\n'+
+      '- Vocabulaire accessible (pas de "abaisser" sans "etaler", etc.)\n'+
+      '- Tutoiement\n\n'+
+      'Reponds STRICTEMENT en JSON:\n'+
+      '{\n'+
+      '  "name": "'+meal.name+'",\n'+
+      '  "totalTime": <secondes total>,\n'+
+      '  "tips": "<1 phrase astuce>",\n'+
+      '  "steps": [\n'+
+      '    {"i":1, "text":"<instruction>", "timer":<sec ou null>}\n'+
+      '  ]\n'+
+      '}';
+  }
+
+  function callRecipeAPI(meal){
+    return fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        system: 'Tu reponds UNIQUEMENT en JSON valide. Pas de markdown.',
+        messages: [{ role: 'user', content: buildPrompt(meal) }],
+        max_tokens: 1500,
+        model: 'claude-sonnet-4-6'
+      })
+    }).then(function(r){
+      if (!r.ok) return r.json().then(function(e){ throw new Error('API '+r.status); });
+      return r.json();
+    }).then(function(j){
+      var txt = (j.content||[]).filter(function(x){return x.type==='text';}).map(function(x){return x.text;}).join('');
+      txt = txt.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
+      try { return JSON.parse(txt); }
+      catch(e){
+        var s=txt.indexOf('{'), e2=txt.lastIndexOf('}');
+        if (s>=0 && e2>s) return JSON.parse(txt.slice(s, e2+1));
+        throw e;
+      }
+    });
+  }
+
+  function injectStyles(){
+    if (document.getElementById('w73-style')) return;
+    var s = document.createElement('style');
+    s.id = 'w73-style';
+    s.textContent = ''+
+      '.w73-modal{position:fixed;inset:0;z-index:10000;background:#080810;display:none;flex-direction:column;animation:w73fade 0.2s}'+
+      '.w73-modal.on{display:flex}'+
+      '@keyframes w73fade{from{opacity:0}to{opacity:1}}'+
+
+      '.w73-top{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid rgba(240,240,255,0.06)}'+
+      '.w73-close{background:rgba(240,240,255,0.08);border:none;color:#F0F0FF;width:36px;height:36px;border-radius:50%;font-size:18px;cursor:pointer}'+
+      '.w73-ttl{font-family:Bebas Neue,sans-serif;font-size:16px;letter-spacing:2px;color:#F0F0FF;flex:1;text-align:center;padding:0 8px}'+
+
+      '.w73-body{flex:1;overflow-y:auto;padding:14px 16px 24px;-webkit-overflow-scrolling:touch}'+
+      '.w73-body::-webkit-scrollbar{display:none}'+
+
+      '.w73-meal-hd{margin-bottom:18px;text-align:center}'+
+      '.w73-meal-name{font-family:Bebas Neue,sans-serif;font-size:26px;letter-spacing:2px;color:#F0F0FF;line-height:1.1}'+
+      '.w73-meal-time{font-family:DM Sans;font-size:11px;color:#F98805;letter-spacing:1px;margin-top:4px}'+
+
+      '.w73-tips{background:linear-gradient(135deg,rgba(221,226,85,0.1),rgba(249,136,5,0.06));border:1px solid rgba(221,226,85,0.25);border-left:3px solid #DDE255;border-radius:12px;padding:10px 14px;margin-bottom:18px;font-family:DM Sans;font-size:12px;color:#F0F0FF;line-height:1.5}'+
+
+      '.w73-ing-h{font-family:Bebas Neue,sans-serif;font-size:13px;letter-spacing:2px;color:#F98805;margin-bottom:8px}'+
+      '.w73-ings{display:flex;flex-direction:column;gap:4px;margin-bottom:18px;padding:12px;background:rgba(240,240,255,0.03);border-radius:12px}'+
+      '.w73-ing{font-family:DM Sans;font-size:12px;color:rgba(240,240,255,0.85);display:flex;justify-content:space-between}'+
+      '.w73-ing b{color:#F98805;font-family:Bebas Neue,sans-serif;font-size:13px;letter-spacing:1px}'+
+
+      '.w73-step-h{font-family:Bebas Neue,sans-serif;font-size:13px;letter-spacing:2px;color:#F98805;margin-bottom:8px}'+
+      '.w73-steps{display:flex;flex-direction:column;gap:10px}'+
+      '.w73-step{display:grid;grid-template-columns:38px 1fr auto;gap:12px;align-items:start;padding:14px;background:rgba(240,240,255,0.04);border:1px solid rgba(240,240,255,0.06);border-radius:14px;transition:all 0.2s}'+
+      '.w73-step.active{border-color:#F98805;background:rgba(249,136,5,0.08)}'+
+      '.w73-step.done{opacity:0.55;background:rgba(221,226,85,0.04);border-color:rgba(221,226,85,0.15)}'+
+      '.w73-step-i{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#F98805,#F35695);color:#fff;font-family:Bebas Neue,sans-serif;font-size:18px;display:flex;align-items:center;justify-content:center;letter-spacing:1px}'+
+      '.w73-step.done .w73-step-i{background:#DDE255;color:#0f0f1f}'+
+      '.w73-step-txt{font-family:DM Sans;font-size:13px;color:#F0F0FF;line-height:1.5}'+
+      '.w73-timer{flex-shrink:0}'+
+      '.w73-timer-btn{background:linear-gradient(135deg,#F98805,#F35695);border:none;color:#fff;font-family:Bebas Neue,sans-serif;font-size:14px;letter-spacing:1px;padding:8px 12px;border-radius:10px;cursor:pointer;min-width:64px}'+
+      '.w73-timer-btn:active{transform:scale(0.94)}'+
+      '.w73-timer-btn.running{background:#F35695;animation:w73pulse 1s infinite}'+
+      '@keyframes w73pulse{0%,100%{opacity:1}50%{opacity:0.6}}'+
+
+      '.w73-done-btn{background:linear-gradient(135deg,#DDE255,#F98805);border:none;color:#0f0f1f;font-family:Space Grotesk;font-size:13px;font-weight:600;padding:14px;border-radius:14px;cursor:pointer;width:100%;margin-top:18px;letter-spacing:1px}'+
+
+      '.w73-loading{padding:60px 20px;text-align:center}'+
+      '.w73-loading-ring{width:50px;height:50px;border-radius:50%;border:3px solid rgba(240,240,255,0.1);border-top-color:#F98805;margin:0 auto 14px;animation:w73spin 1s linear infinite}'+
+      '@keyframes w73spin{to{transform:rotate(360deg)}}'+
+      '.w73-loading-msg{font-family:Bebas Neue,sans-serif;font-size:16px;letter-spacing:2px;color:#F0F0FF}';
+    document.head.appendChild(s);
+  }
+
+  var modal = null;
+  var activeTimers = {};
+
+  function ensureModal(){
+    if (modal && document.body.contains(modal)) return modal;
+    modal = document.createElement('div');
+    modal.id = 'w73-modal';
+    modal.className = 'w73-modal';
+    document.body.appendChild(modal);
+    return modal;
+  }
+
+  function formatTime(sec){
+    var m = Math.floor(sec / 60);
+    var s = sec % 60;
+    if (m === 0) return s+'s';
+    if (s === 0) return m+'min';
+    return m+'m'+String(s).padStart(2,'0');
+  }
+
+  function startTimer(stepEl, durationSec){
+    var btn = stepEl.querySelector('.w73-timer-btn');
+    if (!btn) return;
+    if (btn.classList.contains('running')){
+      // Stop
+      var id = btn.dataset.timerId;
+      if (id && activeTimers[id]) clearInterval(activeTimers[id]);
+      delete activeTimers[id];
+      btn.classList.remove('running');
+      btn.textContent = formatTime(durationSec);
+      return;
+    }
+    // Start
+    var remaining = durationSec;
+    var id = 'w73-' + Date.now();
+    btn.dataset.timerId = id;
+    btn.classList.add('running');
+    btn.textContent = formatTime(remaining);
+    activeTimers[id] = setInterval(function(){
+      remaining--;
+      btn.textContent = formatTime(Math.max(0, remaining));
+      if (remaining <= 0){
+        clearInterval(activeTimers[id]);
+        delete activeTimers[id];
+        btn.classList.remove('running');
+        btn.textContent = 'OK';
+        if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+        stepEl.classList.add('done');
+        try {
+          var snd = new Audio('data:audio/wav;base64,UklGRiYAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQIAAAD//w==');
+          snd.play().catch(function(){});
+        } catch(e){}
+      }
+    }, 1000);
+  }
+
+  function renderRecipe(recipe, meal){
+    var ingHtml = (meal.ingredients||[]).map(function(i){
+      return '<div class="w73-ing"><span>'+i.name+'</span><b>'+(i.qty||'?')+' '+(i.unit||'')+'</b></div>';
+    }).join('');
+
+    var stepsHtml = (recipe.steps||[]).map(function(s, i){
+      var timerHtml = '';
+      if (s.timer && s.timer > 0){
+        timerHtml = '<div class="w73-timer"><button class="w73-timer-btn">'+formatTime(s.timer)+'</button></div>';
+      }
+      return '<div class="w73-step" data-i="'+i+'" data-timer="'+(s.timer||0)+'">'+
+        '<div class="w73-step-i">'+(s.i||i+1)+'</div>'+
+        '<div class="w73-step-txt">'+s.text+'</div>'+
+        timerHtml+
+      '</div>';
+    }).join('');
+
+    modal.innerHTML = ''+
+      '<div class="w73-top">'+
+        '<button class="w73-close" id="w73-close">x</button>'+
+        '<div class="w73-ttl">RECETTE</div>'+
+        '<div style="width:36px"></div>'+
+      '</div>'+
+      '<div class="w73-body">'+
+        '<div class="w73-meal-hd">'+
+          '<div class="w73-meal-name">'+(meal.emoji||'')+' '+meal.name+'</div>'+
+          '<div class="w73-meal-time">'+formatTime(recipe.totalTime||0)+' . '+(meal.kcal||0)+' kcal</div>'+
+        '</div>'+
+        (recipe.tips ? '<div class="w73-tips">Astuce : '+recipe.tips+'</div>' : '')+
+        '<div class="w73-ing-h">INGREDIENTS</div>'+
+        '<div class="w73-ings">'+ingHtml+'</div>'+
+        '<div class="w73-step-h">PREPARATION</div>'+
+        '<div class="w73-steps">'+stepsHtml+'</div>'+
+        '<button class="w73-done-btn" id="w73-done">J\'ai cuisine ce plat</button>'+
+      '</div>';
+
+    modal.querySelector('#w73-close').addEventListener('click', closeModal);
+    modal.querySelectorAll('.w73-step').forEach(function(stepEl){
+      var timerBtn = stepEl.querySelector('.w73-timer-btn');
+      if (timerBtn){
+        var dur = parseInt(stepEl.dataset.timer, 10);
+        timerBtn.addEventListener('click', function(e){
+          e.stopPropagation();
+          startTimer(stepEl, dur);
+        });
+      }
+      stepEl.addEventListener('click', function(){
+        stepEl.classList.toggle('done');
+      });
+    });
+    modal.querySelector('#w73-done').addEventListener('click', function(){
+      logCookedMeal(meal);
+      closeModal();
+    });
+  }
+
+  function logCookedMeal(meal){
+    // Log dans Nutrition (compatible avec nv3 si dispo)
+    try {
+      var u = H.getU();
+      u.nv3 = u.nv3 || {};
+      u.nv3.logs = u.nv3.logs || {};
+      var t = H.todayKey();
+      u.nv3.logs[t] = u.nv3.logs[t] || [];
+      u.nv3.logs[t].push({
+        ts: Date.now(),
+        name: meal.name,
+        slot: meal.slot,
+        kcal: meal.kcal || 0,
+        prot: meal.prot || 0,
+        gluc: meal.gluc || 0,
+        lip: meal.lip || 0,
+        source: 'recipe'
+      });
+      H.setU(u);
+      alert('Bravo ! "' + meal.name + '" ajoute a ton journal du jour.');
+    } catch(e){
+      console.error('[W7.3] log fail', e);
+    }
+  }
+
+  function renderLoading(meal){
+    modal.innerHTML = ''+
+      '<div class="w73-top">'+
+        '<button class="w73-close" id="w73-close">x</button>'+
+        '<div class="w73-ttl">RECETTE</div>'+
+        '<div style="width:36px"></div>'+
+      '</div>'+
+      '<div class="w73-body">'+
+        '<div class="w73-loading">'+
+          '<div class="w73-loading-ring"></div>'+
+          '<div class="w73-loading-msg">RECETTE EN COURS</div>'+
+          '<div style="font-family:DM Sans;font-size:11px;color:rgba(240,240,255,0.55);margin-top:8px">HIMA prepare les etapes pour "'+meal.name+'"</div>'+
+        '</div>'+
+      '</div>';
+    var btn = modal.querySelector('#w73-close');
+    if (btn) btn.addEventListener('click', closeModal);
+  }
+
+  function openRecipe(dayIdx, mealIdx){
+    var plan = window.HIMA_W71 && window.HIMA_W71.getCurrentPlan();
+    if (!plan) return;
+    var day = (plan.days||[]).find(function(d){ return d.dayIdx === dayIdx; });
+    if (!day) return;
+    var meal = (day.meals||[])[mealIdx];
+    if (!meal) return;
+
+    ensureModal();
+    modal.classList.add('on');
+
+    var cached = getCachedRecipe(dayIdx, mealIdx);
+    if (cached){
+      renderRecipe(cached, meal);
+      return;
+    }
+
+    renderLoading(meal);
+    callRecipeAPI(meal).then(function(recipe){
+      cacheRecipe(dayIdx, mealIdx, recipe);
+      renderRecipe(recipe, meal);
+    }).catch(function(e){
+      console.error('[W7.3] recipe fail', e);
+      // Fallback : recette generique
+      var fallback = {
+        name: meal.name,
+        totalTime: 600,
+        tips: 'Equilibre les saveurs (sel/poivre/acide)',
+        steps: [
+          { i: 1, text: 'Prepare et coupe tous les ingredients', timer: null },
+          { i: 2, text: 'Cuis les proteines a feu moyen-vif', timer: 480 },
+          { i: 3, text: 'Ajoute les legumes et fais sauter', timer: 300 },
+          { i: 4, text: 'Assaisonne et sers immediatement', timer: null }
+        ]
+      };
+      renderRecipe(fallback, meal);
+    });
+  }
+
+  function closeModal(){
+    // Stop tous les timers actifs
+    Object.keys(activeTimers).forEach(function(id){
+      clearInterval(activeTimers[id]);
+      delete activeTimers[id];
+    });
+    if (modal) modal.classList.remove('on');
+  }
+
+  injectStyles();
+
+  window.HIMA_W73 = {
+    openRecipe: openRecipe,
+    close: closeModal
+  };
+
+  console.log('[W7.3] Recipes guided loaded');
+})();
+
+
+/* WAVE 7.4 - PHOTO PLATE ANALYSIS (Claude Vision)
+   - Bouton "Scanner mon plat" dans Tab Nutrition
+   - Capture photo via getUserMedia ou file input
+   - Envoi a Claude Vision avec prompt nutritionniste
+   - Output : aliments + macros + confidence
+   - User valide/ajuste, log auto
+*/
+
+(function wave7_4_plateAnalysis(){
+  'use strict';
+  if (!window.SV2_FLAGS.wave74) return;
+  var H = window.HIMA_WAVE7;
+
+  function injectStyles(){
+    if (document.getElementById('w74-style')) return;
+    var s = document.createElement('style');
+    s.id = 'w74-style';
+    s.textContent = ''+
+      '.w74-section{margin:14px 16px 12px}'+
+      '.w74-h{font-family:Bebas Neue,sans-serif;font-size:22px;letter-spacing:2px;color:#F0F0FF;margin:0 0 12px;display:flex;align-items:center;gap:8px}'+
+      '.w74-h-line{flex:1;height:1px;background:linear-gradient(90deg,rgba(240,240,255,0.15),transparent)}'+
+      '.w74-cta{background:linear-gradient(135deg,rgba(249,136,5,0.15),rgba(243,86,149,0.15));border:1px solid rgba(249,136,5,0.4);color:#F0F0FF;border-radius:18px;padding:18px;cursor:pointer;text-align:left;width:100%;display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:center}'+
+      '.w74-cta-emj{font-size:32px}'+
+      '.w74-cta-t{font-family:Bebas Neue,sans-serif;font-size:18px;letter-spacing:2px;color:#F0F0FF}'+
+      '.w74-cta-s{font-family:DM Sans;font-size:11px;color:rgba(240,240,255,0.6);margin-top:2px;letter-spacing:0.3px}'+
+
+      '.w74-modal{position:fixed;inset:0;z-index:10001;background:#080810;display:none;flex-direction:column;animation:w74fade 0.2s}'+
+      '.w74-modal.on{display:flex}'+
+      '@keyframes w74fade{from{opacity:0}to{opacity:1}}'+
+
+      '.w74-top{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid rgba(240,240,255,0.06)}'+
+      '.w74-close{background:rgba(240,240,255,0.08);border:none;color:#F0F0FF;width:36px;height:36px;border-radius:50%;font-size:18px;cursor:pointer}'+
+      '.w74-ttl{font-family:Bebas Neue,sans-serif;font-size:16px;letter-spacing:2px;color:#F0F0FF}'+
+
+      '.w74-body{flex:1;overflow-y:auto;padding:14px 16px 24px;-webkit-overflow-scrolling:touch}'+
+      '.w74-body::-webkit-scrollbar{display:none}'+
+
+      '.w74-preview{width:100%;border-radius:14px;overflow:hidden;background:#000;margin-bottom:18px;display:flex;align-items:center;justify-content:center;max-height:300px}'+
+      '.w74-preview img{max-width:100%;max-height:300px;display:block}'+
+
+      '.w74-loading{padding:30px;text-align:center}'+
+      '.w74-loading-ring{width:50px;height:50px;border-radius:50%;border:3px solid rgba(240,240,255,0.1);border-top-color:#F98805;margin:0 auto 14px;animation:w74spin 1s linear infinite}'+
+      '@keyframes w74spin{to{transform:rotate(360deg)}}'+
+
+      '.w74-confidence{display:inline-block;font-family:DM Sans;font-size:10px;font-weight:700;padding:4px 10px;border-radius:10px;margin-bottom:14px;letter-spacing:1px}'+
+      '.w74-confidence.high{background:rgba(221,226,85,0.15);color:#DDE255}'+
+      '.w74-confidence.med{background:rgba(249,136,5,0.15);color:#F98805}'+
+      '.w74-confidence.low{background:rgba(243,86,149,0.15);color:#F35695}'+
+
+      '.w74-aliments{display:flex;flex-direction:column;gap:8px;margin-bottom:18px}'+
+      '.w74-al{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:rgba(240,240,255,0.04);border:1px solid rgba(240,240,255,0.06);border-radius:10px}'+
+      '.w74-al-n{font-family:Space Grotesk;font-size:13px;color:#F0F0FF;text-transform:capitalize}'+
+      '.w74-al-q{font-family:Bebas Neue,sans-serif;font-size:14px;letter-spacing:1px;color:#F98805}'+
+
+      '.w74-macros{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:18px}'+
+      '.w74-macro{background:rgba(240,240,255,0.04);border:1px solid rgba(240,240,255,0.06);border-radius:12px;padding:12px 8px;text-align:center}'+
+      '.w74-macro-v{font-family:Bebas Neue,sans-serif;font-size:22px;letter-spacing:1px;color:#F0F0FF;line-height:1}'+
+      '.w74-macro-l{font-family:DM Sans;font-size:9px;color:rgba(240,240,255,0.55);margin-top:4px;letter-spacing:1px}'+
+
+      '.w74-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}'+
+      '.w74-btn{padding:13px;border-radius:14px;border:none;font-family:Space Grotesk;font-size:13px;font-weight:600;cursor:pointer;letter-spacing:1px}'+
+      '.w74-btn-cancel{background:rgba(240,240,255,0.06);color:rgba(240,240,255,0.8)}'+
+      '.w74-btn-save{background:linear-gradient(135deg,#DDE255,#F98805);color:#0f0f1f}';
+    document.head.appendChild(s);
+  }
+
+  var modal = null;
+  function ensureModal(){
+    if (modal && document.body.contains(modal)) return modal;
+    modal = document.createElement('div');
+    modal.id = 'w74-modal';
+    modal.className = 'w74-modal';
+    document.body.appendChild(modal);
+    return modal;
+  }
+
+  function buildPrompt(){
+    return ''+
+      'Tu es nutritionniste expert. Analyse cette photo d\'un plat et estime les aliments + macros.\n\n'+
+      'Reponds STRICTEMENT en JSON, sans markdown:\n'+
+      '{\n'+
+      '  "aliments": [\n'+
+      '    {"name":"<nom court>","qty":<grammes estimes>,"unit":"g"}\n'+
+      '  ],\n'+
+      '  "totalKcal": <kcal>,\n'+
+      '  "totalProt": <g>,\n'+
+      '  "totalGluc": <g>,\n'+
+      '  "totalLip": <g>,\n'+
+      '  "confidence": <0-100>,\n'+
+      '  "comment": "<1 phrase, max 80c>"\n'+
+      '}\n\n'+
+      'Si la photo n\'est PAS un plat (ou floue) :\n'+
+      '{"aliments":[],"totalKcal":0,"totalProt":0,"totalGluc":0,"totalLip":0,"confidence":0,"comment":"Pas un plat detectable"}\n\n'+
+      'Sois realiste sur les quantites (assiette standard ~400-600g total).';
+  }
+
+  function callPlateAPI(dataUrl){
+    var match = /^data:(image\/[a-z]+);base64,(.+)$/.exec(dataUrl);
+    if (!match) return Promise.reject(new Error('Invalid image'));
+
+    return fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        system: 'Tu reponds UNIQUEMENT en JSON valide, sans markdown.',
+        messages: [{
+          role: 'user',
+          content: [
+            { type: 'image', source: { type: 'base64', media_type: match[1], data: match[2] } },
+            { type: 'text', text: buildPrompt() }
+          ]
+        }],
+        max_tokens: 1500,
+        model: 'claude-sonnet-4-6'
+      })
+    }).then(function(r){
+      if (!r.ok) return r.json().then(function(e){ throw new Error('API '+r.status); });
+      return r.json();
+    }).then(function(j){
+      var txt = (j.content||[]).filter(function(x){return x.type==='text';}).map(function(x){return x.text;}).join('');
+      txt = txt.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
+      try { return JSON.parse(txt); }
+      catch(e){
+        var s=txt.indexOf('{'), e2=txt.lastIndexOf('}');
+        if (s>=0 && e2>s) return JSON.parse(txt.slice(s, e2+1));
+        throw e;
+      }
+    });
+  }
+
+  function pickPhoto(){
+    return new Promise(function(resolve, reject){
+      var inp = document.createElement('input');
+      inp.type = 'file';
+      inp.accept = 'image/*';
+      inp.capture = 'environment';
+      inp.style.display = 'none';
+      inp.addEventListener('change', function(e){
+        var f = e.target.files && e.target.files[0];
+        if (!f){ reject(new Error('no file')); return; }
+        var r = new FileReader();
+        r.onload = function(){
+          // Resize si trop gros
+          var img = new Image();
+          img.onload = function(){
+            var maxDim = 1024;
+            var w = img.width, h = img.height;
+            if (w > maxDim || h > maxDim){
+              var ratio = w / h;
+              if (w > h){ w = maxDim; h = Math.round(maxDim / ratio); }
+              else { h = maxDim; w = Math.round(maxDim * ratio); }
+            }
+            var c = document.createElement('canvas');
+            c.width = w; c.height = h;
+            c.getContext('2d').drawImage(img, 0, 0, w, h);
+            resolve(c.toDataURL('image/jpeg', 0.85));
+          };
+          img.onerror = reject;
+          img.src = r.result;
+        };
+        r.onerror = reject;
+        r.readAsDataURL(f);
+      });
+      document.body.appendChild(inp);
+      inp.click();
+      setTimeout(function(){ if (inp.parentNode) inp.remove(); }, 30000);
+    });
+  }
+
+  function renderLoading(){
+    modal.innerHTML = ''+
+      '<div class="w74-top">'+
+        '<button class="w74-close" id="w74-close">x</button>'+
+        '<div class="w74-ttl">SCAN DU PLAT</div>'+
+        '<div style="width:36px"></div>'+
+      '</div>'+
+      '<div class="w74-body">'+
+        '<div class="w74-loading">'+
+          '<div class="w74-loading-ring"></div>'+
+          '<div style="font-family:Bebas Neue,sans-serif;font-size:18px;letter-spacing:2px;color:#F0F0FF">ANALYSE EN COURS</div>'+
+          '<div style="font-family:DM Sans;font-size:11px;color:rgba(240,240,255,0.55);margin-top:8px">HIMA identifie tes aliments...</div>'+
+        '</div>'+
+      '</div>';
+    modal.querySelector('#w74-close').addEventListener('click', closeModal);
+  }
+
+  function confidenceClass(c){
+    if (c >= 70) return 'high';
+    if (c >= 40) return 'med';
+    return 'low';
+  }
+  function confidenceLabel(c){
+    if (c >= 80) return 'TRES FIABLE';
+    if (c >= 60) return 'FIABLE';
+    if (c >= 40) return 'MOYEN';
+    return 'INCERTAIN';
+  }
+
+  function renderResult(result, photoUrl){
+    var alHtml = (result.aliments||[]).map(function(a){
+      return '<div class="w74-al">'+
+        '<div class="w74-al-n">'+(a.name||'?')+'</div>'+
+        '<div class="w74-al-q">'+(a.qty||0)+' '+(a.unit||'g')+'</div>'+
+      '</div>';
+    }).join('');
+
+    var c = result.confidence || 0;
+
+    modal.innerHTML = ''+
+      '<div class="w74-top">'+
+        '<button class="w74-close" id="w74-close">x</button>'+
+        '<div class="w74-ttl">RESULTAT</div>'+
+        '<div style="width:36px"></div>'+
+      '</div>'+
+      '<div class="w74-body">'+
+        '<div class="w74-preview"><img src="'+photoUrl+'"/></div>'+
+        '<div class="w74-confidence '+confidenceClass(c)+'">FIABILITE : '+c+'% - '+confidenceLabel(c)+'</div>'+
+        (result.comment ? '<div style="font-family:DM Sans;font-size:12px;color:rgba(240,240,255,0.7);line-height:1.5;margin-bottom:14px">'+result.comment+'</div>' : '')+
+        (alHtml ? '<div style="font-family:Bebas Neue,sans-serif;font-size:13px;letter-spacing:2px;color:#F98805;margin-bottom:8px">ALIMENTS DETECTES</div><div class="w74-aliments">'+alHtml+'</div>' : '')+
+        '<div class="w74-macros">'+
+          '<div class="w74-macro"><div class="w74-macro-v">'+(result.totalKcal||0)+'</div><div class="w74-macro-l">KCAL</div></div>'+
+          '<div class="w74-macro"><div class="w74-macro-v">'+(result.totalProt||0)+'g</div><div class="w74-macro-l">PROT</div></div>'+
+          '<div class="w74-macro"><div class="w74-macro-v">'+(result.totalGluc||0)+'g</div><div class="w74-macro-l">GLUC</div></div>'+
+          '<div class="w74-macro"><div class="w74-macro-v">'+(result.totalLip||0)+'g</div><div class="w74-macro-l">LIP</div></div>'+
+        '</div>'+
+        '<div class="w74-actions">'+
+          '<button class="w74-btn w74-btn-cancel" id="w74-cancel">Refaire</button>'+
+          '<button class="w74-btn w74-btn-save" id="w74-save">Logger</button>'+
+        '</div>'+
+      '</div>';
+
+    modal.querySelector('#w74-close').addEventListener('click', closeModal);
+    modal.querySelector('#w74-cancel').addEventListener('click', function(){
+      closeModal();
+      setTimeout(openScan, 200);
+    });
+    modal.querySelector('#w74-save').addEventListener('click', function(){
+      logPlate(result);
+      closeModal();
+    });
+  }
+
+  function logPlate(result){
+    var u = H.ensureWave7();
+    u.wave7.plateAnalyses.push({
+      ts: Date.now(),
+      date: H.todayKey(),
+      data: result
+    });
+    // Log dans nv3
+    u.nv3 = u.nv3 || {};
+    u.nv3.logs = u.nv3.logs || {};
+    var t = H.todayKey();
+    u.nv3.logs[t] = u.nv3.logs[t] || [];
+    u.nv3.logs[t].push({
+      ts: Date.now(),
+      name: 'Photo: ' + (result.aliments && result.aliments[0] && result.aliments[0].name || 'Plat'),
+      slot: 'auto',
+      kcal: result.totalKcal || 0,
+      prot: result.totalProt || 0,
+      gluc: result.totalGluc || 0,
+      lip: result.totalLip || 0,
+      source: 'plate-scan'
+    });
+    H.setU(u);
+    alert('Plat logge ! +' + (result.totalKcal || 0) + ' kcal');
+  }
+
+  function closeModal(){
+    if (modal) modal.classList.remove('on');
+  }
+
+  function openScan(){
+    ensureModal();
+    modal.classList.add('on');
+    renderLoading();
+
+    pickPhoto().then(function(dataUrl){
+      renderLoading();
+      callPlateAPI(dataUrl).then(function(result){
+        renderResult(result, dataUrl);
+      }).catch(function(e){
+        console.error('[W7.4] API fail', e);
+        modal.innerHTML = ''+
+          '<div class="w74-top"><button class="w74-close" id="w74-close">x</button><div class="w74-ttl">ERREUR</div><div style="width:36px"></div></div>'+
+          '<div class="w74-body"><div style="padding:40px 20px;text-align:center;font-family:DM Sans;color:rgba(240,240,255,0.7)">Analyse impossible. Reessaie.<br><br><small style="opacity:0.6">'+e.message+'</small></div></div>';
+        modal.querySelector('#w74-close').addEventListener('click', closeModal);
+      });
+    }).catch(function(e){
+      closeModal();
+    });
+  }
+
+  // --- Inject CTA dans Tab Nutrition ----------------
+  function renderInto(){
+    var host = document.getElementById('nv3-root');
+    if (!host) return;
+    var slot = host.querySelector('#w74-slot');
+    if (!slot){
+      slot = document.createElement('div');
+      slot.id = 'w74-slot';
+      host.appendChild(slot);
+    }
+    slot.innerHTML = ''+
+      '<div class="w74-section">'+
+        '<div class="w74-h">SCAN PHOTO<div class="w74-h-line"></div></div>'+
+        '<button class="w74-cta" id="w74-open">'+
+          '<div class="w74-cta-emj">[CAM]</div>'+
+          '<div>'+
+            '<div class="w74-cta-t">SCANNER MON PLAT</div>'+
+            '<div class="w74-cta-s">Prends en photo, HIMA identifie aliments et macros automatiquement</div>'+
+          '</div>'+
+        '</button>'+
+      '</div>';
+    var btn = slot.querySelector('#w74-open');
+    if (btn) btn.addEventListener('click', openScan);
+  }
+
+  injectStyles();
+
+  var _origSwitch = window.switchTab;
+  if (typeof _origSwitch === 'function'){
+    window.switchTab = function(name){
+      var r = _origSwitch.apply(this, arguments);
+      if (name === 't-nutr' || name === 'nutr' || name === 't-nutrition'){
+        setTimeout(renderInto, 200);
+      }
+      return r;
+    };
+  }
+  if (document.body && document.body.dataset.tab === 'nutr') setTimeout(renderInto, 250);
+
+  window.HIMA_W74 = {
+    open: openScan,
+    render: renderInto
+  };
+
+  console.log('[W7.4] Plate Analysis loaded');
+})();
+
+</script>
+
+
+
 
 
 
