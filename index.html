@@ -10017,7 +10017,9 @@ async function generateMonthlyPDF() {
       + '<div style="white-space:pre-wrap;margin-top:20px">' + txt.replace(/</g,'&lt;') + '</div>'
       + '<div style="margin-top:40px;padding-top:16px;border-top:1px solid #ddd;font-size:11px;color:#999;text-align:center">Généré par HIMA · ' + new Date().toLocaleDateString('fr-FR') + '</div>'
       + '<button onclick="window.print()" style="position:fixed;bottom:20px;right:20px;padding:12px 24px;background:#F98805;border:none;border-radius:99px;color:#fff;font-weight:700;font-size:15px;cursor:pointer">🖨️ Imprimer / PDF</button>'
-      + '</body></html>');
+      + '
+
+</body></html>');
     w.document.close();
     addH(['📄 Ton rapport mensuel est prêt ! Une nouvelle fen\u00eatre s\'est ouverte.']);
   } catch(e) {
@@ -18142,7 +18144,7 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
 
 <script>
 /* HIMA - WAVE 6.4+6.5+6.6 - GHOST POSE CORRIGE
-   v6.G.0 - MediaPipe + biomechanical rules + skeleton overlay
+   v6.G.1 - MutationObserver fallback (fix patch ordering)
 */
 
 /* HIMA - WAVE 6.4 + 6.5 + 6.6 - GHOST POSE CORRIGE
@@ -18619,29 +18621,94 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
 
   function patchReplay(){
     if (window.__w6g_replay_patched) return;
-    if (typeof window.HIMA_FORM_REPLAY === 'undefined' || !window.HIMA_FORM_REPLAY.open){
-      setTimeout(patchReplay, 300);
+    injectGhostStyles();
+
+    // STRATEGIE 1 : essayer de wrapper HIMA_FORM_REPLAY.open si dispo
+    if (window.HIMA_FORM_REPLAY && window.HIMA_FORM_REPLAY.open && !window.HIMA_FORM_REPLAY.__w6g_wrapped){
+      var origOpen = window.HIMA_FORM_REPLAY.open;
+      window.HIMA_FORM_REPLAY.open = function(formCheck, exoCtx){
+        var r = origOpen.apply(this, arguments);
+        // Trigger ghost UI install apres ouverture
+        setTimeout(function(){
+          tryInstallGhost(formCheck, exoCtx);
+        }, 100);
+        setTimeout(function(){
+          tryInstallGhost(formCheck, exoCtx);
+        }, 500);
+        return r;
+      };
+      window.HIMA_FORM_REPLAY.__w6g_wrapped = true;
+      console.log('[W6G] HIMA_FORM_REPLAY.open wrapped');
+    }
+
+    // STRATEGIE 2 : MutationObserver qui detecte l'ouverture du modal w63
+    // C'est le filet de secours qui ne depend pas du wrapper
+    if (!window.__w6g_observer){
+      var obs = new MutationObserver(function(mutations){
+        var modal = document.getElementById('w63-modal');
+        if (!modal) return;
+        if (modal.classList.contains('on') && !modal.querySelector('.w6g-svg')){
+          // Modal ouvert et pas encore d'UI ghost -> on installe
+          tryInstallGhost(null, null);
+        }
+      });
+      obs.observe(document.body, {
+        childList: true,
+        subtree: true,
+        attributes: true,
+        attributeFilter: ['class']
+      });
+      window.__w6g_observer = obs;
+      console.log('[W6G] MutationObserver actif sur w63-modal');
+    }
+
+    window.__w6g_replay_patched = true;
+    console.log('[W6G] Replay patched for ghost (dual strategy)');
+  }
+
+  // Helper : trouve le formCheck + exoCtx automatiquement si pas fournis
+  function tryInstallGhost(formCheck, exoCtx){
+    var modal = document.getElementById('w63-modal');
+    if (!modal || !modal.classList.contains('on')) return;
+    if (modal.querySelector('.w6g-svg')) return; // deja installe
+
+    // Si appele depuis le wrapper, on a les params
+    // Sinon, on essaye de recuperer le dernier formCheck depuis localStorage
+    if (!formCheck){
+      try {
+        var u = JSON.parse(localStorage.getItem('hima8') || '{}');
+        var allChecks = u.formChecks || {};
+        var keys = Object.keys(allChecks);
+        if (keys.length){
+          // Prendre le plus recent
+          var latest = null;
+          var latestExoId = null;
+          keys.forEach(function(eid){
+            var arr = allChecks[eid];
+            if (arr && arr.length){
+              var last = arr[arr.length-1];
+              if (!latest || last.ts > latest.ts){
+                latest = last;
+                latestExoId = eid;
+              }
+            }
+          });
+          if (latest){
+            formCheck = latest;
+            exoCtx = { exoId: latestExoId, exoName: latest.exoName || latestExoId };
+          }
+        }
+      } catch(e){
+        console.warn('[W6G] cannot recover formCheck from storage', e);
+      }
+    }
+
+    if (!formCheck){
+      console.warn('[W6G] no formCheck available, skip ghost install');
       return;
     }
 
-    injectGhostStyles();
-
-    var origOpen = window.HIMA_FORM_REPLAY.open;
-    window.HIMA_FORM_REPLAY.open = function(formCheck, exoCtx){
-      var r = origOpen.apply(this, arguments);
-
-      // Une fois le modal ouvert, ajouter le toggle + lancer detection
-      setTimeout(function(){
-        var modal = document.getElementById('w63-modal');
-        if (!modal || !modal.classList.contains('on')) return;
-        installGhostUI(modal, formCheck, exoCtx);
-      }, 100);
-
-      return r;
-    };
-
-    window.__w6g_replay_patched = true;
-    console.log('[W6G] Replay patched for ghost');
+    installGhostUI(modal, formCheck, exoCtx || {});
   }
 
   function installGhostUI(modal, formCheck, exoCtx){
@@ -18785,24 +18852,41 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
     svg.innerHTML = html;
   }
 
-  // Init patches
-  setTimeout(patchReplay, 500);
-  setTimeout(patchReplay, 2500);
-  setTimeout(patchReplay, 6000);
+  // Init : on lance patchReplay IMMEDIATEMENT
+  // (le MutationObserver compense l'ordre des waves)
+  if (document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', patchReplay);
+  } else {
+    patchReplay();
+  }
+  // Retry au cas ou (defensif)
+  setTimeout(patchReplay, 100);
+  setTimeout(patchReplay, 1000);
+  setTimeout(patchReplay, 3000);
 
-  // Public API
+  // Public API + forceInit pour debug
   window.HIMA_FORM_GHOST = {
     state: ghostState,
     loadMP: loadMediaPipe,
     detectPoses: detectPosesInVideo,
     correctPose: correctPose,
-    detectExoType: detectExoType
+    detectExoType: detectExoType,
+    forceInit: function(){
+      window.__w6g_replay_patched = false;
+      patchReplay();
+      tryInstallGhost(null, null);
+      return 'force init done. Check #w63-modal for ghost UI.';
+    },
+    installNow: tryInstallGhost
   };
 
   console.log('[W6G] Ghost system loaded');
 })();
 
 </script>
+
+
+
 
 
 
