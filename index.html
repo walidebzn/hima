@@ -19647,7 +19647,7 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
 
 <script>
 /* HIMA - WAVE 7 - NUTRITION COACH AVANCEE
-   v7.1.0 - fix JSON parsing robust + max_tokens 8000
+   v7.2.0 - day-by-day generation (7 small calls instead of 1 big)
 */
 
 /* HIMA - WAVE 7 - NUTRITION COACH AVANCEE
@@ -19730,68 +19730,69 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
   var H = window.HIMA_WAVE7;
 
   // --- Build prompt pour Claude ------------------------
-  function buildPrompt(){
+  function getProfileContext(){
     var u = H.getU();
     var profile = u.profile || {};
     var macros = u.nv3 && u.nv3.macros || {};
-    var goal = profile.objectif || 'forme';
     var kcal = macros.kcal || profile.kcal || 2200;
     var prot = macros.prot || Math.round(kcal * 0.3 / 4);
     var gluc = macros.gluc || Math.round(kcal * 0.45 / 4);
     var lip = macros.lip || Math.round(kcal * 0.25 / 9);
-    var allergies = profile.allergies || '';
-    var preferences = profile.preferences || '';
-    var niveau = profile.cuisine || 'intermediaire';
+    return {
+      goal: profile.objectif || 'forme',
+      kcal: kcal, prot: prot, gluc: gluc, lip: lip,
+      allergies: profile.allergies || '',
+      preferences: profile.preferences || '',
+      niveau: profile.cuisine || 'intermediaire'
+    };
+  }
 
+  function buildDayPrompt(dayIdx, dayName, ctx, otherDaysSummary){
     return ''+
-      'Tu es nutritionniste-coach HIMA. Genere un PLAN REPAS HEBDOMADAIRE (7 jours, 4 repas/jour: matin, midi, snack, soir).\n\n'+
+      'Tu es nutritionniste-coach HIMA. Genere les 4 repas du jour pour "'+dayName+'" (jour '+dayIdx+'/7).\n\n'+
       'PROFIL:\n'+
-      '- Objectif: '+goal+'\n'+
-      '- Macros cible/jour: '+kcal+'kcal, '+prot+'g prot, '+gluc+'g gluc, '+lip+'g lip\n'+
-      '- Niveau cuisine: '+niveau+'\n'+
-      (allergies ? '- Allergies/exclusions: '+allergies+'\n' : '')+
-      (preferences ? '- Preferences: '+preferences+'\n' : '')+
-      '\n'+
-      'CONTRAINTES:\n'+
-      '- VARIETE: aucun repas identique sur la semaine\n'+
-      '- REALISTE: ingredients trouvables en supermarche\n'+
-      '- BUDGET: pas de produits luxe ou trop chers\n'+
-      '- TEMPS: max 30min cuisine pour midi/soir, 5min snacks\n'+
-      '- MACROS: la somme journaliere doit etre proche de la cible (+/- 10%)\n\n'+
-      'Reponds STRICTEMENT en JSON, sans markdown, sans texte autour:\n'+
+      '- Objectif: '+ctx.goal+'\n'+
+      '- Macros cible/jour: '+ctx.kcal+'kcal, '+ctx.prot+'g prot, '+ctx.gluc+'g gluc, '+ctx.lip+'g lip\n'+
+      '- Niveau cuisine: '+ctx.niveau+'\n'+
+      (ctx.allergies ? '- Allergies: '+ctx.allergies+'\n' : '')+
+      (ctx.preferences ? '- Preferences: '+ctx.preferences+'\n' : '')+
+      (otherDaysSummary ? '\nA EVITER (deja prevus autres jours): '+otherDaysSummary+'\n' : '')+
+      '\nCONTRAINTES:\n'+
+      '- 4 repas: matin, midi, snack, soir\n'+
+      '- VARIETE par rapport aux autres jours\n'+
+      '- Ingredients trouvables en supermarche, budget normal\n'+
+      '- Max 30min cuisine pour midi/soir, 5min snacks\n'+
+      '- Total journalier proche de la cible (+/- 10%)\n\n'+
+      'Reponds STRICTEMENT en JSON, rien dautre:\n'+
       '{\n'+
-      '  "weekId": "'+H.todayKey()+'",\n'+
-      '  "days": [\n'+
-      '    {\n'+
-      '      "dayIdx": 1,\n'+
-      '      "dayName": "Lundi",\n'+
-      '      "totalKcal": <kcal jour>,\n'+
-      '      "meals": [\n'+
-      '        {"slot":"matin","name":"<nom court>","kcal":<n>,"prot":<n>,"gluc":<n>,"lip":<n>,"ingredients":[{"name":"<ing>","qty":<n>,"unit":"<g|ml|piece>"}],"emoji":"<emoji aliment>"},\n'+
-      '        {"slot":"midi", ...},\n'+
-      '        {"slot":"snack", ...},\n'+
-      '        {"slot":"soir", ...}\n'+
-      '      ]\n'+
-      '    },\n'+
-      '    ... 7 jours du Lundi au Dimanche\n'+
+      '  "dayIdx": '+dayIdx+',\n'+
+      '  "dayName": "'+dayName+'",\n'+
+      '  "totalKcal": <somme kcal jour>,\n'+
+      '  "meals": [\n'+
+      '    {"slot":"matin","name":"<nom court>","emoji":"<1 emoji>","kcal":<n>,"prot":<n>,"gluc":<n>,"lip":<n>,"ingredients":[{"name":"<ing>","qty":<n>,"unit":"g"}]},\n'+
+      '    {"slot":"midi", ...},\n'+
+      '    {"slot":"snack", ...},\n'+
+      '    {"slot":"soir", ...}\n'+
       '  ]\n'+
       '}';
   }
 
   // --- Call API ----------------------------------------
-  function callMealPlanAPI(){
-    var prompt = buildPrompt();
+  var DAY_NAMES = ['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche'];
+
+  function callOneDayAPI(dayIdx, dayName, ctx, otherDaysSummary){
+    var prompt = buildDayPrompt(dayIdx, dayName, ctx, otherDaysSummary);
     return fetch('/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         system: 'Tu reponds UNIQUEMENT en JSON valide. Pas de markdown, pas de preambule.',
         messages: [{ role: 'user', content: prompt }],
-        max_tokens: 8000,
+        max_tokens: 1500,
         model: 'claude-sonnet-4-6'
       })
     }).then(function(r){
-      if (!r.ok) return r.json().then(function(e){ throw new Error('API '+r.status+': '+JSON.stringify(e).slice(0,200)); });
+      if (!r.ok) return r.json().then(function(e){ throw new Error('API '+r.status); });
       return r.json();
     }).then(function(j){
       var txt = '';
@@ -19801,6 +19802,67 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
       txt = txt.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
       return parseRobustJSON(txt);
     });
+  }
+
+  function callMealPlanAPI(){
+    var ctx = getProfileContext();
+    // Lancer les 7 calls en parallele (ou sequentiellement pour rester sympa avec l'API)
+    // On fait 2 par 2 pour eviter rate limits, et chaque batch sait des plats deja generes
+    var allDays = [];
+    var generatedPlats = [];
+
+    function buildSummary(){
+      return generatedPlats.slice(-8).join(', '); // garder les 8 derniers plats en memoire
+    }
+
+    function processDay(idx){
+      if (idx >= 7){
+        return Promise.resolve({
+          weekId: H.todayKey(),
+          days: allDays
+        });
+      }
+      return callOneDayAPI(idx+1, DAY_NAMES[idx], ctx, buildSummary()).then(function(dayData){
+        if (dayData && dayData.meals){
+          allDays.push(dayData);
+          // Ajouter les noms des plats dans la liste anti-repetition
+          dayData.meals.forEach(function(m){
+            if (m && m.name) generatedPlats.push(m.name);
+          });
+        }
+        // Update UI loading
+        updateProgress(idx+1, 7);
+        return processDay(idx+1);
+      }).catch(function(e){
+        console.warn('[W7.1] Day '+(idx+1)+' failed, retry once', e.message);
+        // Retry 1x ce jour
+        return callOneDayAPI(idx+1, DAY_NAMES[idx], ctx, buildSummary()).then(function(dayData){
+          if (dayData && dayData.meals) allDays.push(dayData);
+          updateProgress(idx+1, 7);
+          return processDay(idx+1);
+        }).catch(function(e2){
+          console.error('[W7.1] Day '+(idx+1)+' failed twice, skip', e2.message);
+          // Ajouter un jour vide en fallback
+          allDays.push({
+            dayIdx: idx+1, dayName: DAY_NAMES[idx], totalKcal: 0,
+            meals: [], failed: true
+          });
+          updateProgress(idx+1, 7);
+          return processDay(idx+1);
+        });
+      });
+    }
+
+    return processDay(0);
+  }
+
+  function updateProgress(current, total){
+    var slot = document.querySelector('#w71-slot');
+    if (!slot) return;
+    var subEl = slot.querySelector('.w71-loading-sub');
+    if (subEl){
+      subEl.innerHTML = 'Jour <b style="color:#F98805">'+current+'/'+total+'</b> genere...';
+    }
   }
 
   function parseRobustJSON(txt){
