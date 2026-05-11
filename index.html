@@ -21112,6 +21112,912 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
 
 </script>
 
+<script>
+/* HIMA - WAVE 8 - MEMOIRE LONG-TERME + PERSONNALISATION
+   v8.0.0 - journal medical + memory injection + coach style + milestones
+*/
+
+/* HIMA - WAVE 8 - MEMOIRE LONG-TERME + PERSONNALISATION
+   8.1 - Journal medical (blessures, allergies, contre-indications, meds, conditions)
+   8.2 - Memoire conversationnelle 6 mois (digest journalier + injection contexte)
+   8.3 - Style coaching adaptatif (mentor/severe/bienveillant/pote/auto)
+   8.4 - Dates cles + milestones automatiques
+
+   Architecture :
+   - 1 IIFE bootstrap
+   - 4 IIFE features
+   - Kill switches : window.SV2_FLAGS.wave81/82/83/84
+   - Storage : U.wave8 = { medical, conversationMemory, coachStyle, milestones }
+
+   Lecon Wave 3 : 100% ASCII, no <\/script> in JS code
+*/
+
+(function wave8_boot(){
+  'use strict';
+  window.SV2_FLAGS = window.SV2_FLAGS || {};
+  Object.assign(window.SV2_FLAGS, {
+    wave81: window.SV2_FLAGS.wave81 !== false,
+    wave82: window.SV2_FLAGS.wave82 !== false,
+    wave83: window.SV2_FLAGS.wave83 !== false,
+    wave84: window.SV2_FLAGS.wave84 !== false
+  });
+
+  var KEY = 'hima8';
+  function getU(){
+    try { return JSON.parse(localStorage.getItem(KEY) || '{}') || {}; }
+    catch(e){ return {}; }
+  }
+  function setU(u){
+    try { localStorage.setItem(KEY, JSON.stringify(u)); } catch(e){}
+  }
+  function ensureWave8(){
+    var u = getU();
+    u.wave8 = u.wave8 || {};
+    u.wave8.medical = u.wave8.medical || {
+      injuries: [],
+      contraindications: [],
+      allergies: [],
+      medications: [],
+      conditions: [],
+      notes: ''
+    };
+    u.wave8.conversationMemory = u.wave8.conversationMemory || {
+      dailyDigests: {},
+      keyMoments: [],
+      lastDigestTs: 0
+    };
+    u.wave8.coachStyle = u.wave8.coachStyle || 'mentor';
+    u.wave8.milestones = u.wave8.milestones || {
+      firstUse: Date.now(),
+      seenMilestones: {}
+    };
+    setU(u);
+    return u;
+  }
+  function todayKey(){
+    var d = new Date();
+    return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  }
+  function daysAgo(dateStr){
+    if (!dateStr) return Infinity;
+    var d = new Date(dateStr);
+    return Math.floor((Date.now() - d.getTime()) / 86400000);
+  }
+
+  ensureWave8();
+  window.HIMA_WAVE8 = {
+    getU: getU, setU: setU, ensureWave8: ensureWave8,
+    todayKey: todayKey, daysAgo: daysAgo
+  };
+  console.log('[W8] Bootstrap loaded');
+})();
+
+
+/* WAVE 8.1 - JOURNAL MEDICAL
+   - Section dans Tab Profil
+   - 5 categories : blessures, contre-indications, allergies, medicaments, conditions
+   - Notes libres
+   - Lu par le Coach IA a chaque message (via hook callAI Wave 8.2)
+*/
+
+(function wave8_1_medical(){
+  'use strict';
+  if (!window.SV2_FLAGS.wave81) return;
+  var H = window.HIMA_WAVE8;
+
+  var CATEGORIES = [
+    { key: 'injuries',         name: 'Blessures',          emoji: '!', hint: 'Ex: Tendinite epaule droite, 2024' },
+    { key: 'contraindications', name: 'Contre-indications', emoji: 'X', hint: 'Ex: Pas de charge axiale 3 mois' },
+    { key: 'allergies',        name: 'Allergies / Intolerances', emoji: '@', hint: 'Ex: Lactose, fruits a coque' },
+    { key: 'medications',      name: 'Medicaments',        emoji: '+', hint: 'Ex: Levothyrox 50 ug le matin' },
+    { key: 'conditions',       name: 'Conditions',         emoji: 'o', hint: 'Ex: Diabete T1, asthme' }
+  ];
+
+  function injectStyles(){
+    if (document.getElementById('w81-style')) return;
+    var s = document.createElement('style');
+    s.id = 'w81-style';
+    s.textContent = ''+
+      '.w81-section{margin:18px 16px 12px}'+
+      '.w81-h{font-family:Bebas Neue,sans-serif;font-size:22px;letter-spacing:2px;color:#F0F0FF;margin:0 0 12px;display:flex;align-items:center;gap:8px}'+
+      '.w81-h-line{flex:1;height:1px;background:linear-gradient(90deg,rgba(240,240,255,0.15),transparent)}'+
+      '.w81-h-edit{background:rgba(249,136,5,0.15);border:1px solid rgba(249,136,5,0.4);color:#F98805;font-family:DM Sans;font-size:10px;font-weight:600;padding:5px 10px;border-radius:8px;cursor:pointer;letter-spacing:0.5px}'+
+
+      '.w81-card{background:linear-gradient(140deg,rgba(240,240,255,0.04),rgba(240,240,255,0.02));border:1px solid rgba(240,240,255,0.06);border-radius:18px;padding:14px}'+
+
+      '.w81-cat{margin-bottom:12px}'+
+      '.w81-cat:last-child{margin-bottom:0}'+
+      '.w81-cat-h{font-family:Space Grotesk;font-size:12px;font-weight:600;color:rgba(240,240,255,0.7);margin-bottom:6px;display:flex;align-items:center;gap:6px;letter-spacing:0.5px}'+
+      '.w81-cat-emj{display:inline-flex;width:22px;height:22px;border-radius:6px;background:rgba(249,136,5,0.15);color:#F98805;align-items:center;justify-content:center;font-family:Bebas Neue,sans-serif;font-size:13px}'+
+      '.w81-items{display:flex;flex-wrap:wrap;gap:6px}'+
+      '.w81-item{background:rgba(240,240,255,0.05);border:1px solid rgba(240,240,255,0.08);color:#F0F0FF;font-family:DM Sans;font-size:11px;padding:5px 10px;border-radius:10px;letter-spacing:0.3px;line-height:1.3}'+
+      '.w81-item-empty{color:rgba(240,240,255,0.35);font-style:italic;font-size:11px;font-family:DM Sans;padding:3px 0}'+
+
+      '.w81-notes-zone{margin-top:14px;padding-top:12px;border-top:1px solid rgba(240,240,255,0.08)}'+
+      '.w81-notes-l{font-family:Space Grotesk;font-size:11px;color:rgba(240,240,255,0.55);margin-bottom:6px;letter-spacing:1px}'+
+      '.w81-notes-v{font-family:DM Sans;font-size:12px;color:#F0F0FF;line-height:1.5;white-space:pre-wrap}'+
+
+      // Modal d'edition
+      '.w81-modal{position:fixed;inset:0;z-index:9999;background:#080810;display:none;flex-direction:column;animation:w81fade 0.2s}'+
+      '.w81-modal.on{display:flex}'+
+      '@keyframes w81fade{from{opacity:0}to{opacity:1}}'+
+
+      '.w81-mtop{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid rgba(240,240,255,0.06)}'+
+      '.w81-mclose{background:rgba(240,240,255,0.08);border:none;color:#F0F0FF;width:36px;height:36px;border-radius:50%;font-size:18px;cursor:pointer}'+
+      '.w81-mttl{font-family:Bebas Neue,sans-serif;font-size:16px;letter-spacing:2px;color:#F0F0FF;flex:1;text-align:center;padding:0 8px}'+
+      '.w81-msave{background:linear-gradient(135deg,#F98805,#F35695);border:none;color:#fff;font-family:Space Grotesk;font-size:11px;font-weight:600;padding:8px 14px;border-radius:10px;cursor:pointer;letter-spacing:1px}'+
+
+      '.w81-mbody{flex:1;overflow-y:auto;padding:14px 16px 24px;-webkit-overflow-scrolling:touch}'+
+      '.w81-mbody::-webkit-scrollbar{display:none}'+
+
+      '.w81-edit-cat{margin-bottom:18px}'+
+      '.w81-edit-h{font-family:Space Grotesk;font-size:12px;color:#F98805;margin-bottom:8px;letter-spacing:0.5px;display:flex;align-items:center;gap:8px}'+
+      '.w81-edit-h .w81-cat-emj{background:rgba(249,136,5,0.2)}'+
+      '.w81-edit-list{display:flex;flex-direction:column;gap:6px;margin-bottom:8px}'+
+      '.w81-edit-row{display:flex;align-items:center;gap:8px;background:rgba(240,240,255,0.04);border:1px solid rgba(240,240,255,0.08);border-radius:10px;padding:8px 12px}'+
+      '.w81-edit-row input{flex:1;background:transparent;border:none;color:#F0F0FF;font-family:DM Sans;font-size:12px;outline:none}'+
+      '.w81-edit-row button{background:rgba(243,86,149,0.15);border:1px solid rgba(243,86,149,0.3);color:#F35695;font-size:14px;width:24px;height:24px;border-radius:6px;cursor:pointer;font-weight:700}'+
+      '.w81-edit-add{background:rgba(240,240,255,0.04);border:1px dashed rgba(240,240,255,0.15);color:rgba(240,240,255,0.6);font-family:DM Sans;font-size:11px;padding:8px;border-radius:10px;cursor:pointer;width:100%;letter-spacing:0.5px}'+
+      '.w81-edit-add:active{transform:scale(0.98)}'+
+
+      '.w81-notes-edit{width:100%;min-height:100px;background:rgba(240,240,255,0.04);border:1px solid rgba(240,240,255,0.08);border-radius:10px;padding:10px 12px;color:#F0F0FF;font-family:DM Sans;font-size:12px;line-height:1.5;outline:none;resize:vertical}';
+    document.head.appendChild(s);
+  }
+
+  function getMedical(){
+    var u = H.ensureWave8();
+    return u.wave8.medical;
+  }
+  function setMedical(med){
+    var u = H.ensureWave8();
+    u.wave8.medical = med;
+    H.setU(u);
+  }
+
+  function renderInto(){
+    // Cherche le mount point dans Tab Profil
+    var host = document.querySelector('#t-prf') ||
+               document.querySelector('#t-profile') ||
+               document.querySelector('[id^="t-pro"]');
+    if (!host) return;
+
+    // Find scrollable container
+    var scrollHost = host.querySelector('.pv3-root') || host.querySelector('.pv3-sc') || host;
+
+    var slot = scrollHost.querySelector('#w81-slot');
+    if (!slot){
+      slot = document.createElement('div');
+      slot.id = 'w81-slot';
+      scrollHost.appendChild(slot);
+    }
+
+    var med = getMedical();
+    var hasAny = CATEGORIES.some(function(c){
+      return med[c.key] && med[c.key].length;
+    }) || (med.notes && med.notes.trim());
+
+    var catsHtml = CATEGORIES.map(function(c){
+      var items = med[c.key] || [];
+      var itemsHtml = items.length
+        ? items.map(function(it){ return '<span class="w81-item">'+escapeHTML(it)+'</span>'; }).join('')
+        : '<span class="w81-item-empty">Rien renseigne</span>';
+      return ''+
+        '<div class="w81-cat">'+
+          '<div class="w81-cat-h"><span class="w81-cat-emj">'+c.emoji+'</span>'+c.name+'</div>'+
+          '<div class="w81-items">'+itemsHtml+'</div>'+
+        '</div>';
+    }).join('');
+
+    var notesHtml = (med.notes && med.notes.trim())
+      ? '<div class="w81-notes-zone"><div class="w81-notes-l">NOTES</div><div class="w81-notes-v">'+escapeHTML(med.notes)+'</div></div>'
+      : '';
+
+    slot.innerHTML = ''+
+      '<div class="w81-section">'+
+        '<div class="w81-h">'+
+          '<span>JOURNAL MEDICAL</span>'+
+          '<div class="w81-h-line"></div>'+
+          '<button class="w81-h-edit" id="w81-open-edit">'+(hasAny?'Modifier':'Remplir')+'</button>'+
+        '</div>'+
+        '<div class="w81-card">'+catsHtml+notesHtml+'</div>'+
+      '</div>';
+
+    var btn = slot.querySelector('#w81-open-edit');
+    if (btn) btn.addEventListener('click', openModal);
+  }
+
+  function escapeHTML(s){
+    return String(s || '').replace(/[&<>"']/g, function(c){
+      return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c];
+    });
+  }
+
+  var modal = null;
+  function ensureModal(){
+    if (modal && document.body.contains(modal)) return modal;
+    modal = document.createElement('div');
+    modal.id = 'w81-modal';
+    modal.className = 'w81-modal';
+    document.body.appendChild(modal);
+    return modal;
+  }
+
+  function openModal(){
+    ensureModal();
+    var med = getMedical();
+    // Clone pour edit
+    var working = {
+      injuries: (med.injuries || []).slice(),
+      contraindications: (med.contraindications || []).slice(),
+      allergies: (med.allergies || []).slice(),
+      medications: (med.medications || []).slice(),
+      conditions: (med.conditions || []).slice(),
+      notes: med.notes || ''
+    };
+
+    function render(){
+      var catsHtml = CATEGORIES.map(function(c){
+        var items = working[c.key];
+        var rowsHtml = items.map(function(it, i){
+          return '<div class="w81-edit-row">'+
+            '<input type="text" data-cat="'+c.key+'" data-i="'+i+'" value="'+escapeHTML(it).replace(/"/g,'&quot;')+'"/>'+
+            '<button data-cat="'+c.key+'" data-i="'+i+'" class="w81-edit-del">x</button>'+
+          '</div>';
+        }).join('');
+        return '<div class="w81-edit-cat">'+
+          '<div class="w81-edit-h"><span class="w81-cat-emj">'+c.emoji+'</span>'+c.name+'</div>'+
+          '<div class="w81-edit-list">'+rowsHtml+'</div>'+
+          '<button class="w81-edit-add" data-cat="'+c.key+'">+ Ajouter ('+c.hint+')</button>'+
+        '</div>';
+      }).join('');
+
+      modal.innerHTML = ''+
+        '<div class="w81-mtop">'+
+          '<button class="w81-mclose" id="w81-mclose">x</button>'+
+          '<div class="w81-mttl">JOURNAL MEDICAL</div>'+
+          '<button class="w81-msave" id="w81-msave">Sauvegarder</button>'+
+        '</div>'+
+        '<div class="w81-mbody">'+
+          catsHtml+
+          '<div class="w81-edit-cat">'+
+            '<div class="w81-edit-h">Notes libres</div>'+
+            '<textarea class="w81-notes-edit" id="w81-notes-ta" placeholder="Tout ce que le coach doit savoir...">'+escapeHTML(working.notes).replace(/"/g,'&quot;')+'</textarea>'+
+          '</div>'+
+        '</div>';
+
+      modal.querySelector('#w81-mclose').addEventListener('click', function(){ modal.classList.remove('on'); });
+      modal.querySelector('#w81-msave').addEventListener('click', save);
+
+      // Inputs : sync working
+      modal.querySelectorAll('input[data-cat]').forEach(function(inp){
+        inp.addEventListener('input', function(){
+          var cat = inp.dataset.cat;
+          var i = parseInt(inp.dataset.i, 10);
+          working[cat][i] = inp.value;
+        });
+      });
+      // Delete buttons
+      modal.querySelectorAll('.w81-edit-del').forEach(function(b){
+        b.addEventListener('click', function(){
+          var cat = b.dataset.cat;
+          var i = parseInt(b.dataset.i, 10);
+          working[cat].splice(i, 1);
+          render();
+        });
+      });
+      // Add buttons
+      modal.querySelectorAll('.w81-edit-add').forEach(function(b){
+        b.addEventListener('click', function(){
+          var cat = b.dataset.cat;
+          working[cat].push('');
+          render();
+          // Focus le nouveau champ
+          setTimeout(function(){
+            var inputs = modal.querySelectorAll('input[data-cat="'+cat+'"]');
+            if (inputs.length) inputs[inputs.length-1].focus();
+          }, 50);
+        });
+      });
+      // Notes
+      modal.querySelector('#w81-notes-ta').addEventListener('input', function(e){
+        working.notes = e.target.value;
+      });
+    }
+
+    function save(){
+      // Clean : vire les chaines vides
+      CATEGORIES.forEach(function(c){
+        working[c.key] = working[c.key].filter(function(s){ return s && s.trim(); }).map(function(s){ return s.trim(); });
+      });
+      working.notes = (working.notes || '').trim();
+      setMedical(working);
+      modal.classList.remove('on');
+      renderInto();
+    }
+
+    render();
+    modal.classList.add('on');
+  }
+
+  injectStyles();
+
+  // Render dans Tab Profil
+  var _origSwitch = window.switchTab;
+  if (typeof _origSwitch === 'function'){
+    window.switchTab = function(name){
+      var r = _origSwitch.apply(this, arguments);
+      if (name === 't-prf' || name === 't-profile' || name === 'prf' || name === 'profile'){
+        setTimeout(renderInto, 200);
+      }
+      return r;
+    };
+  }
+  if (document.body && /^(prf|profile|t-prf|t-profile)$/.test(document.body.dataset.tab || '')){
+    setTimeout(renderInto, 250);
+  }
+  // Filet de secours : essayer plusieurs fois
+  setTimeout(renderInto, 1000);
+  setTimeout(renderInto, 3000);
+
+  window.HIMA_W81 = {
+    render: renderInto,
+    getMedical: getMedical,
+    openEdit: openModal
+  };
+
+  console.log('[W8.1] Journal medical loaded');
+})();
+
+
+/* WAVE 8.2 - MEMOIRE CONVERSATIONNELLE
+   - Hook callAI : injecte un digest des 30 derniers jours + le journal medical
+   - Auto-digest journalier : a la 1ere conv du jour, on resume celle de la veille
+   - Stocke dailyDigests[date] = short summary
+*/
+
+(function wave8_2_memory(){
+  'use strict';
+  if (!window.SV2_FLAGS.wave82) return;
+  var H = window.HIMA_WAVE8;
+
+  // --- Build digest 30j pour injection prompt ---------
+  function buildMemoryContext(){
+    var u = H.getU();
+    var w8 = u.wave8 || {};
+    var memory = w8.conversationMemory || { dailyDigests: {} };
+    var medical = w8.medical || {};
+    var style = w8.coachStyle || 'mentor';
+
+    var parts = [];
+
+    // 1. Style de coaching (Wave 8.3)
+    var styleInstructions = {
+      'mentor': 'Style: mentor pedagogue. Tutoiement. Tu expliques le pourquoi. Bienveillant mais exigeant.',
+      'severe': 'Style: coach severe et direct. Tutoiement. Pas de blabla. Tu pousses sans complaisance.',
+      'bienveillant': 'Style: bienveillant et doux. Tutoiement. Tu encourages, tu rassures. Jamais dur.',
+      'pote': 'Style: pote sportif motivant. Tutoiement. Langue familiere OK. Tu fais des blagues.'
+    };
+    if (styleInstructions[style]) parts.push(styleInstructions[style]);
+
+    // 2. Journal medical (8.1)
+    var medParts = [];
+    if (medical.injuries && medical.injuries.length) medParts.push('Blessures: ' + medical.injuries.join(', '));
+    if (medical.contraindications && medical.contraindications.length) medParts.push('Contre-indications: ' + medical.contraindications.join(', '));
+    if (medical.allergies && medical.allergies.length) medParts.push('Allergies: ' + medical.allergies.join(', '));
+    if (medical.medications && medical.medications.length) medParts.push('Medicaments: ' + medical.medications.join(', '));
+    if (medical.conditions && medical.conditions.length) medParts.push('Conditions: ' + medical.conditions.join(', '));
+    if (medical.notes) medParts.push('Notes: ' + medical.notes);
+    if (medParts.length){
+      parts.push('JOURNAL MEDICAL (a respecter): ' + medParts.join(' | '));
+    }
+
+    // 3. Digest 30 derniers jours
+    var digests = memory.dailyDigests || {};
+    var dates = Object.keys(digests).sort().reverse();
+    var recent30 = [];
+    for (var i = 0; i < dates.length && recent30.length < 30; i++){
+      var ago = H.daysAgo(dates[i]);
+      if (ago < 31){
+        recent30.push('('+ago+'j) ' + digests[dates[i]]);
+      }
+    }
+    if (recent30.length){
+      parts.push('HISTORIQUE 30j (du plus recent): ' + recent30.join(' / '));
+    }
+
+    // 4. Key moments
+    if (memory.keyMoments && memory.keyMoments.length){
+      var keyTxt = memory.keyMoments.slice(-5).map(function(km){
+        return km.text || km;
+      }).join(' / ');
+      parts.push('MOMENTS CLES: ' + keyTxt);
+    }
+
+    return parts.join('\n\n');
+  }
+
+  // --- Hook callAI -------------------------------------
+  function patchCallAI(){
+    if (window.__w82_patched) return;
+
+    // Le coach Wave 3 utilise typiquement window.callAI ou un fetch direct vers /api/chat
+    // On va patcher window.callAI s'il existe, sinon on patche fetch pour /api/chat
+    if (typeof window.callAI === 'function' && !window.callAI.__w82_wrapped){
+      var origCall = window.callAI;
+      window.callAI = function(){
+        // Tenter d'enrichir le system si possible
+        // Si la signature est callAI(msg, options), on doit recuperer le system et l'enrichir
+        // Sinon on laisse passer
+        return origCall.apply(this, arguments);
+      };
+      window.callAI.__w82_wrapped = true;
+    }
+
+    // Approche plus robuste : patch fetch
+    if (!window.fetch.__w82_wrapped){
+      var origFetch = window.fetch;
+      window.fetch = function(url, opts){
+        try {
+          if (url === '/api/chat' && opts && opts.body){
+            var body = typeof opts.body === 'string' ? JSON.parse(opts.body) : opts.body;
+            // Detecter si c'est un appel coach (pas une image, pas un meal plan)
+            if (isCoachConversation(body)){
+              var memCtx = buildMemoryContext();
+              if (memCtx){
+                body.system = (body.system || '') + '\n\n--- CONTEXTE PERSONNEL ---\n' + memCtx;
+                opts.body = JSON.stringify(body);
+              }
+            }
+          }
+        } catch(e){
+          console.warn('[W8.2] fetch patch error (non-blocking)', e);
+        }
+        return origFetch.apply(this, arguments);
+      };
+      window.fetch.__w82_wrapped = true;
+    }
+
+    window.__w82_patched = true;
+    console.log('[W8.2] callAI/fetch patched for memory injection');
+  }
+
+  function isCoachConversation(body){
+    if (!body || !body.messages || !body.messages.length) return false;
+    var lastMsg = body.messages[body.messages.length-1];
+    if (!lastMsg) return false;
+    var content = lastMsg.content;
+    // Pas une image (form check/plate analysis)
+    if (Array.isArray(content)){
+      var hasImage = content.some(function(c){ return c && c.type === 'image'; });
+      if (hasImage) return false;
+      // Si c'est du JSON-strict (meal plan, recipe, form analysis), skip
+      var textC = content.find(function(c){ return c && c.type === 'text'; });
+      if (textC && /STRICTEMENT en JSON|^\s*\{/i.test(textC.text || '')) return false;
+    }
+    if (typeof content === 'string'){
+      // String simple : c'est probablement un message coach
+      if (/STRICTEMENT en JSON/i.test(content)) return false;
+      return true;
+    }
+    return true; // par default, on enrichit
+  }
+
+  // --- Auto-digest journalier ------------------------
+  // A la 1ere conv du jour, on demande a Claude de resumer la conv de la veille
+  function shouldGenerateDigest(){
+    var u = H.getU();
+    var mem = u.wave8 && u.wave8.conversationMemory;
+    if (!mem) return false;
+    var last = mem.lastDigestTs || 0;
+    // Une fois par jour max
+    return Date.now() - last > 20 * 3600 * 1000;
+  }
+
+  function saveDigest(date, summary){
+    var u = H.ensureWave8();
+    u.wave8.conversationMemory.dailyDigests = u.wave8.conversationMemory.dailyDigests || {};
+    u.wave8.conversationMemory.dailyDigests[date] = summary;
+    u.wave8.conversationMemory.lastDigestTs = Date.now();
+    // Limite 90 entrees max
+    var dates = Object.keys(u.wave8.conversationMemory.dailyDigests).sort();
+    if (dates.length > 90){
+      var toRemove = dates.slice(0, dates.length - 90);
+      toRemove.forEach(function(d){ delete u.wave8.conversationMemory.dailyDigests[d]; });
+    }
+    H.setU(u);
+  }
+
+  // --- Add key moment (peut etre appele depuis ailleurs) --
+  function addKeyMoment(text, type){
+    var u = H.ensureWave8();
+    u.wave8.conversationMemory.keyMoments = u.wave8.conversationMemory.keyMoments || [];
+    u.wave8.conversationMemory.keyMoments.push({
+      ts: Date.now(),
+      type: type || 'general',
+      text: text
+    });
+    // Max 50 key moments
+    if (u.wave8.conversationMemory.keyMoments.length > 50){
+      u.wave8.conversationMemory.keyMoments = u.wave8.conversationMemory.keyMoments.slice(-50);
+    }
+    H.setU(u);
+  }
+
+  // Init : patch immediatement + retries
+  if (document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', patchCallAI);
+  } else {
+    patchCallAI();
+  }
+  setTimeout(patchCallAI, 500);
+  setTimeout(patchCallAI, 2000);
+
+  window.HIMA_W82 = {
+    buildMemoryContext: buildMemoryContext,
+    addKeyMoment: addKeyMoment,
+    saveDigest: saveDigest
+  };
+
+  console.log('[W8.2] Memory injection loaded');
+})();
+
+
+/* WAVE 8.3 - STYLE COACHING ADAPTATIF
+   - Section dans Tab Profil avec selector du style
+   - 4 styles : mentor, severe, bienveillant, pote
+   - Stocke dans U.wave8.coachStyle
+   - Lu par Wave 8.2 pour injection prompt
+*/
+
+(function wave8_3_style(){
+  'use strict';
+  if (!window.SV2_FLAGS.wave83) return;
+  var H = window.HIMA_WAVE8;
+
+  var STYLES = [
+    {
+      key: 'mentor', name: 'Mentor', emoji: 'M',
+      desc: 'Pedagogue, explique le pourquoi, bienveillant mais exigeant',
+      color: '#F98805'
+    },
+    {
+      key: 'severe', name: 'Severe', emoji: 'S',
+      desc: 'Direct, pas de blabla, pousse sans complaisance',
+      color: '#F35695'
+    },
+    {
+      key: 'bienveillant', name: 'Bienveillant', emoji: 'B',
+      desc: 'Doux, encourage, rassure - jamais dur',
+      color: '#DDE255'
+    },
+    {
+      key: 'pote', name: 'Pote', emoji: 'P',
+      desc: 'Familier, motivant, fait des blagues',
+      color: '#8b9be0'
+    }
+  ];
+
+  function getCurrentStyle(){
+    var u = H.ensureWave8();
+    return u.wave8.coachStyle || 'mentor';
+  }
+  function setStyle(key){
+    var u = H.ensureWave8();
+    u.wave8.coachStyle = key;
+    H.setU(u);
+  }
+
+  function injectStyles(){
+    if (document.getElementById('w83-style')) return;
+    var s = document.createElement('style');
+    s.id = 'w83-style';
+    s.textContent = ''+
+      '.w83-section{margin:18px 16px 12px}'+
+      '.w83-h{font-family:Bebas Neue,sans-serif;font-size:22px;letter-spacing:2px;color:#F0F0FF;margin:0 0 12px;display:flex;align-items:center;gap:8px}'+
+      '.w83-h-line{flex:1;height:1px;background:linear-gradient(90deg,rgba(240,240,255,0.15),transparent)}'+
+
+      '.w83-card{background:linear-gradient(140deg,rgba(240,240,255,0.04),rgba(240,240,255,0.02));border:1px solid rgba(240,240,255,0.06);border-radius:18px;padding:14px}'+
+      '.w83-intro{font-family:DM Sans;font-size:11px;color:rgba(240,240,255,0.6);margin-bottom:12px;line-height:1.5}'+
+
+      '.w83-styles{display:grid;grid-template-columns:1fr 1fr;gap:8px}'+
+      '.w83-style{background:rgba(240,240,255,0.04);border:2px solid rgba(240,240,255,0.06);border-radius:14px;padding:12px;cursor:pointer;transition:all 0.2s}'+
+      '.w83-style.on{background:linear-gradient(135deg,rgba(249,136,5,0.15),rgba(243,86,149,0.1))}'+
+      '.w83-style:active{transform:scale(0.97)}'+
+      '.w83-style-h{display:flex;align-items:center;gap:8px;margin-bottom:6px}'+
+      '.w83-style-emj{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:Bebas Neue,sans-serif;font-size:16px;color:#0f0f1f;font-weight:700}'+
+      '.w83-style-n{font-family:Space Grotesk;font-size:13px;font-weight:600;color:#F0F0FF}'+
+      '.w83-style-d{font-family:DM Sans;font-size:10px;color:rgba(240,240,255,0.6);line-height:1.4}';
+    document.head.appendChild(s);
+  }
+
+  function renderInto(){
+    var host = document.querySelector('#t-prf') ||
+               document.querySelector('#t-profile') ||
+               document.querySelector('[id^="t-pro"]');
+    if (!host) return;
+
+    var scrollHost = host.querySelector('.pv3-root') || host.querySelector('.pv3-sc') || host;
+    var slot = scrollHost.querySelector('#w83-slot');
+    if (!slot){
+      slot = document.createElement('div');
+      slot.id = 'w83-slot';
+      scrollHost.appendChild(slot);
+    }
+
+    var current = getCurrentStyle();
+    var stylesHtml = STYLES.map(function(s){
+      var on = s.key === current ? 'on' : '';
+      var borderColor = s.key === current ? s.color : 'rgba(240,240,255,0.06)';
+      var bgEmj = s.color;
+      return ''+
+        '<div class="w83-style '+on+'" data-key="'+s.key+'" style="border-color:'+borderColor+'">'+
+          '<div class="w83-style-h">'+
+            '<div class="w83-style-emj" style="background:'+bgEmj+'">'+s.emoji+'</div>'+
+            '<div class="w83-style-n">'+s.name+'</div>'+
+          '</div>'+
+          '<div class="w83-style-d">'+s.desc+'</div>'+
+        '</div>';
+    }).join('');
+
+    slot.innerHTML = ''+
+      '<div class="w83-section">'+
+        '<div class="w83-h"><span>STYLE COACH</span><div class="w83-h-line"></div></div>'+
+        '<div class="w83-card">'+
+          '<div class="w83-intro">Choisis le ton que tu preferes. HIMA adaptera son langage a chaque conversation.</div>'+
+          '<div class="w83-styles">'+stylesHtml+'</div>'+
+        '</div>'+
+      '</div>';
+
+    slot.querySelectorAll('.w83-style').forEach(function(el){
+      el.addEventListener('click', function(){
+        setStyle(el.dataset.key);
+        renderInto();
+      });
+    });
+  }
+
+  injectStyles();
+
+  var _origSwitch = window.switchTab;
+  if (typeof _origSwitch === 'function'){
+    window.switchTab = function(name){
+      var r = _origSwitch.apply(this, arguments);
+      if (name === 't-prf' || name === 't-profile' || name === 'prf' || name === 'profile'){
+        setTimeout(renderInto, 220);
+      }
+      return r;
+    };
+  }
+  if (document.body && /^(prf|profile|t-prf|t-profile)$/.test(document.body.dataset.tab || '')){
+    setTimeout(renderInto, 280);
+  }
+  setTimeout(renderInto, 1500);
+  setTimeout(renderInto, 4000);
+
+  window.HIMA_W83 = {
+    getCurrentStyle: getCurrentStyle,
+    setStyle: setStyle,
+    render: renderInto
+  };
+
+  console.log('[W8.3] Coach style loaded');
+})();
+
+
+/* WAVE 8.4 - DATES CLES + MILESTONES
+   - Detecte milestones : 1 mois, 1 an, 7j streak, 30j actif, etc.
+   - Affiche carte hero dans Tab Accueil ou modal
+   - Stocke seenMilestones pour ne pas re-trigger
+*/
+
+(function wave8_4_milestones(){
+  'use strict';
+  if (!window.SV2_FLAGS.wave84) return;
+  var H = window.HIMA_WAVE8;
+
+  var MILESTONE_DEFS = [
+    {
+      key: 'day7',
+      check: function(u){ return H.daysAgo(new Date(u.wave8.milestones.firstUse).toISOString().slice(0,10)) >= 7; },
+      title: '1 SEMAINE AVEC HIMA',
+      desc: 'Bravo, tu as commence ton chemin il y a 7 jours.',
+      emoji: '7'
+    },
+    {
+      key: 'day30',
+      check: function(u){ return H.daysAgo(new Date(u.wave8.milestones.firstUse).toISOString().slice(0,10)) >= 30; },
+      title: '1 MOIS AVEC HIMA',
+      desc: 'Un mois deja, la regularite paye.',
+      emoji: '30'
+    },
+    {
+      key: 'day100',
+      check: function(u){ return H.daysAgo(new Date(u.wave8.milestones.firstUse).toISOString().slice(0,10)) >= 100; },
+      title: '100 JOURS AVEC HIMA',
+      desc: 'Triple chiffre. Tu es une machine.',
+      emoji: '100'
+    },
+    {
+      key: 'day365',
+      check: function(u){ return H.daysAgo(new Date(u.wave8.milestones.firstUse).toISOString().slice(0,10)) >= 365; },
+      title: '1 AN AVEC HIMA',
+      desc: 'Un an. Tu n es plus le meme qu au depart.',
+      emoji: '365'
+    },
+    {
+      key: 'sessions10',
+      check: function(u){
+        var hist = u.sv2 && u.sv2.history;
+        return hist && hist.length >= 10;
+      },
+      title: '10 SEANCES BOUCLEES',
+      desc: 'La machine est lancee.',
+      emoji: '10'
+    },
+    {
+      key: 'sessions50',
+      check: function(u){
+        var hist = u.sv2 && u.sv2.history;
+        return hist && hist.length >= 50;
+      },
+      title: '50 SEANCES BOUCLEES',
+      desc: 'Tu fais partie des serieux.',
+      emoji: '50'
+    },
+    {
+      key: 'streak7',
+      check: function(u){
+        return u.streak && (u.streak.current >= 7);
+      },
+      title: 'STREAK 7 JOURS',
+      desc: 'Semaine pleine. Garde le rythme.',
+      emoji: '*'
+    },
+    {
+      key: 'streak30',
+      check: function(u){
+        return u.streak && (u.streak.current >= 30);
+      },
+      title: 'STREAK 30 JOURS',
+      desc: 'Un mois sans rater. Discipline absolue.',
+      emoji: '*'
+    }
+  ];
+
+  function detectNewMilestone(){
+    var u = H.ensureWave8();
+    var seen = u.wave8.milestones.seenMilestones || {};
+    for (var i = 0; i < MILESTONE_DEFS.length; i++){
+      var ms = MILESTONE_DEFS[i];
+      if (seen[ms.key]) continue;
+      try {
+        if (ms.check(u)){
+          return ms;
+        }
+      } catch(e){}
+    }
+    return null;
+  }
+
+  function markSeen(key){
+    var u = H.ensureWave8();
+    u.wave8.milestones.seenMilestones = u.wave8.milestones.seenMilestones || {};
+    u.wave8.milestones.seenMilestones[key] = Date.now();
+    H.setU(u);
+  }
+
+  function injectStyles(){
+    if (document.getElementById('w84-style')) return;
+    var s = document.createElement('style');
+    s.id = 'w84-style';
+    s.textContent = ''+
+      '.w84-modal{position:fixed;inset:0;z-index:10001;background:rgba(8,8,16,0.92);backdrop-filter:blur(24px);display:none;align-items:center;justify-content:center;padding:24px;animation:w84fade 0.3s}'+
+      '.w84-modal.on{display:flex}'+
+      '@keyframes w84fade{from{opacity:0}to{opacity:1}}'+
+
+      '.w84-card{max-width:340px;background:linear-gradient(140deg,#0f0f1f,#1a0f2e);border:1px solid rgba(249,136,5,0.3);border-radius:28px;padding:32px 24px;text-align:center;position:relative;animation:w84pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)}'+
+      '@keyframes w84pop{0%{transform:scale(0.7);opacity:0}100%{transform:scale(1);opacity:1}}'+
+
+      '.w84-trophy{font-family:Bebas Neue,sans-serif;font-size:64px;letter-spacing:2px;background:linear-gradient(135deg,#F98805,#F35695,#DDE255);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:14px;line-height:1}'+
+      '.w84-title{font-family:Bebas Neue,sans-serif;font-size:24px;letter-spacing:3px;color:#F0F0FF;margin-bottom:10px;line-height:1.2}'+
+      '.w84-desc{font-family:DM Sans;font-size:14px;color:rgba(240,240,255,0.7);line-height:1.5;margin-bottom:20px}'+
+
+      '.w84-confetti{position:absolute;font-size:14px;animation:w84confetti 1.5s ease-out forwards;pointer-events:none}'+
+      '@keyframes w84confetti{0%{transform:translateY(0) rotate(0);opacity:1}100%{transform:translateY(150px) rotate(720deg);opacity:0}}'+
+
+      '.w84-btn{background:linear-gradient(135deg,#F98805,#F35695);border:none;color:#fff;font-family:Space Grotesk;font-size:13px;font-weight:600;padding:12px 32px;border-radius:12px;cursor:pointer;letter-spacing:1px}'+
+      '.w84-btn:active{transform:scale(0.95)}';
+    document.head.appendChild(s);
+  }
+
+  var modal = null;
+  function ensureModal(){
+    if (modal && document.body.contains(modal)) return modal;
+    modal = document.createElement('div');
+    modal.id = 'w84-modal';
+    modal.className = 'w84-modal';
+    document.body.appendChild(modal);
+    return modal;
+  }
+
+  function showMilestone(ms){
+    ensureModal();
+    modal.innerHTML = ''+
+      '<div class="w84-card">'+
+        '<div class="w84-trophy">'+ms.emoji+'</div>'+
+        '<div class="w84-title">'+ms.title+'</div>'+
+        '<div class="w84-desc">'+ms.desc+'</div>'+
+        '<button class="w84-btn" id="w84-ok">Continuer</button>'+
+      '</div>';
+
+    // Confetti
+    for (var i = 0; i < 20; i++){
+      var c = document.createElement('div');
+      c.className = 'w84-confetti';
+      c.textContent = ['*','+','o','x','!'][Math.floor(Math.random()*5)];
+      c.style.left = (Math.random()*100)+'%';
+      c.style.top = (Math.random()*30)+'%';
+      c.style.color = ['#F98805','#F35695','#DDE255','#8b9be0'][Math.floor(Math.random()*4)];
+      c.style.animationDelay = (Math.random()*0.5)+'s';
+      modal.querySelector('.w84-card').appendChild(c);
+    }
+
+    modal.classList.add('on');
+    modal.querySelector('#w84-ok').addEventListener('click', function(){
+      markSeen(ms.key);
+      modal.classList.remove('on');
+      // Re-check si autre milestone en attente
+      setTimeout(checkAndShow, 300);
+    });
+
+    // Vibration si dispo
+    if (navigator.vibrate) navigator.vibrate([100, 50, 100, 50, 200]);
+  }
+
+  function checkAndShow(){
+    var ms = detectNewMilestone();
+    if (ms) showMilestone(ms);
+  }
+
+  injectStyles();
+
+  // Check au boot + a chaque switchTab
+  if (document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', function(){ setTimeout(checkAndShow, 2500); });
+  } else {
+    setTimeout(checkAndShow, 2500);
+  }
+  setTimeout(checkAndShow, 8000);
+
+  // Re-check au passage Accueil
+  var _origSwitch = window.switchTab;
+  if (typeof _origSwitch === 'function'){
+    window.switchTab = function(name){
+      var r = _origSwitch.apply(this, arguments);
+      if (name === 't-home' || name === 'home' || name === 'accueil'){
+        setTimeout(checkAndShow, 500);
+      }
+      return r;
+    };
+  }
+
+  window.HIMA_W84 = {
+    detectNew: detectNewMilestone,
+    show: showMilestone,
+    checkAndShow: checkAndShow,
+    triggerTest: function(key){
+      var ms = MILESTONE_DEFS.find(function(m){ return m.key === key; });
+      if (ms) showMilestone(ms);
+    }
+  };
+
+  console.log('[W8.4] Milestones loaded');
+})();
+
+</script>
+
+
+
 
 
 
