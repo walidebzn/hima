@@ -10017,9 +10017,7 @@ async function generateMonthlyPDF() {
       + '<div style="white-space:pre-wrap;margin-top:20px">' + txt.replace(/</g,'&lt;') + '</div>'
       + '<div style="margin-top:40px;padding-top:16px;border-top:1px solid #ddd;font-size:11px;color:#999;text-align:center">Généré par HIMA · ' + new Date().toLocaleDateString('fr-FR') + '</div>'
       + '<button onclick="window.print()" style="position:fixed;bottom:20px;right:20px;padding:12px 24px;background:#F98805;border:none;border-radius:99px;color:#fff;font-weight:700;font-size:15px;cursor:pointer">🖨️ Imprimer / PDF</button>'
-      + '
-
-</body></html>');
+      + '</body></html>');
     w.document.close();
     addH(['📄 Ton rapport mensuel est prêt ! Une nouvelle fen\u00eatre s\'est ouverte.']);
   } catch(e) {
