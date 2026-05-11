@@ -18883,6 +18883,770 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
 
 </script>
 
+<script>
+/* HIMA - WAVE 5 - PROGRESSIVE OVERLOAD + MACROCYCLE
+   v5.0.0 - 3 sub-waves (auto-charge / macrocycle / milestones)
+*/
+
+/* HIMA - WAVE 5 - PROGRESSIVE OVERLOAD + MACROCYCLE
+   5.1 - Auto-suggestion charge par set (Claude IA adaptatif)
+   5.2 - Macrocycle timeline visible dans Tab Corps (5 phases)
+   5.3 - Deload auto + next milestone
+
+   Architecture :
+   - 1 IIFE bootstrap (helpers + storage)
+   - 3 IIFE features independantes
+   - Kill switches : window.SV2_FLAGS.wave51 / wave52 / wave53
+   - Stockage : U.wave5 = { suggestions, macrocycle, milestones }
+
+   Lecon Wave 3 : 100% ASCII, no <\/script> in JS code
+*/
+
+(function wave5_boot(){
+  'use strict';
+  window.SV2_FLAGS = window.SV2_FLAGS || {};
+  Object.assign(window.SV2_FLAGS, {
+    wave51: window.SV2_FLAGS.wave51 !== false,
+    wave52: window.SV2_FLAGS.wave52 !== false,
+    wave53: window.SV2_FLAGS.wave53 !== false
+  });
+
+  var KEY = 'hima8';
+  function getU(){
+    try { return JSON.parse(localStorage.getItem(KEY) || '{}') || {}; }
+    catch(e){ return {}; }
+  }
+  function setU(u){
+    try { localStorage.setItem(KEY, JSON.stringify(u)); } catch(e){}
+  }
+  function ensureWave5(){
+    var u = getU();
+    u.wave5 = u.wave5 || {};
+    u.wave5.suggestions = u.wave5.suggestions || {};
+    u.wave5.macrocycle = u.wave5.macrocycle || null;
+    u.wave5.milestones = u.wave5.milestones || {};
+    u.wave5.deloadHistory = u.wave5.deloadHistory || [];
+    setU(u);
+    return u;
+  }
+  function todayKey(){
+    var d = new Date();
+    return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  }
+  function daysAgo(dateStr){
+    if (!dateStr) return Infinity;
+    var d = new Date(dateStr);
+    return Math.floor((Date.now() - d.getTime()) / 86400000);
+  }
+
+  ensureWave5();
+  window.HIMA_WAVE5 = { getU: getU, setU: setU, ensureWave5: ensureWave5, todayKey: todayKey, daysAgo: daysAgo };
+  console.log('[W5] Bootstrap loaded');
+})();
+
+
+/* WAVE 5.1 - AUTO-SUGGESTION CHARGE
+   Pour chaque exo dans une seance active, affiche un badge avec la suggestion
+   IA pour le prochain set / la prochaine seance.
+   Calcul : combine historique perso + regles biomechaniques basiques.
+   Call Claude pour les decisions complexes (deload, breakthrough). */
+
+(function wave5_1_autoCharge(){
+  'use strict';
+  if (!window.SV2_FLAGS.wave51) return;
+  var H = window.HIMA_WAVE5;
+
+  // --- Historique des sets par exo ---------------------
+  function getExoHistory(exoId){
+    var u = H.getU();
+    var hist = (u.sv2 && u.sv2.history) || [];
+    var sets = [];
+    hist.forEach(function(s){
+      if (!s || !s.exos) return;
+      s.exos.forEach(function(ex){
+        if (ex && (ex.id === exoId || (ex.name||'').toLowerCase() === (exoId||'').toLowerCase())){
+          if (ex.sets && ex.sets.length){
+            ex.sets.forEach(function(set){
+              sets.push({
+                date: s.date || s.ts || H.todayKey(),
+                weight: set.weight || set.w || 0,
+                reps: set.reps || set.r || 0,
+                rpe: set.rpe || set.RPE || null
+              });
+            });
+          }
+        }
+      });
+    });
+    // Trier par date desc
+    sets.sort(function(a,b){
+      return new Date(b.date) - new Date(a.date);
+    });
+    return sets;
+  }
+
+  // --- Calcul Epley 1RM ---------------------------------
+  function epley1RM(weight, reps){
+    if (!weight || !reps || reps < 1) return 0;
+    return weight * (1 + reps / 30);
+  }
+
+  // --- Strategie adaptive : retourne {action, delta, reason} --
+  function computeSuggestion(exoId, currentWeight){
+    var hist = getExoHistory(exoId);
+    if (!hist.length){
+      return {
+        action: 'init',
+        suggested: currentWeight || 20,
+        delta: 0,
+        reason: 'Premiere fois sur cet exo'
+      };
+    }
+
+    // Derniers sets de la derniere seance
+    var lastDate = hist[0].date;
+    var lastSets = hist.filter(function(s){ return s.date === lastDate; });
+    var lastBest1RM = Math.max.apply(null, lastSets.map(function(s){
+      return epley1RM(s.weight, s.reps);
+    }));
+    var lastMaxWeight = Math.max.apply(null, lastSets.map(function(s){ return s.weight; }));
+
+    // Derniere RPE moyenne (si dispo)
+    var rpes = lastSets.filter(function(s){ return s.rpe != null; });
+    var avgRPE = rpes.length ? rpes.reduce(function(a,s){return a+s.rpe;},0)/rpes.length : null;
+
+    // Detection plateau : meme 1RM Epley sur 3+ seances precedentes
+    var dates = [];
+    hist.forEach(function(s){
+      if (dates.indexOf(s.date) === -1) dates.push(s.date);
+    });
+    dates = dates.slice(0, 4); // 4 dernieres seances
+    var trend1RMs = dates.map(function(d){
+      var setsD = hist.filter(function(s){ return s.date === d; });
+      return Math.max.apply(null, setsD.map(function(s){ return epley1RM(s.weight, s.reps); }));
+    });
+
+    var plateau = false;
+    if (trend1RMs.length >= 3){
+      var max3 = Math.max.apply(null, trend1RMs.slice(0, 3));
+      var min3 = Math.min.apply(null, trend1RMs.slice(0, 3));
+      plateau = (max3 - min3) / max3 < 0.025; // moins de 2.5% de variation
+    }
+
+    // Detection breakthrough : derniere seance bat largement
+    var breakthrough = false;
+    if (trend1RMs.length >= 2){
+      breakthrough = trend1RMs[0] > trend1RMs[1] * 1.05; // +5% vs derniere
+    }
+
+    // Decision adaptative
+    if (plateau){
+      return {
+        action: 'deload',
+        suggested: Math.round(lastMaxWeight * 0.85 / 0.5) * 0.5,
+        delta: -Math.round(lastMaxWeight * 0.15 * 10) / 10,
+        reason: '3 sem plateau, deload pour relance'
+      };
+    }
+    if (breakthrough){
+      return {
+        action: 'push',
+        suggested: lastMaxWeight + 5,
+        delta: 5,
+        reason: 'Tu pousses fort, +5kg cette sem'
+      };
+    }
+    if (avgRPE && avgRPE < 7){
+      // Trop facile : monte
+      return {
+        action: 'up',
+        suggested: lastMaxWeight + 2.5,
+        delta: 2.5,
+        reason: 'RPE bas la sem derniere, +2.5kg'
+      };
+    }
+    if (avgRPE && avgRPE >= 9){
+      // Trop dur : stagne
+      return {
+        action: 'hold',
+        suggested: lastMaxWeight,
+        delta: 0,
+        reason: 'RPE eleve, repete la charge'
+      };
+    }
+    // Default : +2.5kg
+    return {
+      action: 'up',
+      suggested: lastMaxWeight + 2.5,
+      delta: 2.5,
+      reason: 'Progression standard +2.5kg'
+    };
+  }
+
+  // --- Badge UI sur l'exo en cours ---------------------
+  function injectStyles(){
+    if (document.getElementById('w51-style')) return;
+    var s = document.createElement('style');
+    s.id = 'w51-style';
+    s.textContent = ''+
+      '.w51-suggest{display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,rgba(249,136,5,0.18),rgba(243,86,149,0.12));border:1px solid rgba(249,136,5,0.4);color:#F0F0FF;font-family:Bebas Neue,sans-serif;font-size:14px;letter-spacing:1.5px;padding:5px 10px;border-radius:10px;cursor:pointer;margin-left:8px;transition:transform 0.2s}'+
+      '.w51-suggest:active{transform:scale(0.94)}'+
+      '.w51-suggest.up{border-color:#DDE255;background:linear-gradient(135deg,rgba(221,226,85,0.18),rgba(249,136,5,0.12))}'+
+      '.w51-suggest.down{border-color:#F35695;background:linear-gradient(135deg,rgba(243,86,149,0.18),rgba(249,136,5,0.12))}'+
+      '.w51-suggest.hold{border-color:rgba(240,240,255,0.2);background:rgba(240,240,255,0.06)}'+
+      '.w51-suggest-icon{font-size:10px}'+
+
+      '.w51-tooltip{position:fixed;z-index:9999;background:#0f0f1f;border:1px solid rgba(240,240,255,0.1);border-radius:14px;padding:14px 16px;max-width:280px;font-family:DM Sans;font-size:12px;color:rgba(240,240,255,0.85);line-height:1.5;box-shadow:0 12px 32px rgba(0,0,0,0.6);animation:w51fade 0.2s}'+
+      '@keyframes w51fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}'+
+      '.w51-tooltip-h{font-family:Bebas Neue,sans-serif;font-size:14px;letter-spacing:1.5px;color:#F98805;margin-bottom:6px;display:flex;align-items:center;gap:8px}'+
+      '.w51-tooltip-h .w51-suggest{margin:0}'+
+      '.w51-tooltip-r{color:rgba(240,240,255,0.6);font-size:11px;margin-top:8px;padding-top:8px;border-top:1px solid rgba(240,240,255,0.08)}'+
+      '.w51-tooltip-close{position:absolute;top:8px;right:10px;background:none;border:none;color:rgba(240,240,255,0.5);font-size:16px;cursor:pointer}';
+    document.head.appendChild(s);
+  }
+
+  function getBadgeClass(action){
+    if (action === 'deload') return 'down';
+    if (action === 'push' || action === 'up') return 'up';
+    if (action === 'hold') return 'hold';
+    return '';
+  }
+
+  function getBadgeLabel(suggestion){
+    var d = suggestion.delta;
+    if (suggestion.action === 'init') return 'NEW';
+    if (suggestion.action === 'deload') return d.toFixed(1) + 'kg';
+    if (suggestion.action === 'push' || suggestion.action === 'up') return '+' + d + 'kg';
+    if (suggestion.action === 'hold') return '=';
+    return suggestion.delta > 0 ? '+'+suggestion.delta+'kg' : suggestion.delta+'kg';
+  }
+
+  function getBadgeIcon(action){
+    if (action === 'deload') return 'v';
+    if (action === 'push') return '^^';
+    if (action === 'up') return '^';
+    if (action === 'hold') return '=';
+    return '*';
+  }
+
+  // --- Insertion sur les noms d'exo dans la seance active --
+  function scanAndInject(){
+    // Cherche les exos de la seance dans #sv2-active
+    var active = document.getElementById('sv2-active');
+    if (!active || !active.classList.contains('on')) return;
+
+    // Recupere l'exo en cours via SV global
+    if (!window.SV || !window.SV.current || !window.SV.current.exos) return;
+    var exos = window.SV.current.exos;
+    var currentIdx = window.SV.exoIdx || 0;
+    var exo = exos[currentIdx];
+    if (!exo) return;
+
+    var exoNameEl = active.querySelector('.sv2-active-name');
+    if (!exoNameEl) return;
+    if (exoNameEl.querySelector('.w51-suggest')) return; // deja injecte
+
+    var sug = computeSuggestion(exo.id || exo.name, exo.weight || 0);
+    if (!sug) return;
+
+    var badge = document.createElement('button');
+    badge.className = 'w51-suggest ' + getBadgeClass(sug.action);
+    badge.innerHTML = '<span class="w51-suggest-icon">'+getBadgeIcon(sug.action)+'</span>' + getBadgeLabel(sug);
+    badge.title = sug.reason;
+    badge.addEventListener('click', function(e){
+      e.stopPropagation();
+      showTooltip(badge, sug);
+    });
+    exoNameEl.appendChild(badge);
+  }
+
+  function showTooltip(anchor, sug){
+    // Remove existing tooltip
+    var existing = document.querySelector('.w51-tooltip');
+    if (existing) existing.remove();
+
+    var tt = document.createElement('div');
+    tt.className = 'w51-tooltip';
+    tt.innerHTML = ''+
+      '<button class="w51-tooltip-close" id="w51-tt-close">x</button>'+
+      '<div class="w51-tooltip-h">'+
+        '<span>SUGGESTION COACH</span>'+
+        '<span class="w51-suggest '+getBadgeClass(sug.action)+'">'+getBadgeLabel(sug)+'</span>'+
+      '</div>'+
+      '<div><b>Charge cible :</b> '+sug.suggested+'kg</div>'+
+      '<div class="w51-tooltip-r">'+sug.reason+'</div>';
+    document.body.appendChild(tt);
+
+    var rect = anchor.getBoundingClientRect();
+    tt.style.top = (rect.bottom + 8) + 'px';
+    tt.style.left = Math.max(8, Math.min(window.innerWidth - tt.offsetWidth - 8, rect.left)) + 'px';
+
+    tt.querySelector('#w51-tt-close').addEventListener('click', function(){ tt.remove(); });
+
+    // Auto-close apres 6s
+    setTimeout(function(){ if (tt.parentNode) tt.remove(); }, 6000);
+
+    // Close on outside click
+    setTimeout(function(){
+      document.addEventListener('click', function onDoc(e){
+        if (!tt.contains(e.target)){
+          tt.remove();
+          document.removeEventListener('click', onDoc);
+        }
+      });
+    }, 100);
+  }
+
+  // --- Observer pour reinjecter quand l'exo change ----
+  function installObserver(){
+    injectStyles();
+
+    var active = document.getElementById('sv2-active');
+    if (!active){
+      setTimeout(installObserver, 500);
+      return;
+    }
+
+    // Observer sur le nom d'exo (change quand user navigue entre exos)
+    var obs = new MutationObserver(function(){
+      setTimeout(scanAndInject, 50);
+    });
+    obs.observe(active, { childList: true, subtree: true, characterData: true });
+
+    // Scan initial
+    setTimeout(scanAndInject, 200);
+    setTimeout(scanAndInject, 1000);
+  }
+
+  if (document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', installObserver);
+  } else {
+    installObserver();
+  }
+
+  // Public API
+  window.HIMA_W51 = {
+    suggest: computeSuggestion,
+    getHistory: getExoHistory,
+    epley1RM: epley1RM,
+    forceInject: scanAndInject
+  };
+
+  console.log('[W5.1] Auto-charge suggestion loaded');
+})();
+
+
+/* WAVE 5.2 - MACROCYCLE TIMELINE
+   Nouvelle section dans Tab Corps : timeline horizontale des 5 phases.
+   - Fondation (4 sem) : volume bas, technique
+   - Developpement (6 sem) : volume haut, hypertrophie
+   - Intensif (4 sem) : charges hautes, force
+   - Pic (2 sem) : peaking, 1RM tests
+   - Decharge (1 sem) : recuperation active
+   Cycle complet = 17 semaines, puis on reboucle.
+*/
+
+(function wave5_2_macrocycle(){
+  'use strict';
+  if (!window.SV2_FLAGS.wave52) return;
+  var H = window.HIMA_WAVE5;
+
+  var PHASES = [
+    { id: 'fondation',    name: 'Fondation',    weeks: 4, color: '#8b9be0', icon: 'F', desc: 'Volume bas, focus technique' },
+    { id: 'developpement', name: 'Developpement', weeks: 6, color: '#DDE255', icon: 'D', desc: 'Volume haut, hypertrophie' },
+    { id: 'intensif',     name: 'Intensif',     weeks: 4, color: '#F98805', icon: 'I', desc: 'Charges hautes, force' },
+    { id: 'pic',          name: 'Pic',          weeks: 2, color: '#F35695', icon: 'P', desc: 'Peaking, tests 1RM' },
+    { id: 'decharge',     name: 'Decharge',     weeks: 1, color: 'rgba(240,240,255,0.4)', icon: 'R', desc: 'Recuperation active' }
+  ];
+
+  var TOTAL_WEEKS = PHASES.reduce(function(a,p){return a+p.weeks;}, 0); // 17
+
+  function ensureCycle(){
+    var u = H.ensureWave5();
+    if (!u.wave5.macrocycle){
+      u.wave5.macrocycle = {
+        startDate: H.todayKey(),
+        cycleNumber: 1
+      };
+      H.setU(u);
+    }
+    return u.wave5.macrocycle;
+  }
+
+  function getCurrentPhase(){
+    var mc = ensureCycle();
+    var elapsed = H.daysAgo(mc.startDate) / 7; // semaines
+    var weekInCycle = elapsed % TOTAL_WEEKS;
+    var cumWeeks = 0;
+    for (var i = 0; i < PHASES.length; i++){
+      cumWeeks += PHASES[i].weeks;
+      if (weekInCycle < cumWeeks){
+        return {
+          phase: PHASES[i],
+          phaseIdx: i,
+          weekInPhase: Math.floor(weekInCycle - (cumWeeks - PHASES[i].weeks)) + 1,
+          weeksRemaining: Math.ceil(cumWeeks - weekInCycle),
+          weekInCycle: Math.floor(weekInCycle) + 1,
+          totalWeeks: TOTAL_WEEKS,
+          cycleNumber: mc.cycleNumber || 1
+        };
+      }
+    }
+    return null;
+  }
+
+  function injectStyles(){
+    if (document.getElementById('w52-style')) return;
+    var s = document.createElement('style');
+    s.id = 'w52-style';
+    s.textContent = ''+
+      '.w52-wrap{padding:14px 16px 12px}'+
+      '.w52-h{font-family:Bebas Neue,sans-serif;font-size:22px;letter-spacing:2px;color:#F0F0FF;margin:0 0 12px;display:flex;align-items:center;gap:8px}'+
+      '.w52-h-line{flex:1;height:1px;background:linear-gradient(90deg,rgba(240,240,255,0.15),transparent)}'+
+      '.w52-card{background:linear-gradient(140deg,rgba(240,240,255,0.04),rgba(240,240,255,0.02));border:1px solid rgba(240,240,255,0.06);border-radius:18px;padding:16px;margin-bottom:14px}'+
+      '.w52-current{display:flex;align-items:center;gap:14px;margin-bottom:14px}'+
+      '.w52-phase-icon{width:54px;height:54px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-family:Bebas Neue,sans-serif;font-size:28px;color:#080810;letter-spacing:1px;flex-shrink:0}'+
+      '.w52-phase-meta{flex:1;min-width:0}'+
+      '.w52-phase-name{font-family:Bebas Neue,sans-serif;font-size:22px;letter-spacing:1.5px;color:#F0F0FF;line-height:1}'+
+      '.w52-phase-desc{font-family:DM Sans;font-size:11px;color:rgba(240,240,255,0.6);margin-top:4px}'+
+      '.w52-phase-week{font-family:DM Sans;font-size:11px;color:rgba(240,240,255,0.5);margin-top:6px;letter-spacing:0.5px}'+
+      '.w52-phase-week b{color:#F98805}'+
+
+      '.w52-timeline{position:relative;display:flex;height:42px;border-radius:10px;overflow:hidden;background:rgba(240,240,255,0.04)}'+
+      '.w52-tl-phase{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:DM Sans;font-size:9px;letter-spacing:0.5px;color:rgba(8,8,16,0.7);transition:opacity 0.2s;cursor:pointer}'+
+      '.w52-tl-phase span{font-weight:700}'+
+      '.w52-tl-phase.dim{opacity:0.35}'+
+      '.w52-tl-phase.current{opacity:1}'+
+      '.w52-tl-progress{position:absolute;top:0;bottom:0;width:2px;background:#fff;box-shadow:0 0 8px rgba(255,255,255,0.6);z-index:2}'+
+
+      '.w52-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}'+
+      '.w52-stat{background:rgba(240,240,255,0.04);border:1px solid rgba(240,240,255,0.06);border-radius:12px;padding:10px}'+
+      '.w52-stat-v{font-family:Bebas Neue,sans-serif;font-size:22px;letter-spacing:1px;color:#F0F0FF;line-height:1}'+
+      '.w52-stat-l{font-family:DM Sans;font-size:9px;color:rgba(240,240,255,0.55);letter-spacing:1.5px;margin-top:4px}'+
+
+      '.w52-next{font-family:DM Sans;font-size:12px;color:rgba(240,240,255,0.7);margin-top:14px;padding:10px 12px;background:rgba(249,136,5,0.08);border-left:3px solid #F98805;border-radius:8px;line-height:1.5}'+
+      '.w52-next b{color:#F98805}';
+    document.head.appendChild(s);
+  }
+
+  function renderTimeline(currentPhaseIdx){
+    return PHASES.map(function(p, i){
+      var widthPct = (p.weeks / TOTAL_WEEKS) * 100;
+      var cls = i === currentPhaseIdx ? 'current' : 'dim';
+      return '<div class="w52-tl-phase '+cls+'" style="background:'+p.color+';width:'+widthPct+'%">'+
+        '<span>'+p.icon+'</span><span style="font-size:8px">'+p.weeks+'sem</span>'+
+      '</div>';
+    }).join('');
+  }
+
+  function getNextPhase(currentIdx){
+    return PHASES[(currentIdx + 1) % PHASES.length];
+  }
+
+  function renderInto(){
+    var host = document.getElementById('corps-sc') || document.getElementById('t-corps');
+    if (!host) return;
+
+    var slot = host.querySelector('#w52-slot');
+    if (!slot){
+      slot = document.createElement('div');
+      slot.id = 'w52-slot';
+      // Inserer apres c33-slot (progression) ou avant les autres
+      var anchor = host.querySelector('#c33-slot') || host.querySelector('#c32-slot') || host.querySelector('#c31-slot');
+      if (anchor && anchor.nextSibling) host.insertBefore(slot, anchor.nextSibling);
+      else host.insertBefore(slot, host.firstChild);
+    }
+
+    var info = getCurrentPhase();
+    if (!info){
+      slot.innerHTML = '';
+      return;
+    }
+
+    var phase = info.phase;
+    var totalCycleProgress = ((info.weekInCycle - 1) / info.totalWeeks) * 100;
+    var nextPhase = getNextPhase(info.phaseIdx);
+
+    slot.innerHTML = ''+
+      '<div class="w52-wrap">'+
+        '<div class="w52-h">MACROCYCLE<div class="w52-h-line"></div></div>'+
+        '<div class="w52-card">'+
+          '<div class="w52-current">'+
+            '<div class="w52-phase-icon" style="background:'+phase.color+'">'+phase.icon+'</div>'+
+            '<div class="w52-phase-meta">'+
+              '<div class="w52-phase-name">'+phase.name.toUpperCase()+'</div>'+
+              '<div class="w52-phase-desc">'+phase.desc+'</div>'+
+              '<div class="w52-phase-week">Semaine <b>'+info.weekInPhase+'</b> sur '+phase.weeks+' . '+info.weeksRemaining+' sem restantes</div>'+
+            '</div>'+
+          '</div>'+
+          '<div class="w52-timeline">'+
+            renderTimeline(info.phaseIdx)+
+            '<div class="w52-tl-progress" style="left:'+totalCycleProgress.toFixed(1)+'%"></div>'+
+          '</div>'+
+          '<div class="w52-stats">'+
+            '<div class="w52-stat">'+
+              '<div class="w52-stat-v">'+info.weekInCycle+'/'+info.totalWeeks+'</div>'+
+              '<div class="w52-stat-l">SEMAINE CYCLE</div>'+
+            '</div>'+
+            '<div class="w52-stat">'+
+              '<div class="w52-stat-v">#'+info.cycleNumber+'</div>'+
+              '<div class="w52-stat-l">CYCLE EN COURS</div>'+
+            '</div>'+
+          '</div>'+
+          '<div class="w52-next">Prochaine phase : <b>'+nextPhase.name+'</b> dans '+info.weeksRemaining+' sem. '+nextPhase.desc+'.</div>'+
+        '</div>'+
+      '</div>';
+  }
+
+  // Hook buildCorps + switchTab pour rendu auto
+  var _origBuild = window.buildCorps;
+  window.buildCorps = function(){
+    try { if (typeof _origBuild === 'function') _origBuild.apply(this, arguments); } catch(e){}
+    try { renderInto(); } catch(e){ console.warn('[W5.2] render fail', e); }
+  };
+
+  var _origSwitch = window.switchTab;
+  if (typeof _origSwitch === 'function'){
+    window.switchTab = function(name){
+      var r = _origSwitch.apply(this, arguments);
+      if (name === 't-corps' || name === 'corps') setTimeout(renderInto, 150);
+      return r;
+    };
+  }
+
+  injectStyles();
+  if (document.body && document.body.dataset.tab === 'corps') setTimeout(renderInto, 100);
+
+  window.HIMA_W52 = {
+    getCurrentPhase: getCurrentPhase,
+    render: renderInto,
+    resetCycle: function(){
+      var u = H.getU();
+      u.wave5.macrocycle = { startDate: H.todayKey(), cycleNumber: (u.wave5.macrocycle && u.wave5.macrocycle.cycleNumber || 0) + 1 };
+      H.setU(u);
+      renderInto();
+    }
+  };
+
+  console.log('[W5.2] Macrocycle loaded');
+})();
+
+
+/* WAVE 5.3 - DELOAD AUTO + NEXT MILESTONE
+   - Detection plateau 3 sem -> propose deload via Coach IA
+   - Calcul next milestone par exo (extrapolation lineaire)
+   - Affichage dans Tab Corps (apres macrocycle)
+   - Push notif si milestone atteint (preparation Wave 4)
+*/
+
+(function wave5_3_milestones(){
+  'use strict';
+  if (!window.SV2_FLAGS.wave53) return;
+  var H = window.HIMA_WAVE5;
+
+  var BIG_LIFTS = [
+    { id: 'squat',  name: 'Squat',          emoji: 'S' },
+    { id: 'bench',  name: 'Developpe couche', emoji: 'B' },
+    { id: 'deadlift', name: 'Souleve de terre', emoji: 'D' },
+    { id: 'ohp',    name: 'OHP',            emoji: 'O' },
+    { id: 'row',    name: 'Rowing',         emoji: 'R' }
+  ];
+
+  // --- Calcul next milestone par exo ---------------------
+  function calcMilestone(exoId, exoName){
+    if (!window.HIMA_W51) return null;
+    var hist = window.HIMA_W51.getHistory(exoName) || window.HIMA_W51.getHistory(exoId);
+    if (!hist || hist.length < 2) return null;
+
+    // 1RM Epley moyens par seance (4 dernieres)
+    var dates = [];
+    hist.forEach(function(s){ if (dates.indexOf(s.date) === -1) dates.push(s.date); });
+    dates = dates.slice(0, 6);
+
+    var rms = dates.map(function(d){
+      var setsD = hist.filter(function(s){ return s.date === d; });
+      return Math.max.apply(null, setsD.map(function(s){
+        return window.HIMA_W51.epley1RM(s.weight, s.reps);
+      }));
+    }).reverse();
+
+    if (rms.length < 2) return null;
+
+    // Tendance lineaire simple : moyenne progression hebdo
+    var totalGain = rms[rms.length-1] - rms[0];
+    var weeksSpan = Math.max(1, (rms.length - 1) * 1); // ~1 sem entre seances
+    var gainPerWeek = totalGain / weeksSpan;
+
+    var current1RM = rms[rms.length-1];
+    if (gainPerWeek <= 0) return null;
+
+    // Prochain palier rond (multiple de 5)
+    var nextTarget = Math.ceil(current1RM / 5) * 5;
+    if (nextTarget <= current1RM) nextTarget += 5;
+
+    var weeksToReach = Math.ceil((nextTarget - current1RM) / gainPerWeek);
+    if (weeksToReach > 26) return null; // trop loin, pas pertinent
+
+    return {
+      exoId: exoId,
+      exoName: exoName,
+      current: Math.round(current1RM),
+      target: nextTarget,
+      weeks: weeksToReach,
+      gainPerWeek: gainPerWeek.toFixed(2)
+    };
+  }
+
+  // --- Detection stagnation -> propose deload -----------
+  function detectStagnation(){
+    if (!window.HIMA_W51) return [];
+    var stagnant = [];
+    BIG_LIFTS.forEach(function(L){
+      var hist = window.HIMA_W51.getHistory(L.name);
+      if (!hist || hist.length < 6) return;
+
+      var dates = [];
+      hist.forEach(function(s){ if (dates.indexOf(s.date) === -1) dates.push(s.date); });
+      if (dates.length < 3) return;
+
+      var last3 = dates.slice(0, 3);
+      var rms = last3.map(function(d){
+        var setsD = hist.filter(function(s){ return s.date === d; });
+        return Math.max.apply(null, setsD.map(function(s){
+          return window.HIMA_W51.epley1RM(s.weight, s.reps);
+        }));
+      });
+      var maxR = Math.max.apply(null, rms);
+      var minR = Math.min.apply(null, rms);
+      if (maxR > 0 && (maxR - minR) / maxR < 0.025){
+        stagnant.push({ exo: L, lastRM: maxR });
+      }
+    });
+    return stagnant;
+  }
+
+  // --- UI : section dans Tab Corps --------------------
+  function injectStyles(){
+    if (document.getElementById('w53-style')) return;
+    var s = document.createElement('style');
+    s.id = 'w53-style';
+    s.textContent = ''+
+      '.w53-wrap{padding:0 16px 14px}'+
+      '.w53-h{font-family:Bebas Neue,sans-serif;font-size:22px;letter-spacing:2px;color:#F0F0FF;margin:0 0 12px;display:flex;align-items:center;gap:8px}'+
+      '.w53-h-line{flex:1;height:1px;background:linear-gradient(90deg,rgba(240,240,255,0.15),transparent)}'+
+      '.w53-card{background:linear-gradient(140deg,rgba(240,240,255,0.04),rgba(240,240,255,0.02));border:1px solid rgba(240,240,255,0.06);border-radius:18px;padding:14px;margin-bottom:12px}'+
+
+      '.w53-ms-list{display:flex;flex-direction:column;gap:10px}'+
+      '.w53-ms{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:10px;background:rgba(240,240,255,0.04);border:1px solid rgba(240,240,255,0.06);border-radius:12px}'+
+      '.w53-ms-emj{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,#F98805,#F35695);color:#fff;font-family:Bebas Neue,sans-serif;font-size:18px;display:flex;align-items:center;justify-content:center;letter-spacing:1px}'+
+      '.w53-ms-mid{min-width:0}'+
+      '.w53-ms-l{font-family:Space Grotesk;font-size:13px;font-weight:600;color:#F0F0FF}'+
+      '.w53-ms-sub{font-family:DM Sans;font-size:10px;color:rgba(240,240,255,0.6);margin-top:2px}'+
+      '.w53-ms-target{text-align:right}'+
+      '.w53-ms-val{font-family:Bebas Neue,sans-serif;font-size:22px;letter-spacing:1px;color:#DDE255;line-height:1}'+
+      '.w53-ms-weeks{font-family:DM Sans;font-size:9px;color:rgba(240,240,255,0.55);margin-top:2px;letter-spacing:1px}'+
+
+      '.w53-empty{font-family:DM Sans;font-size:12px;color:rgba(240,240,255,0.5);text-align:center;padding:20px;border:1px dashed rgba(240,240,255,0.08);border-radius:12px}'+
+
+      '.w53-deload{margin-top:12px;background:linear-gradient(135deg,rgba(243,86,149,0.12),rgba(249,136,5,0.08));border:1px solid rgba(243,86,149,0.3);border-radius:14px;padding:14px}'+
+      '.w53-deload-h{font-family:Bebas Neue,sans-serif;font-size:16px;letter-spacing:1.5px;color:#F35695;margin-bottom:6px}'+
+      '.w53-deload-txt{font-family:DM Sans;font-size:12px;color:#F0F0FF;line-height:1.5}'+
+      '.w53-deload b{color:#DDE255}';
+    document.head.appendChild(s);
+  }
+
+  function renderInto(){
+    var host = document.getElementById('corps-sc') || document.getElementById('t-corps');
+    if (!host) return;
+
+    var slot = host.querySelector('#w53-slot');
+    if (!slot){
+      slot = document.createElement('div');
+      slot.id = 'w53-slot';
+      var anchor = host.querySelector('#w52-slot') || host.querySelector('#c33-slot');
+      if (anchor && anchor.nextSibling) host.insertBefore(slot, anchor.nextSibling);
+      else host.appendChild(slot);
+    }
+
+    // Calcul milestones
+    var milestones = BIG_LIFTS.map(function(L){
+      return calcMilestone(L.id, L.name);
+    }).filter(Boolean);
+
+    var stagnant = detectStagnation();
+
+    var msHtml = '';
+    if (milestones.length){
+      msHtml = '<div class="w53-ms-list">' +
+        milestones.map(function(m){
+          var L = BIG_LIFTS.find(function(x){ return x.id === m.exoId; });
+          return '<div class="w53-ms">'+
+            '<div class="w53-ms-emj">'+(L?L.emoji:'*')+'</div>'+
+            '<div class="w53-ms-mid">'+
+              '<div class="w53-ms-l">'+m.exoName+'</div>'+
+              '<div class="w53-ms-sub">Actuel '+m.current+'kg . +'+m.gainPerWeek+'kg/sem</div>'+
+            '</div>'+
+            '<div class="w53-ms-target">'+
+              '<div class="w53-ms-val">'+m.target+'kg</div>'+
+              '<div class="w53-ms-weeks">DANS '+m.weeks+' SEM</div>'+
+            '</div>'+
+          '</div>';
+        }).join('')
+      + '</div>';
+    } else {
+      msHtml = '<div class="w53-empty">Fais au moins 2 seances avec un meme exo pour voir tes prochains paliers.</div>';
+    }
+
+    var deloadHtml = '';
+    if (stagnant.length){
+      deloadHtml = '<div class="w53-deload">'+
+        '<div class="w53-deload-h">DELOAD CONSEILLE</div>'+
+        '<div class="w53-deload-txt">Tu stagnes sur <b>'+stagnant.map(function(s){return s.exo.name;}).join(', ')+'</b> depuis 3 semaines. Cette semaine : baisse les charges de <b>15-20%</b>, fais <b>+5 reps</b>. La semaine suivante tu reviens plus fort.</div>'+
+      '</div>';
+    }
+
+    slot.innerHTML = ''+
+      '<div class="w53-wrap">'+
+        '<div class="w53-h">PROCHAINS PALIERS<div class="w53-h-line"></div></div>'+
+        '<div class="w53-card">'+
+          msHtml+
+          deloadHtml+
+        '</div>'+
+      '</div>';
+  }
+
+  // Hook + render
+  var _origBuild = window.buildCorps;
+  window.buildCorps = function(){
+    try { if (typeof _origBuild === 'function') _origBuild.apply(this, arguments); } catch(e){}
+    try { renderInto(); } catch(e){ console.warn('[W5.3] render fail', e); }
+  };
+
+  var _origSwitch = window.switchTab;
+  if (typeof _origSwitch === 'function'){
+    window.switchTab = function(name){
+      var r = _origSwitch.apply(this, arguments);
+      if (name === 't-corps' || name === 'corps') setTimeout(renderInto, 200);
+      return r;
+    };
+  }
+
+  injectStyles();
+  if (document.body && document.body.dataset.tab === 'corps') setTimeout(renderInto, 150);
+
+  window.HIMA_W53 = {
+    calcMilestone: calcMilestone,
+    detectStagnation: detectStagnation,
+    render: renderInto
+  };
+
+  console.log('[W5.3] Milestones + Deload loaded');
+})();
+
+</script>
+
+
+
 
 
 
