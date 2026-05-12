@@ -22016,6 +22016,1412 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
 
 </script>
 
+<script>
+/* HIMA - LIENS LEGAUX (Profil)
+   v1.0 - 3 liens vers mentions/privacy/cgu
+*/
+
+/* HIMA - LIENS LEGAUX
+   - Ajoute section "Legal" dans Tab Profil avec 3 liens
+   - Lien vers /legal/mentions-legales.html, /legal/confidentialite.html, /legal/cgu.html
+*/
+
+(function himaLegalLinks(){
+  'use strict';
+
+  function injectStyles(){
+    if (document.getElementById('hlegal-style')) return;
+    var s = document.createElement('style');
+    s.id = 'hlegal-style';
+    s.textContent = ''+
+      '.hlegal-section{margin:18px 16px 24px}'+
+      '.hlegal-h{font-family:Bebas Neue,sans-serif;font-size:22px;letter-spacing:2px;color:#F0F0FF;margin:0 0 12px;display:flex;align-items:center;gap:8px}'+
+      '.hlegal-h-line{flex:1;height:1px;background:linear-gradient(90deg,rgba(240,240,255,0.15),transparent)}'+
+      '.hlegal-card{background:rgba(240,240,255,0.04);border:1px solid rgba(240,240,255,0.06);border-radius:18px;padding:6px;display:flex;flex-direction:column;gap:2px}'+
+      '.hlegal-link{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;color:#F0F0FF;text-decoration:none;font-family:DM Sans;font-size:13px;border-radius:12px;transition:background 0.15s}'+
+      '.hlegal-link:hover{background:rgba(240,240,255,0.04)}'+
+      '.hlegal-link:active{transform:scale(0.98)}'+
+      '.hlegal-arrow{color:rgba(240,240,255,0.4);font-size:16px}'+
+      '.hlegal-footer{text-align:center;font-family:DM Sans;font-size:10px;color:rgba(240,240,255,0.35);margin-top:14px;letter-spacing:0.5px;line-height:1.6}';
+    document.head.appendChild(s);
+  }
+
+  function renderInto(){
+    var host = document.querySelector('#t-prf') ||
+               document.querySelector('#t-profile') ||
+               document.querySelector('[id^="t-pro"]');
+    if (!host) return;
+    var scrollHost = host.querySelector('.pv3-root') || host.querySelector('.pv3-sc') || host;
+    var slot = scrollHost.querySelector('#hlegal-slot');
+    if (!slot){
+      slot = document.createElement('div');
+      slot.id = 'hlegal-slot';
+      scrollHost.appendChild(slot);
+    }
+    slot.innerHTML = ''+
+      '<div class="hlegal-section">'+
+        '<div class="hlegal-h"><span>LEGAL</span><div class="hlegal-h-line"></div></div>'+
+        '<div class="hlegal-card">'+
+          '<a href="/legal/mentions-legales.html" target="_blank" rel="noopener" class="hlegal-link">Mentions legales<span class="hlegal-arrow">></span></a>'+
+          '<a href="/legal/confidentialite.html" target="_blank" rel="noopener" class="hlegal-link">Politique de confidentialite<span class="hlegal-arrow">></span></a>'+
+          '<a href="/legal/cgu.html" target="_blank" rel="noopener" class="hlegal-link">Conditions generales d utilisation<span class="hlegal-arrow">></span></a>'+
+        '</div>'+
+        '<div class="hlegal-footer">HIMA v0.9 . 2026<br>Coaching IA propulse par Anthropic Claude</div>'+
+      '</div>';
+  }
+
+  injectStyles();
+
+  var _origSwitch = window.switchTab;
+  if (typeof _origSwitch === 'function'){
+    window.switchTab = function(name){
+      var r = _origSwitch.apply(this, arguments);
+      if (name === 't-prf' || name === 't-profile' || name === 'prf' || name === 'profile'){
+        setTimeout(renderInto, 250);
+      }
+      return r;
+    };
+  }
+  if (document.body && /^(prf|profile|t-prf|t-profile)$/.test(document.body.dataset.tab || '')){
+    setTimeout(renderInto, 300);
+  }
+  setTimeout(renderInto, 2000);
+  setTimeout(renderInto, 5000);
+
+  console.log('[LEGAL] Liens legaux ready');
+})();
+
+</script>
+
+<script>
+/* HIMA - WAVE 9 - SOCIAL / GAMIFICATION
+   v9.0.0 - badges + share cards + crew + weekly challenge
+*/
+
+/* HIMA - WAVE 9 - SOCIAL / GAMIFICATION
+   9.1 - Badges (collection 25+ badges debloquables)
+   9.2 - Cartes partage Insta/TikTok (canvas 1080x1920)
+   9.3 - Crew (code d'invitation, max 5 amis, local only sans Firebase)
+   9.4 - Defi hebdo (local, regen chaque dimanche)
+
+   Architecture :
+   - 1 IIFE bootstrap
+   - 4 IIFE features independantes
+   - Kill switches : window.SV2_FLAGS.wave91/92/93/94
+   - Storage : U.wave9 = { badges, shareCards, crew, challenges }
+
+   Lecon Wave 3 : 100% ASCII, no <\/script> in JS code
+*/
+
+(function wave9_boot(){
+  'use strict';
+  window.SV2_FLAGS = window.SV2_FLAGS || {};
+  Object.assign(window.SV2_FLAGS, {
+    wave91: window.SV2_FLAGS.wave91 !== false,
+    wave92: window.SV2_FLAGS.wave92 !== false,
+    wave93: window.SV2_FLAGS.wave93 !== false,
+    wave94: window.SV2_FLAGS.wave94 !== false
+  });
+
+  var KEY = 'hima8';
+  function getU(){
+    try { return JSON.parse(localStorage.getItem(KEY) || '{}') || {}; }
+    catch(e){ return {}; }
+  }
+  function setU(u){
+    try { localStorage.setItem(KEY, JSON.stringify(u)); } catch(e){}
+  }
+  function ensureWave9(){
+    var u = getU();
+    u.wave9 = u.wave9 || {};
+    u.wave9.badges = u.wave9.badges || { unlocked: {}, progress: {} };
+    u.wave9.shareCards = u.wave9.shareCards || { history: [] };
+    u.wave9.crew = u.wave9.crew || { myCode: null, members: [] };
+    u.wave9.challenges = u.wave9.challenges || {};
+    setU(u);
+    return u;
+  }
+  function todayKey(){
+    var d = new Date();
+    return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  }
+  function weekKey(){
+    // Year-Week (ex: 2026-W19)
+    var d = new Date();
+    d.setHours(0,0,0,0);
+    d.setDate(d.getDate() + 4 - (d.getDay()||7));
+    var yearStart = new Date(d.getFullYear(),0,1);
+    var weekNum = Math.ceil((((d - yearStart) / 86400000) + 1)/7);
+    return d.getFullYear()+'-W'+String(weekNum).padStart(2,'0');
+  }
+  function daysAgo(dateStr){
+    if (!dateStr) return Infinity;
+    var d = new Date(dateStr);
+    return Math.floor((Date.now() - d.getTime()) / 86400000);
+  }
+
+  ensureWave9();
+  window.HIMA_WAVE9 = {
+    getU: getU, setU: setU, ensureWave9: ensureWave9,
+    todayKey: todayKey, weekKey: weekKey, daysAgo: daysAgo
+  };
+  console.log('[W9] Bootstrap loaded');
+})();
+
+
+/* WAVE 9.1 - BADGES
+   - 25+ badges debloquables
+   - 3 states : locked / progress / unlocked
+   - Detection automatique a chaque switchTab et events cles
+   - Affichage grid dans Tab Profil
+   - Animation pop a l'unlock + notif modal (reuse W8.4 styles)
+*/
+
+(function wave9_1_badges(){
+  'use strict';
+  if (!window.SV2_FLAGS.wave91) return;
+  var H = window.HIMA_WAVE9;
+
+  // --- Definitions des badges ------------------------
+  var BADGES = [
+    // Regularite
+    { key: 'first-session', cat: 'reg', name: 'Premier pas', desc: 'Premiere seance bouclee', emoji: '1', color: '#DDE255', check: function(u){ return (u.sv2 && u.sv2.history || []).length >= 1; } },
+    { key: 'week-streak-7', cat: 'reg', name: 'Premiere semaine', desc: '7 jours de streak', emoji: '7', color: '#F98805', check: function(u){ return (u.streak && u.streak.current >= 7); } },
+    { key: 'month-streak-30', cat: 'reg', name: 'Discipline absolue', desc: '30 jours de streak', emoji: '30', color: '#F35695', check: function(u){ return (u.streak && u.streak.current >= 30); } },
+    { key: 'sessions-10', cat: 'reg', name: 'Habitue', desc: '10 seances bouclees', emoji: '10', color: '#DDE255', check: function(u){ return (u.sv2 && u.sv2.history || []).length >= 10; } },
+    { key: 'sessions-50', cat: 'reg', name: 'Serieux', desc: '50 seances bouclees', emoji: '50', color: '#F98805', check: function(u){ return (u.sv2 && u.sv2.history || []).length >= 50; } },
+    { key: 'sessions-100', cat: 'reg', name: 'Centenaire', desc: '100 seances bouclees', emoji: '100', color: '#F35695', check: function(u){ return (u.sv2 && u.sv2.history || []).length >= 100; } },
+
+    // Performance
+    { key: 'pr-squat-100', cat: 'perf', name: '100kg au squat', desc: 'Premier 100kg en back squat', emoji: 'S', color: '#F98805', check: function(u){ return checkPR(u, 'squat', 100); } },
+    { key: 'pr-bench-80', cat: 'perf', name: '80kg au DC', desc: 'Premier 80kg en developpe couche', emoji: 'B', color: '#F98805', check: function(u){ return checkPR(u, 'bench', 80); } },
+    { key: 'pr-deadlift-120', cat: 'perf', name: '120kg au SDT', desc: 'Premier 120kg en souleve de terre', emoji: 'D', color: '#F98805', check: function(u){ return checkPR(u, 'deadlift', 120); } },
+    { key: 'pr-club-1k', cat: 'perf', name: '1000 club', desc: 'Total Squat+DC+SDT = 1000kg', emoji: '1k', color: '#F35695', check: function(u){ return totalThree(u) >= 1000; } },
+
+    // Form Check
+    { key: 'fc-first', cat: 'form', name: 'Premier scan', desc: '1 Form Check fait', emoji: 'F', color: '#DDE255', check: function(u){
+        var fc = u.formChecks || {};
+        for (var k in fc){ if (fc[k] && fc[k].length) return true; }
+        return false;
+      }
+    },
+    { key: 'fc-score-80', cat: 'form', name: 'Bonne forme', desc: 'Score Form Check >= 80', emoji: '80', color: '#F98805', check: function(u){ return checkFormScore(u, 80); } },
+    { key: 'fc-score-90', cat: 'form', name: 'Forme de pro', desc: 'Score Form Check >= 90', emoji: '90', color: '#F35695', check: function(u){ return checkFormScore(u, 90); } },
+    { key: 'fc-10', cat: 'form', name: 'Scanneur', desc: '10 Form Checks faits', emoji: '10', color: '#F98805', check: function(u){ return countFormChecks(u) >= 10; } },
+
+    // Nutrition
+    { key: 'nutri-first-log', cat: 'nutri', name: 'Premier log', desc: '1er repas logge', emoji: 'N', color: '#DDE255', check: function(u){ return countNutriLogs(u) >= 1; } },
+    { key: 'nutri-plan', cat: 'nutri', name: 'Planificateur', desc: '1er plan repas genere', emoji: 'P', color: '#F98805', check: function(u){ return !!(u.wave7 && u.wave7.mealPlan && u.wave7.mealPlan.data); } },
+    { key: 'nutri-photo-5', cat: 'nutri', name: 'Photographe', desc: '5 photos plate analysees', emoji: 'C', color: '#F35695', check: function(u){ return (u.wave7 && u.wave7.plateAnalyses || []).length >= 5; } },
+    { key: 'nutri-30-logs', cat: 'nutri', name: 'Compteur calories', desc: '30 repas logges au total', emoji: '30', color: '#F98805', check: function(u){ return countNutriLogs(u) >= 30; } },
+
+    // Profil
+    { key: 'profile-medical', cat: 'prof', name: 'Transparence', desc: 'Journal medical rempli', emoji: 'M', color: '#DDE255', check: function(u){
+        var med = u.wave8 && u.wave8.medical;
+        if (!med) return false;
+        return ['injuries','contraindications','allergies','medications','conditions'].some(function(k){
+          return med[k] && med[k].length;
+        }) || (med.notes && med.notes.trim());
+      }
+    },
+    { key: 'profile-photo', cat: 'prof', name: 'Visage', desc: 'Photo de profil definie', emoji: 'V', color: '#F98805', check: function(u){
+        return !!(u.profile && u.profile.photo);
+      }
+    },
+
+    // Cycle Macrocycle (Wave 5)
+    { key: 'cycle-first', cat: 'cycle', name: 'Premier cycle', desc: 'Cycle macrocycle commence', emoji: 'M1', color: '#DDE255', check: function(u){
+        return !!(u.wave5 && u.wave5.macrocycle && u.wave5.macrocycle.startDate);
+      }
+    },
+    { key: 'cycle-pic', cat: 'cycle', name: 'Phase de pic', desc: 'Atteint la phase de pic', emoji: 'PIC', color: '#F35695', check: function(u){
+        if (!window.HIMA_W52) return false;
+        var info = window.HIMA_W52.getCurrentPhase && window.HIMA_W52.getCurrentPhase();
+        return info && info.phase && info.phase.id === 'pic';
+      }
+    },
+
+    // Secrets / Easter eggs
+    { key: 'night-owl', cat: 'secret', name: 'Noctambule', desc: 'Seance entre minuit et 5h', emoji: '*', color: '#8b9be0', hidden: true, check: function(u){
+        var hist = u.sv2 && u.sv2.history || [];
+        return hist.some(function(s){
+          if (!s.startTs && !s.ts) return false;
+          var t = new Date(s.startTs || s.ts);
+          var h = t.getHours();
+          return h >= 0 && h < 5;
+        });
+      }
+    },
+    { key: 'early-bird', cat: 'secret', name: 'Leve-tot', desc: 'Seance avant 6h du matin', emoji: '~', color: '#8b9be0', hidden: true, check: function(u){
+        var hist = u.sv2 && u.sv2.history || [];
+        return hist.some(function(s){
+          if (!s.startTs && !s.ts) return false;
+          var t = new Date(s.startTs || s.ts);
+          var h = t.getHours();
+          return h >= 4 && h < 6;
+        });
+      }
+    },
+    { key: 'speed-demon', cat: 'secret', name: 'Vitesse pure', desc: 'Seance complete en < 25 min', emoji: '!', color: '#8b9be0', hidden: true, check: function(u){
+        var hist = u.sv2 && u.sv2.history || [];
+        return hist.some(function(s){ return s.duration && s.duration < 25*60*1000 && s.duration > 5*60*1000; });
+      }
+    }
+  ];
+
+  function checkPR(u, exoType, minWeight){
+    if (!window.HIMA_W51) return false;
+    var match = { squat: ['squat'], bench: ['bench','developpe couche','dc'], deadlift: ['deadlift','souleve','sdt'] };
+    var names = match[exoType] || [];
+    for (var i = 0; i < names.length; i++){
+      var hist = window.HIMA_W51.getHistory(names[i]);
+      if (hist && hist.length){
+        var maxW = Math.max.apply(null, hist.map(function(s){ return s.weight || 0; }));
+        if (maxW >= minWeight) return true;
+      }
+    }
+    return false;
+  }
+  function totalThree(u){
+    if (!window.HIMA_W51) return 0;
+    var sum = 0;
+    [['squat'],['bench','developpe couche','dc'],['deadlift','souleve','sdt']].forEach(function(names){
+      var max = 0;
+      names.forEach(function(n){
+        var h = window.HIMA_W51.getHistory(n);
+        if (h && h.length){
+          var w = Math.max.apply(null, h.map(function(s){ return s.weight || 0; }));
+          if (w > max) max = w;
+        }
+      });
+      sum += max;
+    });
+    return sum;
+  }
+  function checkFormScore(u, threshold){
+    var fc = u.formChecks || {};
+    for (var k in fc){
+      var arr = fc[k] || [];
+      if (arr.some(function(f){ return f.analysis && f.analysis.score >= threshold; })) return true;
+    }
+    return false;
+  }
+  function countFormChecks(u){
+    var fc = u.formChecks || {};
+    var n = 0;
+    for (var k in fc){ n += (fc[k] || []).length; }
+    return n;
+  }
+  function countNutriLogs(u){
+    var logs = u.nv3 && u.nv3.logs || {};
+    var n = 0;
+    for (var k in logs){ n += (logs[k] || []).length; }
+    return n;
+  }
+
+  // --- Detection auto -------------------------------
+  function detectUnlocked(){
+    var u = H.ensureWave9();
+    var unlocked = u.wave9.badges.unlocked || {};
+    var newOnes = [];
+    BADGES.forEach(function(b){
+      if (unlocked[b.key]) return;
+      try {
+        if (b.check(u)){
+          unlocked[b.key] = Date.now();
+          newOnes.push(b);
+        }
+      } catch(e){}
+    });
+    u.wave9.badges.unlocked = unlocked;
+    H.setU(u);
+    return newOnes;
+  }
+
+  function showUnlockToast(badge){
+    // Reuse Wave 8.4 modal style mais avec specifics badge
+    var modal = document.createElement('div');
+    modal.style.cssText = 'position:fixed;inset:0;z-index:10010;background:rgba(8,8,16,0.92);backdrop-filter:blur(24px);display:flex;align-items:center;justify-content:center;padding:24px;animation:w91fadein 0.3s';
+    if (!document.getElementById('w91-anim-style')){
+      var s = document.createElement('style');
+      s.id = 'w91-anim-style';
+      s.textContent = ''+
+        '@keyframes w91fadein{from{opacity:0}to{opacity:1}}'+
+        '@keyframes w91pop{0%{transform:scale(0.6);opacity:0}60%{transform:scale(1.1)}100%{transform:scale(1);opacity:1}}';
+      document.head.appendChild(s);
+    }
+    modal.innerHTML = ''+
+      '<div style="max-width:320px;background:linear-gradient(140deg,#0f0f1f,#1a0f2e);border:2px solid '+badge.color+';border-radius:24px;padding:28px 24px;text-align:center;animation:w91pop 0.5s cubic-bezier(0.34,1.56,0.64,1)">'+
+        '<div style="font-family:DM Sans;font-size:10px;color:'+badge.color+';letter-spacing:3px;margin-bottom:14px">NOUVEAU BADGE</div>'+
+        '<div style="width:80px;height:80px;background:'+badge.color+';margin:0 auto 16px;border-radius:20px;display:flex;align-items:center;justify-content:center;font-family:Bebas Neue,sans-serif;font-size:36px;color:#0f0f1f;letter-spacing:1px">'+badge.emoji+'</div>'+
+        '<div style="font-family:Bebas Neue,sans-serif;font-size:22px;letter-spacing:2px;color:#F0F0FF;margin-bottom:6px">'+badge.name.toUpperCase()+'</div>'+
+        '<div style="font-family:DM Sans;font-size:13px;color:rgba(240,240,255,0.7);margin-bottom:20px;line-height:1.4">'+badge.desc+'</div>'+
+        '<button id="w91-toast-ok" style="background:'+badge.color+';border:none;color:#0f0f1f;font-family:Space Grotesk;font-size:12px;font-weight:700;padding:10px 24px;border-radius:10px;cursor:pointer;letter-spacing:1px">Continuer</button>'+
+      '</div>';
+    document.body.appendChild(modal);
+    modal.querySelector('#w91-toast-ok').addEventListener('click', function(){
+      modal.remove();
+    });
+    if (navigator.vibrate) navigator.vibrate([80,50,80,50,150]);
+  }
+
+  function checkAndShow(){
+    var newOnes = detectUnlocked();
+    if (!newOnes.length) return;
+    // Afficher 1 a 1, le suivant apres click
+    var idx = 0;
+    function showNext(){
+      if (idx >= newOnes.length) return;
+      var b = newOnes[idx++];
+      showUnlockToast(b);
+      // Quand le modal est ferme, afficher le suivant
+      var poll = setInterval(function(){
+        if (!document.body.contains(document.querySelector('#w91-toast-ok'))){
+          clearInterval(poll);
+          setTimeout(showNext, 300);
+        }
+      }, 200);
+    }
+    showNext();
+  }
+
+  // --- UI : Section Badges dans Tab Profil --------
+  function injectStyles(){
+    if (document.getElementById('w91-style')) return;
+    var s = document.createElement('style');
+    s.id = 'w91-style';
+    s.textContent = ''+
+      '.w91-section{margin:18px 16px 12px}'+
+      '.w91-h{font-family:Bebas Neue,sans-serif;font-size:22px;letter-spacing:2px;color:#F0F0FF;margin:0 0 12px;display:flex;align-items:center;gap:8px}'+
+      '.w91-h-line{flex:1;height:1px;background:linear-gradient(90deg,rgba(240,240,255,0.15),transparent)}'+
+      '.w91-h-count{font-family:DM Sans;font-size:11px;color:#F98805;letter-spacing:1px}'+
+
+      '.w91-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}'+
+      '.w91-badge{background:rgba(240,240,255,0.04);border:1px solid rgba(240,240,255,0.06);border-radius:14px;padding:10px 6px;text-align:center;cursor:pointer;position:relative;transition:transform 0.15s}'+
+      '.w91-badge:active{transform:scale(0.94)}'+
+      '.w91-badge.unlocked{background:linear-gradient(135deg,rgba(240,240,255,0.05),rgba(249,136,5,0.08))}'+
+      '.w91-badge-emj{width:42px;height:42px;border-radius:12px;margin:0 auto 6px;display:flex;align-items:center;justify-content:center;font-family:Bebas Neue,sans-serif;font-size:18px;letter-spacing:0.5px;color:#0f0f1f;font-weight:700}'+
+      '.w91-badge.locked .w91-badge-emj{background:rgba(240,240,255,0.08);color:rgba(240,240,255,0.3)}'+
+      '.w91-badge-name{font-family:Space Grotesk;font-size:10px;color:#F0F0FF;font-weight:600;line-height:1.2;letter-spacing:0.2px}'+
+      '.w91-badge.locked .w91-badge-name{color:rgba(240,240,255,0.4)}'+
+      '.w91-lock{position:absolute;top:6px;right:6px;color:rgba(240,240,255,0.4);font-size:10px}'+
+
+      // Modal detail
+      '.w91-modal{position:fixed;inset:0;z-index:10003;background:rgba(8,8,16,0.92);backdrop-filter:blur(20px);display:none;align-items:center;justify-content:center;padding:24px}'+
+      '.w91-modal.on{display:flex}'+
+      '.w91-mcard{max-width:340px;width:100%;background:#0f0f1f;border:1px solid rgba(240,240,255,0.1);border-radius:24px;padding:28px 24px;text-align:center}';
+    document.head.appendChild(s);
+  }
+
+  function renderInto(){
+    var host = document.querySelector('#t-prf') ||
+               document.querySelector('#t-profile') ||
+               document.querySelector('[id^="t-pro"]');
+    if (!host) return;
+    var scrollHost = host.querySelector('.pv3-root') || host.querySelector('.pv3-sc') || host;
+    var slot = scrollHost.querySelector('#w91-slot');
+    if (!slot){
+      slot = document.createElement('div');
+      slot.id = 'w91-slot';
+      scrollHost.appendChild(slot);
+    }
+
+    var u = H.ensureWave9();
+    var unlocked = u.wave9.badges.unlocked || {};
+    var visibleBadges = BADGES.filter(function(b){ return !b.hidden || unlocked[b.key]; });
+    var nUnlocked = visibleBadges.filter(function(b){ return unlocked[b.key]; }).length;
+    var nTotal = visibleBadges.length;
+
+    var badgesHtml = visibleBadges.map(function(b){
+      var isUnlocked = !!unlocked[b.key];
+      var cls = isUnlocked ? 'unlocked' : 'locked';
+      var bg = isUnlocked ? b.color : '';
+      return '<div class="w91-badge '+cls+'" data-key="'+b.key+'">'+
+        '<div class="w91-badge-emj" style="'+(isUnlocked?'background:'+bg:'')+'">'+b.emoji+'</div>'+
+        '<div class="w91-badge-name">'+b.name+'</div>'+
+        (isUnlocked ? '' : '<div class="w91-lock">#</div>')+
+      '</div>';
+    }).join('');
+
+    slot.innerHTML = ''+
+      '<div class="w91-section">'+
+        '<div class="w91-h"><span>BADGES</span><div class="w91-h-line"></div><span class="w91-h-count">'+nUnlocked+' / '+nTotal+'</span></div>'+
+        '<div class="w91-grid">'+badgesHtml+'</div>'+
+      '</div>';
+
+    slot.querySelectorAll('.w91-badge').forEach(function(el){
+      el.addEventListener('click', function(){
+        showBadgeDetail(el.dataset.key);
+      });
+    });
+  }
+
+  function showBadgeDetail(key){
+    var u = H.ensureWave9();
+    var b = BADGES.find(function(x){ return x.key === key; });
+    if (!b) return;
+    var unlocked = u.wave9.badges.unlocked || {};
+    var isU = !!unlocked[b.key];
+
+    var modal = document.createElement('div');
+    modal.className = 'w91-modal on';
+    modal.innerHTML = ''+
+      '<div class="w91-mcard">'+
+        '<div style="font-family:DM Sans;font-size:10px;color:'+(isU?b.color:'rgba(240,240,255,0.4)')+';letter-spacing:3px;margin-bottom:14px">'+(isU?'OBTENU':'A DEBLOQUER')+'</div>'+
+        '<div style="width:80px;height:80px;background:'+(isU?b.color:'rgba(240,240,255,0.08)')+';color:'+(isU?'#0f0f1f':'rgba(240,240,255,0.3)')+';margin:0 auto 16px;border-radius:20px;display:flex;align-items:center;justify-content:center;font-family:Bebas Neue,sans-serif;font-size:36px;letter-spacing:1px">'+b.emoji+'</div>'+
+        '<div style="font-family:Bebas Neue,sans-serif;font-size:22px;letter-spacing:2px;color:#F0F0FF;margin-bottom:6px">'+b.name.toUpperCase()+'</div>'+
+        '<div style="font-family:DM Sans;font-size:13px;color:rgba(240,240,255,0.7);margin-bottom:20px;line-height:1.4">'+b.desc+'</div>'+
+        (isU ? '<button id="w91-share" style="background:linear-gradient(135deg,#F98805,#F35695);border:none;color:#fff;font-family:Space Grotesk;font-size:12px;font-weight:700;padding:10px 18px;border-radius:10px;cursor:pointer;letter-spacing:1px;margin-right:8px">Partager</button>' : '')+
+        '<button id="w91-detclose" style="background:rgba(240,240,255,0.06);border:none;color:#F0F0FF;font-family:Space Grotesk;font-size:12px;padding:10px 18px;border-radius:10px;cursor:pointer">Fermer</button>'+
+      '</div>';
+    document.body.appendChild(modal);
+    modal.querySelector('#w91-detclose').addEventListener('click', function(){ modal.remove(); });
+    var sh = modal.querySelector('#w91-share');
+    if (sh) sh.addEventListener('click', function(){
+      modal.remove();
+      if (window.HIMA_W92 && window.HIMA_W92.shareBadge){
+        window.HIMA_W92.shareBadge(b);
+      }
+    });
+  }
+
+  injectStyles();
+
+  // Hooks
+  var _origSwitch = window.switchTab;
+  if (typeof _origSwitch === 'function'){
+    window.switchTab = function(name){
+      var r = _origSwitch.apply(this, arguments);
+      setTimeout(checkAndShow, 600);
+      if (name === 't-prf' || name === 't-profile' || name === 'prf' || name === 'profile'){
+        setTimeout(renderInto, 300);
+      }
+      return r;
+    };
+  }
+  setTimeout(checkAndShow, 3000);
+  setTimeout(renderInto, 1500);
+  setTimeout(renderInto, 5000);
+
+  window.HIMA_W91 = {
+    BADGES: BADGES,
+    detect: detectUnlocked,
+    checkAndShow: checkAndShow,
+    render: renderInto,
+    forceUnlock: function(key){
+      var u = H.ensureWave9();
+      u.wave9.badges.unlocked[key] = Date.now();
+      H.setU(u);
+      var b = BADGES.find(function(x){ return x.key === key; });
+      if (b) showUnlockToast(b);
+    }
+  };
+  console.log('[W9.1] Badges loaded ('+BADGES.length+' total)');
+})();
+
+
+/* WAVE 9.2 - CARTES PARTAGE
+   - Generation Canvas 1080x1920 (story) ou 1080x1080 (post)
+   - Templates : session-recap, pr, milestone, badge, formcheck
+   - Partage via navigator.share (web share API) ou download
+*/
+
+(function wave9_2_shareCards(){
+  'use strict';
+  if (!window.SV2_FLAGS.wave92) return;
+  var H = window.HIMA_WAVE9;
+
+  // --- Generation canvas ----------------------------
+  function makeCanvas(w, h){
+    var c = document.createElement('canvas');
+    c.width = w; c.height = h;
+    return c;
+  }
+
+  function gradient(ctx, w, h, colors){
+    var g = ctx.createLinearGradient(0, 0, w, h);
+    colors.forEach(function(c, i){
+      g.addColorStop(i / (colors.length-1), c);
+    });
+    return g;
+  }
+
+  function drawBackground(ctx, w, h){
+    // Dark bg
+    ctx.fillStyle = '#080810';
+    ctx.fillRect(0, 0, w, h);
+    // Gradient orb top
+    var grad = ctx.createRadialGradient(w*0.7, h*0.2, 0, w*0.7, h*0.2, w*0.6);
+    grad.addColorStop(0, 'rgba(249,136,5,0.35)');
+    grad.addColorStop(0.5, 'rgba(243,86,149,0.15)');
+    grad.addColorStop(1, 'transparent');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, w, h);
+    // Gradient orb bottom
+    var grad2 = ctx.createRadialGradient(w*0.2, h*0.85, 0, w*0.2, h*0.85, w*0.5);
+    grad2.addColorStop(0, 'rgba(221,226,85,0.15)');
+    grad2.addColorStop(1, 'transparent');
+    ctx.fillStyle = grad2;
+    ctx.fillRect(0, 0, w, h);
+  }
+
+  function drawBranding(ctx, w, h){
+    // Logo HIMA en bas
+    ctx.fillStyle = 'rgba(255,255,255,0.85)';
+    ctx.font = 'bold 32px -apple-system, BlinkMacSystemFont, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('HIMA', w/2, h - 80);
+    ctx.fillStyle = 'rgba(255,255,255,0.4)';
+    ctx.font = '20px -apple-system, sans-serif';
+    ctx.fillText('hima.app', w/2, h - 50);
+  }
+
+  // --- Template : Session Recap (1080x1920 story) -----
+  function buildSessionRecapCard(session){
+    var W = 1080, Hh = 1920;
+    var c = makeCanvas(W, Hh);
+    var ctx = c.getContext('2d');
+    drawBackground(ctx, W, Hh);
+
+    // Top eyebrow
+    ctx.fillStyle = '#F98805';
+    ctx.font = 'bold 28px -apple-system, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('SEANCE BOUCLEE', W/2, 220);
+
+    // Big title
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 110px -apple-system, sans-serif';
+    var name = (session.name || 'PUSH').toUpperCase();
+    ctx.fillText(name, W/2, 380);
+
+    // Date
+    var d = new Date(session.startTs || session.ts || Date.now());
+    var dateStr = d.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+    ctx.fillStyle = 'rgba(255,255,255,0.55)';
+    ctx.font = '32px -apple-system, sans-serif';
+    ctx.fillText(dateStr, W/2, 460);
+
+    // Stats grid (4 cards)
+    var stats = [
+      { v: (session.exos || []).length + '', l: 'EXOS', c: '#F98805' },
+      { v: Math.round((session.duration || 0) / 60000) + ' min', l: 'DUREE', c: '#DDE255' },
+      { v: computeTotalVolume(session) + ' kg', l: 'VOLUME', c: '#F35695' },
+      { v: session.rpe ? 'RPE ' + session.rpe : 'RPE 8', l: 'INTENSITE', c: '#8b9be0' }
+    ];
+    var cardW = 460, cardH = 280;
+    var startY = 620;
+    stats.forEach(function(s, i){
+      var col = i % 2, row = Math.floor(i/2);
+      var x = 60 + col * (cardW + 40);
+      var y = startY + row * (cardH + 30);
+      // Card bg
+      ctx.fillStyle = 'rgba(255,255,255,0.05)';
+      drawRoundedRect(ctx, x, y, cardW, cardH, 30);
+      ctx.fill();
+      // Border
+      ctx.strokeStyle = s.c;
+      ctx.lineWidth = 4;
+      drawRoundedRect(ctx, x, y, cardW, cardH, 30);
+      ctx.stroke();
+      // Value
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 90px -apple-system, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(s.v, x + cardW/2, y + 140);
+      // Label
+      ctx.fillStyle = s.c;
+      ctx.font = 'bold 22px -apple-system, sans-serif';
+      ctx.fillText(s.l, x + cardW/2, y + 200);
+    });
+
+    // Quote
+    ctx.fillStyle = 'rgba(255,255,255,0.7)';
+    ctx.font = 'italic 30px -apple-system, sans-serif';
+    ctx.fillText('"' + pickQuote() + '"', W/2, 1620);
+
+    drawBranding(ctx, W, Hh);
+    return c;
+  }
+
+  function pickQuote(){
+    var quotes = [
+      'Chaque rep me rapproche.',
+      'Le progres se fait dans la duree.',
+      'Pas de raccourci. Que du travail.',
+      'Aujourd hui a compte.',
+      'Demain je serai plus fort.'
+    ];
+    return quotes[Math.floor(Math.random() * quotes.length)];
+  }
+
+  function computeTotalVolume(session){
+    var total = 0;
+    (session.exos || []).forEach(function(ex){
+      (ex.sets || []).forEach(function(s){
+        total += (s.weight || 0) * (s.reps || 0);
+      });
+    });
+    return Math.round(total);
+  }
+
+  function drawRoundedRect(ctx, x, y, w, h, r){
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    ctx.lineTo(x + r, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+    ctx.lineTo(x, y + r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.closePath();
+  }
+
+  // --- Template : PR Card -----------------------------
+  function buildPRCard(pr){
+    var W = 1080, Hh = 1920;
+    var c = makeCanvas(W, Hh);
+    var ctx = c.getContext('2d');
+    drawBackground(ctx, W, Hh);
+
+    ctx.fillStyle = '#F35695';
+    ctx.font = 'bold 36px -apple-system, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('NOUVEAU RECORD', W/2, 280);
+
+    // Exo name
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 90px -apple-system, sans-serif';
+    ctx.fillText((pr.exoName || 'SQUAT').toUpperCase(), W/2, 440);
+
+    // Weight giant
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 360px -apple-system, sans-serif';
+    ctx.fillText(pr.weight + 'kg', W/2, 1000);
+
+    // Delta
+    if (pr.delta){
+      ctx.fillStyle = '#DDE255';
+      ctx.font = 'bold 50px -apple-system, sans-serif';
+      ctx.fillText('+' + pr.delta + 'kg vs dernier max', W/2, 1180);
+    }
+
+    // Date
+    ctx.fillStyle = 'rgba(255,255,255,0.4)';
+    ctx.font = '32px -apple-system, sans-serif';
+    var dateStr = new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+    ctx.fillText(dateStr, W/2, 1620);
+
+    drawBranding(ctx, W, Hh);
+    return c;
+  }
+
+  // --- Template : Badge unlock card ------------------
+  function buildBadgeCard(badge){
+    var W = 1080, Hh = 1920;
+    var c = makeCanvas(W, Hh);
+    var ctx = c.getContext('2d');
+    drawBackground(ctx, W, Hh);
+
+    ctx.fillStyle = badge.color || '#F98805';
+    ctx.font = 'bold 32px -apple-system, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('BADGE DEBLOQUE', W/2, 300);
+
+    // Big emoji circle
+    var cx = W/2, cy = 700;
+    ctx.fillStyle = badge.color || '#F98805';
+    drawRoundedRect(ctx, cx - 200, cy - 200, 400, 400, 80);
+    ctx.fill();
+    ctx.fillStyle = '#0f0f1f';
+    ctx.font = 'bold 180px -apple-system, sans-serif';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(badge.emoji || '*', cx, cy);
+    ctx.textBaseline = 'alphabetic';
+
+    // Name
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 90px -apple-system, sans-serif';
+    ctx.fillText((badge.name || '').toUpperCase(), W/2, 1180);
+
+    // Desc
+    ctx.fillStyle = 'rgba(255,255,255,0.7)';
+    ctx.font = '34px -apple-system, sans-serif';
+    ctx.fillText(badge.desc || '', W/2, 1260);
+
+    // Date
+    ctx.fillStyle = 'rgba(255,255,255,0.4)';
+    ctx.font = '28px -apple-system, sans-serif';
+    var dateStr = new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' });
+    ctx.fillText(dateStr, W/2, 1620);
+
+    drawBranding(ctx, W, Hh);
+    return c;
+  }
+
+  // --- Template : Form Check Score --------------------
+  function buildFormCheckCard(fc){
+    var W = 1080, Hh = 1920;
+    var c = makeCanvas(W, Hh);
+    var ctx = c.getContext('2d');
+    drawBackground(ctx, W, Hh);
+
+    var score = (fc && fc.analysis && fc.analysis.score) || 0;
+    var color = score >= 80 ? '#DDE255' : score >= 60 ? '#F98805' : '#F35695';
+
+    ctx.fillStyle = color;
+    ctx.font = 'bold 36px -apple-system, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('FORM CHECK', W/2, 280);
+
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 80px -apple-system, sans-serif';
+    ctx.fillText((fc.exoName || 'EXERCICE').toUpperCase(), W/2, 420);
+
+    // Score circle
+    var cx = W/2, cy = 950, r = 280;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI*2);
+    ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+    ctx.lineWidth = 30;
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, -Math.PI/2, -Math.PI/2 + (score/100) * Math.PI*2);
+    ctx.strokeStyle = color;
+    ctx.lineCap = 'round';
+    ctx.stroke();
+
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 220px -apple-system, sans-serif';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(score, cx, cy);
+    ctx.textBaseline = 'alphabetic';
+
+    ctx.fillStyle = 'rgba(255,255,255,0.5)';
+    ctx.font = '38px -apple-system, sans-serif';
+    ctx.fillText('/ 100', cx, cy + 100);
+
+    // Verdict
+    var verdict = score >= 90 ? 'EXECUTION DE PRO' : score >= 80 ? 'TRES PROPRE' : score >= 60 ? 'CORRECT' : 'A AMELIORER';
+    ctx.fillStyle = color;
+    ctx.font = 'bold 44px -apple-system, sans-serif';
+    ctx.fillText(verdict, cx, 1450);
+
+    drawBranding(ctx, W, Hh);
+    return c;
+  }
+
+  // --- Template : Milestone Card ----------------------
+  function buildMilestoneCard(ms){
+    var W = 1080, Hh = 1920;
+    var c = makeCanvas(W, Hh);
+    var ctx = c.getContext('2d');
+    drawBackground(ctx, W, Hh);
+
+    ctx.fillStyle = '#F98805';
+    ctx.font = 'bold 32px -apple-system, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('ETAPE FRANCHIE', W/2, 320);
+
+    // Big emoji/number
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 320px -apple-system, sans-serif';
+    ctx.fillText(ms.emoji || ms.title || '*', W/2, 850);
+
+    // Title
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 70px -apple-system, sans-serif';
+    ctx.fillText((ms.title || 'MILESTONE').toUpperCase(), W/2, 1100);
+
+    // Desc
+    ctx.fillStyle = 'rgba(255,255,255,0.7)';
+    ctx.font = '32px -apple-system, sans-serif';
+    var lines = wrapText(ctx, ms.desc || '', W - 120, 32);
+    lines.forEach(function(line, i){
+      ctx.fillText(line, W/2, 1200 + i*44);
+    });
+
+    drawBranding(ctx, W, Hh);
+    return c;
+  }
+
+  function wrapText(ctx, text, maxWidth, fontSize){
+    var words = text.split(' ');
+    var lines = [];
+    var line = '';
+    words.forEach(function(w){
+      var testLine = line + (line ? ' ' : '') + w;
+      if (ctx.measureText(testLine).width > maxWidth && line){
+        lines.push(line);
+        line = w;
+      } else {
+        line = testLine;
+      }
+    });
+    if (line) lines.push(line);
+    return lines;
+  }
+
+  // --- Preview modal + actions ------------------------
+  function injectStyles(){
+    if (document.getElementById('w92-style')) return;
+    var s = document.createElement('style');
+    s.id = 'w92-style';
+    s.textContent = ''+
+      '.w92-modal{position:fixed;inset:0;z-index:10005;background:rgba(8,8,16,0.95);backdrop-filter:blur(20px);display:none;flex-direction:column;animation:w92fade 0.2s}'+
+      '.w92-modal.on{display:flex}'+
+      '@keyframes w92fade{from{opacity:0}to{opacity:1}}'+
+      '.w92-top{display:flex;justify-content:space-between;align-items:center;padding:14px 16px}'+
+      '.w92-close{background:rgba(240,240,255,0.08);border:none;color:#F0F0FF;width:36px;height:36px;border-radius:50%;font-size:18px;cursor:pointer}'+
+      '.w92-ttl{font-family:Bebas Neue,sans-serif;font-size:16px;letter-spacing:2px;color:#F0F0FF}'+
+      '.w92-body{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 20px 20px;overflow-y:auto}'+
+      '.w92-preview{max-width:280px;max-height:60vh;border-radius:18px;box-shadow:0 12px 40px rgba(0,0,0,0.7);margin-bottom:20px}'+
+      '.w92-actions{display:flex;gap:10px}'+
+      '.w92-btn{background:linear-gradient(135deg,#F98805,#F35695);border:none;color:#fff;font-family:Space Grotesk,sans-serif;font-size:13px;font-weight:600;padding:13px 22px;border-radius:14px;cursor:pointer;letter-spacing:1px}'+
+      '.w92-btn-dl{background:rgba(240,240,255,0.08);color:rgba(240,240,255,0.85)}';
+    document.head.appendChild(s);
+  }
+
+  function previewAndShare(canvas, filename){
+    injectStyles();
+    var modal = document.createElement('div');
+    modal.className = 'w92-modal on';
+    modal.innerHTML = ''+
+      '<div class="w92-top">'+
+        '<button class="w92-close" id="w92-close">x</button>'+
+        '<div class="w92-ttl">PARTAGER</div>'+
+        '<div style="width:36px"></div>'+
+      '</div>'+
+      '<div class="w92-body">'+
+        '<img class="w92-preview" id="w92-img" alt="card"/>'+
+        '<div class="w92-actions">'+
+          '<button class="w92-btn w92-btn-dl" id="w92-dl">Telecharger</button>'+
+          '<button class="w92-btn" id="w92-share">Partager</button>'+
+        '</div>'+
+      '</div>';
+    document.body.appendChild(modal);
+
+    var img = modal.querySelector('#w92-img');
+    img.src = canvas.toDataURL('image/png');
+
+    modal.querySelector('#w92-close').addEventListener('click', function(){ modal.remove(); });
+
+    modal.querySelector('#w92-dl').addEventListener('click', function(){
+      var a = document.createElement('a');
+      a.href = canvas.toDataURL('image/png');
+      a.download = (filename || 'hima-card') + '.png';
+      a.click();
+    });
+
+    modal.querySelector('#w92-share').addEventListener('click', function(){
+      canvas.toBlob(function(blob){
+        var file = new File([blob], (filename || 'hima-card') + '.png', { type: 'image/png' });
+        if (navigator.canShare && navigator.canShare({ files: [file] })){
+          navigator.share({
+            files: [file],
+            title: 'HIMA',
+            text: 'Ma session HIMA'
+          }).catch(function(){});
+        } else {
+          // Fallback : download
+          var a = document.createElement('a');
+          a.href = canvas.toDataURL('image/png');
+          a.download = (filename || 'hima-card') + '.png';
+          a.click();
+        }
+      }, 'image/png');
+    });
+  }
+
+  // --- Public API ------------------------------------
+  window.HIMA_W92 = {
+    shareSession: function(session){
+      var c = buildSessionRecapCard(session);
+      previewAndShare(c, 'hima-seance');
+    },
+    sharePR: function(pr){
+      var c = buildPRCard(pr);
+      previewAndShare(c, 'hima-record');
+    },
+    shareBadge: function(badge){
+      var c = buildBadgeCard(badge);
+      previewAndShare(c, 'hima-badge-' + (badge.key||'x'));
+    },
+    shareFormCheck: function(fc){
+      var c = buildFormCheckCard(fc);
+      previewAndShare(c, 'hima-formcheck');
+    },
+    shareMilestone: function(ms){
+      var c = buildMilestoneCard(ms);
+      previewAndShare(c, 'hima-milestone');
+    }
+  };
+
+  console.log('[W9.2] Share cards loaded');
+})();
+
+
+/* WAVE 9.3 - CREW (light local-only sans Firebase)
+   - Genere un code unique par user
+   - Stockage local des "membres" (juste leurs codes pour l'instant)
+   - Section dans Tab Profil
+   - NOTE : sans Firebase, c'est juste un placeholder UI - aucune sync
+*/
+
+(function wave9_3_crew(){
+  'use strict';
+  if (!window.SV2_FLAGS.wave93) return;
+  var H = window.HIMA_WAVE9;
+
+  function getMyCode(){
+    var u = H.ensureWave9();
+    if (!u.wave9.crew.myCode){
+      // Generer code aleatoire HIMA-XXXX
+      var chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+      var code = 'HIMA-';
+      for (var i = 0; i < 4; i++){
+        code += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      u.wave9.crew.myCode = code;
+      H.setU(u);
+    }
+    return u.wave9.crew.myCode;
+  }
+
+  function injectStyles(){
+    if (document.getElementById('w93-style')) return;
+    var s = document.createElement('style');
+    s.id = 'w93-style';
+    s.textContent = ''+
+      '.w93-section{margin:18px 16px 12px}'+
+      '.w93-h{font-family:Bebas Neue,sans-serif;font-size:22px;letter-spacing:2px;color:#F0F0FF;margin:0 0 12px;display:flex;align-items:center;gap:8px}'+
+      '.w93-h-line{flex:1;height:1px;background:linear-gradient(90deg,rgba(240,240,255,0.15),transparent)}'+
+
+      '.w93-card{background:linear-gradient(140deg,rgba(240,240,255,0.04),rgba(240,240,255,0.02));border:1px solid rgba(240,240,255,0.06);border-radius:18px;padding:14px}'+
+      '.w93-code-zone{display:flex;align-items:center;gap:10px;padding:12px;background:rgba(249,136,5,0.08);border:1px solid rgba(249,136,5,0.25);border-radius:14px;margin-bottom:14px}'+
+      '.w93-code-label{font-family:DM Sans;font-size:10px;color:rgba(240,240,255,0.55);letter-spacing:1.5px;flex-shrink:0}'+
+      '.w93-code-v{font-family:Bebas Neue,sans-serif;font-size:20px;color:#F98805;letter-spacing:2px;flex:1;text-align:center}'+
+      '.w93-copy{background:rgba(249,136,5,0.2);border:none;color:#F98805;font-family:DM Sans;font-size:11px;padding:6px 10px;border-radius:8px;cursor:pointer;letter-spacing:0.5px}'+
+
+      '.w93-members{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}'+
+      '.w93-member{display:flex;align-items:center;gap:10px;padding:10px;background:rgba(240,240,255,0.04);border:1px solid rgba(240,240,255,0.06);border-radius:12px}'+
+      '.w93-m-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#F98805,#F35695);display:flex;align-items:center;justify-content:center;color:#fff;font-family:Bebas Neue,sans-serif;font-size:14px}'+
+      '.w93-m-info{flex:1;min-width:0}'+
+      '.w93-m-name{font-family:Space Grotesk;font-size:13px;font-weight:600;color:#F0F0FF}'+
+      '.w93-m-code{font-family:DM Sans;font-size:10px;color:rgba(240,240,255,0.5);letter-spacing:0.5px}'+
+      '.w93-m-del{background:rgba(243,86,149,0.15);border:1px solid rgba(243,86,149,0.3);color:#F35695;width:28px;height:28px;border-radius:8px;font-size:14px;cursor:pointer}'+
+
+      '.w93-add{display:flex;gap:8px;margin-bottom:8px}'+
+      '.w93-add input{flex:1;background:rgba(240,240,255,0.04);border:1px solid rgba(240,240,255,0.1);border-radius:10px;padding:10px 14px;color:#F0F0FF;font-family:DM Sans;font-size:13px;letter-spacing:1px;outline:none;text-transform:uppercase}'+
+      '.w93-add input:focus{border-color:#F98805}'+
+      '.w93-add button{background:linear-gradient(135deg,#F98805,#F35695);border:none;color:#fff;font-family:Space Grotesk;font-size:12px;font-weight:600;padding:0 18px;border-radius:10px;cursor:pointer;letter-spacing:0.5px}'+
+
+      '.w93-empty{font-family:DM Sans;font-size:11px;color:rgba(240,240,255,0.5);text-align:center;padding:14px;font-style:italic}'+
+
+      '.w93-info{font-family:DM Sans;font-size:10px;color:rgba(240,240,255,0.4);margin-top:10px;line-height:1.5;letter-spacing:0.3px}';
+    document.head.appendChild(s);
+  }
+
+  function renderInto(){
+    var host = document.querySelector('#t-prf') ||
+               document.querySelector('#t-profile') ||
+               document.querySelector('[id^="t-pro"]');
+    if (!host) return;
+    var scrollHost = host.querySelector('.pv3-root') || host.querySelector('.pv3-sc') || host;
+    var slot = scrollHost.querySelector('#w93-slot');
+    if (!slot){
+      slot = document.createElement('div');
+      slot.id = 'w93-slot';
+      scrollHost.appendChild(slot);
+    }
+
+    var u = H.ensureWave9();
+    var code = getMyCode();
+    var members = u.wave9.crew.members || [];
+
+    var membersHtml = members.length
+      ? '<div class="w93-members">' + members.map(function(m, i){
+          var initial = (m.name || m.code || '?').charAt(0).toUpperCase();
+          return '<div class="w93-member">'+
+            '<div class="w93-m-avatar">'+initial+'</div>'+
+            '<div class="w93-m-info">'+
+              '<div class="w93-m-name">'+escapeHTML(m.name || m.code)+'</div>'+
+              '<div class="w93-m-code">'+m.code+'</div>'+
+            '</div>'+
+            '<button class="w93-m-del" data-i="'+i+'">x</button>'+
+          '</div>';
+        }).join('') + '</div>'
+      : '<div class="w93-empty">Aucun membre. Ajoute un code ami ci-dessous.</div>';
+
+    var canAdd = members.length < 5;
+
+    slot.innerHTML = ''+
+      '<div class="w93-section">'+
+        '<div class="w93-h"><span>CREW</span><div class="w93-h-line"></div></div>'+
+        '<div class="w93-card">'+
+          '<div class="w93-code-zone">'+
+            '<div class="w93-code-label">TON CODE</div>'+
+            '<div class="w93-code-v">'+code+'</div>'+
+            '<button class="w93-copy" id="w93-copy">Copier</button>'+
+          '</div>'+
+          membersHtml+
+          (canAdd ? '<div class="w93-add">'+
+            '<input type="text" id="w93-input" placeholder="HIMA-XXXX" maxlength="9"/>'+
+            '<button id="w93-add">Ajouter</button>'+
+          '</div>' : '<div class="w93-empty">Maximum 5 membres atteint</div>')+
+          '<div class="w93-info">La sync en temps reel avec ton crew sera disponible avec la prochaine mise a jour.</div>'+
+        '</div>'+
+      '</div>';
+
+    slot.querySelector('#w93-copy').addEventListener('click', function(){
+      copyText(code);
+      alert('Code copie. Partage le avec tes potes.');
+    });
+
+    slot.querySelectorAll('.w93-m-del').forEach(function(b){
+      b.addEventListener('click', function(){
+        var i = parseInt(b.dataset.i, 10);
+        var u2 = H.ensureWave9();
+        u2.wave9.crew.members.splice(i, 1);
+        H.setU(u2);
+        renderInto();
+      });
+    });
+
+    var addBtn = slot.querySelector('#w93-add');
+    if (addBtn){
+      addBtn.addEventListener('click', function(){
+        var input = slot.querySelector('#w93-input');
+        var val = (input.value || '').trim().toUpperCase();
+        if (!/^HIMA-[A-Z0-9]{4}$/.test(val)){
+          alert('Code invalide. Format : HIMA-XXXX');
+          return;
+        }
+        if (val === code){
+          alert('Tu ne peux pas t ajouter toi-meme.');
+          return;
+        }
+        var u3 = H.ensureWave9();
+        if (u3.wave9.crew.members.some(function(m){ return m.code === val; })){
+          alert('Code deja dans ta liste.');
+          return;
+        }
+        u3.wave9.crew.members.push({ code: val, name: val, addedAt: Date.now() });
+        H.setU(u3);
+        renderInto();
+      });
+    }
+  }
+
+  function escapeHTML(s){
+    return String(s||'').replace(/[&<>"']/g, function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+    });
+  }
+
+  function copyText(t){
+    try {
+      if (navigator.clipboard) navigator.clipboard.writeText(t);
+      else {
+        var ta = document.createElement('textarea');
+        ta.value = t;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+      }
+    } catch(e){}
+  }
+
+  injectStyles();
+
+  var _origSwitch = window.switchTab;
+  if (typeof _origSwitch === 'function'){
+    window.switchTab = function(name){
+      var r = _origSwitch.apply(this, arguments);
+      if (name === 't-prf' || name === 't-profile' || name === 'prf' || name === 'profile'){
+        setTimeout(renderInto, 350);
+      }
+      return r;
+    };
+  }
+  setTimeout(renderInto, 1700);
+  setTimeout(renderInto, 5500);
+
+  window.HIMA_W93 = {
+    getMyCode: getMyCode,
+    render: renderInto
+  };
+
+  console.log('[W9.3] Crew loaded (local-only mode)');
+})();
+
+
+/* WAVE 9.4 - DEFI HEBDO
+   - 1 defi/semaine, change chaque lundi (base sur weekKey)
+   - Pool de defis varies
+   - Progress bar dans Tab Accueil
+   - Badge unlock quand complete
+*/
+
+(function wave9_4_challenges(){
+  'use strict';
+  if (!window.SV2_FLAGS.wave94) return;
+  var H = window.HIMA_WAVE9;
+
+  var DEFIS = [
+    {
+      id: 'sessions-4',
+      name: '4 SEANCES',
+      desc: 'Boucler 4 seances cette semaine',
+      target: 4,
+      type: 'sessions',
+      reward: 'Badge "Constance"'
+    },
+    {
+      id: 'sessions-5',
+      name: '5 SEANCES',
+      desc: '5 seances en 7 jours, niveau pro',
+      target: 5,
+      type: 'sessions',
+      reward: 'Badge "Beast"'
+    },
+    {
+      id: 'photos-3',
+      name: 'PHOTO PLATE x3',
+      desc: '3 photos de plats analysees cette semaine',
+      target: 3,
+      type: 'plates',
+      reward: 'Badge "Photographe"'
+    },
+    {
+      id: 'forms-2',
+      name: 'FORM CHECK x2',
+      desc: '2 form checks sur 2 exos differents',
+      target: 2,
+      type: 'forms',
+      reward: 'Badge "Perfectionniste"'
+    },
+    {
+      id: 'recipes-2',
+      name: '2 RECETTES',
+      desc: 'Cuisiner 2 recettes HIMA cette semaine',
+      target: 2,
+      type: 'recipes',
+      reward: 'Badge "Chef"'
+    },
+    {
+      id: 'streak-7',
+      name: 'STREAK 7',
+      desc: 'Ouvrir HIMA chaque jour cette semaine',
+      target: 7,
+      type: 'streak',
+      reward: 'Badge "Engagement"'
+    }
+  ];
+
+  function pickDefiForWeek(weekKey){
+    // Pick deterministic par hash du weekKey
+    var hash = 0;
+    for (var i = 0; i < weekKey.length; i++){
+      hash = ((hash << 5) - hash) + weekKey.charCodeAt(i);
+      hash |= 0;
+    }
+    return DEFIS[Math.abs(hash) % DEFIS.length];
+  }
+
+  function getCurrentWeekChallenge(){
+    var u = H.ensureWave9();
+    var wk = H.weekKey();
+    if (!u.wave9.challenges[wk]){
+      var defi = pickDefiForWeek(wk);
+      u.wave9.challenges[wk] = {
+        defi: defi,
+        startedAt: Date.now(),
+        progress: 0,
+        completed: false
+      };
+      H.setU(u);
+    }
+    return { week: wk, ch: u.wave9.challenges[wk] };
+  }
+
+  function computeProgress(defi){
+    var u = H.getU();
+    var weekStart = getWeekStart();
+    switch (defi.type){
+      case 'sessions':
+        var hist = (u.sv2 && u.sv2.history) || [];
+        return hist.filter(function(s){
+          var t = s.startTs || s.ts;
+          return t && t >= weekStart;
+        }).length;
+      case 'plates':
+        var pa = (u.wave7 && u.wave7.plateAnalyses) || [];
+        return pa.filter(function(p){ return p.ts && p.ts >= weekStart; }).length;
+      case 'forms':
+        var fc = u.formChecks || {};
+        var exosThisWeek = new Set();
+        for (var k in fc){
+          (fc[k] || []).forEach(function(f){
+            if ((f.ts || f.analyzedAt) >= weekStart) exosThisWeek.add(k);
+          });
+        }
+        return exosThisWeek.size;
+      case 'recipes':
+        var logs = (u.nv3 && u.nv3.logs) || {};
+        var n = 0;
+        for (var d in logs){
+          (logs[d] || []).forEach(function(l){
+            if (l.source === 'recipe' && l.ts >= weekStart) n++;
+          });
+        }
+        return n;
+      case 'streak':
+        // Compter jours distincts ouverts (approximation : 1 par defaut, +sessions)
+        return Math.min(7, Math.floor((Date.now() - weekStart) / 86400000) + 1);
+      default:
+        return 0;
+    }
+  }
+
+  function getWeekStart(){
+    var d = new Date();
+    d.setHours(0,0,0,0);
+    var day = d.getDay();
+    var diff = day === 0 ? -6 : 1 - day;
+    d.setDate(d.getDate() + diff);
+    return d.getTime();
+  }
+
+  function refreshProgress(){
+    var info = getCurrentWeekChallenge();
+    var newProgress = computeProgress(info.ch.defi);
+    var u = H.ensureWave9();
+    u.wave9.challenges[info.week].progress = newProgress;
+    if (newProgress >= info.ch.defi.target && !info.ch.completed){
+      u.wave9.challenges[info.week].completed = true;
+      u.wave9.challenges[info.week].completedAt = Date.now();
+      H.setU(u);
+      showDefiComplete(info.ch.defi);
+    } else {
+      H.setU(u);
+    }
+  }
+
+  function showDefiComplete(defi){
+    var modal = document.createElement('div');
+    modal.style.cssText = 'position:fixed;inset:0;z-index:10015;background:rgba(8,8,16,0.95);backdrop-filter:blur(24px);display:flex;align-items:center;justify-content:center;padding:24px;animation:w94fade 0.3s';
+    if (!document.getElementById('w94-anim-style')){
+      var s = document.createElement('style');
+      s.id = 'w94-anim-style';
+      s.textContent = '@keyframes w94fade{from{opacity:0}to{opacity:1}} @keyframes w94pop{0%{transform:scale(0.6);opacity:0}60%{transform:scale(1.1)}100%{transform:scale(1);opacity:1}}';
+      document.head.appendChild(s);
+    }
+    modal.innerHTML = ''+
+      '<div style="max-width:340px;background:linear-gradient(140deg,#0f0f1f,#1a0f2e);border:2px solid #DDE255;border-radius:24px;padding:32px 24px;text-align:center;animation:w94pop 0.6s cubic-bezier(0.34,1.56,0.64,1)">'+
+        '<div style="font-family:DM Sans;font-size:11px;color:#DDE255;letter-spacing:3px;margin-bottom:14px">DEFI HEBDO COMPLETE</div>'+
+        '<div style="font-family:Bebas Neue,sans-serif;font-size:60px;color:#DDE255;letter-spacing:2px;margin-bottom:8px">OK</div>'+
+        '<div style="font-family:Bebas Neue,sans-serif;font-size:24px;letter-spacing:2px;color:#F0F0FF;margin-bottom:8px">'+defi.name+'</div>'+
+        '<div style="font-family:DM Sans;font-size:13px;color:rgba(240,240,255,0.7);margin-bottom:24px;line-height:1.4">'+defi.desc+'</div>'+
+        '<button id="w94-ok" style="background:linear-gradient(135deg,#DDE255,#F98805);border:none;color:#0f0f1f;font-family:Space Grotesk;font-size:12px;font-weight:700;padding:12px 28px;border-radius:10px;cursor:pointer;letter-spacing:1px">Continuer</button>'+
+      '</div>';
+    document.body.appendChild(modal);
+    modal.querySelector('#w94-ok').addEventListener('click', function(){ modal.remove(); });
+    if (navigator.vibrate) navigator.vibrate([150,80,150]);
+  }
+
+  function injectStyles(){
+    if (document.getElementById('w94-style')) return;
+    var s = document.createElement('style');
+    s.id = 'w94-style';
+    s.textContent = ''+
+      '.w94-card{margin:14px 16px 12px;padding:14px;background:linear-gradient(135deg,rgba(249,136,5,0.12),rgba(243,86,149,0.08));border:1px solid rgba(249,136,5,0.3);border-radius:18px;cursor:pointer;transition:transform 0.15s}'+
+      '.w94-card:active{transform:scale(0.98)}'+
+      '.w94-card.done{background:linear-gradient(135deg,rgba(221,226,85,0.15),rgba(249,136,5,0.08));border-color:rgba(221,226,85,0.4)}'+
+      '.w94-eyebrow{font-family:DM Sans;font-size:10px;color:#F98805;letter-spacing:2px;margin-bottom:6px}'+
+      '.w94-card.done .w94-eyebrow{color:#DDE255}'+
+      '.w94-name{font-family:Bebas Neue,sans-serif;font-size:22px;letter-spacing:2px;color:#F0F0FF;margin-bottom:4px}'+
+      '.w94-desc{font-family:DM Sans;font-size:12px;color:rgba(240,240,255,0.7);line-height:1.4;margin-bottom:10px}'+
+      '.w94-bar{height:6px;background:rgba(240,240,255,0.06);border-radius:3px;overflow:hidden;margin-bottom:6px}'+
+      '.w94-fill{height:100%;background:linear-gradient(90deg,#F98805,#F35695);transition:width 0.5s}'+
+      '.w94-card.done .w94-fill{background:linear-gradient(90deg,#DDE255,#F98805)}'+
+      '.w94-meta{display:flex;justify-content:space-between;font-family:DM Sans;font-size:10px;color:rgba(240,240,255,0.55);letter-spacing:0.5px}'+
+      '.w94-meta b{color:#F98805}'+
+      '.w94-card.done .w94-meta b{color:#DDE255}';
+    document.head.appendChild(s);
+  }
+
+  function renderInto(){
+    // Mount dans Tab Accueil (#t-home), apres le header
+    var host = document.querySelector('#t-home') ||
+               document.querySelector('#t-accueil') ||
+               document.querySelector('[id^="t-h"]');
+    if (!host) return;
+
+    var slot = host.querySelector('#w94-slot');
+    if (!slot){
+      slot = document.createElement('div');
+      slot.id = 'w94-slot';
+      // Inserer en haut du contenu
+      var firstChild = host.firstElementChild;
+      if (firstChild) host.insertBefore(slot, firstChild.nextSibling || firstChild);
+      else host.appendChild(slot);
+    }
+
+    refreshProgress();
+    var info = getCurrentWeekChallenge();
+    var ch = info.ch;
+    var defi = ch.defi;
+    var pct = Math.min(100, (ch.progress / defi.target) * 100);
+    var cls = ch.completed ? 'done' : '';
+    var emoji = ch.completed ? '[OK]' : '[!]';
+
+    slot.innerHTML = ''+
+      '<div class="w94-card '+cls+'">'+
+        '<div class="w94-eyebrow">DEFI DE LA SEMAINE '+emoji+'</div>'+
+        '<div class="w94-name">'+defi.name+'</div>'+
+        '<div class="w94-desc">'+defi.desc+'</div>'+
+        '<div class="w94-bar"><div class="w94-fill" style="width:'+pct+'%"></div></div>'+
+        '<div class="w94-meta"><span><b>'+ch.progress+' / '+defi.target+'</b></span><span>'+(ch.completed?'Complete !':'Recompense: '+defi.reward)+'</span></div>'+
+      '</div>';
+  }
+
+  injectStyles();
+
+  var _origSwitch = window.switchTab;
+  if (typeof _origSwitch === 'function'){
+    window.switchTab = function(name){
+      var r = _origSwitch.apply(this, arguments);
+      if (name === 't-home' || name === 'home' || name === 'accueil'){
+        setTimeout(renderInto, 300);
+      }
+      return r;
+    };
+  }
+  setTimeout(renderInto, 1800);
+  setTimeout(renderInto, 5000);
+  // Re-refresh toutes les 30s
+  setInterval(refreshProgress, 30000);
+
+  window.HIMA_W94 = {
+    getCurrent: getCurrentWeekChallenge,
+    refresh: refreshProgress,
+    render: renderInto,
+    DEFIS: DEFIS
+  };
+
+  console.log('[W9.4] Weekly challenge loaded');
+})();
+
+</script>
+
+
+
+
+
 
 
 
