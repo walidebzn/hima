@@ -6538,12 +6538,12 @@ if (typeof window.afterAuth === 'undefined') {
 // ════════════════════════════════════════════════════
 
 var FIREBASE_CONFIG = {
-  apiKey: "AIzaSyDLjMuI13zrpN9Yd6G2z5Tb3vtOdZPLV7c",
-  authDomain: "hima-app-d241a.firebaseapp.com",
-  projectId: "hima-app-d241a",
-  storageBucket: "hima-app-d241a.firebasestorage.app",
-  messagingSenderId: "760623733182",
-  appId: "1:760623733182:web:674c00ea5fbba3a55001ef"
+  apiKey: "AIzaSyCYDOwHWKIIgmUsIVNfu4L7jJ7TCRfTQtk",
+  authDomain: "hima-app-ef059.firebaseapp.com",
+  projectId: "hima-app-ef059",
+  storageBucket: "hima-app-ef059.firebasestorage.app",
+  messagingSenderId: "6469064622",
+  appId: "1:6469064622:web:40c6f3a96dc44967f25a3f"
 };
 
 // Stripe config
@@ -6554,7 +6554,7 @@ var STRIPE_PRICES = {
 };
 
 // Firebase Functions URL (après déploiement)
-var FUNCTIONS_URL = "https://europe-west1-hima-app-d241a.cloudfunctions.net";
+var FUNCTIONS_URL = "https://europe-west1-hima-app-ef059.cloudfunctions.net";
 
 // ── INIT ──
 var firebaseReady = false;
@@ -9755,24 +9755,73 @@ function initFirebaseAuthListener() {
 }
 
 // ── FIREBASE CLOUD MESSAGING — NOTIFICATIONS ──────
-var FCM_VAPID_KEY = 'YOUR_VAPID_KEY'; // Firebase Console > Project Settings > Cloud Messaging
+var FCM_VAPID_KEY = 'BD9Jqb-buqB7jcPYI9ErQgKD2iqeEPmdBA299guI5SiRgRPcCEZ8nvLYkzJ4xaI6UDURlFAbsiIFWkqMMNyEws0';
+
+// ── WAVE 4 — PUSH NOTIFICATIONS ───────────────────
+// Kill switch : window.SV2_FLAGS.w4_push = false pour désactiver
+window.SV2_FLAGS = window.SV2_FLAGS || {};
+if (window.SV2_FLAGS.w4_push !== false) window.SV2_FLAGS.w4_push = true;
+
+// Service worker registration (CRITIQUE pour push background + iOS PWA)
+async function registerPushServiceWorker() {
+  if (!('serviceWorker' in navigator)) {
+    console.warn('[W4] ServiceWorker non supporté');
+    return null;
+  }
+  try {
+    var reg = await navigator.serviceWorker.register('/firebase-messaging-sw.js', { scope: '/' });
+    console.log('[W4] SW enregistré ✓', reg.scope);
+    return reg;
+  } catch(e) {
+    console.warn('[W4] SW register fail:', e.message);
+    return null;
+  }
+}
+
+// iOS Safari : push web ne marche QU'EN PWA installée (ajoutée à l'écran d'accueil)
+function isIOSPWAInstalled() {
+  var ua = navigator.userAgent;
+  var isIOS = /iPad|iPhone|iPod/.test(ua);
+  if (!isIOS) return true; // Pas iOS, pas de contrainte
+  // iOS : standalone uniquement si "Ajouter à l'écran d'accueil"
+  return window.navigator.standalone === true;
+}
 
 async function requestNotificationPermission() {
+  if (!window.SV2_FLAGS.w4_push) return;
   if (!messaging || !('Notification' in window)) return;
+  // iOS : si pas en PWA, on skip silencieusement (sinon ça crash)
+  if (!isIOSPWAInstalled()) {
+    console.log('[W4] iOS détecté hors PWA — push désactivé');
+    return;
+  }
   try {
+    // Enregistrer le SW d'abord
+    var swReg = await registerPushServiceWorker();
+    if (!swReg) return;
+    // Demander permission
     var permission = await Notification.requestPermission();
-    if (permission === 'granted') {
-      var token = await messaging.getToken({ vapidKey: FCM_VAPID_KEY });
-      if (token && auth.currentUser && db) {
-        await db.collection('users').doc(auth.currentUser.uid).update({
-          fcmToken: token,
-          notificationsEnabled: true
-        });
-        console.log('FCM token saved ✓');
-      }
+    if (permission !== 'granted') {
+      console.log('[W4] Permission refusée');
+      return;
+    }
+    // Obtenir le token FCM
+    var token = await messaging.getToken({
+      vapidKey: FCM_VAPID_KEY,
+      serviceWorkerRegistration: swReg
+    });
+    if (token && auth.currentUser && db) {
+      // set avec merge (safer que update : crée le doc s'il n'existe pas)
+      await db.collection('users').doc(auth.currentUser.uid).set({
+        fcmToken: token,
+        notificationsEnabled: true,
+        fcmTokenUpdatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+        platform: /iPad|iPhone|iPod/.test(navigator.userAgent) ? 'ios' : 'web'
+      }, { merge: true });
+      console.log('[W4] FCM token saved ✓');
     }
   } catch(e) {
-    console.warn('FCM permission:', e.message);
+    console.warn('[W4] FCM permission:', e.message);
   }
 }
 
