@@ -1,16 +1,10 @@
-/* ============================================================
-   HIMA — Firebase Messaging Service Worker
-   Projet: hima-app-ef059
-   Rôle: réception des push notifications en background (app fermée
-   ou onglet inactif). Les push foreground sont gérés dans index.html
-   via onMessage().
-   Placement: RACINE du repo (sert /firebase-messaging-sw.js)
-   ============================================================ */
+// firebase-messaging-sw.js
+// Service worker pour les notifications push HIMA en arrière-plan
+// À déployer à la racine du site (/firebase-messaging-sw.js)
 
 importScripts('https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js');
 importScripts('https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-compat.js');
 
-// Config Firebase HIMA (projet ef059)
 firebase.initializeApp({
   apiKey: "AIzaSyCYDOwHWKIIgmUsIVNfu4L7jJ7TCRfTQtk",
   authDomain: "hima-app-ef059.firebaseapp.com",
@@ -22,61 +16,38 @@ firebase.initializeApp({
 
 const messaging = firebase.messaging();
 
-// Handler push background
-messaging.onBackgroundMessage((payload) => {
-  console.log('[HIMA SW] Push reçu en background:', payload);
-
-  const title = payload.notification?.title || payload.data?.title || 'HIMA';
-  const body  = payload.notification?.body  || payload.data?.body  || 'Nouveau message du coach';
-  const tag   = payload.data?.tag || 'hima-default';
-  const url   = payload.data?.url || '/';
-
+// Notifications reçues en arrière-plan
+messaging.onBackgroundMessage(function(payload) {
+  console.log('[SW HIMA] Background message:', payload);
+  const title = (payload.notification && payload.notification.title) || 'HIMA';
+  const body = (payload.notification && payload.notification.body) || '';
+  const url = (payload.data && payload.data.url) || '/';
   const options = {
-    body,
-    tag,                          // évite empilage
-    renotify: true,
-    icon: '/avatar.jpg',          // pixar 3D avatar (racine repo)
-    badge: '/avatar.jpg',
-    vibrate: [120, 60, 120],
+    body: body,
+    icon: '/icon-192.png',
+    badge: '/icon-192.png',
+    tag: 'hima-push',
+    renotify: false,
     requireInteraction: false,
-    data: { url, payload },
-    actions: [
-      { action: 'open',    title: 'Ouvrir' },
-      { action: 'dismiss', title: 'Plus tard' }
-    ]
+    data: { url: url }
   };
-
   return self.registration.showNotification(title, options);
 });
 
-// Clic sur la notif → ouvre/focus l'app
-self.addEventListener('notificationclick', (event) => {
+// Clic sur la notification → ouvre l'app
+self.addEventListener('notificationclick', function(event) {
   event.notification.close();
-
-  if (event.action === 'dismiss') return;
-
-  const targetUrl = event.notification.data?.url || '/';
-
+  const targetUrl = (event.notification.data && event.notification.data.url) || '/';
   event.waitUntil(
-    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((wins) => {
-      // Si HIMA est déjà ouvert quelque part → focus
-      for (const w of wins) {
-        if (w.url.includes(self.location.origin) && 'focus' in w) {
-          w.postMessage({ type: 'HIMA_NOTIF_CLICK', url: targetUrl, payload: event.notification.data?.payload });
-          return w.focus();
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function(list) {
+      // Si une fenêtre HIMA est déjà ouverte, focus dessus
+      for (const c of list) {
+        if (c.url.includes(self.location.origin) && 'focus' in c) {
+          c.navigate(targetUrl);
+          return c.focus();
         }
       }
-      // Sinon → ouvre un nouvel onglet
       if (clients.openWindow) return clients.openWindow(targetUrl);
     })
   );
-});
-
-// Skip waiting → SW actif tout de suite après update
-self.addEventListener('install', (event) => {
-  self.skipWaiting();
-});
-
-self.addEventListener('activate', (event) => {
-  event.waitUntil(self.clients.claim());
 });
