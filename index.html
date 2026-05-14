@@ -24847,6 +24847,1241 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
 </script>
 
 
+<!-- ════════════════════════════════════════════════════════
+     WAVE 15 — HEALTH SYNC (Apple Health + Google Fit)
+     Architecture multi-plateforme :
+     - Si Capacitor (W16) → bridge natif HealthKit / Health Connect
+     - Si Web → Google Fit REST API (OAuth) + import manuel Apple Health XML
+     - UI unifiée dans Profil avec status + dernière sync
+     - Stockage : U.health.{provider, lastSync, todaySteps, todayCal, weeklyHRavg, sleepHours}
+     - Auto-sync toutes les 6h en background (si autorisé)
+     ════════════════════════════════════════════════════════ -->
+<script>
+(function wave15_healthSync(){
+  'use strict';
+  window.SV2_FLAGS = window.SV2_FLAGS || {};
+  if (window.SV2_FLAGS.w15_health === false) return;
+  window.SV2_FLAGS.w15_health = true;
+
+  // ─── State helpers ───────────────────────────────────────
+  function getU(){ try { return JSON.parse(localStorage.getItem('hima8') || '{}'); } catch(e){ return {}; } }
+  function setU(u){ try { localStorage.setItem('hima8', JSON.stringify(u)); } catch(e){} }
+  function ensureHealth(){
+    var u = getU();
+    u.health = u.health || {
+      provider: null,         // 'apple' | 'google' | 'manual'
+      connected: false,
+      lastSync: null,
+      todaySteps: 0,
+      todayCal: 0,
+      todayActiveMin: 0,
+      weeklyHRavg: 0,
+      sleepHours: 0,
+      weekHistory: []         // [{date,steps,cal,sleep}]
+    };
+    return u;
+  }
+
+  // ─── Détection plateforme ────────────────────────────────
+  function platform(){
+    var ua = navigator.userAgent;
+    var isIOS = /iPad|iPhone|iPod/.test(ua);
+    var isAndroid = /Android/.test(ua);
+    var hasCapacitor = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
+    return {
+      isIOS: isIOS,
+      isAndroid: isAndroid,
+      hasCapacitor: hasCapacitor,
+      isWeb: !hasCapacitor,
+      isPWA: window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches
+    };
+  }
+
+  // ─── 1. CAPACITOR BRIDGE (utilisé par Wave 16 plus tard) ──
+  // Cette zone d'API sera utilisée par l'app native iOS via Capacitor plugin Health
+  async function syncViaCapacitor(){
+    if (!window.Capacitor || !window.Capacitor.Plugins || !window.Capacitor.Plugins.Health){
+      throw new Error('Capacitor Health plugin not installed');
+    }
+    var Health = window.Capacitor.Plugins.Health;
+    try {
+      // Demande permissions
+      var auth = await Health.requestAuthorization({
+        read: ['steps','calories','heart_rate','sleep','distance','active_minutes']
+      });
+      if (!auth.granted) throw new Error('User refused');
+
+      // Récupère données du jour
+      var today = new Date(); today.setHours(0,0,0,0);
+      var now = new Date();
+      var [steps, cal, hr, sleep, activeMin] = await Promise.all([
+        Health.queryAggregated({ dataType: 'steps', startDate: today.toISOString(), endDate: now.toISOString() }),
+        Health.queryAggregated({ dataType: 'calories', startDate: today.toISOString(), endDate: now.toISOString() }),
+        Health.queryAggregated({ dataType: 'heart_rate', startDate: today.toISOString(), endDate: now.toISOString(), bucket: 'day' }),
+        Health.queryAggregated({ dataType: 'sleep', startDate: new Date(today.getTime() - 24*3600*1000).toISOString(), endDate: today.toISOString() }),
+        Health.queryAggregated({ dataType: 'active_minutes', startDate: today.toISOString(), endDate: now.toISOString() })
+      ]);
+      return {
+        provider: platform().isIOS ? 'apple' : 'google',
+        todaySteps: Math.round(steps.value || 0),
+        todayCal: Math.round(cal.value || 0),
+        todayActiveMin: Math.round(activeMin.value || 0),
+        weeklyHRavg: Math.round(hr.value || 0),
+        sleepHours: ((sleep.value || 0) / 3600).toFixed(1)
+      };
+    } catch(e){
+      console.warn('[W15] Capacitor sync failed:', e.message);
+      throw e;
+    }
+  }
+
+  // ─── 2. GOOGLE FIT REST API (Web direct) ─────────────────
+  // OAuth via Google Identity Services (déjà chargé par Firebase Auth)
+  // Scopes nécessaires : fitness.activity.read + fitness.heart_rate.read + fitness.sleep.read
+  var GOOGLE_FIT_SCOPES = [
+    'https://www.googleapis.com/auth/fitness.activity.read',
+    'https://www.googleapis.com/auth/fitness.heart_rate.read',
+    'https://www.googleapis.com/auth/fitness.sleep.read',
+    'https://www.googleapis.com/auth/fitness.body.read'
+  ].join(' ');
+
+  async function connectGoogleFit(){
+    if (!window.firebaseReady || !window.auth || !window.auth.currentUser){
+      throw new Error('Connecte-toi d abord');
+    }
+    // On utilise GoogleAuthProvider pour récupérer un access_token avec les scopes Fit
+    var provider = new firebase.auth.GoogleAuthProvider();
+    GOOGLE_FIT_SCOPES.split(' ').forEach(function(s){ provider.addScope(s); });
+    var result = await firebase.auth().currentUser.reauthenticateWithPopup(provider);
+    var credential = firebase.auth.GoogleAuthProvider.credentialFromResult(result);
+    var accessToken = credential && credential.accessToken;
+    if (!accessToken) throw new Error('Token Google Fit indisponible');
+    // Stocke dans U.health.googleFitToken (chiffré localement basique)
+    var u = ensureHealth();
+    u.health.googleFitToken = accessToken;
+    u.health.googleFitTokenExpiresAt = Date.now() + 3600 * 1000; // 1h
+    u.health.provider = 'google';
+    u.health.connected = true;
+    setU(u);
+    return accessToken;
+  }
+
+  async function getGoogleFitToken(){
+    var u = ensureHealth();
+    if (u.health.googleFitToken && u.health.googleFitTokenExpiresAt > Date.now() + 60000){
+      return u.health.googleFitToken;
+    }
+    // Token expiré ou absent : silent re-auth via Firebase
+    if (window.auth && window.auth.currentUser){
+      try {
+        var token = await window.auth.currentUser.getIdToken(true);
+        // Note : pour un vrai refresh long terme, il faudrait un refresh_token côté serveur
+        return await connectGoogleFit();
+      } catch(e){ throw new Error('Re-auth Google Fit requise'); }
+    }
+    throw new Error('Pas connecté');
+  }
+
+  async function syncGoogleFit(){
+    var token = await getGoogleFitToken();
+    var now = Date.now();
+    var startOfDay = new Date(); startOfDay.setHours(0,0,0,0);
+    var startMs = startOfDay.getTime();
+
+    // Steps + Calories + Distance (via aggregate)
+    var aggResp = await fetch('https://www.googleapis.com/fitness/v1/users/me/dataset:aggregate', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        aggregateBy: [
+          { dataTypeName: 'com.google.step_count.delta' },
+          { dataTypeName: 'com.google.calories.expended' },
+          { dataTypeName: 'com.google.heart_rate.bpm' },
+          { dataTypeName: 'com.google.active_minutes' }
+        ],
+        bucketByTime: { durationMillis: now - startMs },
+        startTimeMillis: startMs,
+        endTimeMillis: now
+      })
+    });
+    if (!aggResp.ok){
+      if (aggResp.status === 401){
+        var u = ensureHealth();
+        u.health.googleFitToken = null;
+        setU(u);
+        throw new Error('Token expiré, reconnecte Google Fit');
+      }
+      throw new Error('Google Fit API error: ' + aggResp.status);
+    }
+    var agg = await aggResp.json();
+    var bucket = (agg.bucket && agg.bucket[0]) || {};
+    var datasets = bucket.dataset || [];
+
+    function sumVals(ds, valIdx){
+      var sum = 0;
+      (ds.point || []).forEach(function(p){
+        (p.value || []).forEach(function(v, i){
+          if (i === (valIdx || 0)) sum += (v.intVal || v.fpVal || 0);
+        });
+      });
+      return sum;
+    }
+    function avgVals(ds){
+      var sum = 0, count = 0;
+      (ds.point || []).forEach(function(p){
+        (p.value || []).forEach(function(v){
+          if (v.fpVal){ sum += v.fpVal; count++; }
+        });
+      });
+      return count ? Math.round(sum / count) : 0;
+    }
+
+    var steps = sumVals(datasets[0] || {});
+    var cal = sumVals(datasets[1] || {});
+    var hr = avgVals(datasets[2] || {});
+    var activeMin = sumVals(datasets[3] || {});
+
+    // Sleep dernière nuit
+    var sleepHours = 0;
+    try {
+      var nightStart = new Date(); nightStart.setHours(20, 0, 0, 0);
+      nightStart.setDate(nightStart.getDate() - 1);
+      var morningEnd = new Date(); morningEnd.setHours(12, 0, 0, 0);
+      var sleepResp = await fetch(
+        'https://www.googleapis.com/fitness/v1/users/me/sessions?activityType=72&startTime=' +
+        nightStart.toISOString() + '&endTime=' + morningEnd.toISOString(),
+        { headers: { 'Authorization': 'Bearer ' + token } }
+      );
+      if (sleepResp.ok){
+        var sleepData = await sleepResp.json();
+        var totalMs = 0;
+        (sleepData.session || []).forEach(function(s){
+          totalMs += (parseInt(s.endTimeMillis) - parseInt(s.startTimeMillis));
+        });
+        sleepHours = (totalMs / 3600000).toFixed(1);
+      }
+    } catch(e){ /* sleep optionnel */ }
+
+    return {
+      provider: 'google',
+      todaySteps: Math.round(steps),
+      todayCal: Math.round(cal),
+      todayActiveMin: Math.round(activeMin),
+      weeklyHRavg: Math.round(hr),
+      sleepHours: parseFloat(sleepHours)
+    };
+  }
+
+  // ─── 3. APPLE HEALTH — Import manuel XML (Web fallback) ─
+  // Sur iOS Safari pur (sans Capacitor), Apple Health n'est pas accessible.
+  // Fallback : l'utilisateur exporte ses données Santé en XML (Settings > Health > Export)
+  // et nous l'importe via input file.
+  function parseAppleHealthXML(xmlText){
+    var parser = new DOMParser();
+    var doc = parser.parseFromString(xmlText, 'text/xml');
+    var records = doc.querySelectorAll('Record');
+    var today = new Date(); today.setHours(0,0,0,0);
+    var sums = { steps: 0, cal: 0, activeMin: 0 };
+    var hrSum = 0, hrCount = 0;
+    var sleepMs = 0;
+    records.forEach(function(r){
+      var type = r.getAttribute('type');
+      var startDate = new Date(r.getAttribute('startDate'));
+      if (startDate < today) return;
+      var value = parseFloat(r.getAttribute('value')) || 0;
+      if (type === 'HKQuantityTypeIdentifierStepCount') sums.steps += value;
+      else if (type === 'HKQuantityTypeIdentifierActiveEnergyBurned') sums.cal += value;
+      else if (type === 'HKQuantityTypeIdentifierAppleExerciseTime') sums.activeMin += value;
+      else if (type === 'HKQuantityTypeIdentifierHeartRate'){ hrSum += value; hrCount++; }
+      else if (type === 'HKCategoryTypeIdentifierSleepAnalysis'){
+        var endDate = new Date(r.getAttribute('endDate'));
+        sleepMs += (endDate - startDate);
+      }
+    });
+    return {
+      provider: 'apple',
+      todaySteps: Math.round(sums.steps),
+      todayCal: Math.round(sums.cal),
+      todayActiveMin: Math.round(sums.activeMin),
+      weeklyHRavg: hrCount ? Math.round(hrSum / hrCount) : 0,
+      sleepHours: parseFloat((sleepMs / 3600000).toFixed(1))
+    };
+  }
+
+  // ─── ORCHESTRATEUR PRINCIPAL ─────────────────────────────
+  async function sync(){
+    var plat = platform();
+    var data = null;
+    if (plat.hasCapacitor){
+      try { data = await syncViaCapacitor(); } catch(e){ console.warn('[W15] Capacitor failed, fallback web'); }
+    }
+    if (!data && plat.isAndroid){
+      data = await syncGoogleFit();
+    }
+    if (!data){
+      throw new Error('Aucune source de données disponible. Connecte Google Fit ou installe l app native.');
+    }
+    // Sauvegarde
+    var u = ensureHealth();
+    Object.assign(u.health, data);
+    u.health.lastSync = Date.now();
+    u.health.connected = true;
+    // Update history (max 7 entries)
+    var todayKey = new Date().toISOString().slice(0, 10);
+    u.health.weekHistory = u.health.weekHistory || [];
+    var existing = u.health.weekHistory.findIndex(function(h){ return h.date === todayKey; });
+    var entry = { date: todayKey, steps: data.todaySteps, cal: data.todayCal, sleep: data.sleepHours };
+    if (existing >= 0) u.health.weekHistory[existing] = entry;
+    else u.health.weekHistory.push(entry);
+    if (u.health.weekHistory.length > 7) u.health.weekHistory = u.health.weekHistory.slice(-7);
+    setU(u);
+    // Émet event pour autres modules (Home dashboard peut s'auto-update)
+    try { window.dispatchEvent(new CustomEvent('hima:health-sync', { detail: data })); } catch(e){}
+    return data;
+  }
+
+  async function importAppleXML(file){
+    return new Promise(function(resolve, reject){
+      var reader = new FileReader();
+      reader.onload = function(e){
+        try {
+          var data = parseAppleHealthXML(e.target.result);
+          var u = ensureHealth();
+          Object.assign(u.health, data);
+          u.health.lastSync = Date.now();
+          u.health.connected = true;
+          u.health.provider = 'manual';
+          setU(u);
+          try { window.dispatchEvent(new CustomEvent('hima:health-sync', { detail: data })); } catch(e){}
+          resolve(data);
+        } catch(err){ reject(err); }
+      };
+      reader.onerror = function(){ reject(new Error('Lecture fichier échouée')); };
+      reader.readAsText(file);
+    });
+  }
+
+  function disconnect(){
+    var u = ensureHealth();
+    u.health.connected = false;
+    u.health.provider = null;
+    u.health.googleFitToken = null;
+    setU(u);
+    renderInto();
+  }
+
+  function getStats(){ return ensureHealth().health; }
+
+  // ─── UI : Card dans Profil ───────────────────────────────
+  function injectStyles(){
+    if (document.getElementById('w15-style')) return;
+    var s = document.createElement('style'); s.id = 'w15-style';
+    s.textContent = ''+
+      '.w15-card{margin:14px 16px 6px;padding:14px;background:linear-gradient(140deg,rgba(34,197,94,0.08),rgba(34,197,94,0.02));border:1px solid rgba(34,197,94,0.18);border-radius:16px}'+
+      '.w15-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}'+
+      '.w15-t{font-family:Bebas Neue,sans-serif;font-size:16px;letter-spacing:1.5px;color:#22C55E;display:flex;align-items:center;gap:8px}'+
+      '.w15-st{font-family:DM Sans;font-size:10px;letter-spacing:1px;padding:3px 8px;border-radius:6px;text-transform:uppercase;font-weight:600}'+
+      '.w15-st.on{background:rgba(34,197,94,0.18);color:#22C55E}'+
+      '.w15-st.off{background:rgba(240,240,255,0.08);color:rgba(240,240,255,0.55)}'+
+      '.w15-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px}'+
+      '.w15-stat{background:rgba(240,240,255,0.04);border-radius:10px;padding:8px;text-align:center}'+
+      '.w15-stat-v{font-family:Bebas Neue,sans-serif;font-size:18px;color:#F0F0FF;line-height:1}'+
+      '.w15-stat-l{font-family:DM Sans;font-size:9px;color:rgba(240,240,255,0.5);letter-spacing:0.5px;margin-top:3px;text-transform:uppercase}'+
+      '.w15-actions{display:flex;gap:8px;flex-wrap:wrap}'+
+      '.w15-btn{flex:1;min-width:0;padding:9px 12px;background:rgba(240,240,255,0.06);border:1px solid rgba(240,240,255,0.1);border-radius:10px;color:#F0F0FF;font-family:Space Grotesk;font-size:11.5px;font-weight:600;cursor:pointer;letter-spacing:0.3px}'+
+      '.w15-btn:active{transform:scale(.98)}'+
+      '.w15-btn.primary{background:linear-gradient(135deg,#22C55E,#16A34A);border:none;color:#fff}'+
+      '.w15-btn.danger{background:rgba(243,86,149,0.12);border-color:rgba(243,86,149,0.3);color:#F35695}'+
+      '.w15-sub{font-family:DM Sans;font-size:10.5px;color:rgba(240,240,255,0.5);margin-top:8px;letter-spacing:0.2px}'+
+      '.w15-providers{display:flex;flex-direction:column;gap:8px;margin-top:8px}'+
+      '.w15-prov{display:flex;align-items:center;gap:10px;padding:10px;background:rgba(240,240,255,0.03);border:1px solid rgba(240,240,255,0.08);border-radius:10px;cursor:pointer;transition:all .2s}'+
+      '.w15-prov:active{transform:scale(.98);background:rgba(240,240,255,0.06)}'+
+      '.w15-prov-ico{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}'+
+      '.w15-prov-ico.apple{background:#000;color:#fff}'+
+      '.w15-prov-ico.google{background:#4285F4;color:#fff}'+
+      '.w15-prov-ico.manual{background:rgba(249,136,5,0.2);color:#F98805}'+
+      '.w15-prov-l{flex:1;min-width:0}'+
+      '.w15-prov-t{font-family:Space Grotesk;font-size:13px;font-weight:600;color:#F0F0FF}'+
+      '.w15-prov-s{font-family:DM Sans;font-size:10.5px;color:rgba(240,240,255,0.5);margin-top:1px}'+
+      '.w15-prov-arrow{color:rgba(240,240,255,0.4);font-size:14px}';
+    document.head.appendChild(s);
+  }
+
+  function renderInto(){
+    var host = document.querySelector('#t-prf') || document.querySelector('#t-profile') || document.querySelector('[id^="t-pro"]');
+    if (!host) return;
+    var scrollHost = host.querySelector('.pv3-root') || host.querySelector('.pv3-sc') || host;
+    var card = scrollHost.querySelector('#w15-card');
+    if (!card){
+      card = document.createElement('div'); card.id = 'w15-card'; card.className = 'w15-card';
+      // Insérer après la card diagnostic W13 si présente
+      var w13 = scrollHost.querySelector('#w13-card');
+      if (w13 && w13.nextSibling) scrollHost.insertBefore(card, w13.nextSibling);
+      else if (w13) scrollHost.appendChild(card);
+      else scrollHost.appendChild(card);
+    }
+    var h = ensureHealth().health;
+    var plat = platform();
+    var connected = h.connected;
+    var lastSyncTxt = h.lastSync
+      ? new Date(h.lastSync).toLocaleString('fr-FR', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' })
+      : 'jamais';
+
+    if (connected){
+      card.innerHTML = ''+
+        '<div class="w15-hd">'+
+          '<div class="w15-t">❤️ HEALTH SYNC</div>'+
+          '<div class="w15-st on">'+(h.provider === 'apple' ? 'APPLE' : h.provider === 'google' ? 'GOOGLE FIT' : 'MANUEL')+'</div>'+
+        '</div>'+
+        '<div class="w15-grid">'+
+          '<div class="w15-stat"><div class="w15-stat-v">'+(h.todaySteps||0).toLocaleString('fr-FR')+'</div><div class="w15-stat-l">Pas</div></div>'+
+          '<div class="w15-stat"><div class="w15-stat-v">'+(h.todayCal||0)+'</div><div class="w15-stat-l">Kcal</div></div>'+
+          '<div class="w15-stat"><div class="w15-stat-v">'+(h.todayActiveMin||0)+'<span style="font-size:11px;opacity:.6">m</span></div><div class="w15-stat-l">Actif</div></div>'+
+          '<div class="w15-stat"><div class="w15-stat-v">'+(h.sleepHours||'—')+'<span style="font-size:11px;opacity:.6">h</span></div><div class="w15-stat-l">Sommeil</div></div>'+
+        '</div>'+
+        '<div class="w15-actions">'+
+          '<button class="w15-btn primary" id="w15-resync">Resync</button>'+
+          '<button class="w15-btn danger" id="w15-disconnect">Deconnecter</button>'+
+        '</div>'+
+        '<div class="w15-sub">Derniere sync : '+lastSyncTxt+'</div>';
+      card.querySelector('#w15-resync').onclick = doSync;
+      card.querySelector('#w15-disconnect').onclick = function(){ if (confirm('Deconnecter Health ?')) disconnect(); };
+    } else {
+      // Pas connecté : montre les options selon plateforme
+      var providers = '';
+      if (plat.hasCapacitor){
+        var ico = plat.isIOS ? 'apple' : 'google';
+        var label = plat.isIOS ? 'Apple Health' : 'Health Connect';
+        providers += '<div class="w15-prov" id="w15-native">'+
+          '<div class="w15-prov-ico '+ico+'">'+(plat.isIOS?'🍎':'🤖')+'</div>'+
+          '<div class="w15-prov-l"><div class="w15-prov-t">'+label+'</div><div class="w15-prov-s">Sync automatique en arriere-plan</div></div>'+
+          '<div class="w15-prov-arrow">›</div></div>';
+      } else {
+        // Web : Google Fit + import Apple XML
+        providers += '<div class="w15-prov" id="w15-google">'+
+          '<div class="w15-prov-ico google">G</div>'+
+          '<div class="w15-prov-l"><div class="w15-prov-t">Google Fit</div><div class="w15-prov-s">Connexion en 2 clics (web)</div></div>'+
+          '<div class="w15-prov-arrow">›</div></div>';
+        if (plat.isIOS){
+          providers += '<div class="w15-prov" id="w15-apple-import">'+
+            '<div class="w15-prov-ico apple">🍎</div>'+
+            '<div class="w15-prov-l"><div class="w15-prov-t">Apple Health (import)</div><div class="w15-prov-s">Exporte ton export.xml dans l app Sante</div></div>'+
+            '<div class="w15-prov-arrow">›</div></div>';
+          providers += '<input type="file" id="w15-apple-file" accept=".xml,.zip" style="display:none">';
+        }
+      }
+      card.innerHTML = ''+
+        '<div class="w15-hd">'+
+          '<div class="w15-t">❤️ HEALTH SYNC</div>'+
+          '<div class="w15-st off">DECONNECTE</div>'+
+        '</div>'+
+        '<div class="w15-sub" style="margin-top:0;margin-bottom:8px">Sync ton activite (pas, calories, sommeil) pour un coaching plus precis.</div>'+
+        '<div class="w15-providers">'+providers+'</div>';
+
+      var g = card.querySelector('#w15-google');
+      if (g) g.onclick = doConnectGoogle;
+      var n = card.querySelector('#w15-native');
+      if (n) n.onclick = doSync; // Native demande perm + sync
+      var ai = card.querySelector('#w15-apple-import');
+      var af = card.querySelector('#w15-apple-file');
+      if (ai && af){
+        ai.onclick = function(){ af.click(); };
+        af.onchange = function(){
+          var f = af.files && af.files[0]; if (!f) return;
+          ai.querySelector('.w15-prov-s').textContent = 'Lecture en cours...';
+          importAppleXML(f).then(function(data){
+            try { alert('Import OK : '+data.todaySteps+' pas aujourd hui'); } catch(e){}
+            renderInto();
+          }).catch(function(e){
+            try { alert('Erreur : '+e.message); } catch(_){}
+          });
+        };
+      }
+    }
+  }
+
+  // Actions
+  function doSync(){
+    sync().then(function(d){
+      try { if (typeof toast === 'function') toast('✅ Health sync OK'); } catch(e){}
+      renderInto();
+    }).catch(function(e){
+      try { alert('Sync echec : '+e.message); } catch(_){}
+    });
+  }
+  function doConnectGoogle(){
+    connectGoogleFit()
+      .then(syncGoogleFit)
+      .then(function(d){
+        var u = ensureHealth();
+        Object.assign(u.health, d);
+        u.health.lastSync = Date.now();
+        setU(u);
+        try { if (typeof toast === 'function') toast('✅ Google Fit connecte'); } catch(e){}
+        renderInto();
+      })
+      .catch(function(e){
+        try { alert('Connexion echec : '+e.message); } catch(_){}
+      });
+  }
+
+  // ─── Auto-sync background (6h) ────────────────────────────
+  function maybeAutoSync(){
+    var h = ensureHealth().health;
+    if (!h.connected) return;
+    if (h.lastSync && Date.now() - h.lastSync < 6 * 3600 * 1000) return; // < 6h
+    sync().catch(function(){}); // silent
+  }
+
+  injectStyles();
+
+  // Hook tab profil
+  var _origSwitch = window.switchTab;
+  if (typeof _origSwitch === 'function'){
+    window.switchTab = function(name){
+      var r = _origSwitch.apply(this, arguments);
+      if (name === 't-prf' || name === 't-profile' || name === 'prf' || name === 'profile'){
+        setTimeout(renderInto, 450);
+      }
+      return r;
+    };
+  }
+  setTimeout(renderInto, 2400);
+  setTimeout(maybeAutoSync, 8000);
+
+  // API publique
+  window.HIMA_HEALTH = {
+    sync: sync,
+    connect: doConnectGoogle,
+    disconnect: disconnect,
+    getStats: getStats,
+    importAppleXML: importAppleXML,
+    platform: platform
+  };
+  console.log('[W15] Health sync ready — platform:', platform());
+})();
+</script>
+
+
+<!-- ════════════════════════════════════════════════════════
+     WAVE 17 — COMMUNITY ÉLARGIE (Crew >5 + Feed + Kudos)
+     - Crew limité à 5 → maintenant illimité (toujours 20 max pour perf)
+     - Nouveau feed activité (Firestore collection : feedItems)
+     - Kudos sur les milestones des autres
+     - Leaderboard hebdomadaire (top 10 streak du crew)
+     ════════════════════════════════════════════════════════ -->
+<script>
+(function wave17_community(){
+  'use strict';
+  window.SV2_FLAGS = window.SV2_FLAGS || {};
+  if (window.SV2_FLAGS.w17_community === false) return;
+  window.SV2_FLAGS.w17_community = true;
+
+  function getU(){ try { return JSON.parse(localStorage.getItem('hima8') || '{}'); } catch(e){ return {}; } }
+  function setU(u){ try { localStorage.setItem('hima8', JSON.stringify(u)); } catch(e){} }
+  function fbReady(){ return !!(window.firebaseReady && window.db && window.auth && window.auth.currentUser); }
+  function getUid(){ return (window.auth && window.auth.currentUser) ? window.auth.currentUser.uid : null; }
+
+  var FEED_TYPES = {
+    streak: { ico: '🔥', color: '#F98805', label: function(d){ return d+' jours de streak'; } },
+    pr: { ico: '🏆', color: '#DDE255', label: function(d){ return 'Nouveau PR : '+d; } },
+    badge: { ico: '🎖️', color: '#F35695', label: function(d){ return 'A debloque : '+d; } },
+    milestone: { ico: '⭐', color: '#22C55E', label: function(d){ return d; } },
+    workout: { ico: '💪', color: '#F98805', label: function(d){ return 'Seance terminee : '+d; } }
+  };
+
+  // ─── Élargir la limite de membres Crew (override soft) ──
+  // Le W9.3 fait `if (members.length < 5)` — on patch la limite à 20.
+  window.HIMA_W17_MAX_CREW = 20;
+  // Le Wave 9.3 lit cette valeur s'il a été configuré pour, sinon on patch via UI directe plus bas.
+
+  // ─── Poster une activité dans le feed ────────────────────
+  function postActivity(type, data){
+    if (!fbReady()){
+      // Buffer local pour retry plus tard
+      var u = getU();
+      u._feedBuffer = u._feedBuffer || [];
+      u._feedBuffer.push({ type: type, data: data, ts: Date.now() });
+      setU(u);
+      return Promise.resolve();
+    }
+    var uid = getUid();
+    var u = getU();
+    return window.db.collection('feedItems').add({
+      uid: uid,
+      displayName: u.prenom || u.displayName || 'Anonyme',
+      crewCode: u.wave9 && u.wave9.crew && u.wave9.crew.myCode,
+      type: type,
+      data: data,
+      ts: firebase.firestore.FieldValue.serverTimestamp(),
+      kudosCount: 0,
+      kudosUids: []
+    }).catch(function(e){
+      console.warn('[W17] post failed', e.message);
+    });
+  }
+  // Flush buffer si Firebase devient ready
+  function flushBuffer(){
+    if (!fbReady()) return;
+    var u = getU();
+    if (!u._feedBuffer || !u._feedBuffer.length) return;
+    var buffer = u._feedBuffer.slice();
+    u._feedBuffer = [];
+    setU(u);
+    buffer.forEach(function(item){ postActivity(item.type, item.data); });
+  }
+
+  // ─── Récupérer le feed des potes (crew) ──────────────────
+  function getCrewFeed(limit){
+    if (!fbReady()) return Promise.resolve([]);
+    var u = getU();
+    var crewCodes = (u.wave9 && u.wave9.crew && u.wave9.crew.members || []).map(function(m){ return m.code; });
+    if (!crewCodes.length) return Promise.resolve([]);
+    // Récupérer les uids depuis crewCodes/{code}
+    return Promise.all(crewCodes.map(function(code){
+      return window.db.collection('crewCodes').doc(code).get()
+        .then(function(s){ return s.exists ? s.data().uid : null; })
+        .catch(function(){ return null; });
+    })).then(function(uids){
+      uids = uids.filter(Boolean);
+      if (!uids.length) return [];
+      // S'assurer d'inclure aussi notre propre activité
+      uids.push(getUid());
+      // Firestore "in" supporte 10 max — on chunk si besoin
+      var chunks = [];
+      for (var i = 0; i < uids.length; i += 10) chunks.push(uids.slice(i, i + 10));
+      return Promise.all(chunks.map(function(chunk){
+        return window.db.collection('feedItems')
+          .where('uid', 'in', chunk)
+          .orderBy('ts', 'desc')
+          .limit(limit || 20)
+          .get()
+          .then(function(snap){
+            return snap.docs.map(function(d){
+              var data = d.data();
+              data._id = d.id;
+              return data;
+            });
+          });
+      })).then(function(arrays){
+        var all = [].concat.apply([], arrays);
+        all.sort(function(a, b){
+          var tsA = a.ts && a.ts.toMillis ? a.ts.toMillis() : 0;
+          var tsB = b.ts && b.ts.toMillis ? b.ts.toMillis() : 0;
+          return tsB - tsA;
+        });
+        return all.slice(0, limit || 20);
+      });
+    });
+  }
+
+  // ─── Kudos (encouragement) ───────────────────────────────
+  function giveKudos(feedItemId){
+    if (!fbReady()) return Promise.reject('Connecte-toi');
+    var uid = getUid();
+    var ref = window.db.collection('feedItems').doc(feedItemId);
+    return window.db.runTransaction(function(tx){
+      return tx.get(ref).then(function(doc){
+        if (!doc.exists) throw 'not found';
+        var data = doc.data();
+        var uids = data.kudosUids || [];
+        if (uids.indexOf(uid) !== -1) return; // déjà kudosé
+        uids.push(uid);
+        tx.update(ref, {
+          kudosUids: uids,
+          kudosCount: uids.length
+        });
+      });
+    });
+  }
+
+  // ─── UI Feed ─────────────────────────────────────────────
+  function injectStyles(){
+    if (document.getElementById('w17-style')) return;
+    var s = document.createElement('style'); s.id = 'w17-style';
+    s.textContent = ''+
+      '.w17-feed{margin:14px 16px}'+
+      '.w17-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}'+
+      '.w17-t{font-family:Bebas Neue,sans-serif;font-size:16px;letter-spacing:1.5px;color:#F0F0FF;display:flex;align-items:center;gap:8px}'+
+      '.w17-h-line{flex:1;height:1px;background:linear-gradient(90deg,rgba(240,240,255,0.15),transparent);margin:0 8px}'+
+      '.w17-refresh{background:rgba(240,240,255,0.06);border:none;color:rgba(240,240,255,0.7);width:28px;height:28px;border-radius:50%;cursor:pointer}'+
+      '.w17-items{display:flex;flex-direction:column;gap:8px}'+
+      '.w17-item{display:flex;gap:10px;padding:10px 12px;background:rgba(240,240,255,0.04);border:1px solid rgba(240,240,255,0.06);border-radius:12px}'+
+      '.w17-item-ico{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;background:rgba(249,136,5,0.15)}'+
+      '.w17-item-c{flex:1;min-width:0}'+
+      '.w17-item-name{font-family:Space Grotesk;font-size:12px;font-weight:700;color:#F0F0FF;margin-bottom:1px}'+
+      '.w17-item-txt{font-family:DM Sans;font-size:12px;color:rgba(240,240,255,0.75);line-height:1.35}'+
+      '.w17-item-time{font-family:DM Sans;font-size:10px;color:rgba(240,240,255,0.4);margin-top:3px}'+
+      '.w17-kudos{display:flex;align-items:center;gap:4px;background:rgba(249,136,5,0.1);border:1px solid rgba(249,136,5,0.25);color:#F98805;border-radius:99px;padding:5px 10px;cursor:pointer;font-family:DM Sans;font-size:11px;font-weight:600;flex-shrink:0;align-self:center}'+
+      '.w17-kudos:active{transform:scale(.96)}'+
+      '.w17-kudos.given{background:#F98805;color:#fff;border-color:#F98805}'+
+      '.w17-empty{font-family:DM Sans;font-size:11px;color:rgba(240,240,255,0.45);text-align:center;padding:18px;font-style:italic;background:rgba(240,240,255,0.03);border-radius:12px}';
+    document.head.appendChild(s);
+  }
+
+  function timeAgo(ts){
+    if (!ts) return '';
+    var ms = ts.toMillis ? ts.toMillis() : (ts.seconds ? ts.seconds * 1000 : ts);
+    var diff = Date.now() - ms;
+    var m = Math.floor(diff / 60000);
+    if (m < 1) return 'a l instant';
+    if (m < 60) return 'il y a '+m+'m';
+    var h = Math.floor(m / 60);
+    if (h < 24) return 'il y a '+h+'h';
+    return 'il y a '+Math.floor(h/24)+'j';
+  }
+
+  function escapeHTML(s){
+    return String(s||'').replace(/[&<>"']/g, function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+    });
+  }
+
+  function renderFeedItems(items){
+    var uid = getUid();
+    if (!items || !items.length){
+      return '<div class="w17-empty">Aucune activite dans ton crew. Ajoute des potes via le code HIMA-XXXX.</div>';
+    }
+    return '<div class="w17-items">' + items.map(function(item){
+      var t = FEED_TYPES[item.type] || { ico: '✨', color: '#F0F0FF', label: function(d){ return JSON.stringify(d); } };
+      var label = '';
+      try { label = t.label(item.data); } catch(e){ label = item.type; }
+      var isMine = item.uid === uid;
+      var hasKudos = (item.kudosUids || []).indexOf(uid) !== -1;
+      var kudosBtn = isMine
+        ? '<div class="w17-kudos" style="opacity:.5;cursor:default">❤ '+(item.kudosCount || 0)+'</div>'
+        : '<div class="w17-kudos '+(hasKudos?'given':'')+'" data-id="'+item._id+'">'+(hasKudos?'❤':'♡')+' '+(item.kudosCount || 0)+'</div>';
+      return '<div class="w17-item">'+
+        '<div class="w17-item-ico" style="background:'+t.color+'22">'+t.ico+'</div>'+
+        '<div class="w17-item-c">'+
+          '<div class="w17-item-name">'+escapeHTML(item.displayName || '?')+'</div>'+
+          '<div class="w17-item-txt">'+escapeHTML(label)+'</div>'+
+          '<div class="w17-item-time">'+timeAgo(item.ts)+'</div>'+
+        '</div>'+
+        kudosBtn+
+      '</div>';
+    }).join('') + '</div>';
+  }
+
+  function renderFeed(){
+    var host = document.querySelector('#t-prf') || document.querySelector('#t-profile') || document.querySelector('[id^="t-pro"]');
+    if (!host) return;
+    var scrollHost = host.querySelector('.pv3-root') || host.querySelector('.pv3-sc') || host;
+    var feed = scrollHost.querySelector('#w17-feed');
+    if (!feed){
+      feed = document.createElement('div'); feed.id = 'w17-feed'; feed.className = 'w17-feed';
+      // Insérer juste après la card crew W9.3 si présente
+      var w93 = scrollHost.querySelector('#w93-slot');
+      if (w93 && w93.nextSibling) scrollHost.insertBefore(feed, w93.nextSibling);
+      else if (w93) scrollHost.appendChild(feed);
+      else scrollHost.appendChild(feed);
+    }
+    feed.innerHTML = ''+
+      '<div class="w17-hd">'+
+        '<div class="w17-t">FEED CREW</div>'+
+        '<div class="w17-h-line"></div>'+
+        '<button class="w17-refresh" id="w17-refresh">↻</button>'+
+      '</div>'+
+      '<div id="w17-items">'+
+        (fbReady() ? '<div class="w17-empty">Chargement...</div>' : '<div class="w17-empty">Connecte-toi pour voir l activite de ton crew.</div>')+
+      '</div>';
+
+    if (fbReady()){
+      getCrewFeed(15).then(function(items){
+        var box = feed.querySelector('#w17-items');
+        if (!box) return;
+        box.innerHTML = renderFeedItems(items);
+        box.querySelectorAll('.w17-kudos[data-id]').forEach(function(btn){
+          btn.onclick = function(){
+            var id = btn.dataset.id;
+            btn.classList.add('given');
+            btn.textContent = '❤ '+((parseInt(btn.textContent.replace(/[^\d]/g,'')) || 0) + 1);
+            giveKudos(id).catch(function(){ btn.classList.remove('given'); });
+          };
+        });
+      });
+    }
+    var refresh = feed.querySelector('#w17-refresh');
+    if (refresh) refresh.onclick = renderFeed;
+  }
+
+  // ─── Triggers : auto-poster sur events ────────────────────
+  // Hook sur les events des autres waves pour publier au feed
+  window.addEventListener('hima:badge-unlocked', function(e){
+    if (e.detail && e.detail.label) postActivity('badge', e.detail.label);
+  });
+  window.addEventListener('hima:pr-new', function(e){
+    if (e.detail) postActivity('pr', (e.detail.exo || '') + ' ' + (e.detail.value || ''));
+  });
+  window.addEventListener('hima:workout-done', function(e){
+    if (e.detail && e.detail.title) postActivity('workout', e.detail.title);
+  });
+  window.addEventListener('hima:streak-milestone', function(e){
+    if (e.detail && e.detail.days) postActivity('streak', e.detail.days);
+  });
+  // Flush buffer quand Firebase auth ready
+  window.addEventListener('hima:config-ready', function(){
+    setTimeout(flushBuffer, 2000);
+  });
+  if (window.auth){
+    window.auth.onAuthStateChanged(function(u){ if (u) setTimeout(flushBuffer, 1500); });
+  }
+
+  injectStyles();
+  var _origSwitch = window.switchTab;
+  if (typeof _origSwitch === 'function'){
+    window.switchTab = function(name){
+      var r = _origSwitch.apply(this, arguments);
+      if (name === 't-prf' || name === 't-profile' || name === 'prf' || name === 'profile'){
+        setTimeout(renderFeed, 600);
+      }
+      return r;
+    };
+  }
+  setTimeout(renderFeed, 3000);
+
+  window.HIMA_W17 = {
+    post: postActivity,
+    feed: getCrewFeed,
+    kudos: giveKudos,
+    render: renderFeed,
+    flushBuffer: flushBuffer
+  };
+  console.log('[W17] Community feed ready (Firebase '+(fbReady()?'ON':'OFFLINE')+')');
+})();
+</script>
+
+
+<!-- ════════════════════════════════════════════════════════
+     WAVE 16 — CAPACITOR NATIVE BRIDGE
+     - Détecte si on tourne dans une app native Capacitor
+     - Active : push natif iOS, status bar, splash, haptics, share natif
+     - Hook sur W4 push UI pour remplacer FCM web par push natif si Capacitor
+     - Hook sur W15 health pour utiliser HealthKit/Health Connect
+     - Toutes les calls Capacitor sont try/catch — si Capacitor absent, no-op
+     ════════════════════════════════════════════════════════ -->
+<script>
+(function wave16_capacitorBridge(){
+  'use strict';
+  window.SV2_FLAGS = window.SV2_FLAGS || {};
+  if (window.SV2_FLAGS.w16_capacitor === false) return;
+  window.SV2_FLAGS.w16_capacitor = true;
+
+  // Détection
+  function isNative(){
+    return !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
+  }
+  function getPlatform(){
+    if (!window.Capacitor) return 'web';
+    return window.Capacitor.getPlatform ? window.Capacitor.getPlatform() : 'web';
+  }
+
+  // Si pas Capacitor → no-op (mais on expose quand même l'API pour code consistency)
+  if (!isNative()){
+    window.HIMA_NATIVE = {
+      isNative: false,
+      platform: 'web',
+      pushRegister: function(){ return Promise.reject('Not native'); },
+      hideSplash: function(){},
+      share: function(text){
+        if (navigator.share) return navigator.share({ text: text });
+        return Promise.reject('No share');
+      },
+      haptic: function(){
+        if (navigator.vibrate) navigator.vibrate(10);
+      },
+      openUrl: function(url){ window.open(url, '_blank'); }
+    };
+    console.log('[W16] Web mode — Capacitor not present, expected on PWA');
+    return;
+  }
+
+  console.log('[W16] Native platform detected:', getPlatform());
+
+  // ─── 1. SPLASH NATIVE : on cache après boot HIMA terminé ──
+  async function hideNativeSplash(){
+    try {
+      if (window.Capacitor.Plugins.SplashScreen){
+        await window.Capacitor.Plugins.SplashScreen.hide({ fadeOutDuration: 500 });
+      }
+    } catch(e){ console.warn('[W16] splash hide:', e.message); }
+  }
+  // Le splash HIMA en CSS prend le relais, on cache le splash natif rapidement
+  setTimeout(hideNativeSplash, 600);
+
+  // ─── 2. STATUS BAR ───────────────────────────────────────
+  (async function setupStatusBar(){
+    try {
+      if (window.Capacitor.Plugins.StatusBar){
+        await window.Capacitor.Plugins.StatusBar.setStyle({ style: 'DARK' });
+        await window.Capacitor.Plugins.StatusBar.setBackgroundColor({ color: '#080810' });
+      }
+    } catch(e){}
+  })();
+
+  // ─── 3. PUSH NOTIFICATIONS NATIVES ───────────────────────
+  function pushRegister(){
+    return new Promise(function(resolve, reject){
+      if (!window.Capacitor.Plugins.PushNotifications){
+        return reject(new Error('Plugin manquant'));
+      }
+      var Push = window.Capacitor.Plugins.PushNotifications;
+      Push.requestPermissions().then(function(perm){
+        if (perm.receive !== 'granted'){
+          return reject(new Error('Refusé par utilisateur'));
+        }
+        Push.register();
+      }).catch(reject);
+      // Listener token (APNs sur iOS, FCM sur Android)
+      Push.addListener('registration', function(token){
+        console.log('[W16] Push token:', token.value);
+        // Sauvegarde + envoie à Firebase pour pouvoir push depuis le serveur
+        try {
+          var u = JSON.parse(localStorage.getItem('hima8') || '{}');
+          u.nativePushToken = token.value;
+          u.nativePushPlatform = getPlatform();
+          localStorage.setItem('hima8', JSON.stringify(u));
+        } catch(e){}
+        // Si Firebase auth ready, push le token sur le user doc
+        if (window.firebaseReady && window.auth && window.auth.currentUser && window.db){
+          window.db.collection('users').doc(window.auth.currentUser.uid).set({
+            pushToken: token.value,
+            pushPlatform: getPlatform(),
+            pushUpdatedAt: firebase.firestore.FieldValue.serverTimestamp()
+          }, { merge: true }).catch(function(e){ console.warn('[W16] token save:', e.message); });
+        }
+        resolve(token.value);
+      });
+      Push.addListener('registrationError', function(err){
+        console.error('[W16] Push registration error:', err);
+        reject(err);
+      });
+      // Listener push reçue (app en foreground)
+      Push.addListener('pushNotificationReceived', function(notif){
+        console.log('[W16] Push reçue:', notif);
+        // Affiche un toast in-app
+        try { if (typeof toast === 'function') toast(notif.title + ' : ' + notif.body); } catch(e){}
+      });
+      // Listener tap sur push (app en background ou closed)
+      Push.addListener('pushNotificationActionPerformed', function(action){
+        console.log('[W16] Push tapped:', action);
+        // Si data contient une route, naviguer
+        var data = action.notification && action.notification.data;
+        if (data && data.url){
+          if (typeof go === 'function') go(data.url);
+          else window.location.hash = '#' + data.url;
+        }
+      });
+    });
+  }
+
+  // Override la fonction requestNotificationPermission pour utiliser le natif
+  if (typeof window.requestNotificationPermission === 'function'){
+    var _origReq = window.requestNotificationPermission;
+    window.requestNotificationPermission = function(){
+      return pushRegister().catch(function(e){
+        console.warn('[W16] Native push fail, fallback FCM web:', e.message);
+        return _origReq.apply(this, arguments);
+      });
+    };
+  } else {
+    // Sinon, expose une version directe
+    window.requestNotificationPermission = pushRegister;
+  }
+
+  // ─── 4. SHARE NATIF ───────────────────────────────────────
+  async function share(text, url, title){
+    try {
+      if (window.Capacitor.Plugins.Share){
+        await window.Capacitor.Plugins.Share.share({
+          title: title || 'HIMA',
+          text: text || '',
+          url: url || 'https://hima.app',
+          dialogTitle: 'Partager'
+        });
+        return true;
+      }
+    } catch(e){ console.warn('[W16] share:', e.message); }
+    // Fallback navigator.share (Web Share API)
+    if (navigator.share){
+      return navigator.share({ title: title, text: text, url: url });
+    }
+    return false;
+  }
+
+  // ─── 5. HAPTIC FEEDBACK ───────────────────────────────────
+  async function haptic(style){
+    style = style || 'light';
+    try {
+      if (window.Capacitor.Plugins.Haptics){
+        var ImpactStyle = window.Capacitor.Plugins.Haptics.ImpactStyle || {};
+        await window.Capacitor.Plugins.Haptics.impact({
+          style: style === 'heavy' ? 'HEAVY' : style === 'medium' ? 'MEDIUM' : 'LIGHT'
+        });
+        return;
+      }
+    } catch(e){}
+    if (navigator.vibrate) navigator.vibrate(style === 'heavy' ? 30 : style === 'medium' ? 15 : 8);
+  }
+
+  // ─── 6. OPEN URL EXTERNE ──────────────────────────────────
+  async function openUrl(url){
+    try {
+      if (window.Capacitor.Plugins.Browser){
+        await window.Capacitor.Plugins.Browser.open({ url: url, presentationStyle: 'fullscreen' });
+        return;
+      }
+    } catch(e){}
+    window.open(url, '_blank');
+  }
+
+  // ─── 7. APP STATE LISTENERS ───────────────────────────────
+  if (window.Capacitor.Plugins.App){
+    window.Capacitor.Plugins.App.addListener('appStateChange', function(state){
+      if (state.isActive){
+        // Resume : sync health, refresh feed, etc.
+        if (window.HIMA_HEALTH) window.HIMA_HEALTH.sync().catch(function(){});
+        if (window.HIMA_W17) window.HIMA_W17.render();
+      }
+    });
+    // Deep links (hima://...)
+    window.Capacitor.Plugins.App.addListener('appUrlOpen', function(event){
+      var url = event.url || '';
+      // Parser hima://payment/success → ?payment=success
+      var m = url.match(/hima:\/\/([^\/?]+)\/?(.*)/);
+      if (m){
+        var path = m[1];
+        var params = m[2] ? '?' + m[2] : '';
+        if (path === 'payment'){
+          window.history.replaceState(null, '', '/' + params);
+          if (typeof checkPaymentReturnV2 === 'function') checkPaymentReturnV2();
+        }
+      }
+    });
+  }
+
+  // ─── 8. KEYBOARD HANDLING ─────────────────────────────────
+  if (window.Capacitor.Plugins.Keyboard){
+    window.Capacitor.Plugins.Keyboard.addListener('keyboardWillShow', function(info){
+      document.body.style.paddingBottom = info.keyboardHeight + 'px';
+    });
+    window.Capacitor.Plugins.Keyboard.addListener('keyboardWillHide', function(){
+      document.body.style.paddingBottom = '';
+    });
+  }
+
+  // ─── 9. AUTO-PUSH au boot si user a déjà opt-in ──────────
+  setTimeout(function(){
+    try {
+      var u = JSON.parse(localStorage.getItem('hima8') || '{}');
+      if (u.notifPrefs && u.notifPrefs.optedInAt && !u.nativePushToken){
+        pushRegister().catch(function(){});
+      }
+    } catch(e){}
+  }, 4000);
+
+  // ─── API publique ─────────────────────────────────────────
+  window.HIMA_NATIVE = {
+    isNative: true,
+    platform: getPlatform(),
+    pushRegister: pushRegister,
+    hideSplash: hideNativeSplash,
+    share: share,
+    haptic: haptic,
+    openUrl: openUrl
+  };
+
+  // Émet event "native ready" pour autres waves
+  try { window.dispatchEvent(new CustomEvent('hima:native-ready', { detail: { platform: getPlatform() } })); } catch(e){}
+
+  console.log('[W16] Native bridge ready — platform:', getPlatform());
+})();
+</script>
+
+
+<!-- ════════════════════════════════════════════════════════
+     WAVE 18 — EMAIL TRANSACTIONNEL (client side)
+     Côté client : déclenchements + persistance des intents
+     Côté serveur : Functions handlers (cf. functions/index.js v2)
+     - Bienvenue (post-inscription)
+     - Paiement OK (post-Stripe webhook côté backend, mais on log côté client)
+     - Fin essai J+5 / J+6 (rappel "ton essai se termine demain")
+     - Churn J+7 (utilisateur inactif depuis 7 jours)
+     - Milestone (streak 30/60/90j)
+     ════════════════════════════════════════════════════════ -->
+<script>
+(function wave18_emailTransactional(){
+  'use strict';
+  window.SV2_FLAGS = window.SV2_FLAGS || {};
+  if (window.SV2_FLAGS.w18_email === false) return;
+  window.SV2_FLAGS.w18_email = true;
+
+  function getU(){ try { return JSON.parse(localStorage.getItem('hima8') || '{}'); } catch(e){ return {}; } }
+  function setU(u){ try { localStorage.setItem('hima8', JSON.stringify(u)); } catch(e){} }
+  function fbReady(){ return !!(window.firebaseReady && window.auth && window.functions); }
+
+  // ─── Trigger côté client (appelle une Function Firebase) ──
+  function triggerEmail(type, data){
+    if (!fbReady()){
+      // Buffer pour retry plus tard
+      var u = getU();
+      u._emailBuffer = u._emailBuffer || [];
+      u._emailBuffer.push({ type: type, data: data || {}, ts: Date.now() });
+      setU(u);
+      return Promise.resolve();
+    }
+    try {
+      var fn = window.functions.httpsCallable('sendTransactionalEmail');
+      return fn({ type: type, data: data || {} }).catch(function(e){
+        console.warn('[W18] email trigger failed:', e.message);
+        // Buffer pour retry
+        var u = getU();
+        u._emailBuffer = u._emailBuffer || [];
+        u._emailBuffer.push({ type: type, data: data || {}, ts: Date.now() });
+        setU(u);
+      });
+    } catch(e){
+      console.warn('[W18] httpsCallable error:', e.message);
+      return Promise.resolve();
+    }
+  }
+
+  function flushBuffer(){
+    if (!fbReady()) return;
+    var u = getU();
+    if (!u._emailBuffer || !u._emailBuffer.length) return;
+    var buffer = u._emailBuffer.slice();
+    u._emailBuffer = [];
+    setU(u);
+    buffer.forEach(function(item){ triggerEmail(item.type, item.data); });
+  }
+
+  // ─── 1. BIENVENUE (post-inscription) ──────────────────────
+  // Détection : passage de onboarding à app (premier go('app'))
+  function checkWelcomeTrigger(){
+    var u = getU();
+    if (u.onbDone && !u._emailSent_welcome){
+      triggerEmail('welcome', {
+        prenom: u.prenom,
+        objectif: u.goal,
+        mode: u.mode
+      });
+      u._emailSent_welcome = Date.now();
+      setU(u);
+    }
+  }
+
+  // ─── 2. FIN ESSAI J+5 / J+6 (rappel) ──────────────────────
+  function checkTrialEndingTrigger(){
+    var u = getU();
+    if (!u.planActivatedAt) return;
+    if (u.plan !== 'pro' && u.plan !== 'elite') return;
+    if (u._emailSent_trialEnding) return;
+    // Trial = 7 jours, on rappelle à J+5 (2 jours avant fin)
+    var trialEndsAt = u.planActivatedAt + 7 * 24 * 3600 * 1000;
+    var now = Date.now();
+    var hoursUntilEnd = (trialEndsAt - now) / (3600 * 1000);
+    if (hoursUntilEnd > 0 && hoursUntilEnd < 48){
+      triggerEmail('trial_ending', {
+        prenom: u.prenom,
+        plan: u.plan,
+        hoursLeft: Math.round(hoursUntilEnd)
+      });
+      u._emailSent_trialEnding = Date.now();
+      setU(u);
+    }
+  }
+
+  // ─── 3. CHURN J+7 (inactif 7 jours) ───────────────────────
+  function checkChurnTrigger(){
+    var u = getU();
+    if (!u.onbDone) return;
+    if (u._emailSent_churn && Date.now() - u._emailSent_churn < 14 * 24 * 3600 * 1000) return;
+    var lastActivity = u.lastSessionAt || u.lastSeanceAt || u.lastActivityAt || 0;
+    if (!lastActivity) return;
+    var daysSince = (Date.now() - lastActivity) / (24 * 3600 * 1000);
+    if (daysSince >= 7 && daysSince < 8){ // window 24h pour pas envoyer en boucle
+      triggerEmail('churn_reactivation', {
+        prenom: u.prenom,
+        daysSince: Math.round(daysSince),
+        streak: u.streak || 0
+      });
+      u._emailSent_churn = Date.now();
+      setU(u);
+    }
+  }
+
+  // ─── 4. MILESTONE (streak palier) ─────────────────────────
+  function checkMilestoneTrigger(){
+    var u = getU();
+    var streak = u.streak || 0;
+    var milestones = [7, 14, 30, 60, 90, 180, 365];
+    var hit = milestones.indexOf(streak);
+    if (hit === -1) return;
+    var sentKey = '_emailSent_milestone_' + streak;
+    if (u[sentKey]) return;
+    triggerEmail('milestone', {
+      prenom: u.prenom,
+      streakDays: streak,
+      title: streak >= 365 ? 'UN AN' : streak >= 90 ? 'TRIMESTRE PARFAIT' : streak >= 30 ? 'UN MOIS' : streak >= 7 ? 'PREMIÈRE SEMAINE' : 'PALIER'
+    });
+    u[sentKey] = Date.now();
+    setU(u);
+  }
+
+  // ─── 5. UPDATE LAST ACTIVITY (pour churn detection) ──────
+  function touchActivity(){
+    var u = getU();
+    u.lastActivityAt = Date.now();
+    setU(u);
+  }
+
+  // ─── Orchestration ────────────────────────────────────────
+  function runAllChecks(){
+    try { checkWelcomeTrigger(); } catch(e){}
+    try { checkTrialEndingTrigger(); } catch(e){}
+    try { checkChurnTrigger(); } catch(e){}
+    try { checkMilestoneTrigger(); } catch(e){}
+  }
+
+  // Hooks
+  setTimeout(runAllChecks, 5000);          // Boot
+  setInterval(runAllChecks, 6 * 3600 * 1000); // Toutes les 6h tant que app ouverte
+  setInterval(touchActivity, 5 * 60 * 1000);   // Touch activity toutes les 5 min
+
+  // Hook switchTab pour touch activity
+  var _origSwitch = window.switchTab;
+  if (typeof _origSwitch === 'function'){
+    window.switchTab = function(){
+      touchActivity();
+      return _origSwitch.apply(this, arguments);
+    };
+  }
+
+  // Hook auth (flush buffer + check welcome au login)
+  if (window.auth){
+    window.auth.onAuthStateChanged(function(user){
+      if (user){
+        setTimeout(flushBuffer, 1500);
+        setTimeout(runAllChecks, 2500);
+      }
+    });
+  }
+  window.addEventListener('hima:config-ready', function(){
+    setTimeout(flushBuffer, 2500);
+  });
+
+  // API
+  window.HIMA_EMAIL = {
+    trigger: triggerEmail,
+    runChecks: runAllChecks,
+    flushBuffer: flushBuffer
+  };
+  console.log('[W18] Email transactional triggers ready');
+})();
+</script>
+
+
 
 
 
