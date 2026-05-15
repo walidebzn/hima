@@ -681,40 +681,39 @@ button:disabled, .btn:disabled, .pv3-action-btn:disabled {
 /* Aura conic-gradient animée */
 .hv3-aura {
   position: absolute;
-  top: 4px;
+  top: 50%;
   left: 50%;
-  transform: translateX(-50%);
-  width: 320px;
-  height: 320px;
+  transform: translate(-50%, -50%);
+  width: 240px;
+  height: 240px;
   border-radius: 50%;
   background: conic-gradient(
     from 0deg,
-    rgba(249,136,5,0.55) 0deg,
-    rgba(243,86,149,0.55) 90deg,
-    rgba(221,226,85,0.45) 180deg,
-    rgba(243,86,149,0.55) 270deg,
-    rgba(249,136,5,0.55) 360deg
+    #F98805,
+    #F35695,
+    #DDE255,
+    #F98805
   );
   filter: blur(40px);
-  opacity: 0.7;
+  opacity: 0.35;
   animation: hv3AuraSpin 30s linear infinite, hv3AuraIntro 0.8s ease-out backwards;
   animation-delay: 0s, 0.2s;
   pointer-events: none;
   z-index: 1;
 }
 @keyframes hv3AuraSpin {
-  from { transform: translateX(-50%) rotate(0deg); }
-  to   { transform: translateX(-50%) rotate(360deg); }
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to   { transform: translate(-50%, -50%) rotate(360deg); }
 }
 @keyframes hv3AuraIntro {
-  from { opacity: 0; transform: translateX(-50%) scale(0.4); }
-  to   { opacity: 0.7; transform: translateX(-50%) scale(1); }
+  from { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+  to   { opacity: 0.35; transform: translate(-50%, -50%) scale(1); }
 }
 
 /* Particules flottantes */
 .hv3-particles {
   position: absolute;
-  inset: 0;
+  inset: -30px;
   pointer-events: none;
   z-index: 2;
 }
@@ -722,31 +721,33 @@ button:disabled, .btn:disabled, .pv3-action-btn:disabled {
   position: absolute;
   width: 6px; height: 6px;
   border-radius: 50%;
+  background: var(--c, #F98805);
+  box-shadow: 0 0 10px var(--c, #F98805), 0 0 16px var(--c, #F98805);
   opacity: 0;
-  box-shadow: 0 0 12px currentColor;
   animation: hv3PFloat var(--d, 7s) ease-in-out infinite, hv3PFadeIn 0.6s ease-out forwards;
   animation-delay: 0s, var(--del, 0s);
 }
-@keyframes hv3PFadeIn { from { opacity: 0; } to { opacity: var(--op, 0.7); } }
+@keyframes hv3PFadeIn {
+  from { opacity: 0; }
+  to   { opacity: var(--op, 0.7); }
+}
 @keyframes hv3PFloat {
   0%, 100% { transform: translate(0, 0); }
   50% { transform: translate(var(--tx, 0px), var(--ty, -20px)); }
 }
-.hv3-p1 { left: 18%;  top: 18%; color: #F98805; --d: 7s;  --del: 0.6s; --op: 0.7; --tx: -8px;  --ty: -22px; }
-.hv3-p2 { left: 78%;  top: 22%; color: #F35695; --d: 9s;  --del: 0.7s; --op: 0.6; --tx: 14px;  --ty: -18px; }
-.hv3-p3 { left: 12%;  top: 58%; color: #DDE255; --d: 8s;  --del: 0.8s; --op: 0.5; --tx: -16px; --ty: -28px; }
-.hv3-p4 { left: 84%;  top: 62%; color: #F98805; --d: 10s; --del: 0.9s; --op: 0.6; --tx: 18px;  --ty: -24px; }
-.hv3-p5 { left: 50%;  top: 8%;  color: #F35695; --d: 6s;  --del: 0.65s;--op: 0.65;--tx: 0px;   --ty: -16px; }
-.hv3-p6 { left: 32%;  top: 78%; color: #DDE255; --d: 11s; --del: 0.95s;--op: 0.55;--tx: -12px; --ty: -32px; }
-.hv3-p7 { left: 68%;  top: 80%; color: #F35695; --d: 9s;  --del: 1.0s; --op: 0.5; --tx: 10px;  --ty: -26px; }
-.hv3-p8 { left: 90%;  top: 42%; color: #F98805; --d: 8.5s;--del: 0.85s;--op: 0.55;--tx: 16px;  --ty: -20px; }
+.hv3-p1 { left: 12%; top: 14%; --c: #F98805; --d: 8s;  --del: 0.6s; --op: 0.75; --tx: -10px; --ty: -22px; }
+.hv3-p2 { left: 82%; top: 18%; --c: #F35695; --d: 7s;  --del: 0.7s; --op: 0.7;  --tx: 14px;  --ty: -18px; }
+.hv3-p3 { left: 8%;  top: 64%; --c: #DDE255; --d: 9s;  --del: 0.8s; --op: 0.65; --tx: -16px; --ty: -28px; }
+.hv3-p4 { left: 84%; top: 68%; --c: #F98805; --d: 6s;  --del: 0.9s; --op: 0.7;  --tx: 18px;  --ty: -24px; }
+.hv3-p5 { left: 50%; top: 6%;  --c: #F35695; --d: 10s; --del: 0.65s;--op: 0.7;  --tx: 0px;   --ty: -18px; }
+.hv3-p6 { left: 92%; top: 44%; --c: #DDE255; --d: 8s;  --del: 0.75s;--op: 0.65; --tx: 14px;  --ty: -20px; }
 
 /* Avatar Pixar */
 .hv3-avatar-wrap {
   position: relative;
   z-index: 3;
-  width: 224px;
-  height: 224px;
+  width: 220px;
+  height: 220px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -763,20 +764,19 @@ button:disabled, .btn:disabled, .pv3-action-btn:disabled {
   to   { opacity: 1; transform: scale(1); }
 }
 .hv3-avatar {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  object-position: center;
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: center top;
+  display: block;
   filter:
-    drop-shadow(0 16px 28px rgba(249,136,5,0.28))
-    drop-shadow(0 -4px 22px rgba(243,86,149,0.18))
-    saturate(1.05) contrast(1.04);
-  -webkit-mask-image: radial-gradient(ellipse 85% 92% at 50% 48%, #000 62%, transparent 100%);
-          mask-image: radial-gradient(ellipse 85% 92% at 50% 48%, #000 62%, transparent 100%);
+    drop-shadow(0 20px 60px rgba(249,136,5,0.4))
+    saturate(1.05);
+  box-shadow: 0 20px 60px -20px rgba(249, 136, 5, 0.4);
 }
 .hv3-avatar-fallback,
 .hv3-avatar:not([src]) {
-  display: block;
   background: radial-gradient(circle at 45% 30%, #F35695 0%, #F98805 50%, transparent 80%),
               radial-gradient(circle at 60% 60%, #DDE255 0%, transparent 50%);
   position: relative;
@@ -1151,7 +1151,7 @@ button:disabled, .btn:disabled, .pv3-action-btn:disabled {
   width: 36px; height: 36px;
   border-radius: 50%;
   object-fit: cover;
-  object-position: center 25%;
+  object-position: center top;
   flex-shrink: 0;
   border: 1px solid rgba(255,255,255,0.1);
 }
@@ -7715,8 +7715,6 @@ body:not([data-tab="chat"]) .voice-status { display: none !important; }
           <span class="hv3-p hv3-p4"></span>
           <span class="hv3-p hv3-p5"></span>
           <span class="hv3-p hv3-p6"></span>
-          <span class="hv3-p hv3-p7"></span>
-          <span class="hv3-p hv3-p8"></span>
         </div>
         <div class="hv3-avatar-wrap">
           <img src="/avatar.jpg" alt="HIMA, ton coach" class="hv3-avatar" id="hv3-avatar"
@@ -26604,6 +26602,14 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
   }
 
   function renderInto(){
+    // FIX 4 : Si Home V3 actif, le défi est déjà dans le carrousel cards stories.
+    // On n'injecte PAS de slot supplémentaire en bas de #t-home.
+    if (window.SV2_FLAGS && window.SV2_FLAGS.homeV3) {
+      // Nettoyer un éventuel slot résiduel
+      var oldSlot = document.getElementById('w94-slot');
+      if (oldSlot && oldSlot.parentNode) oldSlot.parentNode.removeChild(oldSlot);
+      return;
+    }
     // Mount dans Tab Accueil (#t-home), après le header
     var host = document.querySelector('#t-home') ||
                document.querySelector('#t-accueil') ||
