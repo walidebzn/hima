@@ -1,27 +1,64 @@
 {
-  "name": "HIMA — Coach IA",
+  "name": "HIMA — Ton Coach Sportif IA",
   "short_name": "HIMA",
-  "description": "Ton coach sportif IA disponible 24h/24",
-  "start_url": "/",
+  "description": "Ton coach sportif IA disponible 24h/24. Programmes sur mesure, nutrition exacte, scanner repas.",
+  "start_url": "/?source=pwa",
+  "scope": "/",
   "display": "standalone",
+  "orientation": "portrait",
   "background_color": "#080810",
   "theme_color": "#080810",
-  "orientation": "portrait",
-  "scope": "/",
-  "lang": "fr",
+  "lang": "fr-FR",
+  "dir": "ltr",
   "categories": ["health", "fitness", "lifestyle"],
   "icons": [
     {
       "src": "/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
     },
     {
       "src": "/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
-  ]
+  ],
+  "shortcuts": [
+    {
+      "name": "Parler au coach",
+      "short_name": "Coach",
+      "description": "Discuter avec ton coach IA HIMA",
+      "url": "/?tab=chat",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Ma séance",
+      "short_name": "Séance",
+      "description": "Lancer la séance du jour",
+      "url": "/?tab=prog",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Ma nutrition",
+      "short_name": "Nutrition",
+      "description": "Suivre ma nutrition",
+      "url": "/?tab=nutr",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    }
+  ],
+  "prefer_related_applications": false
 }
