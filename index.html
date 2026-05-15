@@ -551,6 +551,635 @@ button:disabled, .btn:disabled, .pv3-action-btn:disabled {
   .h2-aura { width: 280px; height: 280px; }
   .h2-question { font-size: 20px; }
 }
+
+/* ════════════════════════════════════════════════════════
+   HOME V3 — Premium 2026 (Apple Fitness+ inspired)
+   Avatar Pixar central, gradient mesh, rings SVG, stories
+   ════════════════════════════════════════════════════════ */
+
+/* ── ROOT ── */
+.home-v3 {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  position: relative;
+  background: #050507;
+  scroll-behavior: smooth;
+}
+.home-v3::-webkit-scrollbar { display: none; }
+
+/* ── GRADIENT MESH ANIMÉ ── */
+.hv3-mesh {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 0;
+}
+.hv3-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.55;
+  will-change: transform;
+}
+.hv3-blob-1 {
+  width: 420px; height: 420px;
+  background: #F98805;
+  top: -120px; left: -120px;
+  animation: hv3Drift1 75s ease-in-out infinite alternate;
+}
+.hv3-blob-2 {
+  width: 360px; height: 360px;
+  background: #F35695;
+  top: 35%; right: -140px;
+  opacity: 0.45;
+  animation: hv3Drift2 90s ease-in-out infinite alternate;
+}
+.hv3-blob-3 {
+  width: 320px; height: 320px;
+  background: #DDE255;
+  bottom: -120px; left: 20%;
+  opacity: 0.18;
+  animation: hv3Drift3 110s ease-in-out infinite alternate;
+}
+@keyframes hv3Drift1 {
+  0%   { transform: translate(0, 0) scale(1); }
+  50%  { transform: translate(60px, 80px) scale(1.15); }
+  100% { transform: translate(-30px, 140px) scale(0.95); }
+}
+@keyframes hv3Drift2 {
+  0%   { transform: translate(0, 0) scale(1); }
+  50%  { transform: translate(-80px, -60px) scale(1.1); }
+  100% { transform: translate(40px, -120px) scale(0.9); }
+}
+@keyframes hv3Drift3 {
+  0%   { transform: translate(0, 0) scale(1); }
+  50%  { transform: translate(100px, -40px) scale(1.2); }
+  100% { transform: translate(-60px, -80px) scale(1); }
+}
+.hv3-grain {
+  position: absolute;
+  inset: -20px;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/></filter><rect width='100%25' height='100%25' filter='url(%23n)' opacity='0.6'/></svg>");
+  opacity: 0.08;
+  mix-blend-mode: overlay;
+  pointer-events: none;
+}
+
+/* ── HEADER ── */
+.hv3-header {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: calc(14px + env(safe-area-inset-top, 0px)) 22px 6px;
+  flex-shrink: 0;
+}
+.hv3-logo {
+  font-family: 'Bebas Neue', Impact, sans-serif;
+  font-size: 19px;
+  letter-spacing: 4px;
+  background: linear-gradient(120deg, #F98805 0%, #F35695 60%, #DDE255 130%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  text-shadow: 0 0 24px rgba(249,136,5,0.18);
+}
+.hv3-notif {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.08);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  color: rgba(240,240,255,0.7);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: transform .15s ease, background .15s;
+}
+.hv3-notif:active { transform: scale(0.92); }
+
+/* ── HERO AVATAR ── */
+.hv3-hero {
+  position: relative;
+  z-index: 1;
+  padding: 0 20px 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+/* Aura conic-gradient animée */
+.hv3-aura {
+  position: absolute;
+  top: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 320px;
+  height: 320px;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 0deg,
+    rgba(249,136,5,0.55) 0deg,
+    rgba(243,86,149,0.55) 90deg,
+    rgba(221,226,85,0.45) 180deg,
+    rgba(243,86,149,0.55) 270deg,
+    rgba(249,136,5,0.55) 360deg
+  );
+  filter: blur(40px);
+  opacity: 0.7;
+  animation: hv3AuraSpin 30s linear infinite, hv3AuraIntro 0.8s ease-out backwards;
+  animation-delay: 0s, 0.2s;
+  pointer-events: none;
+  z-index: 1;
+}
+@keyframes hv3AuraSpin {
+  from { transform: translateX(-50%) rotate(0deg); }
+  to   { transform: translateX(-50%) rotate(360deg); }
+}
+@keyframes hv3AuraIntro {
+  from { opacity: 0; transform: translateX(-50%) scale(0.4); }
+  to   { opacity: 0.7; transform: translateX(-50%) scale(1); }
+}
+
+/* Particules flottantes */
+.hv3-particles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+}
+.hv3-p {
+  position: absolute;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  opacity: 0;
+  box-shadow: 0 0 12px currentColor;
+  animation: hv3PFloat var(--d, 7s) ease-in-out infinite, hv3PFadeIn 0.6s ease-out forwards;
+  animation-delay: 0s, var(--del, 0s);
+}
+@keyframes hv3PFadeIn { from { opacity: 0; } to { opacity: var(--op, 0.7); } }
+@keyframes hv3PFloat {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(var(--tx, 0px), var(--ty, -20px)); }
+}
+.hv3-p1 { left: 18%;  top: 18%; color: #F98805; --d: 7s;  --del: 0.6s; --op: 0.7; --tx: -8px;  --ty: -22px; }
+.hv3-p2 { left: 78%;  top: 22%; color: #F35695; --d: 9s;  --del: 0.7s; --op: 0.6; --tx: 14px;  --ty: -18px; }
+.hv3-p3 { left: 12%;  top: 58%; color: #DDE255; --d: 8s;  --del: 0.8s; --op: 0.5; --tx: -16px; --ty: -28px; }
+.hv3-p4 { left: 84%;  top: 62%; color: #F98805; --d: 10s; --del: 0.9s; --op: 0.6; --tx: 18px;  --ty: -24px; }
+.hv3-p5 { left: 50%;  top: 8%;  color: #F35695; --d: 6s;  --del: 0.65s;--op: 0.65;--tx: 0px;   --ty: -16px; }
+.hv3-p6 { left: 32%;  top: 78%; color: #DDE255; --d: 11s; --del: 0.95s;--op: 0.55;--tx: -12px; --ty: -32px; }
+.hv3-p7 { left: 68%;  top: 80%; color: #F35695; --d: 9s;  --del: 1.0s; --op: 0.5; --tx: 10px;  --ty: -26px; }
+.hv3-p8 { left: 90%;  top: 42%; color: #F98805; --d: 8.5s;--del: 0.85s;--op: 0.55;--tx: 16px;  --ty: -20px; }
+
+/* Avatar Pixar */
+.hv3-avatar-wrap {
+  position: relative;
+  z-index: 3;
+  width: 224px;
+  height: 224px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 8px;
+  animation: hv3AvBreath 4s ease-in-out infinite, hv3AvIntro 0.7s cubic-bezier(0.34,1.56,0.64,1) backwards;
+  animation-delay: 0s, 0.4s;
+}
+@keyframes hv3AvBreath {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.025); }
+}
+@keyframes hv3AvIntro {
+  from { opacity: 0; transform: scale(0.7); }
+  to   { opacity: 1; transform: scale(1); }
+}
+.hv3-avatar {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+  filter:
+    drop-shadow(0 16px 28px rgba(249,136,5,0.28))
+    drop-shadow(0 -4px 22px rgba(243,86,149,0.18))
+    saturate(1.05) contrast(1.04);
+  -webkit-mask-image: radial-gradient(ellipse 85% 92% at 50% 48%, #000 62%, transparent 100%);
+          mask-image: radial-gradient(ellipse 85% 92% at 50% 48%, #000 62%, transparent 100%);
+}
+.hv3-avatar-fallback,
+.hv3-avatar:not([src]) {
+  display: block;
+  background: radial-gradient(circle at 45% 30%, #F35695 0%, #F98805 50%, transparent 80%),
+              radial-gradient(circle at 60% 60%, #DDE255 0%, transparent 50%);
+  position: relative;
+}
+.hv3-avatar-fallback::before {
+  content: 'HIMA';
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: 'Bebas Neue', Impact, sans-serif;
+  font-size: 56px;
+  letter-spacing: 4px;
+  color: #fff;
+  text-shadow: 0 4px 16px rgba(0,0,0,0.3);
+}
+
+/* Question coach compacte */
+.hv3-question-block {
+  position: relative;
+  z-index: 3;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin-top: 4px;
+  animation: hv3FadeUp 0.5s ease-out backwards;
+  animation-delay: 0.8s;
+}
+@keyframes hv3FadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.hv3-question {
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-size: 22px;
+  font-weight: 600;
+  text-align: center;
+  color: rgba(240,240,255,0.95);
+  margin: 0;
+  line-height: 1.25;
+  max-width: 340px;
+  letter-spacing: -0.2px;
+}
+.hv3-chips {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.hv3-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 11px 16px;
+  height: 44px;
+  border-radius: 99px;
+  background: rgba(255,255,255,0.06);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255,255,255,0.09);
+  color: #F0F0FF;
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.15s, background 0.15s, border-color 0.15s;
+  -webkit-tap-highlight-color: transparent;
+  animation: hv3FadeUp 0.4s ease-out backwards;
+}
+.hv3-chip:nth-child(1) { animation-delay: 0.9s; }
+.hv3-chip:nth-child(2) { animation-delay: 1.0s; }
+.hv3-chip:nth-child(3) { animation-delay: 1.1s; }
+.hv3-chip:active { transform: scale(0.95); }
+.hv3-chip:hover, .hv3-chip:focus-visible {
+  background: rgba(255,255,255,0.1);
+  border-color: rgba(249,136,5,0.4);
+}
+.hv3-chip-ico { font-size: 16px; line-height: 1; }
+
+/* ── STATS RINGS ── */
+.hv3-rings {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  gap: 10px;
+  padding: 20px 16px 12px;
+  flex-shrink: 0;
+}
+.hv3-ring-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 14px 8px 12px;
+  background: rgba(255,255,255,0.045);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 22px;
+  position: relative;
+  animation: hv3FadeUp 0.5s ease-out backwards;
+  animation-delay: 1.2s;
+}
+.hv3-ring-card:nth-child(2) { animation-delay: 1.28s; }
+.hv3-ring-card:nth-child(3) { animation-delay: 1.36s; }
+.hv3-ring-svg {
+  width: 64px;
+  height: 64px;
+  display: block;
+}
+.hv3-ring-svg circle {
+  transition: stroke-dashoffset 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.hv3-ring-center {
+  position: absolute;
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 64px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+.hv3-ring-val {
+  font-family: 'Bebas Neue', Impact, sans-serif;
+  font-size: 22px;
+  line-height: 1;
+  color: #F0F0FF;
+  letter-spacing: 0.5px;
+}
+.hv3-ring-suff {
+  font-size: 12px;
+  opacity: 0.65;
+  margin-left: 1px;
+}
+.hv3-ring-lbl {
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  color: rgba(240,240,255,0.62);
+  margin-top: 8px;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+}
+
+/* ── STORIES SWIPABLES ── */
+.hv3-stories {
+  position: relative;
+  z-index: 1;
+  padding: 4px 0 18px;
+  flex-shrink: 0;
+}
+.hv3-stories-track {
+  display: flex;
+  gap: 12px;
+  padding: 0 16px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-padding: 16px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  touch-action: pan-x pan-y;
+}
+.hv3-stories-track::-webkit-scrollbar { display: none; }
+
+.hv3-story {
+  flex: 0 0 85vw;
+  max-width: 340px;
+  min-height: 200px;
+  scroll-snap-align: center;
+  padding: 22px;
+  border-radius: 28px;
+  background: linear-gradient(135deg, rgba(255,255,255,0.07) 0%, rgba(255,255,255,0.02) 100%);
+  backdrop-filter: blur(36px);
+  -webkit-backdrop-filter: blur(36px);
+  border: 1px solid rgba(255,255,255,0.09);
+  box-shadow: 0 20px 60px -20px rgba(0,0,0,0.55);
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.15s, border-color 0.2s;
+  animation: hv3FadeUp 0.5s ease-out backwards;
+}
+.hv3-story:nth-child(1) { animation-delay: 1.45s; }
+.hv3-story:nth-child(2) { animation-delay: 1.53s; }
+.hv3-story:nth-child(3) { animation-delay: 1.61s; }
+.hv3-story:nth-child(4) { animation-delay: 1.69s; }
+.hv3-story:nth-child(5) { animation-delay: 1.77s; }
+.hv3-story:nth-child(6) { animation-delay: 1.85s; }
+.hv3-story:nth-child(7) { animation-delay: 1.93s; }
+.hv3-story:active { transform: scale(0.985); }
+.hv3-story:hover { border-color: rgba(249,136,5,0.3); }
+
+/* Glow accent (couleur dominante par card) */
+.hv3-story::before {
+  content: '';
+  position: absolute;
+  top: -40px;
+  right: -40px;
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  background: var(--story-glow, #F98805);
+  opacity: 0.18;
+  filter: blur(36px);
+  pointer-events: none;
+  transition: opacity 0.3s;
+}
+.hv3-story:hover::before { opacity: 0.28; }
+
+.hv3-story-ico {
+  width: 44px; height: 44px;
+  border-radius: 14px;
+  background: rgba(255,255,255,0.08);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+  margin-bottom: 14px;
+  position: relative;
+  z-index: 2;
+}
+.hv3-story-title {
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-size: 17px;
+  font-weight: 700;
+  color: #F0F0FF;
+  margin-bottom: 2px;
+  position: relative;
+  z-index: 2;
+  letter-spacing: -0.2px;
+}
+.hv3-story-sub {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 13.5px;
+  color: rgba(240,240,255,0.65);
+  line-height: 1.4;
+  flex-grow: 1;
+  position: relative;
+  z-index: 2;
+}
+.hv3-story-value {
+  font-family: 'Bebas Neue', Impact, sans-serif;
+  font-size: 36px;
+  line-height: 1;
+  color: #F0F0FF;
+  letter-spacing: 0.5px;
+  margin: 8px 0 4px;
+  position: relative;
+  z-index: 2;
+}
+.hv3-story-value-suff {
+  font-size: 14px;
+  opacity: 0.55;
+  margin-left: 4px;
+  font-family: 'Space Grotesk', sans-serif;
+  letter-spacing: 0;
+}
+.hv3-story-bar {
+  height: 6px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-top: 10px;
+  position: relative;
+  z-index: 2;
+}
+.hv3-story-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #F98805, #F35695);
+  border-radius: 3px;
+  transition: width 0.8s cubic-bezier(0.4,0,0.2,1);
+}
+.hv3-story-cta {
+  margin-top: auto;
+  align-self: flex-start;
+  padding: 11px 18px;
+  min-height: 42px;
+  border-radius: 99px;
+  background: linear-gradient(135deg, #F98805, #F35695);
+  color: #fff;
+  border: none;
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  letter-spacing: 0.2px;
+  position: relative;
+  z-index: 2;
+  box-shadow: 0 8px 24px -8px rgba(249,136,5,0.5);
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.12s;
+}
+.hv3-story-cta:active { transform: scale(0.96); }
+.hv3-story-cta-ghost {
+  background: rgba(255,255,255,0.08);
+  color: #F0F0FF;
+  border: 1px solid rgba(255,255,255,0.12);
+  box-shadow: none;
+}
+
+/* Mini macro bars dans la card food */
+.hv3-mini-macros {
+  display: flex;
+  gap: 6px;
+  margin-top: 10px;
+  position: relative;
+  z-index: 2;
+}
+.hv3-mini-mb {
+  flex: 1;
+  height: 4px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.hv3-mini-mb-fill {
+  height: 100%;
+  background: #F98805;
+  border-radius: 2px;
+  transition: width 0.8s ease;
+}
+.hv3-mini-mb-fill.gluc { background: #DDE255; }
+.hv3-mini-mb-fill.lip { background: #F35695; }
+
+/* Pagination dots */
+.hv3-stories-dots {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 14px;
+}
+.hv3-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(240,240,255,0.18);
+  transition: width 0.3s, background 0.3s;
+}
+.hv3-dot.active {
+  width: 22px;
+  border-radius: 3px;
+  background: #DDE255;
+  box-shadow: 0 0 10px rgba(221,226,85,0.5);
+}
+
+/* ── PHRASE COACH SIGNATURE ── */
+.hv3-signature {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+  margin: 0 16px 14px;
+  background: linear-gradient(135deg, rgba(249,136,5,0.06), rgba(243,86,149,0.04));
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(249,136,5,0.12);
+  border-radius: 20px;
+  animation: hv3FadeUp 0.5s ease-out backwards;
+  animation-delay: 2.0s;
+}
+.hv3-sig-av {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: center 25%;
+  flex-shrink: 0;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+.hv3-sig-text {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 14.5px;
+  color: rgba(240,240,255,0.82);
+  font-style: italic;
+  line-height: 1.45;
+  letter-spacing: 0.1px;
+}
+
+/* ── REDUCED MOTION ── */
+@media (prefers-reduced-motion: reduce) {
+  .hv3-blob, .hv3-aura, .hv3-p, .hv3-avatar-wrap {
+    animation: none !important;
+  }
+}
+
+/* ── 380px ── */
+@media (max-width: 380px) {
+  .hv3-avatar-wrap { width: 188px; height: 188px; }
+  .hv3-aura { width: 268px; height: 268px; }
+  .hv3-question { font-size: 20px; }
+  .hv3-story { flex-basis: 88vw; }
+  .hv3-ring-svg { width: 56px; height: 56px; }
+  .hv3-ring-center { width: 56px; height: 56px; }
+}
 </style>
 
 <style>
@@ -7052,17 +7681,149 @@ body:not([data-tab="chat"]) .voice-status { display: none !important; }
   <div class="atab on" id="t-home">
 
     <!-- ════════════════════════════════════════════════════════
-         HOME V2 — Refonte 2026-05-15
-         Kill switch: window.SV2_FLAGS.homeV2 = false → bascule sur V1
+         HOME V3 — Apple Fitness+ level
+         Kill switch: window.SV2_FLAGS.homeV3 = false → bascule V2/V1
          ════════════════════════════════════════════════════════ -->
-    <div class="home-v2" id="home-v2">
+    <div class="home-v3" id="home-v3">
+
+      <!-- GRADIENT MESH BACKGROUND animé -->
+      <div class="hv3-mesh" aria-hidden="true">
+        <div class="hv3-blob hv3-blob-1"></div>
+        <div class="hv3-blob hv3-blob-2"></div>
+        <div class="hv3-blob hv3-blob-3"></div>
+        <div class="hv3-grain"></div>
+      </div>
+
+      <!-- HEADER -->
+      <header class="hv3-header">
+        <div class="hv3-logo">HIMA</div>
+        <button class="hv3-notif" id="hv3-notif" onclick="if(window.HIMA_W4&amp;&amp;HIMA_W4.openModal)HIMA_W4.openModal()" aria-label="Notifications">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+          </svg>
+        </button>
+      </header>
+
+      <!-- HERO AVATAR PIXAR -->
+      <section class="hv3-hero">
+        <div class="hv3-aura" aria-hidden="true"></div>
+        <div class="hv3-particles" aria-hidden="true">
+          <span class="hv3-p hv3-p1"></span>
+          <span class="hv3-p hv3-p2"></span>
+          <span class="hv3-p hv3-p3"></span>
+          <span class="hv3-p hv3-p4"></span>
+          <span class="hv3-p hv3-p5"></span>
+          <span class="hv3-p hv3-p6"></span>
+          <span class="hv3-p hv3-p7"></span>
+          <span class="hv3-p hv3-p8"></span>
+        </div>
+        <div class="hv3-avatar-wrap">
+          <img src="/avatar.jpg" alt="HIMA, ton coach" class="hv3-avatar" id="hv3-avatar"
+               onerror="this.onerror=null;this.classList.add('hv3-avatar-fallback');this.removeAttribute('src');console.warn('[HOME V3] /avatar.jpg non trouvé sur le serveur. Upload-le à la racine Vercel pour activer l\'avatar Pixar.');">
+        </div>
+
+        <!-- Question coach compacte -->
+        <div class="hv3-question-block">
+          <h1 class="hv3-question" id="hv3-question">Comment a été ta journée&nbsp;?</h1>
+          <div class="hv3-chips">
+            <button class="hv3-chip" onclick="hv3ChipTap('forme')" aria-label="En forme">
+              <span class="hv3-chip-ico">💪</span>
+              <span class="hv3-chip-txt">En forme</span>
+            </button>
+            <button class="hv3-chip" onclick="hv3ChipTap('fatigue')" aria-label="Fatigué">
+              <span class="hv3-chip-ico">😴</span>
+              <span class="hv3-chip-txt">Fatigué</span>
+            </button>
+            <button class="hv3-chip" onclick="hv3ChipTap('motive')" aria-label="Motivé">
+              <span class="hv3-chip-ico">🔥</span>
+              <span class="hv3-chip-txt">Motivé</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- STATS DU JOUR en RINGS SVG -->
+      <section class="hv3-rings">
+        <div class="hv3-ring-card" id="hv3-ring-forme-card">
+          <svg class="hv3-ring-svg" viewBox="0 0 80 80">
+            <circle cx="40" cy="40" r="32" fill="none" stroke="rgba(240,240,255,0.08)" stroke-width="6"/>
+            <circle id="hv3-ring-forme" cx="40" cy="40" r="32" fill="none" stroke="url(#hv3GradOP)" stroke-width="6"
+                    stroke-linecap="round" stroke-dasharray="201" stroke-dashoffset="201" transform="rotate(-90 40 40)"/>
+            <defs>
+              <linearGradient id="hv3GradOP" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#F98805"/>
+                <stop offset="100%" stop-color="#F35695"/>
+              </linearGradient>
+            </defs>
+          </svg>
+          <div class="hv3-ring-center">
+            <div class="hv3-ring-val" id="hv3-forme-val">—</div>
+          </div>
+          <div class="hv3-ring-lbl">Forme</div>
+        </div>
+
+        <div class="hv3-ring-card">
+          <svg class="hv3-ring-svg" viewBox="0 0 80 80">
+            <circle cx="40" cy="40" r="32" fill="none" stroke="rgba(240,240,255,0.08)" stroke-width="6"/>
+            <circle id="hv3-ring-serie" cx="40" cy="40" r="32" fill="none" stroke="url(#hv3GradLime)" stroke-width="6"
+                    stroke-linecap="round" stroke-dasharray="201" stroke-dashoffset="201" transform="rotate(-90 40 40)"/>
+            <defs>
+              <linearGradient id="hv3GradLime" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#DDE255"/>
+                <stop offset="100%" stop-color="#F98805"/>
+              </linearGradient>
+            </defs>
+          </svg>
+          <div class="hv3-ring-center">
+            <div class="hv3-ring-val"><span id="hv3-serie-val">0</span><span class="hv3-ring-suff">j</span></div>
+          </div>
+          <div class="hv3-ring-lbl">Série</div>
+        </div>
+
+        <div class="hv3-ring-card">
+          <svg class="hv3-ring-svg" viewBox="0 0 80 80">
+            <circle cx="40" cy="40" r="32" fill="none" stroke="rgba(240,240,255,0.08)" stroke-width="6"/>
+            <circle id="hv3-ring-energ" cx="40" cy="40" r="32" fill="none" stroke="url(#hv3GradBlue)" stroke-width="6"
+                    stroke-linecap="round" stroke-dasharray="201" stroke-dashoffset="201" transform="rotate(-90 40 40)"/>
+            <defs>
+              <linearGradient id="hv3GradBlue" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#3b82f6"/>
+                <stop offset="100%" stop-color="#DDE255"/>
+              </linearGradient>
+            </defs>
+          </svg>
+          <div class="hv3-ring-center">
+            <div class="hv3-ring-val" id="hv3-energ-val">—</div>
+          </div>
+          <div class="hv3-ring-lbl">Énergie</div>
+        </div>
+      </section>
+
+      <!-- CARDS STORIES SWIPABLES -->
+      <section class="hv3-stories">
+        <div class="hv3-stories-track" id="hv3-stories-track"></div>
+        <div class="hv3-stories-dots" id="hv3-stories-dots"></div>
+      </section>
+
+      <!-- PHRASE COACH SIGNATURE -->
+      <section class="hv3-signature">
+        <img src="/avatar.jpg" class="hv3-sig-av" alt="">
+        <div class="hv3-sig-text" id="hv3-signature">La régularité bat l'intensité.</div>
+      </section>
+
+      <div style="height:96px"></div>
+    </div>
+
+    <!-- HOME V2 (fallback) — caché par défaut -->
+    <div class="home-v2" id="home-v2" style="display:none">
 
       <!-- HEADER MINIMAL -->
       <header class="h2-header">
         <div class="h2-logo-wrap">
           <span class="h2-logo">HIMA</span>
         </div>
-        <button class="h2-notif" id="h2-notif" onclick="if(window.HIMA_W4&&HIMA_W4.openModal)HIMA_W4.openModal()" aria-label="Notifications">
+        <button class="h2-notif" id="h2-notif" onclick="if(window.HIMA_W4&amp;&amp;HIMA_W4.openModal)HIMA_W4.openModal()" aria-label="Notifications">
           <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
             <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
@@ -11151,7 +11912,7 @@ function afterAuthReady() {
 function authGoogle() {
   if (!firebaseReady || !auth) {
     U.email = 'demo@google.com';
-    U.prenom = 'Demo';
+    // Pas de prénom par défaut : sera capté à l'onboarding
     afterAuth();
     return;
   }
@@ -12907,6 +13668,350 @@ function el(id){ return document.getElementById(id); }
 // HOME V2 — renderHomeV2() + handlers
 // Empty states motivants partout. Jamais de "Chargement...".
 // ════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════════
+// HOME V3 — Apple Fitness+ level
+// Avatar Pixar, gradient mesh, rings SVG, stories glassmorphism
+// Kill switch: window.SV2_FLAGS.homeV3 (true par défaut)
+// ════════════════════════════════════════════════════════
+
+// Pool de 32 phrases coach signature qui tournent
+var HV3_SIGNATURES = [
+  "La régularité bat l'intensité.",
+  "Tu n'es pas obligé d'être parfait, juste constant.",
+  "Le sommeil construit autant que la salle.",
+  "Tes progrès ne se voient pas tous les jours, mais ils sont là.",
+  "Ton meilleur entraînement est celui que tu fais.",
+  "Un jour à la fois, sans pression.",
+  "Le corps suit le cerveau. Convaincs-toi, le reste suit.",
+  "Petits efforts, grands résultats. Tous les jours.",
+  "Ce que tu fais aujourd'hui décide de qui tu seras dans 3 mois.",
+  "L'excellence est une habitude, pas un événement.",
+  "Mieux vaut 20 minutes que rien.",
+  "Repose-toi quand il faut. C'est aussi du travail.",
+  "Ton seul adversaire, c'est toi d'hier.",
+  "Mange comme un athlète, dors comme un bébé.",
+  "Les abdos se font à la cuisine.",
+  "Pas envie ? Fais quand même. Tu me remercieras.",
+  "Chaque rep compte. Même la dernière qui pique.",
+  "La force vient de la régularité, pas de l'intensité folle.",
+  "Tu ne perds rien quand tu te reposes. Tu construis.",
+  "L'eau, c'est 60 % de toi. Bois.",
+  "Confiance > confort. Toujours.",
+  "Tu vaux plus que tes excuses.",
+  "Le bon programme, c'est celui que tu suis.",
+  "Bouge, transpire, sois fier. Répète.",
+  "Ton corps t'écoute. Parle-lui bien.",
+  "Chaque séance est un dépôt sur ton compte santé.",
+  "Personne ne se transforme en une semaine. Patience.",
+  "Sois plus fort que ton excuse préférée.",
+  "Le progrès est silencieux. Continue.",
+  "Pas de magie, juste du travail régulier.",
+  "Tu n'as pas besoin de motivation, tu as besoin de discipline.",
+  "Ferme le téléphone. Bouge. Reviens fier."
+];
+
+// Récupère le vrai prénom — JAMAIS "Demo"
+function hv3GetPrenom() {
+  var U = window.U || {};
+  // 1) U.prenom si défini et pas "Demo"
+  if (U.prenom && U.prenom !== 'Demo' && U.prenom.length > 0) return U.prenom;
+  // 2) Firebase displayName
+  try {
+    if (window.auth && window.auth.currentUser && window.auth.currentUser.displayName) {
+      var dn = window.auth.currentUser.displayName.trim();
+      if (dn && dn !== 'Demo') {
+        // Premier mot du displayName
+        var first = dn.split(' ')[0];
+        if (first.length > 0) return first;
+      }
+    }
+  } catch(e){}
+  // 3) Fallback neutre
+  return 'champion';
+}
+
+function renderHomeV3() {
+  var U = window.U || {};
+  var pn = hv3GetPrenom();
+  var sk = U.streak || 0;
+  var h = new Date().getHours();
+
+  // ── QUESTION
+  var qEl = document.getElementById('hv3-question');
+  if (qEl) {
+    var hasName = pn !== 'champion';
+    var qByHour;
+    if (h < 5)        qByHour = hasName ? "Encore debout, " + pn + " ? Récupère bien." : "Encore debout ? Récupère bien.";
+    else if (h < 11)  qByHour = hasName ? "Comment tu te sens ce matin, " + pn + " ?" : "Comment tu te sens ce matin ?";
+    else if (h < 14)  qByHour = hasName ? "Bien lancé sur ta journée, " + pn + " ?" : "Bien lancé sur ta journée ?";
+    else if (h < 18)  qByHour = hasName ? "On termine fort, " + pn + " ?" : "On termine fort ?";
+    else if (h < 22)  qByHour = hasName ? "Comment a été ta journée, " + pn + " ?" : "Comment a été ta journée ?";
+    else              qByHour = hasName ? "Bilan rapide avant de dormir, " + pn + " ?" : "Bilan rapide avant de dormir ?";
+    qEl.textContent = qByHour;
+  }
+
+  // ── RINGS
+  // Forme du jour (calcul réel ou —)
+  var rd = (typeof calcReadiness === 'function') ? calcReadiness() : 0;
+  var rdEl = document.getElementById('hv3-forme-val');
+  if (rdEl) rdEl.textContent = (typeof rd === 'number' && rd > 0) ? rd : '—';
+  // Anim ring (circumference 201)
+  setTimeout(function(){
+    var ring = document.getElementById('hv3-ring-forme');
+    if (ring) {
+      var pct = Math.min(100, Math.max(0, rd || 0));
+      ring.style.strokeDashoffset = (201 - (201 * pct / 100));
+    }
+  }, 200);
+
+  // Série
+  var srEl = document.getElementById('hv3-serie-val');
+  if (srEl) srEl.textContent = sk;
+  setTimeout(function(){
+    var ring = document.getElementById('hv3-ring-serie');
+    if (ring) {
+      // Palier suivant : 7/14/30/90
+      var palier = sk < 7 ? 7 : sk < 14 ? 14 : sk < 30 ? 30 : 90;
+      var pct = Math.min(100, (sk / palier) * 100);
+      ring.style.strokeDashoffset = (201 - (201 * pct / 100));
+    }
+  }, 300);
+
+  // Énergie
+  var sleep = parseFloat(U.heuresSommeil || 0);
+  var stress = parseFloat(U.stress || 0);
+  var enEl = document.getElementById('hv3-energ-val');
+  var enPct = 0;
+  if (sleep > 0 || stress > 0) {
+    enPct = Math.max(0, Math.min(10, (sleep || 7) - (stress || 5) * 0.4 + 4));
+    if (enEl) enEl.innerHTML = Math.round(enPct) + '<span class="hv3-ring-suff">/10</span>';
+  } else {
+    if (enEl) enEl.textContent = '—';
+  }
+  setTimeout(function(){
+    var ring = document.getElementById('hv3-ring-energ');
+    if (ring) {
+      ring.style.strokeDashoffset = (201 - (201 * (enPct * 10) / 100));
+    }
+  }, 400);
+
+  // ── SIGNATURE
+  var sigEl = document.getElementById('hv3-signature');
+  if (sigEl) {
+    var dayIdx = Math.floor(Date.now() / 86400000) % HV3_SIGNATURES.length;
+    sigEl.textContent = HV3_SIGNATURES[dayIdx];
+  }
+
+  // ── STORIES
+  renderHomeV3Stories();
+}
+
+function renderHomeV3Stories() {
+  var U = window.U || {};
+  var track = document.getElementById('hv3-stories-track');
+  if (!track) return;
+
+  // Données
+  var seance = (typeof getSeanceDuJour === 'function') ? getSeanceDuJour() : null;
+  var hasProg = seance && seance.nom && seance.nom !== '—' && seance.nom.indexOf('Repos') === -1;
+  var macros = (typeof calcM === 'function') ? calcM() : { kcal: 2000, prot: 130, gluc: 200, lip: 65 };
+  var dm = U.dailyMacros || { kcal: 0, prot: 0, gluc: 0, lip: 0, meals: 0 };
+  var hasFood = (dm.meals || 0) > 0;
+  var hydroTarget = Math.round(((U.poids || 75) * 35) / 250);
+  var hydroNow = U.hydroToday || 0;
+  var hydroPct = Math.min(100, Math.round((hydroNow / Math.max(hydroTarget, 1)) * 100));
+  var hasSeance = (U.seances || 0) > 0;
+  var pAct = parseFloat(U.poids || 0);
+  var pCible = parseFloat(U.poidsTarget || pAct);
+  var hasObj = pAct > 0 && pCible > 0 && Math.abs(pAct - pCible) >= 0.5;
+  var prList = (U.perfLog || []);
+  var defiData = U.weekDefi || { name: '2 recettes', desc: 'Cuisiner 2 recettes HIMA cette semaine', progress: 0, target: 2 };
+  var defiPct = Math.min(100, Math.round((defiData.progress / Math.max(defiData.target, 1)) * 100));
+
+  // ─ Card 1 : Séance
+  var c1 = hasProg
+    ? '<div class="hv3-story" style="--story-glow:#F98805" onclick="switchTab(\'t-prog\')">' +
+        '<div class="hv3-story-ico">🏋️</div>' +
+        '<div class="hv3-story-title">Ta séance du jour</div>' +
+        '<div class="hv3-story-sub">' + hv3Esc(seance.nom) + '<br>' + ((U.tps || 60) + ' min · ' + (U.lieu || 'salle')) + '</div>' +
+        '<button class="hv3-story-cta" onclick="event.stopPropagation();switchTab(\'t-prog\')">Commencer →</button>' +
+      '</div>'
+    : '<div class="hv3-story" style="--story-glow:#F98805" onclick="switchTab(\'t-prog\')">' +
+        '<div class="hv3-story-ico">🏋️</div>' +
+        '<div class="hv3-story-title">Première séance</div>' +
+        '<div class="hv3-story-sub">Choisis ton mode, on s\'occupe du reste.</div>' +
+        '<button class="hv3-story-cta" onclick="event.stopPropagation();switchTab(\'t-prog\')">Choisir mon mode →</button>' +
+      '</div>';
+
+  // ─ Card 2 : Food
+  var c2;
+  if (hasFood) {
+    var pctK = Math.min(100, Math.round((dm.kcal / Math.max(macros.kcal, 1)) * 100));
+    var pctP = Math.min(100, Math.round((dm.prot / Math.max(macros.prot, 1)) * 100));
+    var pctG = Math.min(100, Math.round((dm.gluc / Math.max(macros.gluc, 1)) * 100));
+    var pctL = Math.min(100, Math.round((dm.lip  / Math.max(macros.lip, 1)) * 100));
+    c2 = '<div class="hv3-story" style="--story-glow:#DDE255" onclick="switchTab(\'t-nutr\')">' +
+      '<div class="hv3-story-ico">🥗</div>' +
+      '<div class="hv3-story-title">Ta journée food</div>' +
+      '<div class="hv3-story-value">' + dm.kcal + '<span class="hv3-story-value-suff">/ ' + macros.kcal + ' kcal</span></div>' +
+      '<div class="hv3-story-bar"><div class="hv3-story-bar-fill" style="width:' + pctK + '%"></div></div>' +
+      '<div class="hv3-mini-macros">' +
+        '<div class="hv3-mini-mb"><div class="hv3-mini-mb-fill" style="width:' + pctP + '%"></div></div>' +
+        '<div class="hv3-mini-mb"><div class="hv3-mini-mb-fill gluc" style="width:' + pctG + '%"></div></div>' +
+        '<div class="hv3-mini-mb"><div class="hv3-mini-mb-fill lip" style="width:' + pctL + '%"></div></div>' +
+      '</div>' +
+      '<button class="hv3-story-cta hv3-story-cta-ghost" onclick="event.stopPropagation();switchTab(\'t-nutr\')">Ajouter un repas</button>' +
+    '</div>';
+  } else {
+    c2 = '<div class="hv3-story" style="--story-glow:#DDE255" onclick="switchTab(\'t-nutr\')">' +
+      '<div class="hv3-story-ico">🥗</div>' +
+      '<div class="hv3-story-title">Ta journée food</div>' +
+      '<div class="hv3-story-sub">Ajoute ton premier repas. Photo, scan ou écris-le.</div>' +
+      '<button class="hv3-story-cta" onclick="event.stopPropagation();switchTab(\'t-nutr\')">Ajouter un repas →</button>' +
+    '</div>';
+  }
+
+  // ─ Card 3 : Hydratation
+  var c3 = '<div class="hv3-story" style="--story-glow:#3b82f6">' +
+    '<div class="hv3-story-ico">💧</div>' +
+    '<div class="hv3-story-title">Hydratation</div>' +
+    '<div class="hv3-story-value">' + hydroNow + '<span class="hv3-story-value-suff">/ ' + hydroTarget + ' verres</span></div>' +
+    '<div class="hv3-story-bar"><div class="hv3-story-bar-fill" style="width:' + hydroPct + '%;background:linear-gradient(90deg,#3b82f6,#06b6d4)"></div></div>' +
+    '<button class="hv3-story-cta" style="background:linear-gradient(135deg,#3b82f6,#06b6d4);box-shadow:0 8px 24px -8px rgba(59,130,246,0.5)" onclick="hv3AddWater()">+ Un verre</button>' +
+  '</div>';
+
+  // ─ Card 4 : Récup
+  var c4 = hasSeance
+    ? '<div class="hv3-story" style="--story-glow:#F35695" onclick="switchTab(\'t-corps\')">' +
+        '<div class="hv3-story-ico">🧠</div>' +
+        '<div class="hv3-story-title">Récup musculaire</div>' +
+        '<div class="hv3-story-sub">Tous récupérés. Tu peux taper fort aujourd\'hui.</div>' +
+        '<button class="hv3-story-cta hv3-story-cta-ghost" onclick="event.stopPropagation();switchTab(\'t-corps\')">Voir détails →</button>' +
+      '</div>'
+    : '<div class="hv3-story" style="--story-glow:#F35695" onclick="switchTab(\'t-prog\')">' +
+        '<div class="hv3-story-ico">🧠</div>' +
+        '<div class="hv3-story-title">Récup musculaire</div>' +
+        '<div class="hv3-story-sub">Première séance = première donnée. Ton corps va parler.</div>' +
+        '<button class="hv3-story-cta" onclick="event.stopPropagation();switchTab(\'t-prog\')">Commencer →</button>' +
+      '</div>';
+
+  // ─ Card 5 : Objectif
+  var c5;
+  if (hasObj) {
+    var dirIco = pCible < pAct ? '📉' : '📈';
+    var diff = Math.abs(pAct - pCible).toFixed(1);
+    c5 = '<div class="hv3-story" style="--story-glow:#DDE255" onclick="switchTab(\'t-corps\')">' +
+      '<div class="hv3-story-ico">' + dirIco + '</div>' +
+      '<div class="hv3-story-title">Ton objectif</div>' +
+      '<div class="hv3-story-value">' + pAct + '<span class="hv3-story-value-suff">kg</span></div>' +
+      '<div class="hv3-story-sub">Cible : ' + pCible + 'kg · Encore ' + diff + 'kg</div>' +
+      '<button class="hv3-story-cta hv3-story-cta-ghost" onclick="event.stopPropagation();switchTab(\'t-corps\')">Suivre →</button>' +
+    '</div>';
+  } else {
+    c5 = '<div class="hv3-story" style="--story-glow:#DDE255" onclick="switchTab(\'t-corps\')">' +
+      '<div class="hv3-story-ico">🎯</div>' +
+      '<div class="hv3-story-title">Ton objectif</div>' +
+      '<div class="hv3-story-sub">Pèse-toi une fois pour démarrer le suivi. 5 secondes.</div>' +
+      '<button class="hv3-story-cta" onclick="event.stopPropagation();switchTab(\'t-corps\')">Me peser →</button>' +
+    '</div>';
+  }
+
+  // ─ Card 6 : Records
+  var c6;
+  if (prList.length > 0) {
+    var prTop = prList.slice(-3).reverse().map(function(p) {
+      return '<div style="font-size:13px;color:rgba(240,240,255,0.85);padding:3px 0">' + hv3Esc(p.exo || '') + ' · <strong>' + (p.kg || '?') + 'kg × ' + (p.reps || '?') + '</strong></div>';
+    }).join('');
+    c6 = '<div class="hv3-story" style="--story-glow:#F98805" onclick="switchTab(\'t-prog\')">' +
+      '<div class="hv3-story-ico">🏆</div>' +
+      '<div class="hv3-story-title">Tes records perso</div>' +
+      '<div class="hv3-story-sub" style="margin-top:4px">' + prTop + '</div>' +
+    '</div>';
+  } else {
+    c6 = '<div class="hv3-story" style="--story-glow:#F98805" onclick="switchTab(\'t-prog\')">' +
+      '<div class="hv3-story-ico">🏆</div>' +
+      '<div class="hv3-story-title">Tes records perso</div>' +
+      '<div class="hv3-story-sub">Ton premier record arrive bientôt. Il faut juste commencer.</div>' +
+      '<button class="hv3-story-cta" onclick="event.stopPropagation();switchTab(\'t-prog\')">Démarrer →</button>' +
+    '</div>';
+  }
+
+  // ─ Card 7 : Défi semaine (UNIQUE)
+  var c7 = '<div class="hv3-story" style="--story-glow:#F35695">' +
+    '<div class="hv3-story-ico">🎁</div>' +
+    '<div class="hv3-story-title">Défi de la semaine</div>' +
+    '<div class="hv3-story-sub"><strong style="color:#F0F0FF">' + hv3Esc(defiData.name) + '</strong><br>' + hv3Esc(defiData.desc) + '</div>' +
+    '<div class="hv3-story-bar"><div class="hv3-story-bar-fill" style="width:' + defiPct + '%"></div></div>' +
+    '<div style="font-size:11px;color:rgba(240,240,255,0.55);margin-top:6px;position:relative;z-index:2">' + defiData.progress + ' / ' + defiData.target + ' · ' + defiPct + '%</div>' +
+  '</div>';
+
+  var cards = [c1, c2, c3, c4, c5, c6, c7];
+  track.innerHTML = cards.join('');
+
+  // Dots
+  var dotsEl = document.getElementById('hv3-stories-dots');
+  if (dotsEl) {
+    dotsEl.innerHTML = cards.map(function(_, i) {
+      return '<div class="hv3-dot' + (i === 0 ? ' active' : '') + '"></div>';
+    }).join('');
+  }
+
+  // Sync dots au scroll
+  if (!track._hv3Bound) {
+    track._hv3Bound = true;
+    var ticking = false;
+    track.addEventListener('scroll', function() {
+      if (!ticking) {
+        ticking = true;
+        requestAnimationFrame(function() {
+          var cardW = track.scrollWidth / cards.length;
+          var idx = Math.round(track.scrollLeft / cardW);
+          var dots = dotsEl ? dotsEl.querySelectorAll('.hv3-dot') : [];
+          dots.forEach(function(d, i) { d.classList.toggle('active', i === idx); });
+          ticking = false;
+        });
+      }
+    }, { passive: true });
+  }
+}
+
+// ── Helpers Home V3 ──
+function hv3Esc(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, function(c) {
+    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+  });
+}
+
+window.hv3ChipTap = function(mood) {
+  var msgMap = {
+    forme:   'Je me sens en forme aujourd\'hui, prêt à pousser fort.',
+    fatigue: 'Je me sens fatigué aujourd\'hui. Qu\'est-ce que tu me conseilles ?',
+    motive:  'Je suis super motivé là, on tape un truc qui pique ?'
+  };
+  var msg = msgMap[mood] || 'Comment tu vas aujourd\'hui ?';
+  try { switchTab('t-chat'); } catch(e){}
+  setTimeout(function() {
+    var ci = document.getElementById('ci');
+    if (ci) {
+      ci.value = msg;
+      try { ci.focus(); } catch(e){}
+    }
+    if (typeof chatSend === 'function') {
+      setTimeout(function(){ chatSend(); }, 100);
+    }
+  }, 200);
+};
+
+window.hv3AddWater = function() {
+  window.U = window.U || {};
+  U.hydroToday = (U.hydroToday || 0) + 1;
+  if (typeof save === 'function') save();
+  if (typeof haptic === 'function') haptic('light');
+  if (window.SV2_FLAGS && window.SV2_FLAGS.homeV3) {
+    try { renderHomeV3Stories(); } catch(e){}
+  }
+};
+
 function renderHomeV2() {
   var U = window.U || {};
   var pn = U.prenom || 'Champion';
@@ -13200,25 +14305,49 @@ window.h2AddWater = function() {
 
 function initHomeV3() {
   // ════════════════════════════════════════════════════════
-  // Kill switch : SV2_FLAGS.homeV2 (true par défaut)
-  //   - true  → renderHomeV2() + cache V1
-  //   - false → renderHomeV1Legacy() + cache V2 (ancien comportement)
+  // Routing trois niveaux selon kill switches :
+  //   - SV2_FLAGS.homeV3 = true (DEFAULT) → renderHomeV3()
+  //   - SV2_FLAGS.homeV2 = true           → renderHomeV2()
+  //   - sinon                             → V1 legacy
   // ════════════════════════════════════════════════════════
   window.SV2_FLAGS = window.SV2_FLAGS || {};
-  if (typeof window.SV2_FLAGS.homeV2 === 'undefined') {
-    window.SV2_FLAGS.homeV2 = true; // V2 par défaut depuis Mission Home
+  if (typeof window.SV2_FLAGS.homeV3 === 'undefined') {
+    window.SV2_FLAGS.homeV3 = true;
   }
+  if (typeof window.SV2_FLAGS.homeV2 === 'undefined') {
+    window.SV2_FLAGS.homeV2 = true;
+  }
+
+  var v3El = document.getElementById('home-v3');
   var v2El = document.getElementById('home-v2');
   var v1El = document.getElementById('home-v1');
-  if (window.SV2_FLAGS.homeV2 && v2El) {
+
+  // V3 actif
+  if (window.SV2_FLAGS.homeV3 && v3El) {
+    if (v2El) v2El.style.display = 'none';
     if (v1El) v1El.style.display = 'none';
-    v2El.style.display = 'flex';
-    try { renderHomeV2(); } catch(e){ if(window.HIMA_OBS)HIMA_OBS.capture({type:'home-v2',msg:e.message,stack:e.stack}); }
+    v3El.style.display = 'flex';
+    try { renderHomeV3(); } catch(e){
+      if(window.HIMA_OBS) HIMA_OBS.capture({type:'home-v3', msg:e.message, stack:e.stack});
+    }
     return;
   }
+
+  // V2 fallback
+  if (window.SV2_FLAGS.homeV2 && v2El) {
+    if (v3El) v3El.style.display = 'none';
+    if (v1El) v1El.style.display = 'none';
+    v2El.style.display = 'flex';
+    try { renderHomeV2(); } catch(e){
+      if(window.HIMA_OBS) HIMA_OBS.capture({type:'home-v2', msg:e.message, stack:e.stack});
+    }
+    return;
+  }
+
+  // V1 legacy
+  if (v3El) v3El.style.display = 'none';
   if (v2El) v2El.style.display = 'none';
   if (v1El) v1El.style.display = '';
-  // FALLBACK : ancien comportement (préservé intégralement ci-dessous)
   return _initHomeV3Legacy.apply(this, arguments);
 }
 
