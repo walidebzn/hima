@@ -688,9 +688,48 @@ button:disabled, .btn:disabled, .pv3-action-btn:disabled {
 }
 
 /* ════════════════════════════════════════════════════════
-   HOME V3 — AVATAR PIXAR (code donné v4, classes -real)
+   HOME V3 — AVATAR PIXAR v5 (classes hima-pixar-*)
+   + LOGO H HEADER circulaire
    ════════════════════════════════════════════════════════ */
-.home-avatar-pixar-real {
+
+/* LOGO H CIRCULAIRE EN HEADER */
+.hima-header-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.hima-h-circle {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, #F98805, #F35695, #DDE255, #F98805);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  box-shadow: 0 8px 20px -8px rgba(249, 136, 5, 0.5);
+}
+.hima-h-circle::before {
+  content: '';
+  position: absolute;
+  inset: 2px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #F98805, #F35695);
+}
+.hima-h-circle span {
+  position: relative;
+  z-index: 2;
+  font-family: 'Bebas Neue', Impact, sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: #FFFFFF;
+  letter-spacing: 0;
+  line-height: 1;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* AVATAR PIXAR CENTRAL — wrap + image + aura + particules */
+.hima-pixar-wrap {
   position: relative;
   z-index: 3;
   width: 220px;
@@ -701,57 +740,74 @@ button:disabled, .btn:disabled, .pv3-action-btn:disabled {
   justify-content: center;
 }
 
-.home-avatar-pixar-real img {
-  width: 200px;
-  height: 200px;
-  border-radius: 50%;
-  object-fit: cover;
-  object-position: center top;
-  position: relative;
-  z-index: 2;
+/* L'image RÉELLE du coach Pixar */
+.hima-pixar-img {
+  width: 200px !important;
+  height: 200px !important;
+  border-radius: 50% !important;
+  object-fit: cover !important;
+  object-position: center 15% !important;
+  position: relative !important;
+  z-index: 5 !important;
   background: transparent !important;
-  animation: breathe 4s ease-in-out infinite;
-  box-shadow: 0 20px 60px -20px rgba(249,136,5,0.4);
+  background-image: none !important;
+  animation: himaBreathe 4s ease-in-out infinite;
+  box-shadow: 0 20px 60px -20px rgba(249, 136, 5, 0.5);
 }
 
-.home-avatar-pixar-real .aura-real {
+/* Aura douce derrière */
+.hima-pixar-aura {
   position: absolute;
-  inset: -20px;
+  inset: -15px;
   border-radius: 50%;
   background: conic-gradient(from 0deg, #F98805, #F35695, #DDE255, #F98805);
-  filter: blur(40px);
+  filter: blur(35px);
   opacity: 0.35;
   z-index: 1;
-  animation: rotateAura 30s linear infinite;
+  animation: himaAura 30s linear infinite;
 }
 
-@keyframes breathe { 0%,100% { transform: scale(1); } 50% { transform: scale(1.025); } }
-@keyframes rotateAura { to { transform: rotate(360deg); } }
+/* Bloquer tout pseudo-element parasite (anti-cache anti-fantôme) */
+.hima-pixar-img::before,
+.hima-pixar-img::after,
+.hima-pixar-wrap::before,
+.hima-pixar-wrap::after {
+  content: none !important;
+  display: none !important;
+}
 
-.home-avatar-pixar-real .particles-real {
+/* Particules */
+.hima-pixar-particles {
   position: absolute;
   inset: -40px;
   pointer-events: none;
-  z-index: 1;
+  z-index: 3;
 }
-.home-avatar-pixar-real .particles-real > span {
+.hima-pixar-particles span {
   position: absolute;
-  width: 4px; height: 4px;
+  width: 5px;
+  height: 5px;
   border-radius: 50%;
-  opacity: 0.6;
 }
-.home-avatar-pixar-real .particles-real > span:nth-child(1) { top: 10%;    left: 15%;  background: #F98805; box-shadow: 0 0 8px #F98805; animation: float1 8s ease-in-out infinite; }
-.home-avatar-pixar-real .particles-real > span:nth-child(2) { top: 20%;    right: 10%; background: #F35695; box-shadow: 0 0 8px #F35695; animation: float2 7s ease-in-out infinite; }
-.home-avatar-pixar-real .particles-real > span:nth-child(3) { bottom: 25%; left: 8%;   background: #DDE255; box-shadow: 0 0 8px #DDE255; animation: float1 9s ease-in-out infinite reverse; }
-.home-avatar-pixar-real .particles-real > span:nth-child(4) { bottom: 15%; right: 20%; background: #F98805; box-shadow: 0 0 8px #F98805; animation: float2 6s ease-in-out infinite reverse; }
-.home-avatar-pixar-real .particles-real > span:nth-child(5) { top: 50%;    left: -5%;  background: #F35695; box-shadow: 0 0 8px #F35695; animation: float1 10s ease-in-out infinite; }
-.home-avatar-pixar-real .particles-real > span:nth-child(6) { top: 60%;    right: -5%; background: #DDE255; box-shadow: 0 0 8px #DDE255; animation: float2 8s ease-in-out infinite; }
+.hima-pixar-particles span:nth-child(1) { top: 8%;    left: 12%;  background: #F98805; box-shadow: 0 0 8px #F98805; animation: himaFloat1 8s ease-in-out infinite; }
+.hima-pixar-particles span:nth-child(2) { top: 18%;   right: 8%;  background: #F35695; box-shadow: 0 0 8px #F35695; animation: himaFloat2 7s ease-in-out infinite; }
+.hima-pixar-particles span:nth-child(3) { bottom: 22%; left: 5%;  background: #DDE255; box-shadow: 0 0 8px #DDE255; animation: himaFloat1 9s ease-in-out infinite reverse; }
+.hima-pixar-particles span:nth-child(4) { bottom: 12%; right: 18%; background: #F98805; box-shadow: 0 0 8px #F98805; animation: himaFloat2 6s ease-in-out infinite reverse; }
+.hima-pixar-particles span:nth-child(5) { top: 45%;   left: -8%;  background: #F35695; box-shadow: 0 0 8px #F35695; animation: himaFloat1 10s ease-in-out infinite; }
+.hima-pixar-particles span:nth-child(6) { top: 55%;   right: -8%; background: #DDE255; box-shadow: 0 0 8px #DDE255; animation: himaFloat2 8s ease-in-out infinite; }
 
-@keyframes float1 {
+@keyframes himaBreathe {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.025); }
+}
+@keyframes himaAura {
+  to { transform: rotate(360deg); }
+}
+@keyframes himaFloat1 {
   0%, 100% { transform: translateY(0) translateX(0); opacity: 0.3; }
   50%      { transform: translateY(-20px) translateX(8px); opacity: 0.8; }
 }
-@keyframes float2 {
+@keyframes himaFloat2 {
   0%, 100% { transform: translateY(0) translateX(0); opacity: 0.4; }
   50%      { transform: translateY(15px) translateX(-10px); opacity: 0.7; }
 }
@@ -1146,15 +1202,15 @@ button:disabled, .btn:disabled, .pv3-action-btn:disabled {
 
 /* ── REDUCED MOTION ── */
 @media (prefers-reduced-motion: reduce) {
-  .hv3-blob, .home-avatar-pixar-real .aura-real, .home-avatar-pixar-real img, .home-avatar-pixar-real .particles-real > span {
+  .hv3-blob, .hima-pixar-aura, .hima-pixar-img, .hima-pixar-particles span {
     animation: none !important;
   }
 }
 
 /* ── 380px ── */
 @media (max-width: 380px) {
-  .home-avatar-pixar-real { width: 200px; height: 200px; }
-  .home-avatar-pixar-real img { width: 180px; height: 180px; }
+  .hima-pixar-wrap { width: 200px; height: 200px; }
+  .hima-pixar-img { width: 180px !important; height: 180px !important; }
   .hv3-question { font-size: 20px; }
   .hv3-story { flex-basis: 88vw; }
   .hv3-ring-svg { width: 56px; height: 56px; }
@@ -7676,7 +7732,11 @@ body:not([data-tab="chat"]) .voice-status { display: none !important; }
 
       <!-- HEADER -->
       <header class="hv3-header">
-        <div class="hv3-logo">HIMA</div>
+        <div class="hima-header-logo">
+          <div class="hima-h-circle">
+            <span>H</span>
+          </div>
+        </div>
         <button class="hv3-notif" id="hv3-notif" onclick="if(window.HIMA_W4&amp;&amp;HIMA_W4.openModal)HIMA_W4.openModal()" aria-label="Notifications">
           <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
@@ -7685,13 +7745,18 @@ body:not([data-tab="chat"]) .voice-status { display: none !important; }
         </button>
       </header>
 
-      <!-- HERO AVATAR PIXAR — code forcé v4 -->
+      <!-- HERO AVATAR PIXAR — code forcé v5 (nouvelles classes hima-pixar-*) -->
       <section class="hv3-hero">
-        <div class="home-avatar-pixar-real">
-          <div class="aura-real"></div>
-          <img src="/avatar.jpg" alt="Coach HIMA"
-               onerror="this.onerror=null;this.src='./avatar.jpg';this.onerror=function(){this.src='avatar.jpg';this.onerror=null};" />
-          <div class="particles-real">
+        <div class="hima-pixar-wrap">
+          <div class="hima-pixar-aura"></div>
+          <img
+            src="/avatar.jpg"
+            alt="Coach HIMA"
+            class="hima-pixar-img"
+            onerror="this.style.display='none';console.error('[HIMA AVATAR] Failed to load /avatar.jpg')"
+            onload="console.log('[HIMA AVATAR] ✅ Pixar loaded successfully:', this.naturalWidth + 'x' + this.naturalHeight)"
+          />
+          <div class="hima-pixar-particles">
             <span></span><span></span><span></span>
             <span></span><span></span><span></span>
           </div>
@@ -14551,7 +14616,7 @@ console.log('HIMA Home v3 charge ✓');
 // DEBUG AVATAR PIXAR — diagnostic chargement /avatar.jpg
 // ════════════════════════════════════════════════════════
 setTimeout(function(){
-  var img = document.querySelector('.home-avatar-pixar-real img');
+  var img = document.querySelector('.hima-pixar-img');
   console.log('[AVATAR DEBUG]', {
     exists: !!img,
     src: img && img.src,
@@ -14561,23 +14626,6 @@ setTimeout(function(){
     status: img && img.naturalWidth === 0 ? '❌ IMAGE FAILED TO LOAD' : '✅ OK'
   });
 }, 2000);
-
-window.addEventListener('load', function() {
-  var img = document.querySelector('.home-avatar-pixar-real img');
-  if (img) {
-    if (img.complete && img.naturalHeight > 0) {
-      console.log('✅ AVATAR PIXAR CHARGÉ (cache):', img.src, img.naturalWidth + 'x' + img.naturalHeight);
-    }
-    img.addEventListener('load', function() {
-      console.log('✅ AVATAR PIXAR CHARGÉ:', img.src, img.naturalWidth + 'x' + img.naturalHeight);
-    });
-    img.addEventListener('error', function() {
-      console.error('❌ AVATAR PIXAR FAILED:', img.src, '— uploade /avatar.jpg à la racine Vercel');
-    });
-  } else {
-    console.error('❌ ELEMENT .home-avatar-pixar-real img INTROUVABLE');
-  }
-});
 
 /* ════════════════════════════════════════════════════════
    PATCH HIMA v3.1 — Conversion Engine (JS)
