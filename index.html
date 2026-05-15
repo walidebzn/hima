@@ -158,6 +158,399 @@ button:disabled, .btn:disabled, .pv3-action-btn:disabled {
 /* Safe area iOS */
 .has-safe-bottom { padding-bottom: env(safe-area-inset-bottom, 0); }
 .has-safe-top { padding-top: env(safe-area-inset-top, 0); }
+
+/* ════════════════════════════════════════════════════════
+   HOME V2 — Refonte 2026-05-15
+   Avatar Pixar central + chips question coach + cards stories
+   Kill switch: SV2_FLAGS.homeV2 = false → V1 ré-affiché
+   ════════════════════════════════════════════════════════ */
+.home-v2 {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  background: #080810;
+  position: relative;
+}
+
+/* Header minimal */
+.h2-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: calc(12px + env(safe-area-inset-top, 0px)) 20px 8px;
+  flex-shrink: 0;
+}
+.h2-logo {
+  font-family: 'Bebas Neue', Impact, sans-serif;
+  font-size: 22px;
+  letter-spacing: 4px;
+  color: #F0F0FF;
+  background: linear-gradient(135deg, #F98805, #F35695);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.h2-notif {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  background: rgba(240,240,255,0.05);
+  border: 1px solid rgba(240,240,255,0.08);
+  color: rgba(240,240,255,0.7);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.15s, background 0.15s;
+}
+.h2-notif:active { transform: scale(0.94); }
+
+/* HERO AVATAR */
+.h2-hero {
+  position: relative;
+  padding: 8px 20px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+}
+.h2-aura {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 360px;
+  height: 360px;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, rgba(249,136,5,0.15), rgba(243,86,149,0.18), rgba(221,226,85,0.12), rgba(249,136,5,0.15));
+  filter: blur(48px);
+  opacity: 0.85;
+  pointer-events: none;
+  animation: h2AuraRotate 20s linear infinite;
+}
+@keyframes h2AuraRotate {
+  from { transform: translateX(-50%) rotate(0deg); }
+  to   { transform: translateX(-50%) rotate(360deg); }
+}
+.h2-particles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.h2-p {
+  position: absolute;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  opacity: 0.35;
+  filter: blur(0.5px);
+}
+.h2-p1 { left: 18%; top: 20%; background: #F98805; animation: h2Float 7s ease-in-out infinite; }
+.h2-p2 { left: 80%; top: 28%; background: #F35695; animation: h2Float 9s ease-in-out infinite 1s; }
+.h2-p3 { left: 28%; top: 60%; background: #DDE255; animation: h2Float 8s ease-in-out infinite 2s; }
+.h2-p4 { left: 72%; top: 65%; background: #F98805; animation: h2Float 10s ease-in-out infinite 3s; }
+.h2-p5 { left: 50%; top: 12%; background: #F35695; animation: h2Float 6s ease-in-out infinite 0.5s; }
+@keyframes h2Float {
+  0%, 100% { transform: translate(0, 0); opacity: 0.2; }
+  50% { transform: translate(0, -20px); opacity: 0.5; }
+}
+.h2-avatar-wrap {
+  position: relative;
+  width: 220px;
+  height: 220px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  animation: h2Breath 4s ease-in-out infinite;
+}
+@keyframes h2Breath {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.025); }
+}
+.h2-avatar {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+  border-radius: 50%;
+  filter: drop-shadow(0 12px 32px rgba(249,136,5,0.25));
+  -webkit-mask-image: radial-gradient(ellipse 88% 88% at 50% 48%, #000 60%, transparent 100%);
+  mask-image: radial-gradient(ellipse 88% 88% at 50% 48%, #000 60%, transparent 100%);
+}
+.h2-question {
+  position: relative;
+  z-index: 2;
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-size: clamp(22px, 6vw, 28px);
+  font-weight: 700;
+  text-align: center;
+  margin: 4px 0 16px;
+  color: #F0F0FF;
+  line-height: 1.2;
+  max-width: 340px;
+}
+.h2-chips {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+  z-index: 2;
+  position: relative;
+}
+.h2-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 18px;
+  min-height: 44px;
+  border-radius: 99px;
+  background: rgba(240,240,255,0.06);
+  border: 1px solid rgba(240,240,255,0.1);
+  color: #F0F0FF;
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.15s, background 0.15s, border-color 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.h2-chip:active { transform: scale(0.95); }
+.h2-chip:hover, .h2-chip:focus-visible { background: rgba(240,240,255,0.1); border-color: rgba(249,136,5,0.4); }
+.h2-chip-ico { font-size: 18px; line-height: 1; }
+
+/* STATS DU JOUR */
+.h2-stats {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  margin: 0 16px 16px;
+  background: rgba(240,240,255,0.03);
+  border: 1px solid rgba(240,240,255,0.06);
+  border-radius: 20px;
+  flex-shrink: 0;
+}
+.h2-stat {
+  flex: 1;
+  text-align: center;
+}
+.h2-stat-val {
+  font-family: 'Bebas Neue', Impact, sans-serif;
+  font-size: 28px;
+  line-height: 1;
+  color: #F0F0FF;
+  letter-spacing: 1px;
+}
+.h2-stat-suff {
+  font-size: 16px;
+  opacity: 0.6;
+  margin-left: 1px;
+}
+.h2-stat-lbl {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(240,240,255,0.55);
+  margin-top: 4px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+.h2-stat-sep {
+  width: 1px;
+  height: 32px;
+  background: rgba(240,240,255,0.08);
+}
+
+/* CARDS STORIES SWIPABLES */
+.h2-cards-section {
+  padding: 0 0 16px;
+  flex-shrink: 0;
+}
+.h2-cards-track {
+  display: flex;
+  gap: 12px;
+  padding: 0 16px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.h2-cards-track::-webkit-scrollbar { display: none; }
+.h2-card {
+  flex: 0 0 85%;
+  scroll-snap-align: center;
+  min-height: 190px;
+  background: rgba(240,240,255,0.04);
+  border: 1px solid rgba(240,240,255,0.08);
+  border-radius: 24px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.15s, border-color 0.2s;
+  -webkit-tap-highlight-color: transparent;
+}
+.h2-card:active { transform: scale(0.98); }
+.h2-card:hover, .h2-card:focus-visible { border-color: rgba(249,136,5,0.3); }
+.h2-card-ico {
+  font-size: 24px;
+  margin-bottom: 8px;
+}
+.h2-card-title {
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: #F0F0FF;
+  margin-bottom: 4px;
+}
+.h2-card-sub {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 13px;
+  color: rgba(240,240,255,0.62);
+  line-height: 1.4;
+  flex-grow: 1;
+}
+.h2-card-cta {
+  margin-top: 14px;
+  align-self: flex-start;
+  padding: 10px 18px;
+  min-height: 40px;
+  border-radius: 99px;
+  background: linear-gradient(135deg, #F98805, #F35695);
+  color: #fff;
+  border: none;
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.h2-card-cta-ghost {
+  background: rgba(240,240,255,0.06);
+  color: #F0F0FF;
+  border: 1px solid rgba(240,240,255,0.12);
+}
+.h2-card-value {
+  font-family: 'Bebas Neue', Impact, sans-serif;
+  font-size: 36px;
+  line-height: 1;
+  color: #F98805;
+  letter-spacing: 1px;
+  margin: 6px 0 4px;
+}
+.h2-card-bar {
+  height: 6px;
+  background: rgba(240,240,255,0.08);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-top: 8px;
+}
+.h2-card-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #F98805, #F35695);
+  border-radius: 3px;
+  transition: width 0.6s ease;
+}
+.h2-card-empty {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  min-height: 110px;
+}
+.h2-card-empty .h2-card-sub {
+  flex-grow: 0;
+  margin-top: 4px;
+}
+
+/* Dots de pagination */
+.h2-cards-dots {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 14px;
+}
+.h2-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(240,240,255,0.15);
+  transition: width 0.3s, background 0.3s;
+}
+.h2-dot.active {
+  width: 18px;
+  border-radius: 3px;
+  background: linear-gradient(90deg, #F98805, #F35695);
+}
+
+/* INSIGHT COACH */
+.h2-insight {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  margin: 0 16px 16px;
+  background: linear-gradient(135deg, rgba(249,136,5,0.06), rgba(243,86,149,0.04));
+  border: 1px solid rgba(249,136,5,0.15);
+  border-radius: 20px;
+  flex-shrink: 0;
+}
+.h2-insight-av {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: center top;
+  flex-shrink: 0;
+}
+.h2-insight-text {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 14px;
+  color: rgba(240,240,255,0.85);
+  font-style: italic;
+  line-height: 1.45;
+}
+
+/* Mini-cards Macros */
+.h2-mini-macros {
+  display: flex;
+  gap: 6px;
+  margin-top: 6px;
+}
+.h2-mini-mb {
+  flex: 1;
+  height: 4px;
+  background: rgba(240,240,255,0.08);
+  border-radius: 2px;
+  overflow: hidden;
+  position: relative;
+}
+.h2-mini-mb-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 0%;
+  background: #F98805;
+  border-radius: 2px;
+  transition: width 0.6s ease;
+}
+.h2-mini-mb-fill.gluc { background: #DDE255; }
+.h2-mini-mb-fill.lip { background: #F35695; }
+
+/* Force scroll fluide iOS */
+.home-v2 { scroll-behavior: smooth; }
+@media (max-width: 380px) {
+  .h2-avatar-wrap { width: 180px; height: 180px; }
+  .h2-aura { width: 280px; height: 280px; }
+  .h2-question { font-size: 20px; }
+}
 </style>
 
 <style>
@@ -2422,7 +2815,7 @@ body:not([data-tab="chat"]) .voice-status { display: none !important; }
   overflow: hidden !important;
   position: relative !important;
 }
-#t-prog .séances-v2-root {
+#t-prog .seances-v2-root {
   display: block;
   width: 100%;
   height: 100%;
@@ -2434,7 +2827,7 @@ body:not([data-tab="chat"]) .voice-status { display: none !important; }
   position: relative;
   z-index: 1;
 }
-#t-prog .séances-v2-root::-webkit-scrollbar { display: none; }
+#t-prog .seances-v2-root::-webkit-scrollbar { display: none; }
 
 /* === HERO séance du jour === */
 .sv2-hero {
@@ -3087,7 +3480,7 @@ body:not([data-tab="chat"]) .voice-status { display: none !important; }
   color: #F0F0FF;
 }
 
-/* === RÉCAP fin de séance === */
+/* === RÉCAP fin de seance === */
 .sv2-recap {
   position: fixed;
   inset: 0;
@@ -6658,8 +7051,94 @@ body:not([data-tab="chat"]) .voice-status { display: none !important; }
   <!-- HOME -->
   <div class="atab on" id="t-home">
 
-    <!-- ══ SCROLL CONTAINER ══ -->
-    <div class="hm-wrap">
+    <!-- ════════════════════════════════════════════════════════
+         HOME V2 — Refonte 2026-05-15
+         Kill switch: window.SV2_FLAGS.homeV2 = false → bascule sur V1
+         ════════════════════════════════════════════════════════ -->
+    <div class="home-v2" id="home-v2">
+
+      <!-- HEADER MINIMAL -->
+      <header class="h2-header">
+        <div class="h2-logo-wrap">
+          <span class="h2-logo">HIMA</span>
+        </div>
+        <button class="h2-notif" id="h2-notif" onclick="if(window.HIMA_W4&&HIMA_W4.openModal)HIMA_W4.openModal()" aria-label="Notifications">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+          </svg>
+        </button>
+      </header>
+
+      <!-- HERO AVATAR -->
+      <section class="h2-hero">
+        <div class="h2-aura"></div>
+        <div class="h2-particles" aria-hidden="true">
+          <span class="h2-p h2-p1"></span>
+          <span class="h2-p h2-p2"></span>
+          <span class="h2-p h2-p3"></span>
+          <span class="h2-p h2-p4"></span>
+          <span class="h2-p h2-p5"></span>
+        </div>
+        <div class="h2-avatar-wrap">
+          <img src="/avatar.jpg" alt="HIMA, ton coach" class="h2-avatar">
+        </div>
+        <h1 class="h2-question" id="h2-question">Comment tu te sens aujourd'hui&nbsp;?</h1>
+        <div class="h2-chips">
+          <button class="h2-chip" onclick="h2ChipTap('forme')" aria-label="En forme">
+            <span class="h2-chip-ico">💪</span>
+            <span class="h2-chip-txt">En forme</span>
+          </button>
+          <button class="h2-chip" onclick="h2ChipTap('fatigue')" aria-label="Fatigué">
+            <span class="h2-chip-ico">😴</span>
+            <span class="h2-chip-txt">Fatigué</span>
+          </button>
+          <button class="h2-chip" onclick="h2ChipTap('motive')" aria-label="Motivé">
+            <span class="h2-chip-ico">🔥</span>
+            <span class="h2-chip-txt">Motivé</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- STATS DU JOUR (compact) -->
+      <section class="h2-stats">
+        <div class="h2-stat">
+          <div class="h2-stat-val" id="h2-forme">—</div>
+          <div class="h2-stat-lbl">Forme du jour</div>
+        </div>
+        <div class="h2-stat-sep"></div>
+        <div class="h2-stat">
+          <div class="h2-stat-val"><span id="h2-serie">0</span><span class="h2-stat-suff">j</span></div>
+          <div class="h2-stat-lbl">Série</div>
+        </div>
+        <div class="h2-stat-sep"></div>
+        <div class="h2-stat">
+          <div class="h2-stat-val" id="h2-energie">—</div>
+          <div class="h2-stat-lbl">Énergie</div>
+        </div>
+      </section>
+
+      <!-- CARDS SWIPABLES STORIES STYLE -->
+      <section class="h2-cards-section">
+        <div class="h2-cards-track" id="h2-cards-track">
+          <!-- Cards générées par renderHomeV2() -->
+        </div>
+        <div class="h2-cards-dots" id="h2-cards-dots"></div>
+      </section>
+
+      <!-- INSIGHT COACH -->
+      <section class="h2-insight">
+        <img src="/avatar.jpg" class="h2-insight-av" alt="">
+        <div class="h2-insight-text" id="h2-insight">La régularité bat l'intensité.</div>
+      </section>
+
+      <div style="height:96px"></div>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════
+         HOME V1 (fallback) — caché par défaut, activé si homeV2=false
+         ════════════════════════════════════════════════════════ -->
+    <div class="hm-wrap" id="home-v1" style="display:none">
 
       <!-- SECTION 1 — HERO -->
       <div class="hm-hero hm-section" id="hm-hero">
@@ -6667,7 +7146,7 @@ body:not([data-tab="chat"]) .voice-status { display: none !important; }
           <div>
             <div class="hm-greet" id="hh-gr">Bonjour</div>
             <div class="hm-name" id="hh-nm">CHAMPION</div>
-            <div class="hm-sub" id="hh-sub">Chargement…</div>
+            <div class="hm-sub" id="hh-sub">—</div>
           </div>
           <div class="hm-av-wrap" onclick="switchTab('t-prf')">
             <img src="/avatar.jpg" class="hm-av-img" alt="HIMA">
@@ -6689,12 +7168,12 @@ body:not([data-tab="chat"]) .voice-status { display: none !important; }
             </svg>
             <div class="hm-read-score-wrap">
               <div class="hm-read-score" id="hm-read-score">--</div>
-              <div class="hm-read-label" id="hm-read-label">Calcul...</div>
+              <div class="hm-read-label" id="hm-read-label">—</div>
             </div>
           </div>
           <div class="hm-readiness-right">
-            <div class="hm-read-title">READINESS</div>
-            <div class="hm-read-advice" id="hm-read-advice">Analyse en cours...</div>
+            <div class="hm-read-title">FORME DU JOUR</div>
+            <div class="hm-read-advice" id="hm-read-advice">Prêt</div>
             <div class="hm-read-indicators">
               <div class="hm-ri"><span id="hm-ri-sleep">💤</span><span class="hm-ri-l">Sommeil</span></div>
               <div class="hm-ri"><span id="hm-ri-stress">🧘</span><span class="hm-ri-l">Stress</span></div>
@@ -6725,19 +7204,19 @@ body:not([data-tab="chat"]) .voice-status { display: none !important; }
       </div>
 
       <!-- SECTION 4 — SÉANCE DU JOUR -->
-      <div class="hm-section hm-séance-card" id="hm-séance-card" onclick="switchTab('t-prog')">
-        <div class="hm-séance-head">
-          <div class="hm-séance-badges">
+      <div class="hm-section hm-seance-card" id="hm-seance-card" onclick="switchTab('t-prog')">
+        <div class="hm-seance-head">
+          <div class="hm-seance-badges">
             <span class="hm-badge" id="hm-badge-jour">Lundi</span>
             <span class="hm-badge hm-badge-phase" id="hm-badge-phase">Fondation</span>
             <span class="hm-badge hm-badge-int" id="hm-badge-int">🟢 Normal</span>
           </div>
-          <span class="hm-séance-arrow">→</span>
+          <span class="hm-seance-arrow">→</span>
         </div>
-        <div class="hm-séance-name" id="hm-séance-name">Chargement…</div>
-        <div class="hm-séance-exos" id="hm-séance-exos"></div>
-        <div class="hm-séance-meta" id="hm-séance-meta"></div>
-        <button class="hm-séance-btn" onclick="event.stopPropagation();switchTab('t-prog')">Commencer la séance →</button>
+        <div class="hm-seance-name" id="hm-seance-name">—</div>
+        <div class="hm-seance-exos" id="hm-seance-exos"></div>
+        <div class="hm-seance-meta" id="hm-seance-meta"></div>
+        <button class="hm-seance-btn" onclick="event.stopPropagation();switchTab('t-prog')">Commencer la séance →</button>
       </div>
 
       <!-- SECTION 5 — OBJECTIF / COMPTE À REBOURS -->
@@ -6766,7 +7245,7 @@ body:not([data-tab="chat"]) .voice-status { display: none !important; }
         <div class="hm-obj-bar-wrap">
           <div class="hm-obj-bar-bg"><div class="hm-obj-bar-fill" id="hm-obj-fill"></div></div>
         </div>
-        <div class="hm-obj-phrase" id="hm-obj-phrase">Calcul en cours...</div>
+        <div class="hm-obj-phrase" id="hm-obj-phrase">—</div>
       </div>
 
       <!-- SECTION 6 — MACROS + FENÊTRE ANABOLIQUE -->
@@ -6845,7 +7324,7 @@ body:not([data-tab="chat"]) .voice-status { display: none !important; }
 
       <!-- SECTION 8 — BODY SCORE -->
       <div class="hm-section hm-card">
-        <div class="hm-card-title">BODY SCORE</div>
+        <div class="hm-card-title">INDICE GLOBAL</div>
         <div class="hm-bs-wrap">
           <div class="hm-bs-circle">
             <svg viewBox="0 0 100 100" class="hm-bs-svg">
@@ -7007,7 +7486,7 @@ body:not([data-tab="chat"]) .voice-status { display: none !important; }
         <div class="cstat"><div class="cstat-v" id="cs-poids">--</div><div class="cstat-l">kg actuel</div></div>
         <div class="cstat"><div class="cstat-v" id="cs-delta" style="color:#22C55E">--</div><div class="cstat-l">variation</div></div>
         <div class="cstat"><div class="cstat-v" id="cs-streak">🔥 1</div><div class="cstat-l">jours</div></div>
-        <div class="cstat"><div class="cstat-v" id="cs-séances">0</div><div class="cstat-l">séances</div></div>
+        <div class="cstat"><div class="cstat-v" id="cs-seances">0</div><div class="cstat-l">seances</div></div>
       </div>
     </div>
     <div class="tsc" id="corps-sc" style="padding-bottom:88px">
@@ -7140,7 +7619,7 @@ body:not([data-tab="chat"]) .voice-status { display: none !important; }
         </div>
         <div class="pv3-stat">
           <div class="pv3-stat-icon">📊</div>
-          <div class="pv3-stat-val" id="pv3-stat-séances">0</div>
+          <div class="pv3-stat-val" id="pv3-stat-seances">0</div>
           <div class="pv3-stat-lbl">Séances</div>
         </div>
         <div class="pv3-stat">
@@ -7351,7 +7830,7 @@ body:not([data-tab="chat"]) .voice-status { display: none !important; }
   <div class="sv2-active-body" id="sv2-active-body"></div>
 </div>
 
-<!-- Bouton flottant coach IA (pendant séance) -->
+<!-- Bouton flottant coach IA (pendant seance) -->
 <button class="sv2-coach-fab" id="sv2-coach-fab" onclick="sv2OpenCoach()">
   <img src="/avatar.jpg" alt="HIMA">
 </button>
@@ -7445,7 +7924,7 @@ body:not([data-tab="chat"]) .voice-status { display: none !important; }
     </div>
     <div class="sv2-recap-actions">
       <button class="sv2-hero-cta" onclick="sv2DebriefHIMA()">💬 Debrief avec HIMA</button>
-      <button class="sv2-hero-cta-secondary" onclick="sv2CloseRecap()">Retour aux séances</button>
+      <button class="sv2-hero-cta-secondary" onclick="sv2CloseRecap()">Retour aux seances</button>
     </div>
   </div>
 </div>
@@ -7622,7 +8101,7 @@ window._himaConfigReady = true;
 try { window.dispatchEvent(new CustomEvent('hima:config-ready', { detail: { firebaseReady: firebaseReady } })); } catch(e) {}
 
 // ── STATE ──
-var U = {}, hist = [], streak = 1, chatLog = [], chatBusy = false, score = 0, séances = 0;
+var U = {}, hist = [], streak = 1, chatLog = [], chatBusy = false, score = 0, seances = 0;
 var AUTH_MODE = 'signup';
 var ML = {
   glow: '🔥 Je veux maigrir',
@@ -7737,7 +8216,7 @@ window.addEventListener('DOMContentLoaded', function() {
       hist = U.hist || [];
       streak = U.streak || 1;
       score = U.score || 0;
-      séances = U.séances || 0;
+      seances = U.seances || 0;
     }
   }
 
@@ -7853,7 +8332,7 @@ var OS = [
   ]},
   {pct:39,q:'Ton niveau sportif actuel ?',type:'bigopt',key:'niv',opts:[
     {v:'deb',i:'🌱',t:'Débutant complet',s:'Je débute ou je n\'ai pas pratiqué depuis longtemps'},
-    {v:'inter_low',i:'🔥',t:'Quelques séances par mois',s:'Je m\'entraîne de temps en temps'},
+    {v:'inter_low',i:'🔥',t:'Quelques seances par mois',s:'Je m\'entraîne de temps en temps'},
     {v:'inter',i:'💪',t:'1 à 3 fois par semaine',s:'J\'ai une pratique régulière'},
     {v:'av',i:'⚡',t:'4 fois et plus par semaine',s:'Pratique intensive et constante'},
     {v:'athlete',i:'🏆',t:'Athlète ou compétiteur',s:'Niveau de compétition ou sport de haut niveau'}
@@ -7867,7 +8346,7 @@ var OS = [
     {v:'autre',i:'➕',t:'Autre sport'}
   ]},
   {pct:45,q:'Jours disponibles par semaine ?',type:'slider',key:'joursParSemaine',mn:1,mx:7,v:3,u:'j/sem'},
-  {pct:48,q:'Temps disponible par séance ?',type:'chips2',key:'tps',opts:[
+  {pct:48,q:'Temps disponible par seance ?',type:'chips2',key:'tps',opts:[
     {v:'20',i:'⚡',t:'20 min'},{v:'30',i:'🕐',t:'30 min'},
     {v:'45',i:'🕐',t:'45 min'},{v:'60',i:'🕐',t:'60 min'},
     {v:'90',i:'🕐',t:'90 min+'}
@@ -8074,7 +8553,7 @@ function calcM() {
 }
 
 function calcScore() {
-  var s = Math.min(100, Math.round((streak * 5) + (séances * 8) + ((U.le || 5) * 3)));
+  var s = Math.min(100, Math.round((streak * 5) + (seances * 8) + ((U.le || 5) * 3)));
   score = s;
   var el = document.getElementById('tc-big'); if (el) el.textContent = s;
   var sv = document.getElementById('ss-val'); if (sv) sv.textContent = s + '/100';
@@ -8083,7 +8562,7 @@ function calcScore() {
 }
 
 function recov() { return Math.min(100, Math.max(0, Math.round(((U.le || 7) + (U.ls || 7) + (10 - (U.lst || 5))) / 3 * 10))); }
-function save() { try { localStorage.setItem('hima8', JSON.stringify(Object.assign({}, U, { hist: hist, streak: streak, score: score, séances: séances }))); } catch(e) {} }
+function save() { try { localStorage.setItem('hima8', JSON.stringify(Object.assign({}, U, { hist: hist, streak: streak, score: score, seances: seances }))); } catch(e) {} }
 function saveKey() { var k = document.getElementById('api-k'); if (k && k.value.startsWith('sk-ant-')) { U.apiKey = k.value; save(); } }
 
 // ── APP INIT ──
@@ -8176,7 +8655,7 @@ function initApp() {
   set('st-r', recov() + '/100');
   set('tc-d', s <= 1 ? 'Jour 1 — Premier pas' : s < 7 ? 'Jour ' + s + ' — Tu tiens' : s < 30 ? 'Jour ' + s + ' — Habitude en cours' : 'Jour ' + s + ' — Transformé');
   set('tc-sk', 'J' + streak);
-  set('tc-s', séances);
+  set('tc-s', seances);
   var pw = U.dep && U.poids ? Math.max(0, (U.dep - U.poids)).toFixed(1) : '0'; set('tc-p', pw);
   set('pnm', U.prenom || 'Champion');
   set('pplan', ML[U.mode || 'glow'] || '🔥 Je veux maigrir');
@@ -8213,7 +8692,7 @@ function initApp() {
   } else if (s === 3) {
     himaMsg = '3 jours sans interruption' + (prn ? ' ' + prn : '') + '. Tu tiens déjà plus longtemps que 60% des gens qui commencent.';
   } else if (s === 4) {
-    himaMsg = '4 jours' + (prn ? ' ' + prn : '') + '. Ton corps commence à anticiper la séance. C\'est bon signe.';
+    himaMsg = '4 jours' + (prn ? ' ' + prn : '') + '. Ton corps commence à anticiper la seance. C\'est bon signe.';
   } else if (s === 5) {
     himaMsg = '5 jours' + (prn ? ' ' + prn : '') + '. À mi-chemin de ta première semaine. Ne lâche pas maintenant.';
   } else if (s === 6) {
@@ -8233,7 +8712,7 @@ function initApp() {
   } else if (s >= 60) {
     himaMsg = s + ' jours' + (prn ? ' ' + prn : '') + '. Tu fais partie des rares qui tiennent vraiment. Ton physique le prouve.';
   } else {
-    himaMsg = (prn ? 'Prêt ' + prn + ' ?' : 'Prêt ?') + ' Dis-moi ton énergie, j\'adapte ta séance.';
+    himaMsg = (prn ? 'Prêt ' + prn + ' ?' : 'Prêt ?') + ' Dis-moi ton énergie, j\'adapte ta seance.';
   }
   set('hima-msg', himaMsg);
   calcScore();
@@ -8309,7 +8788,7 @@ function switchTab(id) {
     var m=U.macros||calcM();
     fn2('pnm',U.prenom||'Champion');fn2('ps-email',U.email||'--');
     fn2('ps-plan',{free:'Découverte',pro:'Coach Personnel',elite:'Elite'}[U.plan||'free']||'Découverte');
-    fn2('prf-streak','🔥 '+(streak||1));fn2('prf-séances',séances||0);
+    fn2('prf-streak','🔥 '+(streak||1));fn2('prf-séances',seances||0);
     fn2('prf-poids',U.poids||'--');fn2('prf-score',score||0);
     var av=document.getElementById('prf-avatar-letter');if(av)av.textContent=(U.prenom||'C')[0].toUpperCase();
     var ak=document.getElementById('api-k');if(ak&&U.apiKey)ak.value=U.apiKey;
@@ -8502,7 +8981,7 @@ async function callAI(msg) {
   var voixTon = jRel <= 7
     ? 'Direct, factuel, exigeant mais bienveillant. Tu découvres cet athlète.'
     : jRel <= 30
-    ? 'Tu le connais. Réfère-toi à ses séances passées. Encourage avec des preuves réelles.'
+    ? 'Tu le connais. Réfère-toi à ses seances passées. Encourage avec des preuves réelles.'
     : 'Relation solide. Parle de progression long terme. Confiance totale.';
 
   var modeLabel = { glow: 'Perte de gras', bodybuilding: 'Prise de masse', hyrox: 'Performance Hyrox', mindset: 'Remise en forme' }[U.mode || 'glow'] || 'Transformation';
@@ -8519,7 +8998,7 @@ async function callAI(msg) {
     'MACROS: ' + m.kcal + 'kcal | P:' + m.prot + 'g G:' + m.gluc + 'g L:' + m.lip + 'g',
     'NIVEAU: ' + (U.niv||'?') + ' | LIEU: ' + (U.lieu||'salle') + ' | REGIME: ' + (U.regime||'omnivore'),
     'ETAT: Énergie ' + (U.le||5) + '/10 | Recup ' + recov + '/100 | Risque abandon ' + risk + '/10',
-    'Streak: ' + (streak||1) + 'j | Séances: ' + (séances||0) + ' | Sem ' + (U.programWeek||1) + '/12 | Phase: ' + phaseLabel,
+    'Streak: ' + (streak||1) + 'j | Séances: ' + (seances||0) + ' | Sem ' + (U.programWeek||1) + '/12 | Phase: ' + phaseLabel,
     '1RM: ' + oneRMStr,
     'Relation: J' + jRel,
     'TON: ' + voixTon,
@@ -8768,7 +9247,7 @@ function buildNutr() {
   }
   // Fallback ultra-minimal si nv3 pas encore chargé
   var sc = document.getElementById('nv3-root');
-  if (sc) sc.innerHTML = '<div class="nv3-loading"><div class="nv3-loading-txt">Chargement…</div></div>';
+  if (sc) sc.innerHTML = '<div class="nv3-loading"><div class="nv3-loading-txt">—</div></div>';
 }
 
 // ── CORPS ──
@@ -8842,7 +9321,7 @@ function advT() {
   else {
     TS.ei++; TS.si = 1;
     if (TS.ei >= TS.exos.length) {
-      séances += 1; U.séances = séances; save(); calcScore();
+      seances+= 1; U.seances = seances; save(); calcScore();
       closeTimer(); switchTab('t-chat');
       addH(['Séance terminée ' + (U.prenom || '') + ' ! Excellent. Tu deviens plus fort chaque jour. Étire-toi 10 minutes, hydrate-toi. Score mis à jour.']);
     } else setWork();
@@ -9110,7 +9589,7 @@ async function genProgIA() {
     + '- Mode : ' + ({glow:'Perte de gras', bodybuilding:'Prise de muscle', hyrox:'Performance Hyrox', mindset:'Remise en forme'}[U.mode||'bodybuilding']) + '\n'
     + '- Fréquence disponible : ' + ({20:'2x/semaine', 30:'3x/semaine', 45:'4x/semaine', 60:'5-6x/semaine'}[U.tps]||'4x/semaine') + '\n'
     + (perfStr ? '- Performances actuelles : ' + perfStr + '\n' : '')
-    + '- Série actuelle : J' + streak + ' | Séances : ' + séances + '\n\n'
+    + '- Série actuelle : J' + streak + ' | Séances : ' + seances+ '\n\n'
     + 'Structure le programme sur 8-12 semaines avec :\n'
     + '1. Phase et objectif de la phase\n'
     + '2. Split hebdomadaire précis (quels muscles quel jour)\n'
@@ -9159,7 +9638,7 @@ async function genBilanHebdo() {
     recent.forEach(function(p) { perfStr += p.exo + ' ' + p.kg + 'kg×' + p.reps + ' RPE' + p.rpe + ', '; });
   }
   var prompt = 'Bilan hebdomadaire pour ' + (U.prenom||'Champion') + ' :\n'
-    + '- Séances cette semaine : ' + séances + '\n'
+    + '- Séances cette semaine : ' + seances+ '\n'
     + '- Poids actuel : ' + (U.poids||'--') + 'kg\n'
     + '- Série : J' + streak + '\n'
     + '- Énergie moyenne : ' + (U.le||5) + '/10\n'
@@ -9329,7 +9808,7 @@ async function analysePosture(event) {
   var pr = document.getElementById('posture-result');
   var pb = document.getElementById('posture-body');
   if (pr) pr.style.display = 'block';
-  if (pb) pb.textContent = 'Analyse en cours...';
+  if (pb) pb.textContent = 'Prêt';
   // Clé côté serveur via /api/chat
   var exoName = (document.getElementById('tov-exo') || {}).textContent || 'exercice';
   var reader = new FileReader();
@@ -9868,7 +10347,7 @@ function buildMemoryContext() {
   var mem = [];
   mem.push('=== MEMOIRE HIMA ===');
   mem.push('Prenom: ' + (U.prenom||'Champion'));
-  mem.push('Debut: J' + streak + ' | Séances: ' + séances);
+  mem.push('Debut: J' + streak + ' | Séances: ' + seances);
   mem.push('Poids: ' + (U.dep||'--') + 'kg depart -> ' + (U.poids||'--') + 'kg actuel');
   if (U.perfLog && U.perfLog.length > 0) {
     var byExo = {};
@@ -9943,7 +10422,7 @@ function analyseLastSeanceAndAdapt() {
   var adjList = document.getElementById('pab-adjustments');
   if (!banner) return;
   banner.style.display = 'block';
-  if (msg) msg.textContent = 'Bases sur ta dernière séance, j\'ai ajuste ton programme pour la semaine prochaine.';
+  if (msg) msg.textContent = 'Bases sur ta dernière seance, j\'ai ajuste ton programme pour la semaine prochaine.';
   if (adjList) {
     adjList.innerHTML = adjustments.map(function(a) {
       return '<div class="pab-adj"><span class="pab-adj-ico">' + a.ico + '</span>' + a.txt + '</div>';
@@ -9962,12 +10441,12 @@ function computePredictiveScore() {
   var nbSéancesTgt = 4;
   var sleepOk = (U.ls||7) >= 7;
   var energyOk = (U.le||5) >= 7;
-  var regularOk = séances >= 3;
+  var regularOk = seances>= 3;
   if (sleepOk) { bonus += 8; conditions.push({ico:'😴', txt:'Sommeil > 7h : +8 pts'}); }
   else { bonus -= 5; conditions.push({ico:'😴', txt:'Sommeil insuffisant : -5 pts'}); }
   if (energyOk) { bonus += 6; conditions.push({ico:'⚡', txt:'Énergie elevee : +6 pts'}); }
-  if (regularOk) { bonus += 10; conditions.push({ico:'💪', txt:séances + ' séances cette semaine : +10 pts'}); }
-  else { conditions.push({ico:'⚠️', txt:'Objectif : ' + nbSéancesTgt + ' séances cette semaine'}); }
+  if (regularOk) { bonus += 10; conditions.push({ico:'💪', txt:seances+ ' seances cette semaine : +10 pts'}); }
+  else { conditions.push({ico:'⚠️', txt:'Objectif : ' + nbSéancesTgt + ' seances cette semaine'}); }
   if (streak > 7) { bonus += 5; conditions.push({ico:'🔥', txt:'Streak > 7 jours : +5 pts'}); }
   var predicted = Math.min(100, Math.max(0, current + bonus));
   var card = document.getElementById('predict-card');
@@ -10066,10 +10545,10 @@ function buildCommunityData() {
   var niv = U.niv || 'int';
   var mode2 = U.mode || 'bodybuilding';
   var benchmarks = {
-    bodybuilding: { squat: { avg: 85, unit: 'kg' }, bench: { avg: 72, unit: 'kg' }, séances: { avg: 3.8, unit: '/sem' } },
-    hyrox: { time: { avg: 68, unit: 'min' }, distance: { avg: 42, unit: 'km/sem' }, séances: { avg: 5, unit: '/sem' } },
-    glow: { poids_perdu: { avg: 3.2, unit: 'kg/mois' }, séances: { avg: 3.2, unit: '/sem' }, kcal: { avg: m.kcal, unit: 'kcal/j' } },
-    mindset: { streak: { avg: 22, unit: 'jours' }, séances: { avg: 4, unit: '/sem' }, score: { avg: 68, unit: '/100' } }
+    bodybuilding: { squat: { avg: 85, unit: 'kg' }, bench: { avg: 72, unit: 'kg' }, seances: { avg: 3.8, unit: '/sem' } },
+    hyrox: { time: { avg: 68, unit: 'min' }, distance: { avg: 42, unit: 'km/sem' }, seances: { avg: 5, unit: '/sem' } },
+    glow: { poids_perdu: { avg: 3.2, unit: 'kg/mois' }, seances: { avg: 3.2, unit: '/sem' }, kcal: { avg: m.kcal, unit: 'kcal/j' } },
+    mindset: { streak: { avg: 22, unit: 'jours' }, seances: { avg: 4, unit: '/sem' }, score: { avg: 68, unit: '/100' } }
   };
   var bm = benchmarks[mode2] || benchmarks.bodybuilding;
   var stats = [];
@@ -10081,7 +10560,7 @@ function buildCommunityData() {
     var myBench = U.perfLog ? (U.perfLog.filter(function(p){return p.exo.toLowerCase().includes('couche')||p.exo.toLowerCase().includes('bench');}).slice(-1)[0]||{}).kg || 0 : 0;
     if (myBench) stats.push({ label: 'Developpé couché', yours: myBench, avg: bm.bench.avg, unit: bm.bench.unit });
   }
-  stats.push({ label: 'Séances/sem', yours: Math.min(séances, 6), avg: (bm.séances||{avg:3.8}).avg, unit: '/sem' });
+  stats.push({ label: 'Séances/sem', yours: Math.min(seances, 6), avg: (bm.seances||{avg:3.8}).avg, unit: '/sem' });
   stats.push({ label: 'Série', yours: Math.min(streak, 60), avg: 18, unit: 'jours' });
   var card = document.getElementById('community-card');
   var statsEl = document.getElementById('community-stats');
@@ -10189,7 +10668,7 @@ async function analyseMeal(event) {
   var macrosEl = document.getElementById('meal-macros');
   var adviceEl = document.getElementById('meal-advice');
   if (card) card.style.display = 'block';
-  if (macrosEl) macrosEl.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:10px;font-size:13px;color:var(--t3)">Analyse en cours...</div>';
+  if (macrosEl) macrosEl.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:10px;font-size:13px;color:var(--t3)">Prêt</div>';
   // Plus de check clé : routé via /api/chat
   var reader = new FileReader();
   reader.onload = async function(e) {
@@ -10291,7 +10770,7 @@ function buildCompPhases(mode3, weeks) {
   var now = 0;
   if (mode3 === 'hyrox') {
     phases = [
-      {name:'Base aerobie', desc:'Z2 60% du volume. Foncier et stations de force. 4-5 séances/sem.', weeks:Math.round(weeks*.35)},
+      {name:'Base aerobie', desc:'Z2 60% du volume. Foncier et stations de force. 4-5 seances/sem.', weeks:Math.round(weeks*.35)},
       {name:'Intensification', desc:'Z3-Z4 integres. Simulation partielle. Augmente le volume stations.', weeks:Math.round(weeks*.35)},
       {name:'Specifique competition', desc:'Simulation complete compétition. Pacing strategy. Nutrition race-day.', weeks:Math.round(weeks*.2)},
       {name:'Tapering + peak', desc:'Volume -40%. Intensité maintenue. Repos, hydratation, mental.', weeks:Math.round(weeks*.1)||1}
@@ -10335,7 +10814,7 @@ async function analyseBody(event) {
   var file = event.target.files[0];
   if (!file) return;
   var btn = document.querySelector('.bac-btn');
-  if (btn) { btn.textContent = 'Analyse en cours...'; btn.disabled = true; }
+  if (btn) { btn.textContent = 'Prêt'; btn.disabled = true; }
   // Plus de check clé : routé via /api/chat
   var reader = new FileReader();
   reader.onload = async function(e) {
@@ -10480,7 +10959,7 @@ async function saveToCloud() {
       hist: hist,
       streak: streak,
       score: score,
-      séances: séances,
+      seances: seances,
       updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
       version: '2.0'
     });
@@ -10505,7 +10984,7 @@ async function loadFromCloud() {
       hist = U.hist || [];
       streak = U.streak || 1;
       score = U.score || 0;
-      séances = U.séances || 0;
+      seances = U.seances || 0;
       // Also sync to localStorage as backup
       try { localStorage.setItem('hima8', JSON.stringify(U)); } catch(e) {}
       console.log('Cloud load OK — J' + streak);
@@ -12276,7 +12755,7 @@ onbNext = function() {
 function cMac(){var w=parseFloat(U.poids||U.dep||80),h2=parseFloat(U.taille||178),a=parseFloat(U.age||28),sx=U.sexe||'h',li=U.lieu||'salle';var bmr=sx==='h'?10*w+6.25*h2-5*a+5:10*w+6.25*h2-5*a-161;var mu={maison:1.375,salle:1.55,mixte:1.475}[li]||1.55;var td=Math.round(bmr*mu),pr=Math.round(w*2.2),lp=Math.round(w),gl=Math.round((td-pr*4-lp*9)/4);return{tdee:td,prot:pr,gluc:gl,lip:lp};}
 function cPhase(){var s=U.semaineCycle||1;return s<=4?'Fondation':s<=8?'Dev':s<=10?'Intensif':'Pic';}
 function cJR(){var d=U.dateDebut;if(!d)return 1;return Math.max(1,Math.floor((Date.now()-new Date(d).getTime())/864e5)+1);}
-function bPB(){var m=cMac(),jr=cJR(),row=document.getElementById('profilRow');if(!row)return;var its=[{k:'Série',v:(U.streak||streak||0)+'j',c:'pcs2'},{k:'Poids',v:(U.poids||U.dep||80)+'kg',c:''},{k:'Cible',v:(U.poidsTarget||U.obj||'--')+'kg',c:''},{k:'TDEE',v:m.tdee+' kcal',c:''},{k:'Prot',v:m.prot+'g',c:''},{k:'Gluc',v:m.gluc+'g',c:''},{k:'Lip',v:m.lip+'g',c:''},{k:'Phase',v:cPhase(),c:'pcp2'},{k:'J-Rel',v:'J'+jr,c:''},{k:'Séances',v:(U.séancesFaites||séances||0)+'/'+(U.séancesTotal||12),c:''}];row.innerHTML=its.map(function(it,i){return(i?'<div class="sp2"></div>':'')+'<div class="pc '+it.c+'"><div class="pv">'+it.v+'</div><div class="pk">'+it.k+'</div></div>';}).join('');}
+function bPB(){var m=cMac(),jr=cJR(),row=document.getElementById('profilRow');if(!row)return;var its=[{k:'Série',v:(U.streak||streak||0)+'j',c:'pcs2'},{k:'Poids',v:(U.poids||U.dep||80)+'kg',c:''},{k:'Cible',v:(U.poidsTarget||U.obj||'--')+'kg',c:''},{k:'TDEE',v:m.tdee+' kcal',c:''},{k:'Prot',v:m.prot+'g',c:''},{k:'Gluc',v:m.gluc+'g',c:''},{k:'Lip',v:m.lip+'g',c:''},{k:'Phase',v:cPhase(),c:'pcp2'},{k:'J-Rel',v:'J'+jr,c:''},{k:'Séances',v:(U.seancesFaites||seances||0)+'/'+(U.séancesTotal||12),c:''}];row.innerHTML=its.map(function(it,i){return(i?'<div class="sp2"></div>':'')+'<div class="pc '+it.c+'"><div class="pv">'+it.v+'</div><div class="pk">'+it.k+'</div></div>';}).join('');}
 function bChips(){var h=new Date().getHours(),qc=document.getElementById('quick-chips');if(!qc)return;var mode=U.mode||'bodybuilding';var c=h<13?['Ma séance du jour','Mes macros','Comment recuperer','Ma progression']:h<20?['Mon diner ce soir','Bilan journee','Séance demain','Correction alim']:['Séance demain','Snack dodo','Bilan semaine','Motivation'];if(mode==='muscle')c[0]='Push Pull du jour';if(mode==='glow'||mode==='toning')c[0]='Cardio du jour';if(mode==='event'||mode==='perf')c[0]='Séance perf';qc.innerHTML=c.map(function(t){return'<div class="qchip" onclick="chatQ(this.textContent)">'+t+'</div>';}).join('');}
 function bSP(){var m=cMac(),jr=cJR(),pn=U.prenom||'Champion';var niv={deb:'Débutant',int_low:'Débutant+',inter:'Inter',av:'Avance',athlete:'Athlete'}[U.niv||'inter']||'Inter';var ton=jr<=7?'direct':jr<=30?'chaleureux':'complice';var bl=U.blessure&&U.blessure!=='aucune'?U.blessure:'aucune';var sep=String.fromCharCode(10);var t='Tu es HIMA coach sportif IA expert. Tu remplaces un coach humain.'+sep;t+='PROFIL: '+pn+' '+(U.mode||'poids')+' '+(U.sexe==='h'?'H':'F')+' '+(U.poids||80)+'kg -> '+(U.poidsTarget||'--')+'kg '+niv+sep;t+='LIEU: '+(U.lieu||'salle')+' TEMPS: '+(U.tps||60)+'min REGIME: '+(Array.isArray(U.reg)?U.reg.join(','):U.reg||'omni')+sep;t+='BLESSURES: '+(Array.isArray(U.blessures)?U.blessures.join(','):bl)+sep;t+='SANTE: '+(Array.isArray(U.sante)?U.sante.join(','):'aucune')+sep;t+='SITUATION: '+(U.situation||'normal')+sep;t+='MACROS: TDEE '+m.tdee+' Prot '+m.prot+'g Gluc '+m.gluc+'g Lip '+m.lip+'g'+sep;t+='OBSTACLES: '+(Array.isArray(U.obstacles)?U.obstacles.join(','):'aucun')+sep;t+='EXO_REFUSES: '+(Array.isArray(U.exoDetestes)?U.exoDetestes.join(','):'aucun')+sep;t+='STRESS: '+(U.stress||5)+'/10 SOMMEIL: '+(U.heuresSommeil||7)+'h ENGAGEMENT: '+(U.engagement||7)+'/10'+sep;t+=buildMemoryContext()+sep;t+='REGLES: 1.UNIQUEMENT sport nutrition recup 2.Tutoyer appeler '+pn+' par prenom 3.Max 4 lignes+donnees concretes 4.Prose pas listes 5.Ton '+ton;return t;}
 // REFACTOR : on évite de patcher window.fetch à chaque appel callAI (race condition).
@@ -12295,7 +12774,7 @@ console.log('HIMA v3 complet charge ✓');
 // HIMA HOME v3 — COMPLET
 // ═══════════════════════════════════════════
 
-// ── Données séances ──
+// ── Données seances ──
 var HM_PLANS = {
   poids: ['Push cardio — Pecto Epaules Triceps','Cardio HIIT 30min','Pull cardio — Dos Biceps','Repos actif','Legs — Cuisses Fessiers','Cardio steady state','Repos complet'],
   muscle: ['Push lourd — Bench Press + Epaules','Pull lourd — Tractions + Rowing','Repos musculaire','Legs — Squat + Leg Press','Push volume — Isolation','Pull volume — Biceps + Dos','Repos complet'],
@@ -12324,7 +12803,7 @@ function calcReadiness() {
 
 function calcBodyScore() {
   var sk = Math.min(U.streak||0,30)/30*20;
-  var se = Math.min(U.séancesFaites||0,4)/4*20;
+  var se = Math.min(U.seancesFaites||0,4)/4*20;
   var sl = (parseFloat(U.heuresSommeil)||7)/9*20;
   var st = (10-(parseFloat(U.stress)||5))/10*20;
   var en = (parseFloat(U.engagement)||7)/10*20;
@@ -12347,7 +12826,7 @@ function getInsightDuJour() {
   if(st>7&&sl<6) return 'Stress eleve + manque de sommeil = cortisol eleve. Priorite absolue : récupération.';
   if(sk>6&&rd>80) return 'Tu es dans ta meilleure semaine. Chaque repetition compte double aujourd\'hui.';
   if(sk===0) return 'Le premier jour est toujours le plus dur. Et le plus important de tous.';
-  if(sl>8&&rd>70) return 'Excellente nuit de sommeil. Ton corps est prêt à tout. Ecrase cette séance.';
+  if(sl>8&&rd>70) return 'Excellente nuit de sommeil. Ton corps est prêt à tout. Ecrase cette seance.';
   if(sk>=30) return '30 jours de suite. Ton cerveau a integre l habitude. Tu es transforme.';
   if(sk>=7) return 'Une semaine complete. Tu es dans les 20% les plus reguliers. Continue.';
   return 'La régularité bat toujours l intensité. Tu es exactement sur la bonne voie.';
@@ -12364,7 +12843,7 @@ function getCoachMsg() {
   if(sk>=7) return sk+' jours de suite '+pn+' ! Tu es dans une autre dimension.';
   if(h<12) return 'Ton '+getSeanceDuJour().nom+' t attend '+pn+'. On y va ?';
   if(h<18) return 'Comment tu te sens ? On ajuste la séance si besoin.';
-  return 'Belle journee '+pn+' ? Dis-moi comment tu te sens avant la séance.';
+  return 'Belle journee '+pn+' ? Dis-moi comment tu te sens avant la seance.';
 }
 
 function getRepasJour() {
@@ -12424,7 +12903,326 @@ function animCounter(id, target) {
 function el(id){ return document.getElementById(id); }
 
 // ── INIT HOME v3 ──
+// ════════════════════════════════════════════════════════
+// HOME V2 — renderHomeV2() + handlers
+// Empty states motivants partout. Jamais de "Chargement...".
+// ════════════════════════════════════════════════════════
+function renderHomeV2() {
+  var U = window.U || {};
+  var pn = U.prenom || 'Champion';
+  var sk = U.streak || 0;
+  var h = new Date().getHours();
+  var mode = U.mode || 'muscle';
+
+  // ── HEADER : la cloche pulse si notifs non lues
+  // (handled separately by HIMA_W4)
+
+  // ── QUESTION COACH — varie selon l'heure
+  var qEl = document.getElementById('h2-question');
+  if (qEl) {
+    var qByHour;
+    if (h < 5)  qByHour = "Encore debout, " + pn + "&nbsp;? Récupère bien.";
+    else if (h < 11) qByHour = "Comment tu te sens ce matin, " + pn + "&nbsp;?";
+    else if (h < 14) qByHour = "Bien lancé sur ta journée, " + pn + "&nbsp;?";
+    else if (h < 18) qByHour = "On termine fort, " + pn + "&nbsp;?";
+    else if (h < 22) qByHour = "Comment a été ta journée, " + pn + "&nbsp;?";
+    else qByHour = "Bilan rapide avant de dormir, " + pn + "&nbsp;?";
+    qEl.innerHTML = qByHour;
+  }
+
+  // ── STATS DU JOUR
+  // Forme du jour (Readiness)
+  var rd = (typeof calcReadiness === 'function') ? calcReadiness() : null;
+  var rdEl = document.getElementById('h2-forme');
+  if (rdEl) rdEl.textContent = (typeof rd === 'number' && rd > 0) ? rd : '—';
+
+  // Série
+  var srEl = document.getElementById('h2-serie');
+  if (srEl) srEl.textContent = sk;
+
+  // Énergie = sommeil + stress combinés (note 0-10)
+  var sleep = parseFloat(U.heuresSommeil || 0);
+  var stress = parseFloat(U.stress || 0);
+  var enEl = document.getElementById('h2-energie');
+  if (enEl) {
+    if (sleep > 0 || stress > 0) {
+      var enVal = Math.round(Math.max(0, Math.min(10, (sleep || 7) - (stress || 5) * 0.4 + 4)));
+      enEl.textContent = enVal + '/10';
+    } else {
+      enEl.textContent = '—';
+    }
+  }
+
+  // ── INSIGHT
+  var insightEl = document.getElementById('h2-insight');
+  if (insightEl) {
+    var insights = [
+      "La régularité bat l'intensité.",
+      "Un jour à la fois, sans pression.",
+      "Tu n'es pas obligé d'être parfait, juste constant.",
+      "Le sommeil construit autant que la salle.",
+      "Tes progrès ne se voient pas tous les jours, mais ils sont là.",
+      "Ton meilleur entraînement est celui que tu fais."
+    ];
+    // Pick deterministic by day-of-year
+    var dayIdx = Math.floor(Date.now() / 86400000) % insights.length;
+    insightEl.textContent = insights[dayIdx];
+  }
+
+  // ── CARDS
+  renderHomeV2Cards();
+}
+
+function renderHomeV2Cards() {
+  var U = window.U || {};
+  var sk = U.streak || 0;
+  var mode = U.mode || 'muscle';
+  var track = document.getElementById('h2-cards-track');
+  if (!track) return;
+
+  // ── 1. Séance du jour
+  var seance = (typeof getSeanceDuJour === 'function') ? getSeanceDuJour() : null;
+  var hasProg = seance && seance.nom && seance.nom !== '—';
+  var seanceCard;
+  if (hasProg) {
+    var meta = (U.tps || 60) + 'min · ' + (U.lieu || 'salle');
+    seanceCard =
+      '<div class="h2-card" onclick="switchTab(\'t-prog\')">' +
+        '<div class="h2-card-ico">🏋️</div>' +
+        '<div class="h2-card-title">Ta séance du jour</div>' +
+        '<div class="h2-card-sub">' + escapeHTMLv2(seance.nom) + '<br>' + meta + '</div>' +
+        '<button class="h2-card-cta" onclick="event.stopPropagation();switchTab(\'t-prog\')">Commencer →</button>' +
+      '</div>';
+  } else {
+    seanceCard =
+      '<div class="h2-card" onclick="switchTab(\'t-prog\')">' +
+        '<div class="h2-card-ico">🏋️</div>' +
+        '<div class="h2-card-title">Première séance</div>' +
+        '<div class="h2-card-sub">Choisis ton mode, on s\'occupe du reste.</div>' +
+        '<button class="h2-card-cta" onclick="event.stopPropagation();switchTab(\'t-prog\')">Choisir mon mode →</button>' +
+      '</div>';
+  }
+
+  // ── 2. Nutrition / journée food
+  var macros = (typeof calcM === 'function') ? calcM() : { kcal: 2000, prot: 130, gluc: 200, lip: 65 };
+  var dm = U.dailyMacros || { kcal: 0, prot: 0, gluc: 0, lip: 0, meals: 0 };
+  var hasFood = (dm.meals || 0) > 0;
+  var nutrCard;
+  if (hasFood) {
+    var pctK = Math.min(100, Math.round((dm.kcal / Math.max(macros.kcal, 1)) * 100));
+    var pctP = Math.min(100, Math.round((dm.prot / Math.max(macros.prot, 1)) * 100));
+    var pctG = Math.min(100, Math.round((dm.gluc / Math.max(macros.gluc, 1)) * 100));
+    var pctL = Math.min(100, Math.round((dm.lip  / Math.max(macros.lip, 1)) * 100));
+    nutrCard =
+      '<div class="h2-card" onclick="switchTab(\'t-nutr\')">' +
+        '<div class="h2-card-ico">🥗</div>' +
+        '<div class="h2-card-title">Ta journée food</div>' +
+        '<div class="h2-card-value">' + dm.kcal + '<span style="font-size:16px;opacity:0.6"> / ' + macros.kcal + ' kcal</span></div>' +
+        '<div class="h2-card-bar"><div class="h2-card-bar-fill" style="width:' + pctK + '%"></div></div>' +
+        '<div class="h2-mini-macros">' +
+          '<div class="h2-mini-mb" title="Protéines"><div class="h2-mini-mb-fill" style="width:' + pctP + '%"></div></div>' +
+          '<div class="h2-mini-mb" title="Glucides"><div class="h2-mini-mb-fill gluc" style="width:' + pctG + '%"></div></div>' +
+          '<div class="h2-mini-mb" title="Lipides"><div class="h2-mini-mb-fill lip" style="width:' + pctL + '%"></div></div>' +
+        '</div>' +
+        '<button class="h2-card-cta h2-card-cta-ghost" style="margin-top:auto" onclick="event.stopPropagation();switchTab(\'t-nutr\')">Ajouter un repas</button>' +
+      '</div>';
+  } else {
+    nutrCard =
+      '<div class="h2-card" onclick="switchTab(\'t-nutr\')">' +
+        '<div class="h2-card-ico">🥗</div>' +
+        '<div class="h2-card-title">Ta journée food</div>' +
+        '<div class="h2-card-sub">Ajoute ton premier repas en 3 taps. Photo, scan ou écris-le.</div>' +
+        '<button class="h2-card-cta" onclick="event.stopPropagation();switchTab(\'t-nutr\')">Ajouter un repas →</button>' +
+      '</div>';
+  }
+
+  // ── 3. Hydratation
+  var hydroTarget = Math.round(((U.poids || 75) * 35) / 250); // verres de 250ml
+  var hydroNow = U.hydroToday || 0;
+  var hydroPct = Math.min(100, Math.round((hydroNow / Math.max(hydroTarget, 1)) * 100));
+  var hydroCard =
+    '<div class="h2-card">' +
+      '<div class="h2-card-ico">💧</div>' +
+      '<div class="h2-card-title">Hydratation</div>' +
+      '<div class="h2-card-value">' + hydroNow + '<span style="font-size:16px;opacity:0.6"> / ' + hydroTarget + ' verres</span></div>' +
+      '<div class="h2-card-bar"><div class="h2-card-bar-fill" style="width:' + hydroPct + '%;background:linear-gradient(90deg,#3b82f6,#06b6d4)"></div></div>' +
+      '<button class="h2-card-cta" style="background:linear-gradient(135deg,#3b82f6,#06b6d4);margin-top:auto" onclick="h2AddWater()">+ Un verre</button>' +
+    '</div>';
+
+  // ── 4. Récup musculaire
+  var hasSeance = (U.seances || 0) > 0;
+  var recupCard;
+  if (hasSeance) {
+    recupCard =
+      '<div class="h2-card" onclick="switchTab(\'t-corps\')">' +
+        '<div class="h2-card-ico">🧠</div>' +
+        '<div class="h2-card-title">Récup musculaire</div>' +
+        '<div class="h2-card-sub" id="h2-recup-msg">Tous récupérés. Tu peux taper fort aujourd\'hui.</div>' +
+        '<button class="h2-card-cta h2-card-cta-ghost" style="margin-top:auto" onclick="event.stopPropagation();switchTab(\'t-corps\')">Voir détails →</button>' +
+      '</div>';
+  } else {
+    recupCard =
+      '<div class="h2-card" onclick="switchTab(\'t-prog\')">' +
+        '<div class="h2-card-ico">🧠</div>' +
+        '<div class="h2-card-title">Récup musculaire</div>' +
+        '<div class="h2-card-sub">Première séance = première donnée. Ton corps va parler.</div>' +
+        '<button class="h2-card-cta" style="margin-top:auto" onclick="event.stopPropagation();switchTab(\'t-prog\')">Commencer →</button>' +
+      '</div>';
+  }
+
+  // ── 5. Objectif
+  var pAct = parseFloat(U.poids || 0);
+  var pCible = parseFloat(U.poidsTarget || pAct);
+  var hasObj = pAct > 0 && pCible > 0 && Math.abs(pAct - pCible) >= 0.5;
+  var objCard;
+  if (hasObj) {
+    var dirIco = pCible < pAct ? '📉' : '📈';
+    var diff = Math.abs(pAct - pCible).toFixed(1);
+    objCard =
+      '<div class="h2-card" onclick="switchTab(\'t-corps\')">' +
+        '<div class="h2-card-ico">' + dirIco + '</div>' +
+        '<div class="h2-card-title">Ton objectif</div>' +
+        '<div class="h2-card-value">' + pAct + '<span style="font-size:16px;opacity:0.6">kg</span></div>' +
+        '<div class="h2-card-sub">Cible : ' + pCible + 'kg · Encore ' + diff + 'kg</div>' +
+        '<button class="h2-card-cta h2-card-cta-ghost" style="margin-top:auto" onclick="event.stopPropagation();switchTab(\'t-corps\')">Suivre →</button>' +
+      '</div>';
+  } else {
+    objCard =
+      '<div class="h2-card" onclick="switchTab(\'t-corps\')">' +
+        '<div class="h2-card-ico">🎯</div>' +
+        '<div class="h2-card-title">Ton objectif</div>' +
+        '<div class="h2-card-sub">Pèse-toi une fois pour démarrer le suivi. Ça prend 5 secondes.</div>' +
+        '<button class="h2-card-cta" style="margin-top:auto" onclick="event.stopPropagation();switchTab(\'t-corps\')">Me peser →</button>' +
+      '</div>';
+  }
+
+  // ── 6. Records perso
+  var prList = (U.perfLog || []);
+  var prCard;
+  if (prList.length > 0) {
+    var prTop = prList.slice(-3).reverse().map(function(p) {
+      return '<div style="font-size:13px;color:rgba(240,240,255,0.85);padding:3px 0">' + escapeHTMLv2(p.exo || '') + ' · <strong>' + (p.kg || '?') + 'kg × ' + (p.reps || '?') + '</strong></div>';
+    }).join('');
+    prCard =
+      '<div class="h2-card" onclick="switchTab(\'t-prog\')">' +
+        '<div class="h2-card-ico">🏆</div>' +
+        '<div class="h2-card-title">Tes records perso</div>' +
+        '<div class="h2-card-sub" style="margin-top:4px">' + prTop + '</div>' +
+      '</div>';
+  } else {
+    prCard =
+      '<div class="h2-card" onclick="switchTab(\'t-prog\')">' +
+        '<div class="h2-card-ico">🏆</div>' +
+        '<div class="h2-card-title">Tes records perso</div>' +
+        '<div class="h2-card-sub">Ton premier record arrive bientôt. Il faut juste commencer.</div>' +
+        '<button class="h2-card-cta" style="margin-top:auto" onclick="event.stopPropagation();switchTab(\'t-prog\')">Démarrer →</button>' +
+      '</div>';
+  }
+
+  // ── 7. Défi de la semaine (UNE seule fois)
+  var defiCard;
+  var defiData = U.weekDefi || { name: '2 recettes', desc: 'Cuisiner 2 recettes HIMA cette semaine', progress: 0, target: 2 };
+  var defiPct = Math.min(100, Math.round((defiData.progress / Math.max(defiData.target, 1)) * 100));
+  defiCard =
+    '<div class="h2-card" style="background:linear-gradient(135deg,rgba(249,136,5,0.12),rgba(243,86,149,0.08));border-color:rgba(249,136,5,0.25)">' +
+      '<div class="h2-card-ico">🎁</div>' +
+      '<div class="h2-card-title">Défi de la semaine</div>' +
+      '<div class="h2-card-sub"><strong style="color:#F0F0FF">' + escapeHTMLv2(defiData.name) + '</strong><br>' + escapeHTMLv2(defiData.desc) + '</div>' +
+      '<div class="h2-card-bar"><div class="h2-card-bar-fill" style="width:' + defiPct + '%"></div></div>' +
+      '<div style="font-size:11px;color:rgba(240,240,255,0.55);margin-top:6px">' + defiData.progress + ' / ' + defiData.target + ' · ' + defiPct + '%</div>' +
+    '</div>';
+
+  // Assemble track
+  var cards = [seanceCard, nutrCard, hydroCard, recupCard, objCard, prCard, defiCard];
+  track.innerHTML = cards.join('');
+
+  // Dots de pagination
+  var dotsEl = document.getElementById('h2-cards-dots');
+  if (dotsEl) {
+    dotsEl.innerHTML = cards.map(function(_, i) {
+      return '<div class="h2-dot' + (i === 0 ? ' active' : '') + '" data-idx="' + i + '"></div>';
+    }).join('');
+  }
+
+  // Sync dots au scroll
+  if (!track._h2DotsBound) {
+    track._h2DotsBound = true;
+    track.addEventListener('scroll', function() {
+      var cardW = track.scrollWidth / cards.length;
+      var idx = Math.round(track.scrollLeft / cardW);
+      var dots = dotsEl ? dotsEl.querySelectorAll('.h2-dot') : [];
+      dots.forEach(function(d, i) { d.classList.toggle('active', i === idx); });
+    }, { passive: true });
+  }
+}
+
+// ── Helpers Home V2 ──
+function escapeHTMLv2(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, function(c) {
+    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+  });
+}
+
+// Tap chip "Comment tu te sens" → ouvre Chat avec contexte
+window.h2ChipTap = function(mood) {
+  var msgMap = {
+    forme:   'Je me sens en forme aujourd\'hui, prêt à pousser fort.',
+    fatigue: 'Je me sens fatigué aujourd\'hui. Qu\'est-ce que tu me conseilles ?',
+    motive:  'Je suis super motivé là, on tape un truc qui pique ?'
+  };
+  var msg = msgMap[mood] || 'Comment tu vas aujourd\'hui ?';
+  try { switchTab('t-chat'); } catch(e){}
+  setTimeout(function() {
+    var ci = document.getElementById('ci');
+    if (ci) {
+      ci.value = msg;
+      try { ci.focus(); } catch(e){}
+    }
+    // Envoi auto si chatSend dispo
+    if (typeof chatSend === 'function') {
+      setTimeout(function(){ chatSend(); }, 100);
+    }
+  }, 200);
+};
+
+// Ajouter un verre d'eau (sync avec nutrition)
+window.h2AddWater = function() {
+  window.U = window.U || {};
+  U.hydroToday = (U.hydroToday || 0) + 1;
+  if (typeof save === 'function') save();
+  // Haptic
+  if (typeof haptic === 'function') haptic('light');
+  // Re-render uniquement la card Hydratation
+  if (window.SV2_FLAGS && window.SV2_FLAGS.homeV2) {
+    try { renderHomeV2Cards(); } catch(e){}
+  }
+};
+
 function initHomeV3() {
+  // ════════════════════════════════════════════════════════
+  // Kill switch : SV2_FLAGS.homeV2 (true par défaut)
+  //   - true  → renderHomeV2() + cache V1
+  //   - false → renderHomeV1Legacy() + cache V2 (ancien comportement)
+  // ════════════════════════════════════════════════════════
+  window.SV2_FLAGS = window.SV2_FLAGS || {};
+  if (typeof window.SV2_FLAGS.homeV2 === 'undefined') {
+    window.SV2_FLAGS.homeV2 = true; // V2 par défaut depuis Mission Home
+  }
+  var v2El = document.getElementById('home-v2');
+  var v1El = document.getElementById('home-v1');
+  if (window.SV2_FLAGS.homeV2 && v2El) {
+    if (v1El) v1El.style.display = 'none';
+    v2El.style.display = 'flex';
+    try { renderHomeV2(); } catch(e){ if(window.HIMA_OBS)HIMA_OBS.capture({type:'home-v2',msg:e.message,stack:e.stack}); }
+    return;
+  }
+  if (v2El) v2El.style.display = 'none';
+  if (v1El) v1El.style.display = '';
+  // FALLBACK : ancien comportement (préservé intégralement ci-dessous)
+  return _initHomeV3Legacy.apply(this, arguments);
+}
+
+function _initHomeV3Legacy() {
   var h = new Date().getHours();
   var pn = U.prenom||'Champion';
   var mode = U.mode||'muscle';
@@ -12434,10 +13232,10 @@ function initHomeV3() {
   var greet = h<5?'Bonne nuit':h<12?'Salut':h<18?'En forme ?':h<22?'Bonsoir':'On se repose';
   if(el('hh-gr')) el('hh-gr').textContent = greet;
   if(el('hh-nm')) el('hh-nm').textContent = pn.toUpperCase();
-  var séance = getSeanceDuJour();
+  var seance = getSeanceDuJour();
   // Empty state jour 1 : si streak = 0 et pas de séance terminée → message d'accueil chaleureux
   var sub;
-  if (sk === 0 && (!U.séancesFaites || U.séancesFaites === 0)) {
+  if (sk === 0 && (!U.seancesFaites || U.seancesFaites === 0)) {
     sub = 'Première séance dans 3 taps. On y va ?';
   } else if (seance.nom.indexOf('Repos') !== -1) {
     sub = 'Jour de récupération active';
@@ -12485,10 +13283,10 @@ function initHomeV3() {
   if(el('hm-badge-jour')) el('hm-badge-jour').textContent=seance.jour;
   if(el('hm-badge-phase')) el('hm-badge-phase').textContent=typeof cPhase==='function'?cPhase():'Fondation';
   if(el('hm-badge-int')){ el('hm-badge-int').textContent=intLabel; el('hm-badge-int').style.background=intColor; }
-  if(el('hm-séance-name')) el('hm-séance-name').textContent=seance.nom;
+  if(el('hm-seance-name')) el('hm-seance-name').textContent=seance.nom;
   var exosList = (HM_EXOS[mode]||HM_EXOS.poids)[new Date().getDay()%3]||HM_EXOS.muscle[0];
-  if(el('hm-séance-exos')) el('hm-séance-exos').innerHTML=exosList.map(function(e){return'<div class="hm-séance-exo">'+e+'</div>';}).join('');
-  if(el('hm-séance-meta')) el('hm-séance-meta').textContent=(U.tps||60)+'min · '+(U.lieu||'salle');
+  if(el('hm-seance-exos')) el('hm-seance-exos').innerHTML=exosList.map(function(e){return'<div class="hm-seance-exo">'+e+'</div>';}).join('');
+  if(el('hm-seance-meta')) el('hm-seance-meta').textContent=(U.tps||60)+'min · '+(U.lieu||'salle');
 
   // OBJECTIF
   var pAct = parseFloat(U.poids||U.dep||80);
@@ -12581,7 +13379,7 @@ function initHomeV3() {
       '<div class="hm-dc-lbl" style="color:'+(isToday?'#F98805':'#3A3A60')+'">'+j+'</div></div>';
   }).join('');
   var séancesOk = [0,1,2,3,4,5,6].filter(function(i){return séances7[i]&&séances7[i].indexOf('Repos')===-1;}).length;
-  if(el('hm-week-phrase')) el('hm-week-phrase').textContent=séancesOk+' séances prevues cette semaine. Reste constant.';
+  if(el('hm-week-phrase')) el('hm-week-phrase').textContent=séancesOk+' seances prevues cette semaine. Reste constant.';
 
   // PR CARDS
   var prs = U.poids1RM||{};
@@ -12610,9 +13408,9 @@ function initHomeV3() {
 function cMac(){var w=parseFloat(U.poids||U.dep||80),h2=parseFloat(U.taille||178),ag=parseFloat(U.age||28),sx=U.sexe||'h',li=U.lieu||'salle';var bmr=sx==='h'?10*w+6.25*h2-5*ag+5:10*w+6.25*h2-5*ag-161;var mu={maison:1.375,salle:1.55,mixte:1.475}[li]||1.55;var td=Math.round(bmr*mu),pr=Math.round(w*2.2),lp=Math.round(w),gl=Math.round((td-pr*4-lp*9)/4);return{tdee:td,prot:pr,gluc:gl,lip:lp};}
 function cPhase(){var s=U.semaineCycle||1;return s<=4?'Fondation':s<=8?'Dev':s<=10?'Intensif':'Pic';}
 function cJR(){var d=U.dateDebut;if(!d)return 1;return Math.max(1,Math.floor((Date.now()-new Date(d).getTime())/864e5)+1);}
-function bPB(){var m=cMac(),jr=cJR(),row=document.getElementById('profilRow');if(!row)return;var its=[{k:'Série',v:(U.streak||streak||0)+'j',c:'pcs2'},{k:'Poids',v:(U.poids||U.dep||80)+'kg',c:''},{k:'Cible',v:(U.poidsTarget||U.obj||'--')+'kg',c:''},{k:'TDEE',v:m.tdee+' kcal',c:''},{k:'Prot',v:m.prot+'g',c:''},{k:'Gluc',v:m.gluc+'g',c:''},{k:'Lip',v:m.lip+'g',c:''},{k:'Phase',v:cPhase(),c:'pcp2'},{k:'J-Rel',v:'J'+jr,c:''},{k:'Séances',v:(U.séancesFaites||séances||0)+'/'+(U.séancesTotal||12),c:''}];row.innerHTML=its.map(function(it,i){return(i?'<div class="sp2"></div>':'')+'<div class="pc '+it.c+'"><div class="pv">'+it.v+'</div><div class="pk">'+it.k+'</div></div>';}).join('');}
+function bPB(){var m=cMac(),jr=cJR(),row=document.getElementById('profilRow');if(!row)return;var its=[{k:'Série',v:(U.streak||streak||0)+'j',c:'pcs2'},{k:'Poids',v:(U.poids||U.dep||80)+'kg',c:''},{k:'Cible',v:(U.poidsTarget||U.obj||'--')+'kg',c:''},{k:'TDEE',v:m.tdee+' kcal',c:''},{k:'Prot',v:m.prot+'g',c:''},{k:'Gluc',v:m.gluc+'g',c:''},{k:'Lip',v:m.lip+'g',c:''},{k:'Phase',v:cPhase(),c:'pcp2'},{k:'J-Rel',v:'J'+jr,c:''},{k:'Séances',v:(U.seancesFaites||seances||0)+'/'+(U.séancesTotal||12),c:''}];row.innerHTML=its.map(function(it,i){return(i?'<div class="sp2"></div>':'')+'<div class="pc '+it.c+'"><div class="pv">'+it.v+'</div><div class="pk">'+it.k+'</div></div>';}).join('');}
 function bChips(){var h=new Date().getHours(),qc=document.getElementById('quick-chips');if(!qc)return;var mode=U.mode||'muscle';var c=h<13?['Ma séance du jour','Mes macros','Comment recuperer','Ma progression']:h<20?['Mon diner ce soir','Bilan journee','Séance demain','Correction alim']:['Séance demain','Snack dodo','Bilan semaine','Motivation'];if(mode==='muscle')c[0]='Push Pull du jour';if(mode==='toning'||mode==='poids')c[0]='Cardio du jour';if(mode==='perf'||mode==='event')c[0]='Séance perf';qc.innerHTML=c.map(function(t){return'<div class="qchip" onclick="chatQ(this.textContent)">'+t+'</div>';}).join('');}
-function bSP(){var m=cMac(),jr=cJR(),pn=U.prenom||'Champion';var niv={deb:'Débutant',inter_low:'Débutant+',inter:'Inter',av:'Avance',athlete:'Athlete'}[U.niv||'inter']||'Inter';var ton=jr<=7?'direct':jr<=30?'chaleureux':'complice';var sep=String.fromCharCode(10);var t='Tu es HIMA coach sportif IA expert. Tu remplaces un coach humain.'+sep;t+='PROFIL: '+pn+' '+(U.mode||'muscle')+' '+(U.sexe==='h'?'H':'F')+' '+(U.poids||80)+'kg -> '+(U.poidsTarget||'--')+'kg '+niv+sep;t+='LIEU: '+(U.lieu||'salle')+' TEMPS: '+(U.tps||60)+'min'+sep;t+='REGIME: '+(Array.isArray(U.reg)?U.reg.join(','):U.reg||'omni')+sep;t+='BLESSURES: '+(Array.isArray(U.blessures)?U.blessures.join(','):'aucune')+sep;t+='SANTE: '+(Array.isArray(U.sante)?U.sante.join(','):'aucune')+sep;t+='OBSTACLES: '+(Array.isArray(U.obstacles)?U.obstacles.join(','):'aucun')+sep;t+='EXO_REFUSES: '+(Array.isArray(U.exoDetestes)?U.exoDetestes.join(','):'aucun')+sep;t+='STRESS: '+(U.stress||5)+'/10 SOMMEIL: '+(U.heuresSommeil||7)+'h ENGAGEMENT: '+(U.engagement||7)+'/10'+sep;t+='MACROS: TDEE '+m.tdee+' Prot '+m.prot+'g Gluc '+m.gluc+'g Lip '+m.lip+'g'+sep;t+='READINESS: '+calcReadiness()+'/100 BODY SCORE: '+calcBodyScore()+'/100'+sep;t+='PROGRESSION: Série '+(U.streak||0)+'j Phase '+cPhase()+' J'+jr+sep;t+=buildMemoryContext()+sep;t+='REGLES: 1.UNIQUEMENT sport nutrition recup 2.Tutoyer appeler '+pn+' 3.Max 4 lignes+donnees concretes 4.Prose pas listes 5.Ton '+ton;return t;}
+function bSP(){var m=cMac(),jr=cJR(),pn=U.prenom||'Champion';var niv={deb:'Débutant',inter_low:'Débutant+',inter:'Inter',av:'Avance',athlete:'Athlete'}[U.niv||'inter']||'Inter';var ton=jr<=7?'direct':jr<=30?'chaleureux':'complice';var sep=String.fromCharCode(10);var t='Tu es HIMA coach sportif IA expert. Tu remplaces un coach humain.'+sep;t+='PROFIL: '+pn+' '+(U.mode||'muscle')+' '+(U.sexe==='h'?'H':'F')+' '+(U.poids||80)+'kg -> '+(U.poidsTarget||'--')+'kg '+niv+sep;t+='LIEU: '+(U.lieu||'salle')+' TEMPS: '+(U.tps||60)+'min'+sep;t+='REGIME: '+(Array.isArray(U.reg)?U.reg.join(','):U.reg||'omni')+sep;t+='BLESSURES: '+(Array.isArray(U.blessures)?U.blessures.join(','):'aucune')+sep;t+='SANTE: '+(Array.isArray(U.sante)?U.sante.join(','):'aucune')+sep;t+='OBSTACLES: '+(Array.isArray(U.obstacles)?U.obstacles.join(','):'aucun')+sep;t+='EXO_REFUSES: '+(Array.isArray(U.exoDetestes)?U.exoDetestes.join(','):'aucun')+sep;t+='STRESS: '+(U.stress||5)+'/10 SOMMEIL: '+(U.heuresSommeil||7)+'h ENGAGEMENT: '+(U.engagement||7)+'/10'+sep;t+='MACROS: TDEE '+m.tdee+' Prot '+m.prot+'g Gluc '+m.gluc+'g Lip '+m.lip+'g'+sep;t+='FORME DU JOUR: '+calcReadiness()+'/100 INDICE GLOBAL: '+calcBodyScore()+'/100'+sep;t+='PROGRESSION: Série '+(U.streak||0)+'j Phase '+cPhase()+' J'+jr+sep;t+=buildMemoryContext()+sep;t+='REGLES: 1.UNIQUEMENT sport nutrition recup 2.Tutoyer appeler '+pn+' 3.Max 4 lignes+donnees concretes 4.Prose pas listes 5.Ton '+ton;return t;}
 
 // REFACTOR : utilise hima_systemPromptOverride au lieu de patcher window.fetch
 var _h_callAI=callAI;
@@ -12711,7 +13509,7 @@ buildPricingCards = function() {
     +     '<div class="plan-feat-v3 yes"><span class="plan-feat-ico-v3">✓</span><span><span class="plan-feat-strong">Ton programme personnalisé</span> qui évolue chaque semaine selon tes progrès</span></div>'
     +     '<div class="plan-feat-v3 yes"><span class="plan-feat-ico-v3">✓</span><span><span class="plan-feat-strong">Ta nutrition au gramme près</span> — fini les "j\'sais pas quoi manger"</span></div>'
     +     '<div class="plan-feat-v3 yes"><span class="plan-feat-ico-v3">✓</span><span><span class="plan-feat-strong">Suivi de transformation</span> — vois ton corps changer semaine après semaine</span></div>'
-    +     '<div class="plan-feat-v3 yes"><span class="plan-feat-ico-v3">✓</span><span><span class="plan-feat-strong">Mémoire totale</span> — chaque séance, chaque douleur, chaque victoire</span></div>'
+    +     '<div class="plan-feat-v3 yes"><span class="plan-feat-ico-v3">✓</span><span><span class="plan-feat-strong">Mémoire totale</span> — chaque seance, chaque douleur, chaque victoire</span></div>'
     +     '<div class="plan-feat-v3 yes"><span class="plan-feat-ico-v3">✓</span><span><span class="plan-feat-strong">Anti-abandon intelligent</span> — il te rattrape avant que tu lâches</span></div>'
     +   '</div>'
     +   '<button class="plan-cta-v3 plan-cta-v3-pro" onclick="startPro()">Commencer ma transformation — 7 jours offerts</button>'
@@ -12729,10 +13527,10 @@ buildPricingCards = function() {
     +     '<div class="plan-per-v3">' + per + '</div>'
     +     (eliteStrike ? '<div class="plan-strike">' + eliteStrike + '</div>' : '')
     +   '</div>'
-    +   '<div class="plan-anchor">' + eliteDay + '€/jour. Un coach humain, c\'est 60€ la séance.</div>'
+    +   '<div class="plan-anchor">' + eliteDay + '€/jour. Un coach humain, c\'est 60€ la seance.</div>'
     +   '<div class="plan-feats-v3">'
     +     '<div class="plan-feat-v3 yes"><span class="plan-feat-ico-v3">✓</span><span><span class="plan-feat-strong">Tout du Pro, en illimité</span></span></div>'
-    +     '<div class="plan-feat-v3 yes"><span class="plan-feat-ico-v3">✓</span><span><span class="plan-feat-strong">Coach vocal IA</span> — il te parle pendant tes séances comme un vrai coach</span></div>'
+    +     '<div class="plan-feat-v3 yes"><span class="plan-feat-ico-v3">✓</span><span><span class="plan-feat-strong">Coach vocal IA</span> — il te parle pendant tes seances comme un vrai coach</span></div>'
     +     '<div class="plan-feat-v3 yes"><span class="plan-feat-ico-v3">✓</span><span><span class="plan-feat-strong">Analyse posturale en temps réel</span> — ta caméra corrige ta technique mouvement par mouvement</span></div>'
     +     '<div class="plan-feat-v3 yes"><span class="plan-feat-ico-v3">✓</span><span><span class="plan-feat-strong">Cartes records partageables</span> — montre tes records perso, motive-toi</span></div>'
     +     '<div class="plan-feat-v3 yes"><span class="plan-feat-ico-v3">✓</span><span><span class="plan-feat-strong">Ajustements en temps réel</span> — fatigue, blessure, événement : ton plan s\'adapte</span></div>'
@@ -13141,7 +13939,7 @@ window.svBuildRestHTML = function(seance, today, U) {
     ],
     [
       { i:'🦴', t:'Mobilité quotidienne', d:'10 min suffisent. Hanches, épaules, colonne. Prévient les blessures.' },
-      { i:'🫐', t:'Anti-oxydants', d:'Fruits rouges, légumes verts. Combat le stress oxydatif post-séance.' },
+      { i:'🫐', t:'Anti-oxydants', d:'Fruits rouges, légumes verts. Combat le stress oxydatif post-seance.' },
       { i:'⏰', t:'Routine constante', d:'Coucher/lever réguliers. Le corps adore la prévisibilité.' }
     ]
   ];
@@ -13264,7 +14062,7 @@ window.svStartMobility = function() {
   if (typeof svStartActive === 'function') svStartActive();
 };
 
-// Preview de la prochaine séance : redirige vers le tab séances actif demain (placeholder simple)
+// Preview de la prochaine séance : redirige vers le tab seances actif demain (placeholder simple)
 window.svPreviewNext = function() {
   if (typeof toast === 'function') toast('Reviens demain pour cette séance 💪');
 };
@@ -13318,7 +14116,7 @@ window.svBuildLandingImpl = function() {
   var sc = tab.querySelector('.sv-root');
   if (!sc) { console.log('[SV-DEBUG] Impl: NO SC after insert'); return; }
   /* SV-DEBUG removed */
-  var séance = svGenSeance();
+  var seance = svGenSeance();
   /* SV-DEBUG removed */
   var U = window.U || {};
   var DAYSF = ['L','M','M','J','V','S','D'];
@@ -13330,9 +14128,9 @@ window.svBuildLandingImpl = function() {
     var jourFr = ['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche'][today];
     html = '<div class="sv-hero">'
       + '<div class="sv-hero-eyebrow">AUJOURD\'HUI · ' + jourFr.toUpperCase() + '</div>'
-      + '<div class="sv-hero-title">' + séance.titre.toUpperCase() + '</div>'
-      + '<div class="sv-hero-sub">' + séance.sub + '</div>'
-      + '<div class="sv-hero-pills"><span class="sv-pill">⏱ ' + séance.duree + ' min</span><span class="sv-pill">💪 ' + séance.exos.length + ' exos</span></div>'
+      + '<div class="sv-hero-title">' + seance.titre.toUpperCase() + '</div>'
+      + '<div class="sv-hero-sub">' + seance.sub + '</div>'
+      + '<div class="sv-hero-pills"><span class="sv-pill">⏱ ' + seance.duree + ' min</span><span class="sv-pill">💪 ' + seance.exos.length + ' exos</span></div>'
       + '</div>';
     // Liste exos directement visible (pas d'écran intermédiaire)
     html += '<div class="sv-exo-list">';
@@ -13397,7 +14195,7 @@ window.svBuildLandingImpl = function() {
 // ────────────────────────────────────────────────
 window.svStartActive = function() {
   if (!SV.current) {
-    var séance = svGenSeance();
+    var seance = svGenSeance();
     if (seance.rest) return;
     SV.current = seance;
   }
@@ -13653,7 +14451,7 @@ window.svTogglePause = function() {
 };
 
 window.svQuitActive = function() {
-  if (!confirm('Quitter la séance ? Ta progression sera perdue.')) return;
+  if (!confirm('Quitter la seance ? Ta progression sera perdue.')) return;
   if (SV.restTimer) { clearInterval(SV.restTimer); SV.restTimer = null; }
   document.getElementById('sv2-active').classList.remove('on');
   document.getElementById('sv2-rest').classList.remove('on');
@@ -13669,7 +14467,7 @@ window.svOpenCoach = function() {
     switchTab('t-chat');
     setTimeout(function(){
       var exo = SV.current && SV.current.exos[SV.exoIdx];
-      var ctx = exo ? '(Pendant ma séance, exo : '+exo.n+', set '+(SV.setIdx+1)+'/'+exo.sets+') ' : '';
+      var ctx = exo ? '(Pendant ma seance, exo : '+exo.n+', set '+(SV.setIdx+1)+'/'+exo.sets+') ' : '';
       var ci = document.getElementById('ci');
       if (ci) { ci.value = ctx; ci.focus(); }
     }, 300);
@@ -13725,7 +14523,7 @@ window.svFinish = function() {
   document.getElementById('sv2-rec-kcal').textContent = kcal;
   var subMsg = duree < 15 ? 'Court mais fait. Mieux que rien.' :
                duree < 35 ? 'Tu as tenu. C\'est ce qui compte.' :
-               duree < 55 ? 'Belle séance. Solide.' :
+               duree < 55 ? 'Belle seance. Solide.' :
                             'Effort exceptionnel. Bravo.';
   document.getElementById('sv2-recap-sub').textContent = subMsg;
   // PR
@@ -15788,9 +16586,9 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
         var hist = window.hist || [];
         var streak = window.streak || 1;
         var score = window.score || 0;
-        var séances = window.séances || 0;
+        var seances = window.seances|| 0;
         localStorage.setItem('hima8', JSON.stringify(Object.assign({}, U, {
-          hist: hist, streak: streak, score: score, séances: séances
+          hist: hist, streak: streak, score: score, seances: seances
         })));
       }
     } catch(e) { console.warn('[PV3] save error:', e); }
@@ -15813,7 +16611,7 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
   function renderProfil() {
     var U = getU();
     var streak = window.streak || 1;
-    var séances = window.séances || 0;
+    var seances = window.seances|| 0;
     var score = window.score || 0;
 
     // Avatar + identité
@@ -15833,7 +16631,7 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
 
     // Stats
     setText('pv3-stat-streak', streak);
-    setText('pv3-stat-séances', séances);
+    setText('pv3-stat-seances', seances);
     setText('pv3-stat-poids', U.poids ? U.poids + ' kg' : '—');
     setText('pv3-stat-score', score);
 
@@ -16157,7 +16955,7 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
         user: getU(),
         hist: window.hist || [],
         streak: window.streak || 0,
-        séances: window.séances || 0,
+        seances: window.seances|| 0,
         score: window.score || 0,
         exportDate: new Date().toISOString()
       }, null, 2);
@@ -16453,7 +17251,7 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
     var d = u.corps3 && u.corps3.daily && u.corps3.daily[H.todayKey()];
     var base = 70;
     if (!d){
-      // Pas saisi aujourd'hui -> on regarde streak séances + recup
+      // Pas saisi aujourd'hui -> on regarde streak seances+ recup
       var streak = (u.streak && u.streak.current) || 0;
       base = 50 + Math.min(20, streak * 2);
     } else {
@@ -16503,7 +17301,7 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
         '<text x="60" y="58" text-anchor="middle" fill="#F0F0FF" '+
           'style="font-family:Bebas Neue,sans-serif;font-size:34px;letter-spacing:1px">'+score+'</text>'+
         '<text x="60" y="76" text-anchor="middle" fill="rgba(240,240,255,0.6)" '+
-          'style="font-family:DM Sans,sans-serif;font-size:9px;letter-spacing:2px">READINESS</text>'+
+          'style="font-family:DM Sans,sans-serif;font-size:9px;letter-spacing:2px">FORME DU JOUR</text>'+
       '</svg>';
   }
 
@@ -16972,7 +17770,7 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
    WAVE 3.3 - Evolution poids + 1RM tracker
    ---------------------------------------------------------------------------
    * Graph poids 30j SVG (line + zone) + tendance kg/sem
-   * 1RM des 5 lifts core sync depuis SV2 séances (Epley deja calcule)
+   * 1RM des 5 lifts core sync depuis SV2 seances (Epley deja calcule)
    * Switcher periode 30j / 90j / 365j
    =========================================================================== */
 
@@ -17009,7 +17807,7 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
   }
 
   function getPRs(){
-    // Lit window.SV2.history si present (séances v3 stocke 1RM Epley)
+    // Lit window.SV2.history si present (seances v3 stocke 1RM Epley)
     var u = H.getU();
     var stored = u.corps3.prs || {};
     try {
@@ -17571,7 +18369,7 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
         { emoji:'⚡', title:'Énergie OK', detail: 'Surveille ton sommeil pour pousser plus fort.' },
         { emoji:'🔥', title:'Prochaine palier', detail: 'Vise +1 séance cette semaine pour casser le plateau.' }
       ],
-      action: { title: 'Plan 7 jours', steps: ['3 séances cette semaine', 'Saisir poids 2x', 'Photo dimanche matin'] }
+      action: { title: 'Plan 7 jours', steps: ['3 seances cette semaine', 'Saisir poids 2x', 'Photo dimanche matin'] }
     };
   }
 
@@ -17654,7 +18452,7 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
           '<span class="c35-loading-dot" style="animation-delay:-0.32s"></span>'+
           '<span class="c35-loading-dot" style="animation-delay:-0.16s"></span>'+
           '<span class="c35-loading-dot"></span>'+
-          '<div style="margin-top:10px;font-size:12px">Analyse en cours...</div>'+
+          '<div style="margin-top:10px;font-size:12px">Prêt</div>'+
         '</div>';
         callAI().then(function(data){
           renderInto();
@@ -20160,12 +20958,12 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
     var rpes = lastSets.filter(function(s){ return s.rpe != null; });
     var avgRPE = rpes.length ? rpes.reduce(function(a,s){return a+s.rpe;},0)/rpes.length : null;
 
-    // Detection plateau : meme 1RM Epley sur 3+ séances precedentes
+    // Detection plateau : meme 1RM Epley sur 3+ seances precedentes
     var dates = [];
     hist.forEach(function(s){
       if (dates.indexOf(s.date) === -1) dates.push(s.date);
     });
-    dates = dates.slice(0, 4); // 4 dernieres séances
+    dates = dates.slice(0, 4); // 4 dernieres seances
     var trend1RMs = dates.map(function(d){
       var setsD = hist.filter(function(s){ return s.date === d; });
       return Math.max.apply(null, setsD.map(function(s){ return epley1RM(s.weight, s.reps); }));
@@ -20619,7 +21417,7 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
 
     // Tendance lineaire simple : moyenne progression hebdo
     var totalGain = rms[rms.length-1] - rms[0];
-    var weeksSpan = Math.max(1, (rms.length - 1) * 1); // ~1 sem entre séances
+    var weeksSpan = Math.max(1, (rms.length - 1) * 1); // ~1 sem entre seances
     var gainPerWeek = totalGain / weeksSpan;
 
     var current1RM = rms[rms.length-1];
@@ -20739,7 +21537,7 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
         }).join('')
       + '</div>';
     } else {
-      msHtml = '<div class="w53-empty">Fais au moins 2 séances avec un meme exo pour voir tes prochains paliers.</div>';
+      msHtml = '<div class="w53-empty">Fais au moins 2 seances avec un meme exo pour voir tes prochains paliers.</div>';
     }
 
     var deloadHtml = '';
@@ -23333,9 +24131,9 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
     { key: 'first-session', cat: 'reg', name: 'Premier pas', desc: 'Première séance bouclee', emoji: '1', color: '#DDE255', check: function(u){ return (u.sv2 && u.sv2.history || []).length >= 1; } },
     { key: 'week-streak-7', cat: 'reg', name: 'Première semaine', desc: '7 jours de streak', emoji: '7', color: '#F98805', check: function(u){ return (u.streak && u.streak.current >= 7); } },
     { key: 'month-streak-30', cat: 'reg', name: 'Discipline absolue', desc: '30 jours de streak', emoji: '30', color: '#F35695', check: function(u){ return (u.streak && u.streak.current >= 30); } },
-    { key: 'sessions-10', cat: 'reg', name: 'Habitue', desc: '10 séances bouclees', emoji: '10', color: '#DDE255', check: function(u){ return (u.sv2 && u.sv2.history || []).length >= 10; } },
-    { key: 'sessions-50', cat: 'reg', name: 'Serieux', desc: '50 séances bouclees', emoji: '50', color: '#F98805', check: function(u){ return (u.sv2 && u.sv2.history || []).length >= 50; } },
-    { key: 'sessions-100', cat: 'reg', name: 'Centenaire', desc: '100 séances bouclees', emoji: '100', color: '#F35695', check: function(u){ return (u.sv2 && u.sv2.history || []).length >= 100; } },
+    { key: 'sessions-10', cat: 'reg', name: 'Habitue', desc: '10 seances bouclees', emoji: '10', color: '#DDE255', check: function(u){ return (u.sv2 && u.sv2.history || []).length >= 10; } },
+    { key: 'sessions-50', cat: 'reg', name: 'Serieux', desc: '50 seances bouclees', emoji: '50', color: '#F98805', check: function(u){ return (u.sv2 && u.sv2.history || []).length >= 50; } },
+    { key: 'sessions-100', cat: 'reg', name: 'Centenaire', desc: '100 seances bouclees', emoji: '100', color: '#F35695', check: function(u){ return (u.sv2 && u.sv2.history || []).length >= 100; } },
 
     // Performance
     { key: 'pr-squat-100', cat: 'perf', name: '100kg au squat', desc: 'Premier 100kg en back squat', emoji: 'S', color: '#F98805', check: function(u){ return checkPR(u, 'squat', 100); } },
@@ -24497,7 +25295,7 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
     {
       id: 'sessions-4',
       name: '4 SEANCES',
-      desc: 'Boucler 4 séances cette semaine',
+      desc: 'Boucler 4 seances cette semaine',
       target: 4,
       type: 'sessions',
       reward: 'Badge "Constance"'
@@ -24505,7 +25303,7 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
     {
       id: 'sessions-5',
       name: '5 SEANCES',
-      desc: '5 séances en 7 jours, niveau pro',
+      desc: '5 seances en 7 jours, niveau pro',
       target: 5,
       type: 'sessions',
       reward: 'Badge "Beast"'
@@ -25226,7 +26024,7 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
     'confidentialite': {
       title: 'Politique de confidentialité',
       body: '<h4>Données collectées</h4>'+
-        '<p>Lors de ton utilisation de HIMA, nous collectons : prénom, email, données d entraînement (poids, mensurations, séances, repas), photos que tu choisis d uploader.</p>'+
+        '<p>Lors de ton utilisation de HIMA, nous collectons : prénom, email, données d entraînement (poids, mensurations, seances, repas), photos que tu choisis d uploader.</p>'+
         '<h4>Finalité</h4>'+
         '<p>Ces données servent uniquement à personnaliser ton coaching. Aucune revente à des tiers.</p>'+
         '<h4>Stockage</h4>'+
@@ -26434,7 +27232,7 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
         '<button class="w17-refresh" id="w17-refresh">↻</button>'+
       '</div>'+
       '<div id="w17-items">'+
-        (fbReady() ? '<div class="w17-empty">Chargement…</div>' : '<div class="w17-empty">Connecte-toi pour voir l activité de ton équipe.</div>')+
+        (fbReady() ? '<div class="w17-empty">—</div>' : '<div class="w17-empty">Connecte-toi pour voir l activité de ton équipe.</div>')+
       '</div>';
 
     if (fbReady()){
