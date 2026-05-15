@@ -678,119 +678,88 @@ button:disabled, .btn:disabled, .pv3-action-btn:disabled {
   flex-shrink: 0;
 }
 
-/* Aura conic-gradient animée */
-.hv3-aura {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 240px;
-  height: 240px;
-  border-radius: 50%;
-  background: conic-gradient(
-    from 0deg,
-    #F98805,
-    #F35695,
-    #DDE255,
-    #F98805
-  );
-  filter: blur(40px);
-  opacity: 0.35;
-  animation: hv3AuraSpin 30s linear infinite, hv3AuraIntro 0.8s ease-out backwards;
-  animation-delay: 0s, 0.2s;
-  pointer-events: none;
-  z-index: 1;
-}
-@keyframes hv3AuraSpin {
-  from { transform: translate(-50%, -50%) rotate(0deg); }
-  to   { transform: translate(-50%, -50%) rotate(360deg); }
-}
-@keyframes hv3AuraIntro {
-  from { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
-  to   { opacity: 0.35; transform: translate(-50%, -50%) scale(1); }
-}
-
-/* Particules flottantes */
-.hv3-particles {
-  position: absolute;
-  inset: -30px;
-  pointer-events: none;
-  z-index: 2;
-}
-.hv3-p {
-  position: absolute;
-  width: 6px; height: 6px;
-  border-radius: 50%;
-  background: var(--c, #F98805);
-  box-shadow: 0 0 10px var(--c, #F98805), 0 0 16px var(--c, #F98805);
-  opacity: 0;
-  animation: hv3PFloat var(--d, 7s) ease-in-out infinite, hv3PFadeIn 0.6s ease-out forwards;
-  animation-delay: 0s, var(--del, 0s);
-}
-@keyframes hv3PFadeIn {
-  from { opacity: 0; }
-  to   { opacity: var(--op, 0.7); }
-}
-@keyframes hv3PFloat {
-  0%, 100% { transform: translate(0, 0); }
-  50% { transform: translate(var(--tx, 0px), var(--ty, -20px)); }
-}
-.hv3-p1 { left: 12%; top: 14%; --c: #F98805; --d: 8s;  --del: 0.6s; --op: 0.75; --tx: -10px; --ty: -22px; }
-.hv3-p2 { left: 82%; top: 18%; --c: #F35695; --d: 7s;  --del: 0.7s; --op: 0.7;  --tx: 14px;  --ty: -18px; }
-.hv3-p3 { left: 8%;  top: 64%; --c: #DDE255; --d: 9s;  --del: 0.8s; --op: 0.65; --tx: -16px; --ty: -28px; }
-.hv3-p4 { left: 84%; top: 68%; --c: #F98805; --d: 6s;  --del: 0.9s; --op: 0.7;  --tx: 18px;  --ty: -24px; }
-.hv3-p5 { left: 50%; top: 6%;  --c: #F35695; --d: 10s; --del: 0.65s;--op: 0.7;  --tx: 0px;   --ty: -18px; }
-.hv3-p6 { left: 92%; top: 44%; --c: #DDE255; --d: 8s;  --del: 0.75s;--op: 0.65; --tx: 14px;  --ty: -20px; }
-
-/* Avatar Pixar */
-.hv3-avatar-wrap {
+/* ════════════════════════════════════════════════════════
+   HOME V3 — AVATAR PIXAR (code forcé, isolé sous #hima-avatar-pixar)
+   Suppression du fallback HIMA::before qui injectait du texte.
+   ════════════════════════════════════════════════════════ */
+#hima-avatar-pixar.home-avatar-wrap {
   position: relative;
   z-index: 3;
   width: 220px;
   height: 220px;
+  margin: 24px auto 16px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-top: 8px;
-  animation: hv3AvBreath 4s ease-in-out infinite, hv3AvIntro 0.7s cubic-bezier(0.34,1.56,0.64,1) backwards;
-  animation-delay: 0s, 0.4s;
 }
-@keyframes hv3AvBreath {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.025); }
-}
-@keyframes hv3AvIntro {
-  from { opacity: 0; transform: scale(0.7); }
-  to   { opacity: 1; transform: scale(1); }
-}
-.hv3-avatar {
+
+#hima-avatar-pixar .home-avatar-img {
   width: 200px;
   height: 200px;
   border-radius: 50%;
   object-fit: cover;
   object-position: center top;
-  display: block;
-  filter:
-    drop-shadow(0 20px 60px rgba(249,136,5,0.4))
-    saturate(1.05);
-  box-shadow: 0 20px 60px -20px rgba(249, 136, 5, 0.4);
-}
-.hv3-avatar-fallback,
-.hv3-avatar:not([src]) {
-  background: radial-gradient(circle at 45% 30%, #F35695 0%, #F98805 50%, transparent 80%),
-              radial-gradient(circle at 60% 60%, #DDE255 0%, transparent 50%);
   position: relative;
+  z-index: 2;
+  animation: avatarBreathe 4s ease-in-out infinite;
+  box-shadow: 0 20px 60px -20px rgba(249, 136, 5, 0.4);
+  /* FORCE l'image, pas de background gradient */
+  background: transparent !important;
 }
-.hv3-avatar-fallback::before {
-  content: 'HIMA';
+
+#hima-avatar-pixar .home-avatar-img::before,
+#hima-avatar-pixar .home-avatar-img::after {
+  content: none !important;
+}
+
+#hima-avatar-pixar .home-avatar-aura {
   position: absolute;
-  top: 50%; left: 50%;
-  transform: translate(-50%, -50%);
-  font-family: 'Bebas Neue', Impact, sans-serif;
-  font-size: 56px;
-  letter-spacing: 4px;
-  color: #fff;
-  text-shadow: 0 4px 16px rgba(0,0,0,0.3);
+  inset: -20px;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, #F98805, #F35695, #DDE255, #F98805);
+  filter: blur(40px);
+  opacity: 0.35;
+  z-index: 1;
+  animation: auraRotate 30s linear infinite;
+}
+
+@keyframes avatarBreathe {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.025); }
+}
+
+@keyframes auraRotate {
+  to { transform: rotate(360deg); }
+}
+
+/* Particules flottantes */
+#hima-avatar-pixar .home-avatar-particles {
+  position: absolute;
+  inset: -40px;
+  pointer-events: none;
+  z-index: 1;
+}
+#hima-avatar-pixar .particle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  opacity: 0.6;
+}
+#hima-avatar-pixar .p1 { top: 10%;    left: 15%; background: #F98805; animation: float1 8s ease-in-out infinite; box-shadow: 0 0 8px #F98805; }
+#hima-avatar-pixar .p2 { top: 20%;    right: 10%; background: #F35695; animation: float2 7s ease-in-out infinite; box-shadow: 0 0 8px #F35695; }
+#hima-avatar-pixar .p3 { bottom: 25%; left: 8%;  background: #DDE255; animation: float1 9s ease-in-out infinite reverse; box-shadow: 0 0 8px #DDE255; }
+#hima-avatar-pixar .p4 { bottom: 15%; right: 20%; background: #F98805; animation: float2 6s ease-in-out infinite reverse; box-shadow: 0 0 8px #F98805; }
+#hima-avatar-pixar .p5 { top: 50%;    left: -5%; background: #F35695; animation: float1 10s ease-in-out infinite; box-shadow: 0 0 8px #F35695; }
+#hima-avatar-pixar .p6 { top: 60%;    right: -5%; background: #DDE255; animation: float2 8s ease-in-out infinite; box-shadow: 0 0 8px #DDE255; }
+
+@keyframes float1 {
+  0%, 100% { transform: translateY(0) translateX(0); opacity: 0.3; }
+  50%      { transform: translateY(-20px) translateX(8px); opacity: 0.8; }
+}
+@keyframes float2 {
+  0%, 100% { transform: translateY(0) translateX(0); opacity: 0.4; }
+  50%      { transform: translateY(15px) translateX(-10px); opacity: 0.7; }
 }
 
 /* Question coach compacte */
@@ -1147,6 +1116,18 @@ button:disabled, .btn:disabled, .pv3-action-btn:disabled {
   animation: hv3FadeUp 0.5s ease-out backwards;
   animation-delay: 2.0s;
 }
+.signature-avatar img {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: center top;
+  background: transparent !important;
+  flex-shrink: 0;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+.signature-avatar { flex-shrink: 0; }
+
 .hv3-sig-av {
   width: 36px; height: 36px;
   border-radius: 50%;
@@ -1166,15 +1147,15 @@ button:disabled, .btn:disabled, .pv3-action-btn:disabled {
 
 /* ── REDUCED MOTION ── */
 @media (prefers-reduced-motion: reduce) {
-  .hv3-blob, .hv3-aura, .hv3-p, .hv3-avatar-wrap {
+  .hv3-blob, #hima-avatar-pixar .home-avatar-aura, #hima-avatar-pixar .home-avatar-img, #hima-avatar-pixar .particle {
     animation: none !important;
   }
 }
 
 /* ── 380px ── */
 @media (max-width: 380px) {
-  .hv3-avatar-wrap { width: 188px; height: 188px; }
-  .hv3-aura { width: 268px; height: 268px; }
+  #hima-avatar-pixar.home-avatar-wrap { width: 200px; height: 200px; }
+  #hima-avatar-pixar .home-avatar-img { width: 180px; height: 180px; }
   .hv3-question { font-size: 20px; }
   .hv3-story { flex-basis: 88vw; }
   .hv3-ring-svg { width: 56px; height: 56px; }
@@ -7707,18 +7688,22 @@ body:not([data-tab="chat"]) .voice-status { display: none !important; }
 
       <!-- HERO AVATAR PIXAR -->
       <section class="hv3-hero">
-        <div class="hv3-aura" aria-hidden="true"></div>
-        <div class="hv3-particles" aria-hidden="true">
-          <span class="hv3-p hv3-p1"></span>
-          <span class="hv3-p hv3-p2"></span>
-          <span class="hv3-p hv3-p3"></span>
-          <span class="hv3-p hv3-p4"></span>
-          <span class="hv3-p hv3-p5"></span>
-          <span class="hv3-p hv3-p6"></span>
-        </div>
-        <div class="hv3-avatar-wrap">
-          <img src="/avatar.jpg" alt="HIMA, ton coach" class="hv3-avatar" id="hv3-avatar"
-               onerror="this.onerror=null;this.classList.add('hv3-avatar-fallback');this.removeAttribute('src');console.warn('[HOME V3] /avatar.jpg non trouvé sur le serveur. Upload-le à la racine Vercel pour activer l\'avatar Pixar.');">
+        <div class="home-avatar-wrap" id="hima-avatar-pixar">
+          <div class="home-avatar-aura"></div>
+          <img
+            src="/avatar.jpg"
+            alt="HIMA Coach"
+            class="home-avatar-img"
+            onerror="this.onerror=null; this.src='./avatar.jpg'; if(this.complete && this.naturalHeight===0){this.src='avatar.jpg'}"
+          />
+          <div class="home-avatar-particles">
+            <span class="particle p1"></span>
+            <span class="particle p2"></span>
+            <span class="particle p3"></span>
+            <span class="particle p4"></span>
+            <span class="particle p5"></span>
+            <span class="particle p6"></span>
+          </div>
         </div>
 
         <!-- Question coach compacte -->
@@ -7806,7 +7791,13 @@ body:not([data-tab="chat"]) .voice-status { display: none !important; }
 
       <!-- PHRASE COACH SIGNATURE -->
       <section class="hv3-signature">
-        <img src="/avatar.jpg" class="hv3-sig-av" alt="">
+        <div class="signature-avatar">
+          <img
+            src="/avatar.jpg"
+            alt="HIMA"
+            onerror="this.onerror=null; this.src='./avatar.jpg';"
+          />
+        </div>
         <div class="hv3-sig-text" id="hv3-signature">La régularité bat l'intensité.</div>
       </section>
 
@@ -14564,6 +14555,26 @@ document.addEventListener('DOMContentLoaded',function(){
 });
 
 console.log('HIMA Home v3 charge ✓');
+
+// ════════════════════════════════════════════════════════
+// DEBUG AVATAR PIXAR — diagnostic chargement /avatar.jpg
+// ════════════════════════════════════════════════════════
+window.addEventListener('load', function() {
+  var avatar = document.querySelector('#hima-avatar-pixar .home-avatar-img');
+  if (avatar) {
+    if (avatar.complete && avatar.naturalHeight > 0) {
+      console.log('✅ AVATAR PIXAR CHARGÉ (cache):', avatar.src, avatar.naturalWidth + 'x' + avatar.naturalHeight);
+    }
+    avatar.addEventListener('load', function() {
+      console.log('✅ AVATAR PIXAR CHARGÉ:', avatar.src, avatar.naturalWidth + 'x' + avatar.naturalHeight);
+    });
+    avatar.addEventListener('error', function() {
+      console.error('❌ AVATAR PIXAR FAILED:', avatar.src);
+    });
+  } else {
+    console.error('❌ ELEMENT #hima-avatar-pixar INTROUVABLE');
+  }
+});
 
 /* ════════════════════════════════════════════════════════
    PATCH HIMA v3.1 — Conversion Engine (JS)
