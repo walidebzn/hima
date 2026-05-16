@@ -15464,7 +15464,7 @@ window.svBuildRestHTML = function(seance, today, U) {
     var s = svGenSeance(idx);
     if (!s.rest) { nextDay = idx; nextSéance = s; break; }
   }
-  if (nextSeance) {
+  if (nextSéance) {
     var DAYS_FULL = ['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche'];
     var labelDay;
     if (nextDay === (today + 1) % 7) {
@@ -15480,9 +15480,9 @@ window.svBuildRestHTML = function(seance, today, U) {
       + '<div class="sv-rest-next" onclick="svPreviewNext()">'
       + '<div class="sv-rest-next-icon">💪</div>'
       + '<div class="sv-rest-next-meta">'
-      + '<div class="sv-rest-next-eyebrow">' + labelDay.toUpperCase() + ' · ' + nextSeance.duree + ' MIN</div>'
-      + '<div class="sv-rest-next-name">' + nextSeance.titre.toUpperCase() + '</div>'
-      + '<div class="sv-rest-next-sub">' + nextSeance.sub + ' · ' + nextSeance.exos.length + ' exos</div>'
+      + '<div class="sv-rest-next-eyebrow">' + labelDay.toUpperCase() + ' · ' + nextSéance.duree + ' MIN</div>'
+      + '<div class="sv-rest-next-name">' + nextSéance.titre.toUpperCase() + '</div>'
+      + '<div class="sv-rest-next-sub">' + nextSéance.sub + ' · ' + nextSéance.exos.length + ' exos</div>'
       + '</div>'
       + '<div class="sv-rest-next-arrow">›</div>'
       + '</div>'
@@ -15613,7 +15613,7 @@ window.svBuildLandingImpl = function() {
     var cls = 'sv-dot';
     if (i === today) cls += ' today';
     if (done) cls += ' done';
-    if (dseance.rest) cls += ' rest';
+    if (dséance.rest) cls += ' rest';
     html += '<div class="' + cls + '"><span>' + DAYSF[i] + '</span></div>';
   }
   html += '</div>';
@@ -16256,8 +16256,8 @@ window.sv2CamValidate   = function() { sv2CamClose(); svValidateSet(); };
       hour: hour,
       streak: st,
       mode: mode,
-      isRestDay: todaySéance ? !!todaySeance.rest : false,
-      seanceTitre: todaySéance && !todaySeance.rest ? (todaySeance.titre || '') : null
+      isRestDay: todaySéance ? !!todaySéance.rest : false,
+      seanceTitre: todaySéance && !todaySéance.rest ? (todaySéance.titre || '') : null
     };
   }
 
