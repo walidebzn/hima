@@ -8787,6 +8787,74 @@ body:not([data-tab="chat"]) .voice-status { display: none !important; }
 </div>
 
 <script>
+// ════════════════════════════════════════════════════════════
+// === FIX URGENT svGenSeance (Mission B compat) ===
+// Posé EN PREMIÈRE INSTRUCTION du premier <script> inline.
+// Garantit que window.svGenSeance EST DÉFINI dès le parsing.
+// Appelants : svBuildLandingImpl L15512, maybeRebuild L15396, etc.
+// ════════════════════════════════════════════════════════════
+window.svGenSeance = function(opts) {
+  // 1) Préférence : déléguer à la fonction legacy (avec accent é) si déjà chargée
+  if (typeof window['svGenS\u00e9ance'] === 'function') {
+    try { return window['svGenS\u00e9ance'](opts); }
+    catch(e) { console.error('[svGenSeance] legacy fail:', e); }
+  }
+  // 2) Fallback V2 (Mission B) — getSessionForToday
+  if (typeof window.getSessionForToday === 'function') {
+    try {
+      var v2 = window.getSessionForToday(opts);
+      if (v2) {
+        // Mapper V2 → format legacy attendu par svBuildLandingImpl
+        return {
+          rest:  false,
+          day:   (new Date().getDay() === 0 ? 6 : new Date().getDay() - 1),
+          type:  v2._legacy_id || v2.discipline || 'fullbody',
+          titre: v2.nom || v2.titre || 'Séance du jour',
+          sub:   v2.description_coach || v2.sub || v2.benefice || '',
+          duree: v2.duree_estimee || v2.duree || 45,
+          niv:   'int', lieu: 'maison', mode: 'glow',
+          exos:  (v2.exos || []).map(function(slot){
+            var id = slot.id || slot;
+            var info = null;
+            if (window.EXOS_LIB_V2) {
+              for (var i = 0; i < window.EXOS_LIB_V2.length; i++) {
+                if (window.EXOS_LIB_V2[i].id === id) { info = window.EXOS_LIB_V2[i]; break; }
+              }
+            }
+            if (!info && window.SV_EXOS && window.SV_EXOS[id]) {
+              var leg = window.SV_EXOS[id];
+              info = { id:id, nom:leg.n, muscles:[leg.m], description:leg.tip, categorie:leg.cat };
+            }
+            if (!info) info = { id:id, nom:id, muscles:[], description:'' };
+            return {
+              id: id, n: info.nom || id,
+              m: (info.muscles && info.muscles[0]) || '',
+              sets: 3, reps: 10, rest: 75, charge: 0,
+              tip: info.description || '',
+              cat: info.categorie || 'mixte',
+              isCardio: info.categorie === 'cardio_hiit' || info.categorie === 'hiit_pur',
+              logs: [{reps:10,charge:0,done:false},{reps:10,charge:0,done:false},{reps:10,charge:0,done:false}]
+            };
+          })
+        };
+      }
+    } catch(e) { console.error('[svGenSeance] V2 fail:', e); }
+  }
+  // 3) Fallback ultime : objet safe, jamais undefined
+  return {
+    rest:  false, day: 0, type: 'fullbody',
+    titre: 'Séance du jour',
+    nom:   'Séance du jour',
+    sub:   'Le coach prépare ta séance...',
+    duree: 30, duree_estimee: 30,
+    niv:   'deb', lieu: 'maison', mode: 'glow',
+    discipline: 'mix', objectif: 'tonifier',
+    exos: [], exercises: []
+  };
+};
+console.log('[HIMA] svGenSeance shim installé EN TOP DU FICHIER ✅');
+// === FIN FIX ===
+
 var HIMA_CLAUDE_KEY = '';
 // SECURITY v3.5 : clé ElevenLabs déplacée côté serveur (/api/voice).
 // Plus aucune clé API n'est exposée dans le code client.
