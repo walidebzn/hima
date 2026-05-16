@@ -558,29 +558,35 @@ button:disabled, .btn:disabled, .pv3-action-btn:disabled {
    ════════════════════════════════════════════════════════ */
 
 /* ── ROOT ── */
-/* FIX BUG 2 — Scroll Home FORCÉ (override .atab overflow:hidden) */
+/* POINT 2 — Scroll Home FORCÉ : scroll au niveau du tab parent */
 #t-home {
-  overflow: hidden !important;
+  display: block !important;
   height: 100% !important;
-}
-.home-v3 {
-  display: flex !important;
-  flex-direction: column !important;
-  width: 100%;
-  height: 100% !important;
-  flex: 1 !important;
-  min-height: 0 !important;
-  max-height: none !important;
   overflow-y: auto !important;
   overflow-x: hidden !important;
   -webkit-overflow-scrolling: touch !important;
+}
+#t-home.atab.on {
+  display: block !important;
+  height: 100% !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+}
+.home-v3 {
+  display: block !important;
+  width: 100%;
+  height: auto !important;
+  min-height: 100% !important;
+  max-height: none !important;
+  overflow: visible !important;
   overscroll-behavior: contain;
   position: relative;
   background: #050507;
   scroll-behavior: smooth;
-  padding-bottom: calc(120px + env(safe-area-inset-bottom, 0px)) !important;
+  padding-bottom: 140px !important;
 }
 .home-v3::-webkit-scrollbar { display: none; }
+#t-home::-webkit-scrollbar { display: none; }
 
 /* ── GRADIENT MESH ANIMÉ ── */
 .hv3-mesh {
@@ -732,8 +738,8 @@ button:disabled, .btn:disabled, .pv3-action-btn:disabled {
 .hima-pixar-wrap {
   position: relative;
   z-index: 3;
-  width: 220px;
-  height: 220px;
+  width: 260px !important;
+  height: 260px !important;
   margin: 24px auto 16px;
   display: flex;
   align-items: center;
@@ -742,8 +748,8 @@ button:disabled, .btn:disabled, .pv3-action-btn:disabled {
 
 /* L'image RÉELLE du coach Pixar */
 .hima-pixar-img {
-  width: 200px !important;
-  height: 200px !important;
+  width: 240px !important;
+  height: 240px !important;
   border-radius: 50% !important;
   object-fit: cover !important;
   object-position: center 15% !important;
@@ -952,26 +958,28 @@ button:disabled, .btn:disabled, .pv3-action-btn:disabled {
   flex-shrink: 0;
 }
 .hv3-stories-track {
-  display: flex;
+  display: flex !important;
+  flex-direction: row !important;
   gap: 12px;
-  padding: 0 16px;
-  overflow-x: auto;
-  overflow-y: hidden;
-  scroll-snap-type: x mandatory;
-  scroll-padding-left: 16px;
-  scroll-padding-right: 16px;
+  padding: 8px 16px 16px !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  scroll-snap-type: x mandatory !important;
+  scroll-padding-left: 16px !important;
+  scroll-padding-right: 16px !important;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
+  -ms-overflow-style: none;
   touch-action: pan-x;
 }
 .hv3-stories-track::-webkit-scrollbar { display: none; }
 
 .hv3-story {
-  flex: 0 0 calc(100vw - 80px);
-  max-width: 340px;
+  flex: 0 0 calc(100vw - 56px) !important;
+  max-width: 360px !important;
   min-height: 200px;
-  scroll-snap-align: center;
-  scroll-snap-stop: always;
+  scroll-snap-align: center !important;
+  scroll-snap-stop: always !important;
   padding: 22px;
   border-radius: 28px;
   background: linear-gradient(135deg, rgba(255,255,255,0.07) 0%, rgba(255,255,255,0.02) 100%);
@@ -988,7 +996,7 @@ button:disabled, .btn:disabled, .pv3-action-btn:disabled {
   transition: transform 0.15s, border-color 0.2s;
   animation: hv3FadeUp 0.5s ease-out backwards;
   /* iOS safari fix : empêche le shrinking */
-  flex-shrink: 0;
+  flex-shrink: 0 !important;
 }
 .hv3-story:nth-child(1) { animation-delay: 1.45s; }
 .hv3-story:nth-child(2) { animation-delay: 1.53s; }
@@ -1200,6 +1208,41 @@ button:disabled, .btn:disabled, .pv3-action-btn:disabled {
   letter-spacing: 0.1px;
 }
 
+/* ── PHRASE SIGNATURE COACH (nouvelles classes home-signature-*) ── */
+.home-signature-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 16px;
+  padding: 16px 20px;
+  background: linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+  backdrop-filter: blur(40px);
+  -webkit-backdrop-filter: blur(40px);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 20px;
+  position: relative;
+  z-index: 1;
+}
+.home-signature-avatar {
+  width: 40px !important;
+  height: 40px !important;
+  border-radius: 50% !important;
+  object-fit: cover !important;
+  object-position: center top !important;
+  flex-shrink: 0;
+  background: transparent !important;
+  background-image: none !important;
+  border: 1px solid rgba(255,255,255,0.12);
+}
+.home-signature-text {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 14px;
+  font-style: italic;
+  color: rgba(240, 240, 255, 0.85);
+  line-height: 1.4;
+  margin: 0;
+}
+
 /* ── REDUCED MOTION ── */
 @media (prefers-reduced-motion: reduce) {
   .hv3-blob, .hima-pixar-aura, .hima-pixar-img, .hima-pixar-particles span {
@@ -1209,10 +1252,10 @@ button:disabled, .btn:disabled, .pv3-action-btn:disabled {
 
 /* ── 380px ── */
 @media (max-width: 380px) {
-  .hima-pixar-wrap { width: 200px; height: 200px; }
-  .hima-pixar-img { width: 180px !important; height: 180px !important; }
+  .hima-pixar-wrap { width: 220px !important; height: 220px !important; }
+  .hima-pixar-img { width: 200px !important; height: 200px !important; }
   .hv3-question { font-size: 20px; }
-  .hv3-story { flex-basis: 88vw; }
+  .hv3-story { flex-basis: calc(100vw - 56px) !important; }
   .hv3-ring-svg { width: 56px; height: 56px; }
   .hv3-ring-center { width: 56px; height: 56px; }
 }
@@ -7846,15 +7889,16 @@ body:not([data-tab="chat"]) .voice-status { display: none !important; }
       </section>
 
       <!-- PHRASE COACH SIGNATURE -->
-      <section class="hv3-signature">
-        <div class="signature-avatar">
-          <img
-            src="/avatar.jpg"
-            alt="HIMA"
-            onerror="this.onerror=null; this.src='./avatar.jpg';"
-          />
-        </div>
-        <div class="hv3-sig-text" id="hv3-signature">La régularité bat l'intensité.</div>
+      <section class="home-signature-card">
+        <img
+          src="/avatar.jpg"
+          alt="HIMA"
+          class="home-signature-avatar"
+          onerror="this.style.display='none'"
+        />
+        <p class="home-signature-text" id="home-signature-text">
+          Tu n'es pas obligé d'être parfait, juste constant.
+        </p>
       </section>
 
       <div style="height:96px"></div>
@@ -13719,41 +13763,51 @@ function el(id){ return document.getElementById(id); }
 // Kill switch: window.SV2_FLAGS.homeV3 (true par défaut)
 // ════════════════════════════════════════════════════════
 
-// Pool de 32 phrases coach signature qui tournent
-var HV3_SIGNATURES = [
-  "La régularité bat l'intensité.",
+// Pool de 30 phrases coach signature
+window.HIMA_COACH_QUOTES = [
   "Tu n'es pas obligé d'être parfait, juste constant.",
-  "Le sommeil construit autant que la salle.",
-  "Tes progrès ne se voient pas tous les jours, mais ils sont là.",
-  "Ton meilleur entraînement est celui que tu fais.",
-  "Un jour à la fois, sans pression.",
-  "Le corps suit le cerveau. Convaincs-toi, le reste suit.",
-  "Petits efforts, grands résultats. Tous les jours.",
-  "Ce que tu fais aujourd'hui décide de qui tu seras dans 3 mois.",
-  "L'excellence est une habitude, pas un événement.",
-  "Mieux vaut 20 minutes que rien.",
-  "Repose-toi quand il faut. C'est aussi du travail.",
   "Ton seul adversaire, c'est toi d'hier.",
-  "Mange comme un athlète, dors comme un bébé.",
-  "Les abdos se font à la cuisine.",
-  "Pas envie ? Fais quand même. Tu me remercieras.",
-  "Chaque rep compte. Même la dernière qui pique.",
-  "La force vient de la régularité, pas de l'intensité folle.",
-  "Tu ne perds rien quand tu te reposes. Tu construis.",
-  "L'eau, c'est 60 % de toi. Bois.",
-  "Confiance > confort. Toujours.",
-  "Tu vaux plus que tes excuses.",
-  "Le bon programme, c'est celui que tu suis.",
-  "Bouge, transpire, sois fier. Répète.",
-  "Ton corps t'écoute. Parle-lui bien.",
-  "Chaque séance est un dépôt sur ton compte santé.",
-  "Personne ne se transforme en une semaine. Patience.",
-  "Sois plus fort que ton excuse préférée.",
-  "Le progrès est silencieux. Continue.",
-  "Pas de magie, juste du travail régulier.",
-  "Tu n'as pas besoin de motivation, tu as besoin de discipline.",
-  "Ferme le téléphone. Bouge. Reviens fier."
+  "La régularité bat l'intensité, toujours.",
+  "Un pas en avant chaque jour, ça change tout.",
+  "Le doute, c'est juste ton cerveau qui a peur de grandir.",
+  "Tu fais déjà mieux que 80% des gens en étant là.",
+  "Aujourd'hui compte. Demain compte. Hier est derrière.",
+  "Le progrès silencieux est le plus puissant.",
+  "Ton corps suit ce que ton mental décide.",
+  "Pas de raccourci, juste des choix répétés.",
+  "Les jours faciles ne forgent rien.",
+  "Tu peux pas perdre si t'arrêtes pas.",
+  "La discipline t'emmène plus loin que la motivation.",
+  "Une séance ratée vaut mieux qu'une séance manquée.",
+  "Ton futur toi te regarde. Fais-le fier.",
+  "Les excuses sont gratuites, les résultats coûtent.",
+  "Petit aujourd'hui, grand demain.",
+  "Bouge, même si t'en as pas envie. Surtout si t'en as pas envie.",
+  "Chaque rep compte, même la dernière qui pique.",
+  "Ce qui te défie te change.",
+  "Tu fabriques ton corps avec ce que tu manges et ce que tu fais.",
+  "La sueur d'aujourd'hui, c'est la fierté de demain.",
+  "On juge pas le départ, on juge le retour.",
+  "Sois patient avec toi, mais sois constant.",
+  "Tu vaux mieux que ta dernière mauvaise journée.",
+  "Le repos fait partie du jeu. Repose-toi sans culpabiliser.",
+  "Si c'était facile, tout le monde le ferait.",
+  "Tu construis quelque chose. Ça prend du temps.",
+  "Ferme l'app, va t'entraîner. Reviens fier.",
+  "T'es là, c'est déjà énorme. On continue."
 ];
+
+// Sélection déterministe par jour (stable sur 24h, change à minuit)
+function pickCoachQuote() {
+  var today = new Date().toDateString();
+  var seed = 0;
+  for (var i = 0; i < today.length; i++) seed += today.charCodeAt(i);
+  var index = seed % window.HIMA_COACH_QUOTES.length;
+  return window.HIMA_COACH_QUOTES[index];
+}
+
+// Ancien pool gardé pour compatibilité fallback
+var HV3_SIGNATURES = window.HIMA_COACH_QUOTES;
 
 // Récupère le vrai prénom — JAMAIS "Demo"
 function hv3GetPrenom() {
@@ -13775,32 +13829,110 @@ function hv3GetPrenom() {
   return 'champion';
 }
 
+// ── Question coach enrichie par mémoire Firestore ──
+function hv3GetCoachQuestion() {
+  return new Promise(function(resolve) {
+    var h = new Date().getHours();
+    var pn = hv3GetPrenom();
+    var hasName = pn !== 'champion';
+
+    // Si Firestore pas disponible → fallback synchrone (résout immédiatement avec null pour ne pas écraser)
+    if (!window.firebase || !window.firebase.firestore || !window.firebase.auth || !window.firebase.auth().currentUser) {
+      resolve(null);
+      return;
+    }
+
+    try {
+      var uid = window.firebase.auth().currentUser.uid;
+      window.firebase.firestore()
+        .collection('users').doc(uid)
+        .collection('memories')
+        .orderBy('createdAt', 'desc')
+        .limit(3)
+        .get()
+        .then(function(snap) {
+          var memories = snap.docs.map(function(d){ return d.data(); });
+          if (!memories.length) { resolve(null); return; }
+          var last = memories[0];
+          var prefix = hasName ? pn + ', ' : '';
+
+          // Contextualisation par mémoire
+          if (last.mood === 'fatigue' && h < 14) {
+            resolve("Hier t'étais fatigué" + (hasName ? ', ' + pn : '') + ". Comment tu te sens là ?");
+            return;
+          }
+          if (last.streak && last.streak >= 3) {
+            resolve(last.streak + " jours d'affilée" + (hasName ? ', ' + pn : '') + ", t'es en feu ! On continue ?");
+            return;
+          }
+          if (last.skippedSession) {
+            resolve((hasName ? prefix : '') + "Hier on a sauté la séance. On se rattrape aujourd'hui ?");
+            return;
+          }
+          if (last.mood === 'motive') {
+            resolve("Toujours aussi motivé qu'hier" + (hasName ? ', ' + pn : '') + " ?");
+            return;
+          }
+          resolve(null); // pas de contexte fort → garder le fallback heure
+        })
+        .catch(function(){ resolve(null); });
+    } catch(e) {
+      resolve(null);
+    }
+  });
+}
+
+// ── Aura adaptée à l'heure ──
+function hv3SetAuraByTime() {
+  var h = new Date().getHours();
+  var aura = document.querySelector('.hima-pixar-aura');
+  if (!aura) return;
+  var gradient;
+  if (h >= 5 && h < 11) {
+    gradient = "conic-gradient(from 0deg, #FFA500, #FFD700, #F98805, #FFA500)"; // matin orange/doré
+  } else if (h >= 11 && h < 18) {
+    gradient = "conic-gradient(from 0deg, #F98805, #F35695, #DDE255, #F98805)"; // jour orange/pink/lime (brand)
+  } else if (h >= 18 && h < 22) {
+    gradient = "conic-gradient(from 0deg, #F35695, #9B59B6, #4A90E2, #F35695)"; // soir rose/violet
+  } else {
+    gradient = "conic-gradient(from 0deg, #2C3E50, #4A90E2, #9B59B6, #2C3E50)"; // nuit bleu/violet
+  }
+  aura.style.background = gradient;
+}
+
 function renderHomeV3() {
   var U = window.U || {};
   var pn = hv3GetPrenom();
   var sk = U.streak || 0;
   var h = new Date().getHours();
 
-  // ── QUESTION
+  // ── QUESTION — fallback par heure (synchrone, immédiat)
   var qEl = document.getElementById('hv3-question');
   if (qEl) {
     var hasName = pn !== 'champion';
     var qByHour;
     if (h < 5)        qByHour = hasName ? "Encore debout, " + pn + " ? Récupère bien." : "Encore debout ? Récupère bien.";
-    else if (h < 11)  qByHour = hasName ? "Comment tu te sens ce matin, " + pn + " ?" : "Comment tu te sens ce matin ?";
-    else if (h < 14)  qByHour = hasName ? "Bien lancé sur ta journée, " + pn + " ?" : "Bien lancé sur ta journée ?";
-    else if (h < 18)  qByHour = hasName ? "On termine fort, " + pn + " ?" : "On termine fort ?";
-    else if (h < 22)  qByHour = hasName ? "Comment a été ta journée, " + pn + " ?" : "Comment a été ta journée ?";
-    else              qByHour = hasName ? "Bilan rapide avant de dormir, " + pn + " ?" : "Bilan rapide avant de dormir ?";
+    else if (h < 11)  qByHour = hasName ? "Bien dormi, " + pn + " ? Prêt à attaquer ?" : "Bien dormi ? Prêt à attaquer la journée ?";
+    else if (h < 14)  qByHour = hasName ? "Pause déj, " + pn + " ? On en profite pour bouger ?" : "Pause déj ? On en profite pour bouger ?";
+    else if (h < 18)  qByHour = hasName ? "L'aprem c'est le bon moment, " + pn + ", on s'y met ?" : "L'aprem c'est le bon moment, on s'y met ?";
+    else if (h < 22)  qByHour = hasName ? "Bilan rapide avant de dormir, " + pn + " ?" : "Bilan rapide avant de dormir ?";
+    else              qByHour = hasName ? "On récup' bien cette nuit, " + pn + " ?" : "On récup' bien cette nuit ?";
     qEl.textContent = qByHour;
   }
+
+  // ── QUESTION enrichie par mémoire Firestore (async, met à jour si dispo)
+  hv3GetCoachQuestion().then(function(q) {
+    if (q && qEl && q !== qEl.textContent) qEl.textContent = q;
+  }).catch(function(){});
+
+  // ── AURA adaptée à l'heure
+  hv3SetAuraByTime();
 
   // ── RINGS
   // Forme du jour (calcul réel ou —)
   var rd = (typeof calcReadiness === 'function') ? calcReadiness() : 0;
   var rdEl = document.getElementById('hv3-forme-val');
   if (rdEl) rdEl.textContent = (typeof rd === 'number' && rd > 0) ? rd : '—';
-  // Anim ring (circumference 201)
   setTimeout(function(){
     var ring = document.getElementById('hv3-ring-forme');
     if (ring) {
@@ -13815,7 +13947,6 @@ function renderHomeV3() {
   setTimeout(function(){
     var ring = document.getElementById('hv3-ring-serie');
     if (ring) {
-      // Palier suivant : 7/14/30/90
       var palier = sk < 7 ? 7 : sk < 14 ? 14 : sk < 30 ? 30 : 90;
       var pct = Math.min(100, (sk / palier) * 100);
       ring.style.strokeDashoffset = (201 - (201 * pct / 100));
@@ -13840,12 +13971,9 @@ function renderHomeV3() {
     }
   }, 400);
 
-  // ── SIGNATURE
-  var sigEl = document.getElementById('hv3-signature');
-  if (sigEl) {
-    var dayIdx = Math.floor(Date.now() / 86400000) % HV3_SIGNATURES.length;
-    sigEl.textContent = HV3_SIGNATURES[dayIdx];
-  }
+  // ── SIGNATURE — pool 30 phrases (deterministe par jour)
+  var sigEl = document.getElementById('home-signature-text') || document.getElementById('hv3-signature');
+  if (sigEl) sigEl.textContent = pickCoachQuote();
 
   // ── STORIES
   renderHomeV3Stories();
