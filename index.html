@@ -3523,6 +3523,13 @@ body:not([data-tab="chat"]) .voice-status { display: none !important; }
   overflow: hidden !important;
   position: relative !important;
 }
+/* Mission B — Fix iOS scroll inner .prog-content (utilisé par certaines waves) */
+#t-prog .prog-content {
+  height: 100% !important;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+  padding-bottom: 100px;
+}
 #t-prog .seances-v2-root {
   display: block;
   width: 100%;
@@ -29454,6 +29461,1041 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
   console.log('[DEV] Mode dev ready - 5 taps logo OR ?dev=1');
 })();
 </script>
+
+
+<!-- ════════════════════════════════════════════════════════════════════
+     MISSION B — DATA + LOGIQUE (pas d'UI) — 2026-05-16
+     Chantier 1 : EXOS_LIB_V2 (218 exos × 15 catégories)
+     Chantier 2 : getProfileForSession + getRecommendedSession (6 données onboarding)
+     Chantier 3 : TEMPLATES_V2 (13 legacy migrés + 40 nouveaux = 53)
+     + migration hima8 schema + kill switches SV2_FLAGS
+     Toutes features legacy PRÉSERVÉES (openPosture, himaSpeak, svAutopilot,
+     calcReadiness, genProgIA, wave 15 health, perfLog, SV_EXOS, SV_VIDS)
+     ════════════════════════════════════════════════════════════════════ -->
+<script>
+// ════════════════════════════════════════════════════════
+// EXOS_LIB_V2 — Bibliothèque exercices étendue (200+ exos)
+// Mission B / Chantier 1 — Multi-disciplines
+// Préserve SV_EXOS legacy (alias + enrichissement rétroactif)
+// ════════════════════════════════════════════════════════
+(function(){
+  'use strict';
+  window.SV2_FLAGS = window.SV2_FLAGS || {};
+  if (window.SV2_FLAGS.exosLibV2 === false) return; // kill switch
+  window.SV2_FLAGS.exosLibV2 = true;
+
+  // ── Catégories ──
+  window.EXOS_CATEGORIES = {
+    musculation:  { label: 'Musculation',    emoji: '🏋️', color: '#F98805' },
+    poids_corps:  { label: 'Poids du corps', emoji: '💪', color: '#F35695' },
+    cardio_hiit:  { label: 'Cardio HIIT',    emoji: '⚡', color: '#DDE255' },
+    course:       { label: 'Course à pied',  emoji: '🏃', color: '#4A90E2' },
+    velo:         { label: 'Vélo',           emoji: '🚴', color: '#2ECC71' },
+    natation:     { label: 'Natation',       emoji: '🏊', color: '#3498DB' },
+    yoga:         { label: 'Yoga / Mobilité',emoji: '🧘', color: '#9B59B6' },
+    calisthenics: { label: 'Calisthenics',   emoji: '🤸', color: '#E67E22' },
+    boxe:         { label: 'Boxe / Combat',  emoji: '🥊', color: '#E74C3C' },
+    pilates:      { label: 'Pilates',        emoji: '🩰', color: '#ECC8E5' },
+    crossfit:     { label: 'CrossFit',       emoji: '🔥', color: '#FF6B35' },
+    etirements:   { label: 'Étirements',     emoji: '🤲', color: '#1ABC9C' },
+    hiit_pur:     { label: 'HIIT cardio',    emoji: '💥', color: '#FFA500' },
+    marche:       { label: 'Marche active',  emoji: '🚶', color: '#95A5A6' },
+    danse:        { label: 'Danse fitness',  emoji: '💃', color: '#FF1493' }
+  };
+
+  // ── Helper image fallback ──
+  function img(slug) {
+    if (!slug) return 'https://placehold.co/400x300/080810/F98805?text=HIMA';
+    return 'https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/' + slug + '/0.jpg';
+  }
+  function placeholder(label) {
+    return 'https://placehold.co/400x300/080810/F98805?text=' + encodeURIComponent(label);
+  }
+
+  // ── Enrichir les exos SV_EXOS legacy avec les nouveaux champs ──
+  var SV_EXOS = window.SV_EXOS || {};
+  var legacyEnriched = [];
+  Object.keys(SV_EXOS).forEach(function(id){
+    var e = SV_EXOS[id];
+    if (!e || !e.n) return;
+    // Mapping cat legacy → categorie V2
+    var catMap = {
+      'pousser':'musculation', 'tirer':'musculation', 'jambes':'musculation',
+      'core':'poids_corps', 'cardio':'cardio_hiit', 'mobilite':'yoga'
+    };
+    var categorie = catMap[e.cat] || 'musculation';
+    // Si exo n'a pas de matos requis (poids du corps), reclasser
+    if (e.cat !== 'cardio' && e.cat !== 'mobilite' && e.l === 'both' &&
+        ['pompes','squat_pdc','squat_bulgare','fentes','mountain','gainage','gainage_lat','crunch','releve_jambes','russian_twist'].indexOf(id) !== -1) {
+      categorie = 'poids_corps';
+    }
+    // Niveau
+    var nivMap = { 'deb':['debutant','intermediaire','avance'], 'int':['intermediaire','avance'], 'av':['avance'] };
+    // Lieu
+    var lieuMap = { 'salle':['salle','salle_cardio'], 'maison':['maison','maison_mat'], 'both':['salle','salle_cardio','maison','maison_mat','exterieur','any'] };
+    // Matériel
+    var materielMap = {
+      'bench_press':['barre','banc'],'incline_bench':['halteres','banc'],'dips':['parallelles'],
+      'ecarte_haltere':['halteres'],'tractions':['traction'],'rowing_barre':['barre'],
+      'rowing_haltere':['halteres'],'tirage_vertical':['poulie'],'tirage_horiz':['poulie'],
+      'soulever_terre':['barre'],'squat':['barre','rack'],'squat_bulgare':['halteres'],
+      'leg_press':['leg_press'],'leg_curl':['leg_curl'],'developpe_militaire':['barre'],
+      'arnold':['halteres'],'eleve_lat':['halteres'],'oiseau':['halteres'],
+      'curl_barre':['barre'],'curl_haltere':['halteres'],'curl_marteau':['halteres'],
+      'extension_tri':['halteres'],'kickback':['halteres'],'corde_a_sauter':['corde'],
+      'rameur':['rameur']
+    };
+    // Contre-indications par exo (sécurité)
+    var contreIndicMap = {
+      'squat':['blessure_genou','lombaires'],'squat_bulgare':['blessure_genou'],
+      'squat_pdc':['blessure_genou'],'fentes':['blessure_genou'],'leg_press':['blessure_genou'],
+      'soulever_terre':['lombaires','blessure_genou'],'rowing_barre':['lombaires'],
+      'developpe_militaire':['blessure_epaule','cervicales'],'tractions':['blessure_epaule'],
+      'dips':['blessure_epaule'],'dips_chaise':['blessure_epaule'],
+      'bench_press':['blessure_epaule'],'incline_bench':['blessure_epaule'],
+      'arnold':['blessure_epaule'],'eleve_lat':['blessure_epaule'],
+      'burpees':['blessure_genou','cardio_severe','blessure_epaule'],
+      'sprints':['blessure_genou','cardio_severe'],'jumping_jack':['blessure_genou'],
+      'high_knees':['blessure_genou'],'mountain':['blessure_genou','blessure_epaule'],
+      'corde_a_sauter':['blessure_genou','blessure_cheville'],
+      'releve_jambes':['lombaires'],'russian_twist':['lombaires']
+    };
+    legacyEnriched.push({
+      id: id,
+      nom: e.n,
+      categorie: categorie,
+      discipline: categorie,
+      niveau: nivMap[e.niv] || ['debutant','intermediaire'],
+      lieu: lieuMap[e.l] || ['any'],
+      materiel: materielMap[id] || [],
+      muscles: [e.m],
+      duree_min: 5, duree_max: 15, intensite: 6,
+      met: e.cat === 'cardio' ? 8 : 5,
+      description: e.tip,
+      consignes: e.tip,
+      illustration: placeholder(e.n),
+      contre_indications: contreIndicMap[id] || [],
+      legacy_id: id
+    });
+  });
+
+  // ── COURSE À PIED (15 exos) ──
+  var COURSE = [
+    { id:'course_footing_endurance', nom:'Footing endurance fondamentale', duree_min:30, duree_max:60, intensite:5, met:8, niveau:['debutant','intermediaire','avance'], description:'Allure conversationnelle. Tu dois pouvoir parler.', muscles:['jambes','cardio'], lieu:['exterieur','tapis'], materiel:[], contre_indications:['blessure_genou_severe'] },
+    { id:'course_fartlek', nom:'Footing fartlek', duree_min:30, duree_max:45, intensite:7, met:10, niveau:['intermediaire','avance'], description:'Jeu d\'allures libre. Accélère sur 1 min, ralentis sur 2 min, varie sans timer.', muscles:['jambes','cardio'], lieu:['exterieur'], materiel:[], contre_indications:[] },
+    { id:'course_fractionne_30_30', nom:'Fractionné 30/30', duree_min:15, duree_max:30, intensite:8, met:11, niveau:['intermediaire','avance'], description:'30s vite à 85% effort + 30s lent. Répète 10 à 20 fois.', muscles:['jambes','cardio'], lieu:['exterieur','tapis'], materiel:[], contre_indications:['blessure_genou','cardio_severe'] },
+    { id:'course_fractionne_1_1', nom:'Fractionné 1min/1min', duree_min:20, duree_max:35, intensite:8, met:11, niveau:['intermediaire','avance'], description:'1 min effort + 1 min récup. Vise 10-15 répétitions.', muscles:['jambes','cardio'], lieu:['exterieur','tapis'], materiel:[], contre_indications:[] },
+    { id:'course_piste_200_400', nom:'Fractionné piste 200m/400m', duree_min:40, duree_max:60, intensite:9, met:12, niveau:['avance'], description:'Sur piste : 200m vite + 200m lent, puis 400m vite + 400m lent. Répète 4 fois.', muscles:['jambes','cardio'], lieu:['exterieur'], materiel:[], contre_indications:[] },
+    { id:'course_cotes_100m', nom:'Côtes courtes 100m', duree_min:25, duree_max:40, intensite:8, met:11, niveau:['intermediaire','avance'], description:'Sprints en côte 100m + descente récup. 8 à 12 répétitions.', muscles:['jambes','fessiers','cardio'], lieu:['exterieur'], materiel:[], contre_indications:['blessure_mollet'] },
+    { id:'course_cotes_400m', nom:'Côtes longues 400m', duree_min:35, duree_max:50, intensite:8, met:11, niveau:['avance'], description:'Montée 400m à allure soutenue, descente récup. 4-6 répétitions.', muscles:['jambes','fessiers','cardio'], lieu:['exterieur'], materiel:[], contre_indications:[] },
+    { id:'course_tempo', nom:'Tempo run (allure semi)', duree_min:30, duree_max:50, intensite:7, met:10, niveau:['intermediaire','avance'], description:'20 min à allure semi-marathon. Difficile mais soutenable.', muscles:['jambes','cardio'], lieu:['exterieur','tapis'], materiel:[], contre_indications:[] },
+    { id:'course_sortie_longue', nom:'Sortie longue', duree_min:60, duree_max:120, intensite:5, met:9, niveau:['intermediaire','avance'], description:'1h-2h à allure endurance. Base de l\'aérobie.', muscles:['jambes','cardio'], lieu:['exterieur'], materiel:[], contre_indications:[] },
+    { id:'course_trail', nom:'Trail vallonné', duree_min:45, duree_max:120, intensite:6, met:10, niveau:['intermediaire','avance'], description:'Chemins, sentiers, dénivelé. Renforce stabilité + cardio.', muscles:['jambes','cardio','core'], lieu:['exterieur'], materiel:[], contre_indications:['blessure_cheville'] },
+    { id:'course_run_walk', nom:'Course débutant (run/walk)', duree_min:20, duree_max:30, intensite:4, met:7, niveau:['debutant'], description:'5 min footing + 1 min marche. Répète 4-6 fois.', muscles:['jambes','cardio'], lieu:['exterieur','tapis'], materiel:[], contre_indications:[] },
+    { id:'course_recup', nom:'Récup active (footing lent)', duree_min:20, duree_max:35, intensite:3, met:6, niveau:['debutant','intermediaire','avance'], description:'Footing très lent, après une grosse séance.', muscles:['jambes','cardio'], lieu:['exterieur','tapis'], materiel:[], contre_indications:[] },
+    { id:'course_sprint_50m', nom:'Sprint 50m', duree_min:20, duree_max:30, intensite:10, met:14, niveau:['intermediaire','avance'], description:'Sprints max 50m + récup complète 2 min. 6-10 répétitions.', muscles:['jambes','fessiers','cardio'], lieu:['exterieur'], materiel:[], contre_indications:['blessure_ischio'] },
+    { id:'course_pyramide', nom:'Pyramide 200-400-600-400-200', duree_min:35, duree_max:50, intensite:8, met:11, niveau:['avance'], description:'Augmente puis diminue. Allure 5km. Récup égale au temps couru.', muscles:['jambes','cardio'], lieu:['exterieur'], materiel:[], contre_indications:[] },
+    { id:'course_cooldown', nom:'Cooldown 10 min jog', duree_min:10, duree_max:15, intensite:3, met:6, niveau:['debutant','intermediaire','avance'], description:'Retour au calme après séance. Footing très doux.', muscles:['jambes','cardio'], lieu:['exterieur','tapis'], materiel:[], contre_indications:[] }
+  ];
+
+  // ── VÉLO (12 exos) ──
+  var VELO = [
+    { id:'velo_endurance_route', nom:'Sortie endurance route', duree_min:60, duree_max:180, intensite:5, met:8, niveau:['debutant','intermediaire','avance'], description:'Allure conversationnelle à vélo. Base aérobie.', muscles:['jambes','cardio'], lieu:['exterieur'], materiel:['velo'], contre_indications:[] },
+    { id:'velo_vtt', nom:'Sortie VTT / gravel', duree_min:60, duree_max:180, intensite:6, met:9, niveau:['intermediaire','avance'], description:'Chemins, technique, dénivelé. Renforce core + technique.', muscles:['jambes','core','cardio'], lieu:['exterieur'], materiel:['velo_vtt'], contre_indications:[] },
+    { id:'velo_hiit_indoor', nom:'HIIT vélo indoor 30/30', duree_min:20, duree_max:30, intensite:9, met:12, niveau:['intermediaire','avance'], description:'30s sprint + 30s récup. 10-15 répétitions sur home-trainer.', muscles:['jambes','cardio'], lieu:['salle','salle_cardio','maison_mat'], materiel:['velo_maison'], contre_indications:[] },
+    { id:'velo_cote_assis', nom:'Côte longue assis', duree_min:30, duree_max:60, intensite:7, met:10, niveau:['intermediaire','avance'], description:'Reste assis, gros braquet, force pure.', muscles:['jambes','fessiers'], lieu:['exterieur'], materiel:['velo'], contre_indications:[] },
+    { id:'velo_cote_danseuse', nom:'Côte en danseuse', duree_min:20, duree_max:40, intensite:8, met:11, niveau:['intermediaire','avance'], description:'Debout sur le vélo. Engage tout le corps.', muscles:['jambes','core','cardio'], lieu:['exterieur'], materiel:['velo'], contre_indications:[] },
+    { id:'velo_sprint', nom:'Sprint vélo', duree_min:20, duree_max:30, intensite:10, met:14, niveau:['avance'], description:'Sprint max 30s + récup 2 min. 6-10 répétitions.', muscles:['jambes','cardio'], lieu:['exterieur','salle'], materiel:['velo'], contre_indications:['cardio_severe'] },
+    { id:'velo_spinning', nom:'Spinning HIIT', duree_min:30, duree_max:45, intensite:8, met:11, niveau:['intermediaire','avance'], description:'Cours collectif intensif. Suit le rythme musical.', muscles:['jambes','cardio'], lieu:['salle','salle_cardio'], materiel:['velo_maison'], contre_indications:[] },
+    { id:'velo_recup', nom:'Récup active vélo', duree_min:30, duree_max:45, intensite:3, met:6, niveau:['debutant','intermediaire','avance'], description:'Sortie facile lendemain d\'effort. Décrassage.', muscles:['jambes'], lieu:['exterieur','salle_cardio'], materiel:['velo'], contre_indications:[] },
+    { id:'velo_endurance_60', nom:'Cycle endurance 60 min', duree_min:60, duree_max:60, intensite:5, met:8, niveau:['debutant','intermediaire'], description:'1h à allure stable. Construire l\'endurance.', muscles:['jambes','cardio'], lieu:['exterieur','salle_cardio'], materiel:['velo'], contre_indications:[] },
+    { id:'elliptique_hiit', nom:'Vélo elliptique HIIT', duree_min:20, duree_max:30, intensite:8, met:10, niveau:['intermediaire'], description:'30s rapide + 30s lent, intervalles. Bras engagés.', muscles:['jambes','bras','cardio'], lieu:['salle','salle_cardio','maison_mat'], materiel:['elliptique'], contre_indications:[] },
+    { id:'elliptique_endurance', nom:'Vélo elliptique endurance', duree_min:30, duree_max:60, intensite:5, met:7, niveau:['debutant','intermediaire'], description:'Cadence stable 60 min. Bon pour récup ou débutant.', muscles:['jambes','bras','cardio'], lieu:['salle','salle_cardio','maison_mat'], materiel:['elliptique'], contre_indications:[] },
+    { id:'velo_appart_deb', nom:'Vélo d\'appartement débutant', duree_min:20, duree_max:30, intensite:4, met:6, niveau:['debutant'], description:'Découverte cardio doux. 20 min à allure facile.', muscles:['jambes','cardio'], lieu:['maison_mat','salle'], materiel:['velo_maison'], contre_indications:[] }
+  ];
+
+  // ── NATATION (10 exos) ──
+  var NATATION = [
+    { id:'nage_crawl_endurance', nom:'Crawl endurance (longueurs)', duree_min:30, duree_max:60, intensite:6, met:8, niveau:['intermediaire','avance'], description:'Longueurs en crawl, allure régulière. Travail respiration.', muscles:['dos','epaules','cardio'], lieu:['piscine'], materiel:[], contre_indications:[] },
+    { id:'nage_brasse', nom:'Brasse technique', duree_min:30, duree_max:45, intensite:5, met:7, niveau:['debutant','intermediaire'], description:'Brasse coulée + technique. Focus sur la glisse.', muscles:['epaules','jambes','cardio'], lieu:['piscine'], materiel:[], contre_indications:[] },
+    { id:'nage_dos', nom:'Dos crawlé', duree_min:25, duree_max:40, intensite:5, met:7, niveau:['intermediaire'], description:'Bon pour décompresser le dos après position assise.', muscles:['dos','epaules'], lieu:['piscine'], materiel:[], contre_indications:[] },
+    { id:'nage_papillon', nom:'Papillon (avancé)', duree_min:20, duree_max:30, intensite:9, met:11, niveau:['avance'], description:'Nage la plus technique. Travail explosif.', muscles:['dos','epaules','core','cardio'], lieu:['piscine'], materiel:[], contre_indications:['blessure_epaule'] },
+    { id:'nage_pull_buoy', nom:'Pull buoy (bras)', duree_min:20, duree_max:35, intensite:6, met:8, niveau:['intermediaire'], description:'Pull buoy entre les jambes, travail des bras uniquement.', muscles:['dos','epaules','bras'], lieu:['piscine'], materiel:['pull_buoy'], contre_indications:[] },
+    { id:'nage_plaquette', nom:'Plaquette mains', duree_min:20, duree_max:30, intensite:7, met:9, niveau:['intermediaire','avance'], description:'Plaquettes pour développer force tractive des bras.', muscles:['dos','epaules','bras'], lieu:['piscine'], materiel:['plaquette'], contre_indications:['blessure_epaule'] },
+    { id:'nage_jambes_planche', nom:'Battements jambes (planche)', duree_min:15, duree_max:25, intensite:6, met:8, niveau:['debutant','intermediaire'], description:'Planche entre les mains, battements crawl ou brasse.', muscles:['jambes','core','cardio'], lieu:['piscine'], materiel:['planche'], contre_indications:[] },
+    { id:'nage_apnee', nom:'Apnée 25m', duree_min:15, duree_max:25, intensite:7, met:8, niveau:['intermediaire','avance'], description:'Nage 25m sans respirer. Améliore capacité pulmonaire.', muscles:['cardio'], lieu:['piscine'], materiel:[], contre_indications:['cardio_severe'] },
+    { id:'nage_fractionne_25', nom:'Fractionné piscine 25m', duree_min:25, duree_max:40, intensite:8, met:10, niveau:['intermediaire','avance'], description:'25m vite + récup 30s. 10-20 répétitions.', muscles:['cardio','dos','epaules'], lieu:['piscine'], materiel:[], contre_indications:[] },
+    { id:'aqua_marche', nom:'Aquajogging / marche dans l\'eau', duree_min:20, duree_max:40, intensite:4, met:6, niveau:['debutant','intermediaire','avance'], description:'Marche/course dans l\'eau profonde. Sans impact.', muscles:['jambes','cardio'], lieu:['piscine'], materiel:[], contre_indications:[] }
+  ];
+
+  // ── YOGA / MOBILITÉ (25 exos) ──
+  var YOGA = [
+    { id:'yoga_salutation_a', nom:'Salutation au soleil A', duree_min:5, duree_max:15, intensite:4, met:4, niveau:['debutant','intermediaire','avance'], description:'Enchaînement classique : montagne, chien tête en bas, fente, planche, cobra.', muscles:['full','core'], lieu:['maison','salle','exterieur','any'], materiel:[], contre_indications:[] },
+    { id:'yoga_salutation_b', nom:'Salutation au soleil B', duree_min:10, duree_max:20, intensite:5, met:5, niveau:['intermediaire','avance'], description:'Version avec chaise, guerrier I, chaturanga. Plus tonique.', muscles:['full','core','jambes'], lieu:['maison','salle','any'], materiel:[], contre_indications:[] },
+    { id:'yoga_vinyasa_flow', nom:'Vinyasa flow 20 min', duree_min:20, duree_max:40, intensite:6, met:5, niveau:['intermediaire','avance'], description:'Enchaînement fluide rythmé par la respiration.', muscles:['full'], lieu:['maison','salle','any'], materiel:['tapis'], contre_indications:[] },
+    { id:'yoga_yin_recup', nom:'Yin yoga récupération', duree_min:30, duree_max:60, intensite:2, met:3, niveau:['debutant','intermediaire','avance'], description:'Postures tenues 3-5 min. Tissus profonds, relâchement.', muscles:['full','mobilite'], lieu:['maison','salle','any'], materiel:['tapis'], contre_indications:[] },
+    { id:'yoga_cat_cow', nom:'Cat-cow (chat-vache)', duree_min:3, duree_max:8, intensite:2, met:2, niveau:['debutant','intermediaire','avance'], description:'À 4 pattes : creuse-arrondis le dos rythmé par la respiration.', muscles:['dos','core'], lieu:['maison','salle','any'], materiel:['tapis'], contre_indications:[] },
+    { id:'yoga_chien_tete_bas', nom:'Chien tête en bas', duree_min:2, duree_max:5, intensite:4, met:4, niveau:['debutant','intermediaire','avance'], description:'V inversé. Allonge dos, ischios, mollets.', muscles:['dos','jambes','epaules'], lieu:['maison','salle','any'], materiel:['tapis'], contre_indications:['blessure_poignet'] },
+    { id:'yoga_guerrier1', nom:'Guerrier I', duree_min:2, duree_max:5, intensite:5, met:4, niveau:['debutant','intermediaire','avance'], description:'Fente avant, bras levés. Force + ouverture hanches.', muscles:['jambes','hanches','epaules'], lieu:['maison','salle','any'], materiel:[], contre_indications:['blessure_genou'] },
+    { id:'yoga_guerrier2', nom:'Guerrier II', duree_min:2, duree_max:5, intensite:5, met:4, niveau:['debutant','intermediaire','avance'], description:'Fente latérale, bras tendus. Stabilité + endurance.', muscles:['jambes','hanches'], lieu:['maison','salle','any'], materiel:[], contre_indications:[] },
+    { id:'yoga_guerrier3', nom:'Guerrier III', duree_min:2, duree_max:5, intensite:7, met:5, niveau:['intermediaire','avance'], description:'Équilibre sur un pied, T-shape. Renforce gainage.', muscles:['jambes','core','fessiers'], lieu:['maison','salle','any'], materiel:[], contre_indications:[] },
+    { id:'yoga_cobra', nom:'Cobra', duree_min:1, duree_max:3, intensite:3, met:3, niveau:['debutant','intermediaire','avance'], description:'Allongé sur le ventre, soulève le buste. Ouvre la poitrine.', muscles:['dos','epaules'], lieu:['maison','salle','any'], materiel:['tapis'], contre_indications:['lombaires'] },
+    { id:'yoga_pigeon', nom:'Pigeon', duree_min:3, duree_max:8, intensite:4, met:3, niveau:['intermediaire','avance'], description:'Genou avant plié, jambe arrière allongée. Ouvre les hanches.', muscles:['hanches','fessiers'], lieu:['maison','salle','any'], materiel:['tapis'], contre_indications:['blessure_genou'] },
+    { id:'yoga_enfant', nom:'Posture de l\'enfant', duree_min:1, duree_max:5, intensite:1, met:2, niveau:['debutant','intermediaire','avance'], description:'Assis sur les talons, front au sol. Récup, calme.', muscles:['dos','hanches'], lieu:['maison','salle','any'], materiel:['tapis'], contre_indications:[] },
+    { id:'etir_ischio', nom:'Étirement ischio', duree_min:2, duree_max:5, intensite:2, met:2, niveau:['debutant','intermediaire','avance'], description:'Allongé, jambe en l\'air, tire vers toi. 30s par jambe.', muscles:['ischios'], lieu:['maison','salle','any'], materiel:[], contre_indications:[] },
+    { id:'etir_hanches', nom:'Étirement hanches', duree_min:3, duree_max:6, intensite:2, met:2, niveau:['debutant','intermediaire','avance'], description:'Fente basse, hanche au sol. Étire psoas et fléchisseurs.', muscles:['hanches'], lieu:['maison','salle','any'], materiel:[], contre_indications:[] },
+    { id:'mob_epaules', nom:'Mobilité épaules', duree_min:5, duree_max:10, intensite:2, met:2, niveau:['debutant','intermediaire','avance'], description:'Rotations bras, cercles, ouverture. Anti-douleurs posture.', muscles:['epaules'], lieu:['maison','salle','any'], materiel:[], contre_indications:[] },
+    { id:'mob_hanches', nom:'Mobilité hanches dédiée', duree_min:8, duree_max:15, intensite:3, met:3, niveau:['debutant','intermediaire','avance'], description:'Cercles, ouverture, rotations. Anti-raideur assise.', muscles:['hanches'], lieu:['maison','salle','any'], materiel:[], contre_indications:[] },
+    { id:'mob_colonne', nom:'Mobilité colonne', duree_min:5, duree_max:10, intensite:2, met:2, niveau:['debutant','intermediaire','avance'], description:'Torsions, flexions, extensions douces. Décompression.', muscles:['dos'], lieu:['maison','salle','any'], materiel:[], contre_indications:[] },
+    { id:'meditation_10', nom:'Méditation 10 min', duree_min:10, duree_max:20, intensite:1, met:1, niveau:['debutant','intermediaire','avance'], description:'Assis confortable, focus respiration. Baisse stress.', muscles:[], lieu:['maison','salle','any'], materiel:[], contre_indications:[] },
+    { id:'respi_carree', nom:'Respiration carrée', duree_min:5, duree_max:10, intensite:1, met:1, niveau:['debutant','intermediaire','avance'], description:'4s inspire / 4s retiens / 4s expire / 4s retiens. Anti-anxiété.', muscles:[], lieu:['any'], materiel:[], contre_indications:[] },
+    { id:'respi_478', nom:'Respiration 4-7-8', duree_min:5, duree_max:10, intensite:1, met:1, niveau:['debutant','intermediaire','avance'], description:'4s inspire / 7s retiens / 8s expire. Endormissement.', muscles:[], lieu:['any'], materiel:[], contre_indications:[] },
+    { id:'body_scan', nom:'Body scan', duree_min:10, duree_max:20, intensite:1, met:1, niveau:['debutant','intermediaire','avance'], description:'Scan mental des pieds à la tête. Relâche tensions.', muscles:[], lieu:['any'], materiel:[], contre_indications:[] },
+    { id:'yoga_matin', nom:'Yoga matin énergisant', duree_min:15, duree_max:25, intensite:5, met:4, niveau:['debutant','intermediaire','avance'], description:'Réveille le corps : salutations, ouvertures.', muscles:['full'], lieu:['maison','any'], materiel:['tapis'], contre_indications:[] },
+    { id:'yoga_soir', nom:'Yoga soir relaxant', duree_min:15, duree_max:30, intensite:2, met:3, niveau:['debutant','intermediaire','avance'], description:'Postures au sol, respiration. Prépare au sommeil.', muscles:['full'], lieu:['maison','any'], materiel:['tapis'], contre_indications:[] },
+    { id:'yoga_coureurs', nom:'Yoga pour coureurs', duree_min:20, duree_max:30, intensite:3, met:3, niveau:['debutant','intermediaire','avance'], description:'Focus ischios, hanches, mollets. Anti-courbatures.', muscles:['jambes','hanches'], lieu:['maison','salle','any'], materiel:['tapis'], contre_indications:[] },
+    { id:'yoga_post_seance', nom:'Yoga récup post-séance', duree_min:10, duree_max:20, intensite:2, met:2, niveau:['debutant','intermediaire','avance'], description:'Étirements doux après muscu. Accélère récupération.', muscles:['full'], lieu:['maison','salle','any'], materiel:['tapis'], contre_indications:[] }
+  ];
+
+  // ── CALISTHENICS (20 exos) ──
+  var CALI = [
+    { id:'cali_pullup_strict', nom:'Pull-up strict', duree_min:5, duree_max:15, intensite:8, met:8, niveau:['intermediaire','avance'], description:'Traction stricte, sans élan. Reps maximales.', muscles:['dos','biceps'], lieu:['exterieur','salle','maison_mat'], materiel:['traction'], contre_indications:['blessure_epaule'] },
+    { id:'cali_pullup_archer', nom:'Pull-up archer', duree_min:5, duree_max:15, intensite:9, met:9, niveau:['avance'], description:'Pull-up avec décalage latéral. Étape vers une-main.', muscles:['dos','biceps'], lieu:['exterieur','salle','maison_mat'], materiel:['traction'], contre_indications:['blessure_epaule'] },
+    { id:'cali_muscle_up', nom:'Muscle-up', duree_min:5, duree_max:15, intensite:10, met:10, niveau:['avance'], description:'Traction explosive + passage au-dessus de la barre.', muscles:['dos','epaules','triceps'], lieu:['exterieur','salle','maison_mat'], materiel:['traction'], contre_indications:[] },
+    { id:'cali_pistol', nom:'Pistol squat', duree_min:5, duree_max:15, intensite:9, met:7, niveau:['avance'], description:'Squat sur une jambe, l\'autre tendue. Équilibre + force.', muscles:['jambes','core'], lieu:['any'], materiel:[], contre_indications:['blessure_genou'] },
+    { id:'cali_dragon_flag', nom:'Dragon flag', duree_min:5, duree_max:15, intensite:10, met:8, niveau:['avance'], description:'Allongé sur un banc, corps tendu en l\'air. Core extrême.', muscles:['core','dos'], lieu:['salle','maison_mat'], materiel:['banc'], contre_indications:['lombaires'] },
+    { id:'cali_front_lever', nom:'Front lever progression', duree_min:5, duree_max:15, intensite:9, met:8, niveau:['avance'], description:'Suspendu, corps horizontal face vers le haut.', muscles:['dos','core'], lieu:['exterieur','salle'], materiel:['traction'], contre_indications:['blessure_epaule'] },
+    { id:'cali_back_lever', nom:'Back lever progression', duree_min:5, duree_max:15, intensite:9, met:8, niveau:['avance'], description:'Suspendu, corps horizontal face vers le bas.', muscles:['dos','epaules','core'], lieu:['exterieur','salle'], materiel:['traction'], contre_indications:[] },
+    { id:'cali_planche', nom:'Planche (lean / tuck)', duree_min:5, duree_max:15, intensite:10, met:8, niveau:['avance'], description:'Corps parallèle au sol, sur les bras tendus.', muscles:['epaules','core','triceps'], lieu:['any'], materiel:[], contre_indications:['blessure_poignet'] },
+    { id:'cali_handstand_mur', nom:'Handstand contre mur', duree_min:5, duree_max:15, intensite:7, met:6, niveau:['intermediaire','avance'], description:'Équilibre sur les mains, dos contre le mur. Tenue 30s.', muscles:['epaules','core'], lieu:['any'], materiel:[], contre_indications:['vertige','blessure_poignet'] },
+    { id:'cali_handstand_free', nom:'Handstand free', duree_min:5, duree_max:15, intensite:9, met:7, niveau:['avance'], description:'Équilibre libre sur les mains. Travail proprioception.', muscles:['epaules','core'], lieu:['any'], materiel:[], contre_indications:['vertige'] },
+    { id:'cali_dips_par', nom:'Dips parallèles strict', duree_min:5, duree_max:15, intensite:8, met:8, niveau:['intermediaire','avance'], description:'Aux barres parallèles, descente jusqu\'à 90°.', muscles:['triceps','pectoraux','epaules'], lieu:['exterieur','salle','maison_mat'], materiel:['parallelles'], contre_indications:['blessure_epaule'] },
+    { id:'cali_lsit', nom:'L-sit', duree_min:3, duree_max:10, intensite:8, met:6, niveau:['intermediaire','avance'], description:'Bras tendus, corps en L. Tenue 10-30s.', muscles:['core','triceps','epaules'], lieu:['any'], materiel:[], contre_indications:[] },
+    { id:'cali_vsit', nom:'V-sit', duree_min:3, duree_max:10, intensite:9, met:6, niveau:['avance'], description:'L-sit avec jambes plus hautes. Travail abdo extrême.', muscles:['core'], lieu:['any'], materiel:[], contre_indications:[] },
+    { id:'cali_pseudo_planche', nom:'Pompes pseudo planche', duree_min:5, duree_max:15, intensite:8, met:7, niveau:['intermediaire','avance'], description:'Pompes mains à hauteur du nombril, doigts vers les pieds.', muscles:['epaules','pectoraux','triceps'], lieu:['any'], materiel:[], contre_indications:['blessure_poignet'] },
+    { id:'cali_hindu', nom:'Pompes hindou', duree_min:5, duree_max:15, intensite:6, met:6, niveau:['intermediaire','avance'], description:'Mouvement fluide chien tête en bas → cobra.', muscles:['pectoraux','epaules','dos'], lieu:['any'], materiel:[], contre_indications:[] },
+    { id:'cali_archer_pushup', nom:'Pompes archer', duree_min:5, duree_max:15, intensite:8, met:7, niveau:['avance'], description:'Pompes avec poids latéral, un bras semi-tendu.', muscles:['pectoraux','triceps','epaules'], lieu:['any'], materiel:[], contre_indications:[] },
+    { id:'cali_commando', nom:'Pull-up commando', duree_min:5, duree_max:15, intensite:8, met:8, niveau:['intermediaire','avance'], description:'Traction tête en alternance de chaque côté de la barre.', muscles:['dos','biceps','core'], lieu:['exterieur','salle'], materiel:['traction'], contre_indications:[] },
+    { id:'cali_toes_to_bar', nom:'Toes to bar', duree_min:5, duree_max:15, intensite:8, met:7, niveau:['intermediaire','avance'], description:'Suspendu à la barre, pieds touchent la barre.', muscles:['core','dos'], lieu:['exterieur','salle','maison_mat'], materiel:['traction'], contre_indications:[] },
+    { id:'cali_leg_raises', nom:'Hanging leg raises', duree_min:5, duree_max:15, intensite:7, met:6, niveau:['intermediaire','avance'], description:'Suspendu, monte les jambes tendues à 90°.', muscles:['core'], lieu:['exterieur','salle','maison_mat'], materiel:['traction'], contre_indications:[] },
+    { id:'cali_bridge', nom:'Bridge (pont gymnique)', duree_min:5, duree_max:15, intensite:6, met:5, niveau:['intermediaire','avance'], description:'Pont allongé, dos cambré, bras et jambes tendus.', muscles:['dos','epaules','jambes'], lieu:['any'], materiel:['tapis'], contre_indications:['lombaires'] }
+  ];
+
+  // ── BOXE / COMBAT (15 exos) ──
+  var BOXE = [
+    { id:'boxe_shadow_3min', nom:'Shadow boxing 3 min', duree_min:9, duree_max:20, intensite:7, met:9, niveau:['debutant','intermediaire','avance'], description:'Combat fictif. Combinaisons libres, déplacement.', muscles:['full','cardio'], lieu:['any'], materiel:[], contre_indications:[] },
+    { id:'boxe_sac_combo_1_2', nom:'Sac de frappe combo 1-2', duree_min:10, duree_max:20, intensite:8, met:10, niveau:['debutant','intermediaire','avance'], description:'Jab-cross sur le sac. 3 rounds × 3 min.', muscles:['bras','epaules','core','cardio'], lieu:['salle','maison_mat'], materiel:['sac_frappe','gants'], contre_indications:['blessure_epaule'] },
+    { id:'boxe_jab_cross_hook', nom:'Sac jab-cross-hook', duree_min:10, duree_max:20, intensite:8, met:10, niveau:['intermediaire','avance'], description:'Combo 1-2-3 répété. Travaille rotation buste.', muscles:['bras','core','cardio'], lieu:['salle','maison_mat'], materiel:['sac_frappe','gants'], contre_indications:[] },
+    { id:'boxe_uppercut', nom:'Sac uppercut', duree_min:8, duree_max:15, intensite:8, met:9, niveau:['intermediaire','avance'], description:'Uppercuts en alternance. Jambes engagées.', muscles:['bras','jambes','core'], lieu:['salle','maison_mat'], materiel:['sac_frappe','gants'], contre_indications:[] },
+    { id:'boxe_corde_3min', nom:'Corde à sauter 3 min', duree_min:9, duree_max:15, intensite:7, met:11, niveau:['debutant','intermediaire','avance'], description:'3 rounds × 3 min. Coordination + cardio.', muscles:['mollets','cardio'], lieu:['any'], materiel:['corde'], contre_indications:[] },
+    { id:'boxe_corde_hiit', nom:'Corde à sauter HIIT 30/30', duree_min:15, duree_max:25, intensite:9, met:12, niveau:['intermediaire','avance'], description:'30s vite + 30s lent. 10-15 rounds.', muscles:['mollets','cardio'], lieu:['any'], materiel:['corde'], contre_indications:[] },
+    { id:'boxe_pieds_poings', nom:'Combo boxe pieds-poings', duree_min:10, duree_max:20, intensite:8, met:10, niveau:['intermediaire','avance'], description:'Jab-cross-low kick. Style kickbox.', muscles:['full','cardio'], lieu:['salle','maison_mat'], materiel:['sac_frappe'], contre_indications:[] },
+    { id:'boxe_esquives', nom:'Esquives gauche-droite', duree_min:5, duree_max:10, intensite:6, met:8, niveau:['debutant','intermediaire','avance'], description:'Slips, ducks, head movement. Sans frapper.', muscles:['core','jambes'], lieu:['any'], materiel:[], contre_indications:[] },
+    { id:'boxe_low_kick', nom:'Kicks low (mollets)', duree_min:8, duree_max:15, intensite:7, met:9, niveau:['intermediaire','avance'], description:'Coup de pied bas, niveau cuisses-mollets. Sur sac.', muscles:['jambes'], lieu:['salle','maison_mat'], materiel:['sac_frappe'], contre_indications:[] },
+    { id:'boxe_middle_kick', nom:'Kicks middle (foie)', duree_min:8, duree_max:15, intensite:8, met:10, niveau:['intermediaire','avance'], description:'Coup de pied milieu. Travaille hanches + équilibre.', muscles:['jambes','core'], lieu:['salle','maison_mat'], materiel:['sac_frappe'], contre_indications:[] },
+    { id:'boxe_genou', nom:'Genou frontal (Muay thai)', duree_min:8, duree_max:15, intensite:8, met:9, niveau:['intermediaire','avance'], description:'Genou levé en clinch. Travaille core + équilibre.', muscles:['core','jambes'], lieu:['salle'], materiel:['sac_frappe'], contre_indications:[] },
+    { id:'boxe_burpee_punch', nom:'Burpee box-punch', duree_min:10, duree_max:20, intensite:9, met:11, niveau:['intermediaire','avance'], description:'Burpee + 4 frappes sur sac. Cardio + frappe.', muscles:['full','cardio'], lieu:['salle','maison_mat'], materiel:['sac_frappe'], contre_indications:[] },
+    { id:'boxe_tabata', nom:'Tabata boxe (8 rounds)', duree_min:4, duree_max:10, intensite:10, met:12, niveau:['intermediaire','avance'], description:'20s frappe max + 10s récup × 8 rounds.', muscles:['full','cardio'], lieu:['salle','maison_mat'], materiel:['sac_frappe'], contre_indications:[] },
+    { id:'boxe_sparring_leger', nom:'Sparring léger', duree_min:15, duree_max:30, intensite:7, met:10, niveau:['avance'], description:'Combat technique avec partenaire. Sécurité d\'abord.', muscles:['full','cardio'], lieu:['salle'], materiel:['gants','protege_dents','casque'], contre_indications:[] },
+    { id:'boxe_footwork', nom:'Footwork échelle', duree_min:10, duree_max:15, intensite:6, met:8, niveau:['debutant','intermediaire','avance'], description:'Échelle d\'agilité au sol. Coordination pieds.', muscles:['jambes','cardio'], lieu:['salle','maison_mat'], materiel:['echelle_agilite'], contre_indications:[] }
+  ];
+
+  // ── PILATES (15 exos) ──
+  var PILATES = [
+    { id:'pil_hundred', nom:'The Hundred', duree_min:3, duree_max:8, intensite:6, met:4, niveau:['debutant','intermediaire','avance'], description:'Allongé, jambes en table top, pumping bras × 100.', muscles:['core'], lieu:['maison','salle','any'], materiel:['tapis'], contre_indications:['cervicales'] },
+    { id:'pil_rollup', nom:'Roll-up', duree_min:3, duree_max:8, intensite:5, met:3, niveau:['intermediaire','avance'], description:'Allongé bras tendus, monter assis vertèbre par vertèbre.', muscles:['core'], lieu:['any'], materiel:['tapis'], contre_indications:['lombaires'] },
+    { id:'pil_leg_circles', nom:'Single leg circles', duree_min:4, duree_max:8, intensite:4, met:3, niveau:['debutant','intermediaire'], description:'Allongé, cercles avec une jambe en l\'air.', muscles:['core','hanches'], lieu:['any'], materiel:['tapis'], contre_indications:[] },
+    { id:'pil_rolling_ball', nom:'Rolling like a ball', duree_min:3, duree_max:6, intensite:5, met:3, niveau:['intermediaire'], description:'Boule, roule avant-arrière sur le dos.', muscles:['core'], lieu:['any'], materiel:['tapis'], contre_indications:['lombaires'] },
+    { id:'pil_single_leg_stretch', nom:'Single leg stretch', duree_min:3, duree_max:6, intensite:5, met:3, niveau:['debutant','intermediaire'], description:'Alternance jambes pliées/tendues, mains au tibia.', muscles:['core'], lieu:['any'], materiel:['tapis'], contre_indications:[] },
+    { id:'pil_double_leg_stretch', nom:'Double leg stretch', duree_min:3, duree_max:6, intensite:6, met:4, niveau:['intermediaire','avance'], description:'Allongé, bras et jambes tendus simultanément.', muscles:['core'], lieu:['any'], materiel:['tapis'], contre_indications:[] },
+    { id:'pil_spine_stretch', nom:'Spine stretch forward', duree_min:3, duree_max:6, intensite:3, met:2, niveau:['debutant','intermediaire'], description:'Assis jambes écartées, bras tendus, flexion avant.', muscles:['dos'], lieu:['any'], materiel:['tapis'], contre_indications:[] },
+    { id:'pil_saw', nom:'Saw (scie)', duree_min:3, duree_max:6, intensite:4, met:3, niveau:['intermediaire'], description:'Assis, rotation buste + main au pied opposé.', muscles:['core','obliques'], lieu:['any'], materiel:['tapis'], contre_indications:[] },
+    { id:'pil_swan_dive', nom:'Swan dive', duree_min:3, duree_max:6, intensite:6, met:4, niveau:['intermediaire','avance'], description:'Allongé sur le ventre, balancier comme un plongeon.', muscles:['dos'], lieu:['any'], materiel:['tapis'], contre_indications:['lombaires'] },
+    { id:'pil_single_leg_kick', nom:'Single leg kick', duree_min:3, duree_max:6, intensite:5, met:3, niveau:['intermediaire'], description:'Allongé ventre, alternance kicks ischios.', muscles:['ischios','fessiers'], lieu:['any'], materiel:['tapis'], contre_indications:[] },
+    { id:'pil_teaser', nom:'Teaser progression', duree_min:4, duree_max:8, intensite:8, met:5, niveau:['avance'], description:'En V, jambes et buste levés simultanément.', muscles:['core'], lieu:['any'], materiel:['tapis'], contre_indications:['lombaires'] },
+    { id:'pil_plank', nom:'Plank pilates', duree_min:2, duree_max:6, intensite:6, met:4, niveau:['debutant','intermediaire','avance'], description:'Planche stable, alignement parfait.', muscles:['core'], lieu:['any'], materiel:['tapis'], contre_indications:[] },
+    { id:'pil_side_plank', nom:'Side plank pilates', duree_min:2, duree_max:5, intensite:6, met:4, niveau:['intermediaire'], description:'Planche latérale, élève la hanche dynamique.', muscles:['obliques'], lieu:['any'], materiel:['tapis'], contre_indications:[] },
+    { id:'pil_mermaid', nom:'Mermaid stretch', duree_min:2, duree_max:5, intensite:2, met:2, niveau:['debutant','intermediaire'], description:'Assise sur le côté, étirement obliques + côtes.', muscles:['obliques','dos'], lieu:['any'], materiel:['tapis'], contre_indications:[] },
+    { id:'pil_debutant_20', nom:'Pilates débutant 20 min', duree_min:20, duree_max:25, intensite:4, met:3, niveau:['debutant'], description:'Routine complète : hundred, rollup, leg circles, plank.', muscles:['full','core'], lieu:['any'], materiel:['tapis'], contre_indications:[] }
+  ];
+
+  // ── CROSSFIT (15 exos) ──
+  var CROSSFIT = [
+    { id:'wod_cindy', nom:'WOD Cindy', duree_min:20, duree_max:20, intensite:9, met:12, niveau:['intermediaire','avance'], description:'AMRAP 20 min : 5 pullups + 10 pushups + 15 squats.', muscles:['full','cardio'], lieu:['salle','exterieur'], materiel:['traction'], contre_indications:[] },
+    { id:'wod_murph', nom:'WOD Murph', duree_min:35, duree_max:60, intensite:10, met:13, niveau:['avance'], description:'1mile run + 100 pullups + 200 pushups + 300 squats + 1mile run.', muscles:['full','cardio'], lieu:['salle','exterieur'], materiel:['traction'], contre_indications:['cardio_severe'] },
+    { id:'wod_fran', nom:'WOD Fran', duree_min:6, duree_max:12, intensite:10, met:14, niveau:['avance'], description:'21-15-9 : thrusters + pullups. Sub-5 min visé.', muscles:['full','cardio'], lieu:['salle'], materiel:['barre','traction'], contre_indications:[] },
+    { id:'wod_helen', nom:'WOD Helen', duree_min:10, duree_max:15, intensite:9, met:13, niveau:['intermediaire','avance'], description:'3 rounds : 400m run + 21 KB swings + 12 pullups.', muscles:['full','cardio'], lieu:['salle'], materiel:['kettlebell','traction'], contre_indications:[] },
+    { id:'cf_thruster', nom:'Thruster', duree_min:5, duree_max:15, intensite:9, met:11, niveau:['intermediaire','avance'], description:'Front squat + push press. Mouvement complet.', muscles:['jambes','epaules','core'], lieu:['salle'], materiel:['barre'], contre_indications:[] },
+    { id:'cf_wall_ball', nom:'Wall ball', duree_min:5, duree_max:15, intensite:8, met:11, niveau:['debutant','intermediaire','avance'], description:'Squat + lancer ball au mur. 20 reps.', muscles:['jambes','epaules','cardio'], lieu:['salle'], materiel:['medicine_ball'], contre_indications:[] },
+    { id:'cf_box_jump', nom:'Box jump', duree_min:5, duree_max:15, intensite:8, met:10, niveau:['intermediaire','avance'], description:'Sauts sur box 60cm. Explosivité jambes.', muscles:['jambes','cardio'], lieu:['salle'], materiel:['box'], contre_indications:['blessure_genou'] },
+    { id:'cf_t2b', nom:'Toes to bar', duree_min:5, duree_max:15, intensite:8, met:8, niveau:['intermediaire','avance'], description:'Suspendu, pieds touchent la barre.', muscles:['core'], lieu:['salle','exterieur'], materiel:['traction'], contre_indications:[] },
+    { id:'cf_double_under', nom:'Double under (corde)', duree_min:5, duree_max:15, intensite:8, met:12, niveau:['intermediaire','avance'], description:'Corde passe 2x sous les pieds en un saut.', muscles:['mollets','cardio'], lieu:['any'], materiel:['corde'], contre_indications:[] },
+    { id:'cf_clean_jerk', nom:'Clean and jerk', duree_min:5, duree_max:15, intensite:9, met:10, niveau:['avance'], description:'Épaulé-jeté barre. Technique olympique.', muscles:['full'], lieu:['salle'], materiel:['barre'], contre_indications:['blessure_epaule'] },
+    { id:'cf_snatch', nom:'Snatch', duree_min:5, duree_max:15, intensite:9, met:10, niveau:['avance'], description:'Arraché barre. Technique olympique exigeante.', muscles:['full'], lieu:['salle'], materiel:['barre'], contre_indications:['blessure_epaule'] },
+    { id:'cf_burpee_over_bar', nom:'Burpee over bar', duree_min:5, duree_max:15, intensite:9, met:12, niveau:['intermediaire','avance'], description:'Burpee + saut par-dessus la barre.', muscles:['full','cardio'], lieu:['salle'], materiel:['barre'], contre_indications:[] },
+    { id:'cf_row_500', nom:'Row 500m', duree_min:2, duree_max:5, intensite:9, met:11, niveau:['intermediaire','avance'], description:'500m sur rameur max effort. Test cardio.', muscles:['full','cardio'], lieu:['salle','salle_cardio'], materiel:['rameur'], contre_indications:[] },
+    { id:'cf_assault_bike', nom:'Assault bike sprint', duree_min:5, duree_max:15, intensite:10, met:13, niveau:['avance'], description:'30s max + 90s récup × 8 rounds.', muscles:['full','cardio'], lieu:['salle','salle_cardio'], materiel:['assault_bike'], contre_indications:[] },
+    { id:'cf_kb_swing', nom:'Kettlebell swing 24kg', duree_min:5, duree_max:15, intensite:8, met:11, niveau:['intermediaire','avance'], description:'Swing russe ou américain. Hanches puissantes.', muscles:['fessiers','ischios','dos','cardio'], lieu:['salle','maison_mat'], materiel:['kettlebell'], contre_indications:['lombaires'] }
+  ];
+
+  // ── ÉTIREMENTS DÉDIÉS (15 exos) ──
+  var ETIR = [
+    { id:'etir_quad', nom:'Étirement quadriceps', duree_min:1, duree_max:3, intensite:1, met:2, niveau:['debutant','intermediaire','avance'], description:'Debout, attrape ton pied derrière. 30s par jambe.', muscles:['quadriceps'], lieu:['any'], materiel:[], contre_indications:[] },
+    { id:'etir_ischio_d', nom:'Étirement ischio-jambiers', duree_min:1, duree_max:3, intensite:1, met:2, niveau:['debutant','intermediaire','avance'], description:'Allongé, tire la jambe tendue. 30s par jambe.', muscles:['ischios'], lieu:['any'], materiel:[], contre_indications:[] },
+    { id:'etir_mollet', nom:'Étirement mollets', duree_min:1, duree_max:3, intensite:1, met:2, niveau:['debutant','intermediaire','avance'], description:'Position fente, jambe arrière tendue, talon au sol.', muscles:['mollets'], lieu:['any'], materiel:[], contre_indications:[] },
+    { id:'etir_adducteurs', nom:'Étirement adducteurs', duree_min:1, duree_max:3, intensite:2, met:2, niveau:['debutant','intermediaire','avance'], description:'Assis jambes écartées, penche vers l\'avant.', muscles:['adducteurs'], lieu:['any'], materiel:[], contre_indications:[] },
+    { id:'etir_pigeon_assis', nom:'Étirement fessiers (pigeon assis)', duree_min:1, duree_max:3, intensite:2, met:2, niveau:['debutant','intermediaire','avance'], description:'Cheville sur genou opposé, tire le genou.', muscles:['fessiers'], lieu:['any'], materiel:[], contre_indications:[] },
+    { id:'etir_dos_cat', nom:'Étirement dos (chat-vache)', duree_min:2, duree_max:5, intensite:2, met:2, niveau:['debutant','intermediaire','avance'], description:'À 4 pattes, alterne creux et rondeur dos.', muscles:['dos'], lieu:['any'], materiel:[], contre_indications:[] },
+    { id:'etir_epaules', nom:'Étirement épaules', duree_min:1, duree_max:3, intensite:1, met:2, niveau:['debutant','intermediaire','avance'], description:'Croise un bras devant la poitrine, maintiens.', muscles:['epaules'], lieu:['any'], materiel:[], contre_indications:[] },
+    { id:'etir_pec_porte', nom:'Étirement pectoraux (porte)', duree_min:1, duree_max:3, intensite:2, met:2, niveau:['debutant','intermediaire','avance'], description:'Bras à 90° contre encadrement de porte, avance.', muscles:['pectoraux'], lieu:['any'], materiel:[], contre_indications:[] },
+    { id:'etir_triceps', nom:'Étirement triceps', duree_min:1, duree_max:3, intensite:1, met:2, niveau:['debutant','intermediaire','avance'], description:'Coude au-dessus de la tête, attrape avec l\'autre main.', muscles:['triceps'], lieu:['any'], materiel:[], contre_indications:[] },
+    { id:'etir_cou', nom:'Étirement cou', duree_min:1, duree_max:3, intensite:1, met:1, niveau:['debutant','intermediaire','avance'], description:'Incline tête sur le côté, maintiens 20s.', muscles:['cou'], lieu:['any'], materiel:[], contre_indications:[] },
+    { id:'etir_full_10', nom:'Routine étirement full body 10 min', duree_min:10, duree_max:15, intensite:2, met:2, niveau:['debutant','intermediaire','avance'], description:'Enchaînement complet de tous les groupes.', muscles:['full'], lieu:['any'], materiel:[], contre_indications:[] },
+    { id:'etir_post_course', nom:'Étirement post-course', duree_min:10, duree_max:15, intensite:2, met:2, niveau:['debutant','intermediaire','avance'], description:'Focus ischios, quads, mollets, fessiers.', muscles:['jambes'], lieu:['any'], materiel:[], contre_indications:[] },
+    { id:'etir_post_muscu', nom:'Étirement post-muscu', duree_min:8, duree_max:15, intensite:2, met:2, niveau:['debutant','intermediaire','avance'], description:'Étirements doux des muscles travaillés.', muscles:['full'], lieu:['any'], materiel:[], contre_indications:[] },
+    { id:'etir_matin', nom:'Étirement matinal', duree_min:5, duree_max:10, intensite:2, met:2, niveau:['debutant','intermediaire','avance'], description:'Réveil articulaire complet. Bras, hanches, dos.', muscles:['full'], lieu:['any'], materiel:[], contre_indications:[] },
+    { id:'etir_avant_coucher', nom:'Étirement avant-coucher', duree_min:5, duree_max:15, intensite:1, met:2, niveau:['debutant','intermediaire','avance'], description:'Détend tensions journée. Au lit ou tapis.', muscles:['full'], lieu:['any'], materiel:[], contre_indications:[] }
+  ];
+
+  // ── HIIT CARDIO PUR (15 exos) ──
+  var HIIT_PUR = [
+    { id:'hiit_tabata_jj', nom:'Tabata jumping jacks', duree_min:4, duree_max:8, intensite:9, met:12, niveau:['debutant','intermediaire','avance'], description:'20s ON / 10s OFF × 8 rounds.', muscles:['cardio'], lieu:['any'], materiel:[], contre_indications:[] },
+    { id:'hiit_tabata_burpees', nom:'Tabata burpees', duree_min:4, duree_max:8, intensite:10, met:13, niveau:['intermediaire','avance'], description:'20s burpees max + 10s récup × 8.', muscles:['full','cardio'], lieu:['any'], materiel:[], contre_indications:[] },
+    { id:'hiit_tabata_mc', nom:'Tabata mountain climbers', duree_min:4, duree_max:8, intensite:9, met:12, niveau:['debutant','intermediaire','avance'], description:'20s mountain max + 10s récup × 8.', muscles:['core','cardio'], lieu:['any'], materiel:[], contre_indications:[] },
+    { id:'hiit_tabata_hk', nom:'Tabata high knees', duree_min:4, duree_max:8, intensite:9, met:12, niveau:['debutant','intermediaire','avance'], description:'20s genoux hauts max + 10s récup × 8.', muscles:['jambes','cardio'], lieu:['any'], materiel:[], contre_indications:[] },
+    { id:'hiit_20_40', nom:'HIIT 20/40 (8 rounds)', duree_min:8, duree_max:12, intensite:8, met:11, niveau:['debutant','intermediaire'], description:'20s effort + 40s récup. Choix exo libre.', muscles:['cardio'], lieu:['any'], materiel:[], contre_indications:[] },
+    { id:'hiit_30_30', nom:'HIIT 30/30 (10 rounds)', duree_min:10, duree_max:15, intensite:8, met:12, niveau:['intermediaire','avance'], description:'30s effort + 30s récup. 10 rounds.', muscles:['cardio'], lieu:['any'], materiel:[], contre_indications:[] },
+    { id:'hiit_45_15', nom:'HIIT 45/15 (8 rounds)', duree_min:8, duree_max:12, intensite:9, met:12, niveau:['avance'], description:'45s effort + 15s récup. Brutal.', muscles:['cardio'], lieu:['any'], materiel:[], contre_indications:[] },
+    { id:'hiit_pyramide', nom:'HIIT pyramide 10-20-30-40-30-20-10', duree_min:10, duree_max:15, intensite:9, met:12, niveau:['intermediaire','avance'], description:'Durées d\'effort montent puis descendent.', muscles:['cardio'], lieu:['any'], materiel:[], contre_indications:[] },
+    { id:'hiit_emom_10', nom:'HIIT EMOM 10 min', duree_min:10, duree_max:10, intensite:7, met:10, niveau:['intermediaire','avance'], description:'Every Minute On the Minute. 10 reps × 10 min.', muscles:['full','cardio'], lieu:['any'], materiel:[], contre_indications:[] },
+    { id:'hiit_amrap_12', nom:'HIIT AMRAP 12 min', duree_min:12, duree_max:12, intensite:9, met:12, niveau:['intermediaire','avance'], description:'As Many Rounds As Possible. Pousse au max.', muscles:['full','cardio'], lieu:['any'], materiel:[], contre_indications:[] },
+    { id:'hiit_deb', nom:'HIIT cardio débutant', duree_min:15, duree_max:20, intensite:6, met:9, niveau:['debutant'], description:'Intervalles doux : 30s effort + 60s récup.', muscles:['cardio'], lieu:['any'], materiel:[], contre_indications:[] },
+    { id:'hiit_int', nom:'HIIT cardio intermédiaire', duree_min:15, duree_max:25, intensite:8, met:11, niveau:['intermediaire'], description:'Mix exos. 12 rounds × 40/20.', muscles:['full','cardio'], lieu:['any'], materiel:[], contre_indications:[] },
+    { id:'hiit_av', nom:'HIIT cardio avancé', duree_min:20, duree_max:30, intensite:10, met:13, niveau:['avance'], description:'16 rounds × 45/15. Exos composés.', muscles:['full','cardio'], lieu:['any'], materiel:[], contre_indications:[] },
+    { id:'hiit_bas', nom:'HIIT bas du corps', duree_min:15, duree_max:25, intensite:8, met:10, niveau:['intermediaire','avance'], description:'Squats jump, fentes sautées, sprints sur place.', muscles:['jambes','cardio'], lieu:['any'], materiel:[], contre_indications:['blessure_genou'] },
+    { id:'hiit_haut', nom:'HIIT haut du corps', duree_min:15, duree_max:25, intensite:8, met:9, niveau:['intermediaire','avance'], description:'Pompes, burpees, mountain climbers, planche dynamique.', muscles:['haut','cardio'], lieu:['any'], materiel:[], contre_indications:[] }
+  ];
+
+  // ── MARCHE ACTIVE (8 exos) ──
+  var MARCHE = [
+    { id:'marche_rapide_30', nom:'Marche rapide 30 min', duree_min:30, duree_max:60, intensite:4, met:5, niveau:['debutant','intermediaire','avance'], description:'5-6 km/h. Bras dynamiques, posture droite.', muscles:['jambes','cardio'], lieu:['exterieur','tapis'], materiel:[], contre_indications:[] },
+    { id:'marche_interval', nom:'Marche intervalle (1/2)', duree_min:25, duree_max:45, intensite:6, met:7, niveau:['debutant','intermediaire'], description:'1 min vite + 2 min normal. Brûle plus.', muscles:['jambes','cardio'], lieu:['exterieur','tapis'], materiel:[], contre_indications:[] },
+    { id:'marche_cote', nom:'Marche en côte', duree_min:30, duree_max:60, intensite:6, met:8, niveau:['debutant','intermediaire','avance'], description:'Sur tapis incliné ou colline. Cible fessiers.', muscles:['jambes','fessiers','cardio'], lieu:['exterieur','tapis'], materiel:[], contre_indications:[] },
+    { id:'marche_escaliers', nom:'Marche escaliers', duree_min:15, duree_max:30, intensite:7, met:9, niveau:['debutant','intermediaire','avance'], description:'Monter-descendre escaliers. Cardio intense gratuit.', muscles:['jambes','fessiers','cardio'], lieu:['exterieur','any'], materiel:[], contre_indications:['blessure_genou'] },
+    { id:'marche_nordique', nom:'Marche nordique', duree_min:30, duree_max:90, intensite:5, met:7, niveau:['debutant','intermediaire','avance'], description:'Avec bâtons. Engage tout le corps.', muscles:['full','cardio'], lieu:['exterieur'], materiel:['batons'], contre_indications:[] },
+    { id:'marche_nature', nom:'Marche en pleine nature', duree_min:45, duree_max:180, intensite:4, met:6, niveau:['debutant','intermediaire','avance'], description:'Forêt, parc. Effort + bien-être mental.', muscles:['jambes','cardio'], lieu:['exterieur'], materiel:[], contre_indications:[] },
+    { id:'marche_meditative', nom:'Marche méditative', duree_min:20, duree_max:40, intensite:2, met:3, niveau:['debutant','intermediaire','avance'], description:'Lente, focus sur la respiration et les sensations.', muscles:['jambes'], lieu:['exterieur'], materiel:[], contre_indications:[] },
+    { id:'rando_vallonnee', nom:'Randonnée vallonnée', duree_min:90, duree_max:300, intensite:6, met:8, niveau:['intermediaire','avance'], description:'Trek nature avec dénivelé.', muscles:['jambes','core','cardio'], lieu:['exterieur'], materiel:['chaussures_trek'], contre_indications:[] }
+  ];
+
+  // ── DANSE FITNESS (10 exos) ──
+  var DANSE = [
+    { id:'zumba_deb', nom:'Zumba débutant', duree_min:30, duree_max:45, intensite:6, met:8, niveau:['debutant'], description:'Cours énergique latino. Brûle 400-600 kcal/h.', muscles:['full','cardio'], lieu:['salle','maison','any'], materiel:[], contre_indications:[] },
+    { id:'zumba_int', nom:'Zumba intermédiaire', duree_min:45, duree_max:60, intensite:7, met:9, niveau:['intermediaire'], description:'Chorégraphies + intensité. Coordination requise.', muscles:['full','cardio'], lieu:['salle','maison','any'], materiel:[], contre_indications:[] },
+    { id:'cardio_dance_20', nom:'Cardio dance 20 min', duree_min:20, duree_max:30, intensite:7, met:9, niveau:['debutant','intermediaire','avance'], description:'Dance fitness énergique. Pour s\'amuser.', muscles:['full','cardio'], lieu:['any'], materiel:[], contre_indications:[] },
+    { id:'hiphop_fit', nom:'Hip-hop fitness', duree_min:30, duree_max:45, intensite:7, met:9, niveau:['intermediaire'], description:'Style street + cardio. Renforce coordination.', muscles:['full','cardio'], lieu:['any'], materiel:[], contre_indications:[] },
+    { id:'salsa_cardio', nom:'Salsa cardio', duree_min:30, duree_max:45, intensite:6, met:8, niveau:['debutant','intermediaire'], description:'Salsa rythmée. Travaille jambes + hanches.', muscles:['jambes','hanches','cardio'], lieu:['any'], materiel:[], contre_indications:[] },
+    { id:'bollywood_dance', nom:'Bollywood dance', duree_min:30, duree_max:45, intensite:6, met:8, niveau:['debutant','intermediaire'], description:'Énergie + sourires. Fun garanti.', muscles:['full','cardio'], lieu:['any'], materiel:[], contre_indications:[] },
+    { id:'afro_cardio', nom:'Afrobeat cardio', duree_min:30, duree_max:45, intensite:7, met:9, niveau:['intermediaire'], description:'Rythmes afros. Énergie max.', muscles:['full','cardio'], lieu:['any'], materiel:[], contre_indications:[] },
+    { id:'pop_fit_30', nom:'Pop fitness 30 min', duree_min:30, duree_max:45, intensite:6, met:8, niveau:['debutant','intermediaire'], description:'Hits pop, choré simple. Pour débuter.', muscles:['full','cardio'], lieu:['any'], materiel:[], contre_indications:[] },
+    { id:'dance_hiit', nom:'Dance HIIT', duree_min:20, duree_max:30, intensite:9, met:11, niveau:['intermediaire','avance'], description:'Mix dance + HIIT. Brûle calories maximal.', muscles:['full','cardio'], lieu:['any'], materiel:[], contre_indications:[] },
+    { id:'stretch_dance', nom:'Stretching dance', duree_min:15, duree_max:25, intensite:3, met:3, niveau:['debutant','intermediaire','avance'], description:'Étirements en musique. Post-séance.', muscles:['full'], lieu:['any'], materiel:[], contre_indications:[] }
+  ];
+
+  // ── Combiner toutes les disciplines ──
+  function normalize(arr, defaultCat, defaultDisc){
+    return arr.map(function(e){
+      e.categorie = e.categorie || defaultCat;
+      e.discipline = e.discipline || defaultDisc;
+      e.illustration = e.illustration || placeholder(e.nom);
+      e.consignes = e.consignes || e.description;
+      e.muscles = e.muscles || [];
+      e.materiel = e.materiel || [];
+      e.contre_indications = e.contre_indications || [];
+      e.benefice_principal = e.benefice_principal || e.description;
+      return e;
+    });
+  }
+
+  var EXOS_V2 = []
+    .concat(legacyEnriched)
+    .concat(normalize(COURSE, 'course', 'course'))
+    .concat(normalize(VELO, 'velo', 'velo'))
+    .concat(normalize(NATATION, 'natation', 'natation'))
+    .concat(normalize(YOGA, 'yoga', 'yoga'))
+    .concat(normalize(CALI, 'calisthenics', 'calisthenics'))
+    .concat(normalize(BOXE, 'boxe', 'boxe'))
+    .concat(normalize(PILATES, 'pilates', 'pilates'))
+    .concat(normalize(CROSSFIT, 'crossfit', 'crossfit'))
+    .concat(normalize(ETIR, 'etirements', 'etirements'))
+    .concat(normalize(HIIT_PUR, 'hiit_pur', 'hiit_pur'))
+    .concat(normalize(MARCHE, 'marche', 'marche'))
+    .concat(normalize(DANSE, 'danse', 'danse'));
+
+  window.EXOS_LIB_V2 = EXOS_V2;
+  // Alias compat ancien nom (pas d'écrasement SV_EXOS pour préserver le legacy)
+  window.EXOS_LIB = EXOS_V2;
+
+  console.log('[HIMA] EXOS_LIB_V2 chargée — ' + EXOS_V2.length + ' exercices sur ' + Object.keys(window.EXOS_CATEGORIES).length + ' catégories');
+})();
+
+</script>
+
+<script>
+// ════════════════════════════════════════════════════════
+// MISSION B / CHANTIERS 2+3 — Templates + Personnalisation V2
+// Préserve les 13 templates legacy + ajoute 40+ nouveaux
+// Branche les 6 données onboarding ignorées
+// ════════════════════════════════════════════════════════
+(function(){
+  'use strict';
+  window.SV2_FLAGS = window.SV2_FLAGS || {};
+  if (window.SV2_FLAGS.personalisationV2 === false) return; // kill switch
+  window.SV2_FLAGS.personalisationV2 = true;
+
+  // ────────────────────────────────────────────────────────
+  // 1) MAPPING legacy ↔ V2
+  // ────────────────────────────────────────────────────────
+  var modeToObjectif = {
+    'glow':         'perte',
+    'bodybuilding': 'muscle',
+    'hyrox':        'endurance',
+    'mindset':      'bienetre'
+  };
+  var objectifToMode = {
+    'perte':     'glow',
+    'muscle':    'bodybuilding',
+    'tonifier':  'glow',
+    'endurance': 'hyrox',
+    'perf':      'hyrox',
+    'bienetre':  'mindset'
+  };
+  var disciplineByLegacyTpl = {
+    push:'musculation', pull:'musculation', legs:'musculation', force:'musculation',
+    upper:'poids_corps', lower:'poids_corps', fullbody:'poids_corps',
+    cardio:'cardio_hiit', hiit:'cardio_hiit', endurance:'cardio_hiit',
+    long:'cardio_hiit', mixte:'crossfit', mobilite:'yoga'
+  };
+
+  window.HIMA_MODE_TO_OBJECTIF = modeToObjectif;
+  window.HIMA_OBJECTIF_TO_MODE = objectifToMode;
+
+  // ────────────────────────────────────────────────────────
+  // 2) Migrer les 13 templates legacy → format V2
+  // ────────────────────────────────────────────────────────
+  // Les templates legacy sont dans svGenSéance L15174 (variable locale).
+  // On les recopie ici pour pouvoir les exposer en V2.
+  var LEGACY_TEMPLATES = {
+    push:     { titre:'Push',     sub:'Pectoraux · Épaules · Triceps', exos:['bench_press','incline_bench','developpe_militaire','eleve_lat','extension_tri','dips_chaise'] },
+    pull:     { titre:'Pull',     sub:'Dos · Biceps',                  exos:['tractions','rowing_haltere','tirage_vertical','curl_haltere','curl_marteau','oiseau'] },
+    legs:     { titre:'Legs',     sub:'Jambes complètes',              exos:['squat','leg_press','squat_bulgare','fentes','leg_curl','mollets'] },
+    upper:    { titre:'Haut du corps', sub:'Pectoraux · Dos · Bras',   exos:['pompes','rowing_haltere','developpe_militaire','curl_haltere','extension_tri','gainage'] },
+    lower:    { titre:'Bas du corps',  sub:'Jambes · Fessiers',        exos:['squat_pdc','fentes','squat_bulgare','mollets','gainage_lat','releve_jambes'] },
+    fullbody: { titre:'Full body',sub:'Corps entier',                  exos:['squat_pdc','pompes','rowing_haltere','fentes','gainage','mountain'] },
+    cardio:   { titre:'Cardio',   sub:'Brûle-graisse',                 exos:['jumping_jack','burpees','high_knees','mountain','sprints','jumping_jack'] },
+    hiit:     { titre:'HIIT',     sub:'Intervalles intenses',          exos:['burpees','sprints','mountain','high_knees','squat_pdc','pompes'] },
+    endurance:{ titre:'Endurance',sub:'Capacité aérobie',              exos:['corde_a_sauter','rameur','jumping_jack','mountain','high_knees','rameur'] },
+    long:     { titre:'Long',     sub:'Volume soutenu',                exos:['rameur','squat_pdc','pompes','rowing_haltere','gainage','corde_a_sauter'] },
+    force:    { titre:'Force',    sub:'Lourd et bref',                 exos:['squat','soulever_terre','bench_press','tractions','developpe_militaire','curl_barre'] },
+    mixte:    { titre:'Mixte',    sub:'Force et Cardio',               exos:['squat_pdc','pompes','burpees','rowing_haltere','mountain','gainage'] },
+    mobilite: { titre:'Mobilité', sub:'Récupération active',           exos:['world_greatest','mobilite_hanche','cat_cow','gainage','world_greatest','mobilite_hanche'] }
+  };
+
+  function migrateLegacyTemplate(id, tpl) {
+    var disc = disciplineByLegacyTpl[id] || 'musculation';
+    // Objectif suggéré selon discipline et nom
+    var obj = 'tonifier';
+    if (id === 'force') obj = 'muscle';
+    else if (id === 'push' || id === 'pull' || id === 'legs') obj = 'muscle';
+    else if (id === 'cardio' || id === 'hiit') obj = 'perte';
+    else if (id === 'endurance' || id === 'long') obj = 'endurance';
+    else if (id === 'mobilite') obj = 'bienetre';
+    else if (id === 'mixte') obj = 'tonifier';
+
+    // Lieux compatibles selon exos
+    var allInBoth = tpl.exos.every(function(eid){
+      var e = (window.SV_EXOS||{})[eid];
+      return !e || e.l !== 'salle';
+    });
+    var lieux = allInBoth ? ['salle','salle_cardio','maison','maison_mat','exterieur','any'] : ['salle','salle_cardio','maison_mat'];
+
+    return {
+      id: 'legacy_' + id,
+      nom: tpl.titre,
+      sub: tpl.sub,
+      discipline: disc,
+      objectif: obj,
+      niveaux: ['debutant','intermediaire','avance'],
+      lieux: lieux,
+      materiel_requis: lieux.indexOf('maison') >= 0 ? [] : ['halteres','barre'],
+      duree_estimee: 45,
+      intensite_moyenne: id === 'hiit' ? 9 : (id === 'cardio' ? 7 : (id === 'mobilite' ? 3 : 6)),
+      kcal_estime: id === 'mobilite' ? 150 : (id === 'hiit' || id === 'cardio' ? 350 : 280),
+      exos: tpl.exos.map(function(eid){ return { id: eid }; }),
+      description_coach: 'Séance ' + tpl.titre + ' — ' + tpl.sub + '.',
+      benefice: tpl.sub,
+      _legacy: true,
+      _legacy_id: id
+    };
+  }
+
+  var legacyTemplatesV2 = Object.keys(LEGACY_TEMPLATES).map(function(id){
+    return migrateLegacyTemplate(id, LEGACY_TEMPLATES[id]);
+  });
+
+  // ────────────────────────────────────────────────────────
+  // 3) NOUVEAUX templates V2 (40+) — croisement disciplines × objectifs
+  // ────────────────────────────────────────────────────────
+  // Helper template
+  function T(id, nom, disc, obj, niv, lieux, materiel, duree, intens, kcal, exos, desc, benef) {
+    return {
+      id: id, nom: nom, discipline: disc, objectif: obj,
+      niveaux: niv, lieux: lieux, materiel_requis: materiel || [],
+      duree_estimee: duree, intensite_moyenne: intens, kcal_estime: kcal,
+      exos: exos.map(function(e){ return typeof e === 'string' ? { id: e } : e; }),
+      description_coach: desc, benefice: benef
+    };
+  }
+  var ALL = ['debutant','intermediaire','avance'];
+  var INT_AV = ['intermediaire','avance'];
+  var DEB_INT = ['debutant','intermediaire'];
+
+  var NEW_TEMPLATES = [
+    // ── COURSE × objectifs (5) ──
+    T('tpl_course_perte_45', 'Course pour perdre du poids', 'course', 'perte', DEB_INT,
+      ['exterieur','tapis'], [], 45, 7, 420,
+      ['course_run_walk','course_fractionne_30_30','course_recup','etir_post_course'],
+      'Brûle les calories en alternant intensité et récup.',
+      '~420 kcal et effet afterburn jusqu\'à 24h.'),
+
+    T('tpl_course_endurance_60', 'Course endurance 60 min', 'course', 'endurance', ALL,
+      ['exterieur','tapis'], [], 60, 5, 480,
+      ['course_footing_endurance','etir_post_course'],
+      'Allure conversationnelle. Construis ta base aérobie.',
+      'Améliore VO2 max et capacité cardiaque.'),
+
+    T('tpl_course_perf_intervalle', 'Course perf intervalles', 'course', 'perf', INT_AV,
+      ['exterieur','tapis'], [], 50, 9, 500,
+      ['course_recup','course_fractionne_30_30','course_piste_200_400','etir_post_course'],
+      'Fractionné dur. Pour casser ton chrono.',
+      'Vitesse max + endurance lactique.'),
+
+    T('tpl_course_recup_facile', 'Course récupération', 'course', 'bienetre', ALL,
+      ['exterieur','tapis'], [], 30, 3, 200,
+      ['course_recup','etir_post_course','meditation_10'],
+      'Footing ultra doux + étirements. Décrassage.',
+      'Active la récup sans fatigue.'),
+
+    T('tpl_course_trail_long', 'Trail longue distance', 'course', 'endurance', INT_AV,
+      ['exterieur'], [], 90, 6, 750,
+      ['course_trail','etir_post_course'],
+      'Nature et dénivelé. Renforce mental et stabilité.',
+      'Endurance et résistance physique.'),
+
+    // ── VÉLO × objectifs (4) ──
+    T('tpl_velo_perte_hiit', 'Vélo HIIT brûle-graisse', 'velo', 'perte', INT_AV,
+      ['salle','salle_cardio','maison_mat'], ['velo_maison'], 30, 9, 380,
+      ['velo_hiit_indoor','etir_post_course'],
+      'HIIT 30/30 vélo. Intense et efficace.',
+      '~380 kcal en 30 min.'),
+
+    T('tpl_velo_endurance_long', 'Sortie endurance vélo', 'velo', 'endurance', ALL,
+      ['exterieur'], ['velo'], 90, 5, 600,
+      ['velo_endurance_route','etir_post_course'],
+      'Sortie longue route. Base aérobie.',
+      'Endurance + brûle-graisse efficace.'),
+
+    T('tpl_velo_perf_cote', 'Vélo perf en côtes', 'velo', 'perf', INT_AV,
+      ['exterieur'], ['velo'], 75, 8, 600,
+      ['velo_cote_assis','velo_cote_danseuse','velo_sprint','etir_post_course'],
+      'Côtes + sprints. Force et puissance.',
+      'Construis ta puissance jambes.'),
+
+    T('tpl_velo_recup_doux', 'Vélo récupération', 'velo', 'bienetre', ALL,
+      ['exterieur','salle_cardio'], ['velo'], 40, 3, 240,
+      ['velo_recup','meditation_10'],
+      'Sortie facile. Récupère sans charge.',
+      'Active la circulation sans fatigue.'),
+
+    // ── NATATION × objectifs (3) ──
+    T('tpl_natation_endurance', 'Natation endurance', 'natation', 'endurance', INT_AV,
+      ['piscine'], [], 45, 6, 360,
+      ['nage_crawl_endurance','nage_jambes_planche','etir_full_10'],
+      'Longueurs en crawl. Cardio complet.',
+      'Sport complet sans impact.'),
+
+    T('tpl_natation_perte', 'Natation brûle-graisse', 'natation', 'perte', INT_AV,
+      ['piscine'], [], 45, 7, 400,
+      ['nage_crawl_endurance','nage_fractionne_25','nage_pull_buoy','etir_full_10'],
+      'Mix crawl + fractionné. Calories à fond.',
+      '~400 kcal et zero impact.'),
+
+    T('tpl_aquajogging_doux', 'Aquajogging récup', 'natation', 'bienetre', ALL,
+      ['piscine'], [], 30, 3, 180,
+      ['aqua_marche','etir_full_10'],
+      'Marche dans l\'eau. Idéal post-blessure ou grossesse.',
+      'Récup totale sans impact.'),
+
+    // ── YOGA × objectifs (4) ──
+    T('tpl_yoga_bienetre_matin', 'Yoga matin énergisant', 'yoga', 'bienetre', ALL,
+      ['maison','salle','any'], ['tapis'], 25, 4, 130,
+      ['yoga_matin','yoga_salutation_a','yoga_salutation_b','yoga_chien_tete_bas','yoga_guerrier1','respi_carree'],
+      'Réveil dynamique du corps et du mental.',
+      'Énergie pour la journée.'),
+
+    T('tpl_yoga_bienetre_soir', 'Yoga soir détente', 'yoga', 'bienetre', ALL,
+      ['maison','salle','any'], ['tapis'], 30, 2, 100,
+      ['yoga_soir','yoga_pigeon','yoga_enfant','etir_ischio','respi_478','body_scan'],
+      'Décompresse après ta journée. Prépare au sommeil.',
+      'Sommeil profond garanti.'),
+
+    T('tpl_yoga_tonifier', 'Power yoga tonifiant', 'yoga', 'tonifier', INT_AV,
+      ['maison','salle','any'], ['tapis'], 40, 6, 220,
+      ['yoga_vinyasa_flow','yoga_guerrier2','yoga_guerrier3','yoga_chien_tete_bas','yoga_cobra'],
+      'Flow intense. Force, équilibre, souplesse.',
+      'Sculpte et tonifie sans matos.'),
+
+    T('tpl_yoga_post_seance', 'Yoga récup post-séance', 'yoga', 'bienetre', ALL,
+      ['maison','salle','any'], ['tapis'], 20, 2, 80,
+      ['yoga_post_seance','yoga_enfant','etir_ischio','etir_hanches','mob_epaules'],
+      'Étirements doux après ton entraînement.',
+      'Récupération accélérée.'),
+
+    // ── CALISTHENICS × objectifs (3) ──
+    T('tpl_cali_muscle', 'Calisthenics force', 'calisthenics', 'muscle', INT_AV,
+      ['exterieur','salle','maison_mat','any'], ['traction'], 45, 8, 340,
+      ['cali_pullup_strict','cali_dips_par','cali_pistol','cali_pseudo_planche','cali_lsit','cali_leg_raises'],
+      'Force pure au poids du corps. Niveau supérieur.',
+      'Muscle et contrôle corporel.'),
+
+    T('tpl_cali_skills', 'Calisthenics skills', 'calisthenics', 'perf', ['avance'],
+      ['exterieur','salle'], ['traction'], 50, 9, 380,
+      ['cali_muscle_up','cali_planche','cali_handstand_mur','cali_front_lever','cali_lsit'],
+      'Skills avancés. Muscle-up, planche, handstand.',
+      'Maîtrise du corps complète.'),
+
+    T('tpl_cali_debutant', 'Calisthenics découverte', 'calisthenics', 'tonifier', DEB_INT,
+      ['exterieur','salle','maison_mat','any'], [], 30, 5, 200,
+      ['pompes','squat_pdc','gainage','mountain','cali_lsit'],
+      'Premiers pas en calisthenics.',
+      'Base solide poids du corps.'),
+
+    // ── BOXE × objectifs (3) ──
+    T('tpl_boxe_perte', 'Boxe brûle-graisse', 'boxe', 'perte', ALL,
+      ['salle','maison_mat'], ['sac_frappe','gants'], 45, 8, 480,
+      ['boxe_corde_3min','boxe_shadow_3min','boxe_sac_combo_1_2','boxe_jab_cross_hook','boxe_burpee_punch','etir_full_10'],
+      'Combo cardio + frappes. Défoule et brûle.',
+      '~480 kcal et défoulement total.'),
+
+    T('tpl_boxe_endurance', 'Boxe endurance combat', 'boxe', 'endurance', INT_AV,
+      ['salle','maison_mat'], ['sac_frappe','gants'], 60, 8, 560,
+      ['boxe_corde_3min','boxe_shadow_3min','boxe_sac_combo_1_2','boxe_pieds_poings','boxe_uppercut','boxe_low_kick','etir_full_10'],
+      'Travail rounds × 3 min. Comme un boxeur.',
+      'Cardio explosif + technique.'),
+
+    T('tpl_boxe_shadow_only', 'Shadow boxing sans matos', 'boxe', 'tonifier', ALL,
+      ['maison','any'], [], 25, 7, 280,
+      ['boxe_corde_3min','boxe_shadow_3min','boxe_esquives','boxe_footwork','etir_full_10'],
+      'Aucun matos requis. Anti-stress garanti.',
+      'Sport complet sans matériel.'),
+
+    // ── PILATES × objectifs (2) ──
+    T('tpl_pilates_tonifier', 'Pilates tonifiant', 'pilates', 'tonifier', ALL,
+      ['maison','salle','any'], ['tapis'], 30, 5, 180,
+      ['pil_hundred','pil_rollup','pil_single_leg_stretch','pil_double_leg_stretch','pil_plank','pil_side_plank','pil_spine_stretch'],
+      'Renforce le core en profondeur.',
+      'Posture, gainage, silhouette.'),
+
+    T('tpl_pilates_bienetre', 'Pilates doux récup', 'pilates', 'bienetre', DEB_INT,
+      ['maison','salle','any'], ['tapis'], 25, 3, 120,
+      ['pil_debutant_20','pil_spine_stretch','pil_mermaid','etir_full_10'],
+      'Mobilité douce + core. Idéal pour démarrer.',
+      'Mobilité et bien-être.'),
+
+    // ── CROSSFIT × objectifs (3) ──
+    T('tpl_cf_perte', 'CrossFit brûle-graisse', 'crossfit', 'perte', INT_AV,
+      ['salle'], ['barre','traction','kettlebell'], 45, 9, 520,
+      ['wod_cindy','etir_full_10'],
+      'WOD Cindy intense. AMRAP 20 min.',
+      '~520 kcal en 45 min.'),
+
+    T('tpl_cf_perf', 'CrossFit performance', 'crossfit', 'perf', ['avance'],
+      ['salle'], ['barre','traction'], 60, 10, 650,
+      ['wod_fran','wod_helen','etir_full_10'],
+      'WOD performance pure. Limites à dépasser.',
+      'Force, cardio, technique.'),
+
+    T('tpl_cf_endurance', 'CrossFit endurance', 'crossfit', 'endurance', INT_AV,
+      ['salle'], ['traction','kettlebell','barre'], 60, 9, 600,
+      ['wod_helen','cf_row_500','cf_assault_bike','etir_full_10'],
+      '3 rounds : run + KB swings + pull-ups.',
+      'Endurance intense.'),
+
+    // ── HIIT cardio pur × objectifs (3) ──
+    T('tpl_hiit_perte_express', 'HIIT express 20 min', 'hiit_pur', 'perte', INT_AV,
+      ['maison','salle','any'], [], 20, 9, 280,
+      ['hiit_tabata_burpees','hiit_tabata_mc','hiit_tabata_hk','hiit_tabata_jj','etir_full_10'],
+      'Tabata × 4. Maximum d\'efficacité minimum de temps.',
+      '~280 kcal en 20 min.'),
+
+    T('tpl_hiit_perte_30', 'HIIT brûle-graisse 30 min', 'hiit_pur', 'perte', ALL,
+      ['maison','salle','any'], [], 30, 8, 400,
+      ['hiit_deb','hiit_30_30','hiit_bas','hiit_haut','etir_full_10'],
+      'Intervalle 30/30. Adapté à ton niveau.',
+      'Brûle-graisse efficace.'),
+
+    T('tpl_hiit_tonifier_15', 'HIIT 15 min tonifiant', 'hiit_pur', 'tonifier', ALL,
+      ['maison','salle','any'], [], 15, 7, 200,
+      ['hiit_20_40','etir_full_10'],
+      'HIIT court. Quand t\'as peu de temps.',
+      'Tone et énergie en 15 min.'),
+
+    // ── MUSCULATION × objectifs avec lieu (4) ──
+    T('tpl_muscu_salle_muscle', 'Muscu salle prise de masse', 'musculation', 'muscle', INT_AV,
+      ['salle','salle_cardio'], ['barre','halteres','rack','banc'], 60, 7, 420,
+      ['bench_press','incline_bench','developpe_militaire','tractions','rowing_barre','curl_barre'],
+      'Lourd, séries 4×8-10. Hypertrophie.',
+      'Prise de muscle propre.'),
+
+    T('tpl_muscu_maison_tone', 'Muscu maison sans matos', 'poids_corps', 'tonifier', ALL,
+      ['maison','any'], [], 35, 6, 250,
+      ['pompes','squat_pdc','fentes','gainage','mountain','crunch','releve_jambes'],
+      'Circuit poids du corps. 3 tours.',
+      'Tonifie sans bouger de chez toi.'),
+
+    T('tpl_muscu_maison_halteres', 'Muscu maison haltères', 'musculation', 'muscle', DEB_INT,
+      ['maison','maison_mat'], ['halteres'], 45, 7, 320,
+      ['rowing_haltere','curl_haltere','curl_marteau','extension_tri','squat_bulgare','eleve_lat'],
+      'Full body avec haltères. Maison sérieuse.',
+      'Muscle visible en 6 semaines.'),
+
+    T('tpl_muscu_force_lourd', 'Muscu force pure', 'musculation', 'muscle', INT_AV,
+      ['salle'], ['barre','rack'], 75, 8, 500,
+      ['squat','soulever_terre','bench_press','developpe_militaire','tractions'],
+      'Lourd, 5×5. Force maximale.',
+      'Force pure de powerlifter.'),
+
+    // ── ÉTIREMENTS / récup (2) ──
+    T('tpl_etir_full_express', 'Étirement complet 15 min', 'etirements', 'bienetre', ALL,
+      ['maison','salle','any'], [], 15, 2, 60,
+      ['etir_full_10','etir_quad','etir_ischio_d','etir_dos_cat','etir_epaules'],
+      'Routine flexibilité globale.',
+      'Souplesse + anti-douleurs.'),
+
+    T('tpl_etir_avant_coucher', 'Étirement soir détente', 'etirements', 'bienetre', ALL,
+      ['maison','any'], [], 12, 1, 40,
+      ['etir_avant_coucher','etir_dos_cat','respi_478','body_scan'],
+      'Routine avant le lit. Prépare au sommeil.',
+      'Sommeil profond rapidement.'),
+
+    // ── MARCHE × objectifs (3) ──
+    T('tpl_marche_perte', 'Marche brûle-graisse', 'marche', 'perte', ALL,
+      ['exterieur','tapis'], [], 45, 5, 250,
+      ['marche_rapide_30','marche_interval','etir_full_10'],
+      'Marche rapide + intervalles. Accessible à tous.',
+      'Brûle 250 kcal sans impact.'),
+
+    T('tpl_marche_bienetre', 'Marche méditative', 'marche', 'bienetre', ALL,
+      ['exterieur'], [], 30, 3, 130,
+      ['marche_meditative','respi_carree'],
+      'Marche slow + respiration consciente.',
+      'Mental clair + récup.'),
+
+    T('tpl_rando_endurance', 'Randonnée endurance', 'marche', 'endurance', ALL,
+      ['exterieur'], [], 120, 5, 700,
+      ['rando_vallonnee','etir_full_10'],
+      'Randonnée 2h nature. Cardio + mental.',
+      'Endurance + bien-être profond.'),
+
+    // ── DANSE × objectifs (2) ──
+    T('tpl_dance_perte', 'Dance fitness brûle-graisse', 'danse', 'perte', ALL,
+      ['salle','maison','any'], [], 45, 7, 400,
+      ['zumba_deb','cardio_dance_20','dance_hiit','stretch_dance'],
+      'Bouge en musique. Fun et efficace.',
+      '~400 kcal en t\'amusant.'),
+
+    T('tpl_dance_tonifier', 'Dance tonifiant', 'danse', 'tonifier', DEB_INT,
+      ['maison','any'], [], 30, 6, 250,
+      ['hiphop_fit','afro_cardio','stretch_dance'],
+      'Choré + cardio. Sculpte en t\'amusant.',
+      'Coordination + tonus.')
+  ];
+
+  window.TEMPLATES_V2 = [].concat(legacyTemplatesV2).concat(NEW_TEMPLATES);
+  console.log('[HIMA] TEMPLATES_V2 chargés — ' + window.TEMPLATES_V2.length + ' templates (' + legacyTemplatesV2.length + ' legacy + ' + NEW_TEMPLATES.length + ' nouveaux)');
+
+  // ────────────────────────────────────────────────────────
+  // 4) getProfileForSession — lit toutes les données onboarding
+  // ────────────────────────────────────────────────────────
+  function getProfileForSession() {
+    var raw, data;
+    try { raw = localStorage.getItem('hima8') || '{}'; data = JSON.parse(raw); }
+    catch(e) { data = {}; }
+
+    // Le code legacy stocke tout à la racine de hima8 (pas dans .profile)
+    // mais le prompt utilise data.profile et data.onb — on supporte les deux
+    var profile = data.profile || data || {};
+    var onb = data.onb || data || {};
+
+    // Mapping mode → objectif
+    var mode = profile.mode || data.mode || 'glow';
+    var objectif = profile.objectif_principal || modeToObjectif[mode] || 'tonifier';
+
+    // Lieu (hima8 utilise .lieu directement)
+    var lieu = data.lieu || profile.lieu || onb.lieu || 'maison';
+
+    // Niveau
+    var niv = data.niv || profile.niveau || onb.niveau || 'debutant';
+    var nivMap = { 'deb':'debutant', 'inter_low':'debutant', 'inter':'intermediaire', 'int':'intermediaire', 'av':'avance', 'athlete':'avance' };
+    var niveau = nivMap[niv] || niv;
+
+    // Matériel (multisel onboarding stocke array)
+    var materiel = data.equipement || data.materiel || profile.materiel || onb.materiel || [];
+    if (!Array.isArray(materiel)) materiel = [materiel];
+
+    // Sports préférés (multisel)
+    var sportsRaw = data.sports || data.sports_pref || profile.sports_pref || onb.sports_pref || [];
+    if (!Array.isArray(sportsRaw)) sportsRaw = [sportsRaw];
+    // Mapping onboarding → discipline V2
+    var sportMap = {
+      'muscu':'musculation','course':'course','velo':'velo','natation':'natation',
+      'yoga':'yoga','arts_martiaux':'boxe','football':'cardio_hiit','tennis':'cardio_hiit',
+      'crossfit':'crossfit','aucun':null,'autre':null
+    };
+    var sports_pref = sportsRaw.map(function(s){ return sportMap[s] || s; }).filter(Boolean);
+
+    // Fréquence (sliders)
+    var freq = parseInt(data.joursParSemaine || data.seances_freq || profile.seances_freq || onb.seances_freq || 3);
+    // Durée préférée
+    var duree = parseInt(data.tps || data.seances_duree || profile.seances_duree || onb.seances_duree || 45);
+
+    // Blessures (multisel onboarding)
+    var blessuresRaw = data.blessures || profile.blessures || [];
+    if (!Array.isArray(blessuresRaw)) blessuresRaw = [blessuresRaw];
+    // Mapping onboarding → contre-indications V2
+    var blessureMap = {
+      'genou_g':'blessure_genou','genou_d':'blessure_genou',
+      'epaule_g':'blessure_epaule','epaule_d':'blessure_epaule',
+      'lombaires':'lombaires','dos_haut':'lombaires',
+      'cheville':'blessure_cheville','coude':'blessure_epaule',
+      'cervicales':'cervicales','hanche':'blessure_genou'
+    };
+    var blessures = blessuresRaw.map(function(b){ return blessureMap[b] || null; }).filter(Boolean);
+    // Si douleur élevée → ajouter cardio_severe au filtre
+    var douleurLevel = parseFloat(data.douleurLevel || 0);
+    if (douleurLevel >= 6) blessures.push('cardio_severe');
+
+    // Situation (grossesse/post-partum/chirurgie)
+    var situation = data.situation || profile.situation || 'normal';
+    if (['enceinte1','enceinte2','enceinte3','postpartum','chirurgie'].indexOf(situation) >= 0) {
+      // Auto-ajouter contre-indications strictes
+      blessures.push('blessure_genou'); // bloque sauts/squats lourds
+      blessures.push('lombaires');
+      blessures.push('cardio_severe'); // bloque HIIT extrême
+    }
+
+    return {
+      goal:    objectif,
+      mode:    mode,
+      lieu:    lieu,
+      materiel: materiel,
+      niveau:  niveau,
+      seances_freq:  freq,
+      seances_duree: duree,
+      sports_pref:   sports_pref,
+      age:     parseInt(data.age || profile.age || 30),
+      sexe:    data.sexe || profile.sexe || 'h',
+      blessures: blessures,
+      douleurLevel: douleurLevel,
+      situation: situation,
+      poids:   parseFloat(data.poids || profile.poids || 75),
+      taille:  parseFloat(data.taille || profile.taille || 175),
+      exoDetestes: data.exoDetestes || []
+    };
+  }
+  window.getProfileForSession = getProfileForSession;
+
+  // ────────────────────────────────────────────────────────
+  // 5) getRecommendedSession — algo scoring multi-critères
+  // ────────────────────────────────────────────────────────
+  function getRecommendedSession() {
+    var profile = getProfileForSession();
+    var allExos = window.EXOS_LIB_V2 || [];
+    var allTemplates = window.TEMPLATES_V2 || [];
+
+    // Index pour lookup rapide
+    var exosById = {};
+    allExos.forEach(function(e){ exosById[e.id] = e; });
+
+    // 1) Filtrer templates compatibles
+    var compatible = allTemplates.filter(function(tpl){
+      // Niveau OK
+      if (tpl.niveaux && tpl.niveaux.indexOf(profile.niveau) === -1) return false;
+
+      // Lieu OK (tolérant : si 'any' présent ou matche)
+      var lieuOk = !tpl.lieux || tpl.lieux.length === 0 ||
+                   tpl.lieux.indexOf(profile.lieu) >= 0 ||
+                   tpl.lieux.indexOf('any') >= 0;
+      if (!lieuOk) return false;
+
+      // Durée proche (±20 min tolérance)
+      if (tpl.duree_estimee && Math.abs(tpl.duree_estimee - profile.seances_duree) > 20) return false;
+
+      // Matériel requis disponible (sauf si user a 'rien' ou liste vide → skip filtre strict legacy)
+      if (tpl.materiel_requis && tpl.materiel_requis.length > 0) {
+        var hasAtLeastSome = tpl.materiel_requis.some(function(m){
+          return profile.materiel.indexOf(m) >= 0;
+        });
+        if (!hasAtLeastSome && profile.materiel.length > 0) return false;
+      }
+
+      // Au moins un exo du template n'est pas contre-indiqué
+      var blessExos = (tpl.exos || []).filter(function(slot){
+        var e = exosById[slot.id];
+        if (!e || !e.contre_indications) return false;
+        return e.contre_indications.some(function(c){ return profile.blessures.indexOf(c) >= 0; });
+      });
+      // Si >30% des exos sont contre-indiqués, exclure (sécurité renforcée)
+      if (tpl.exos && tpl.exos.length > 0 && blessExos.length / tpl.exos.length > 0.3) return false;
+
+      return true;
+    });
+
+    // 2) Scoring
+    var lastSessionId = null;
+    try {
+      var d = JSON.parse(localStorage.getItem('hima8') || '{}');
+      lastSessionId = d.lastSessionId;
+    } catch(e){}
+
+    compatible = compatible.map(function(tpl){
+      var score = 0;
+      // Bonus discipline = sport préféré
+      if (profile.sports_pref.indexOf(tpl.discipline) >= 0) score += 30;
+      // Bonus objectif matche
+      if (tpl.objectif === profile.goal) score += 25;
+      // Bonus durée pile poil (±5 min)
+      if (Math.abs(tpl.duree_estimee - profile.seances_duree) <= 5) score += 15;
+      // Bonus variété (pas la même qu'hier)
+      if (lastSessionId !== tpl.id) score += 10;
+      // Bonus matos parfait
+      if (tpl.materiel_requis && tpl.materiel_requis.length > 0) {
+        var allMatos = tpl.materiel_requis.every(function(m){ return profile.materiel.indexOf(m) >= 0; });
+        if (allMatos) score += 8;
+      }
+      // Bonus par exo favori (discipline matche)
+      var matchExos = (tpl.exos || []).filter(function(slot){
+        var e = exosById[slot.id];
+        return e && profile.sports_pref.indexOf(e.categorie) >= 0;
+      }).length;
+      score += matchExos * 3;
+      // Bonus exos NON détestés
+      var detestes = (tpl.exos || []).filter(function(slot){
+        return profile.exoDetestes && profile.exoDetestes.indexOf(slot.id) >= 0;
+      }).length;
+      score -= detestes * 10;
+
+      tpl._score = score;
+      return tpl;
+    });
+
+    // 3) Trier par score
+    compatible.sort(function(a,b){ return b._score - a._score; });
+
+    // 4) Top 3 → random (variété), sinon premier
+    var top3 = compatible.slice(0, 3);
+    var chosen = top3.length > 0 ? top3[Math.floor(Math.random() * top3.length)] : null;
+
+    // 5) Fallback
+    if (!chosen) {
+      console.warn('[HIMA] Aucun template compatible — fallback générique');
+      return getFallbackSession(profile);
+    }
+
+    // 6) Sauvegarder le choix
+    try {
+      var data = JSON.parse(localStorage.getItem('hima8') || '{}');
+      data.lastSessionId = chosen.id;
+      data.lastSessionDate = new Date().toISOString();
+      localStorage.setItem('hima8', JSON.stringify(data));
+    } catch(e){}
+
+    return chosen;
+  }
+
+  function getFallbackSession(profile) {
+    // Fallback maison sans matos
+    var fallback = (window.TEMPLATES_V2 || []).filter(function(t){
+      return t.lieux && t.lieux.indexOf('any') >= 0 && (t.materiel_requis||[]).length === 0;
+    })[0];
+    if (fallback) return fallback;
+    // Ultime fallback : 1er template legacy
+    return (window.TEMPLATES_V2 || [])[0] || {
+      id:'fallback', nom:'Séance maison express', discipline:'poids_corps',
+      duree_estimee:20, exos:[{id:'pompes'},{id:'squat_pdc'},{id:'gainage'}]
+    };
+  }
+
+  window.getRecommendedSession = getRecommendedSession;
+  window.getFallbackSession = getFallbackSession;
+
+  // ────────────────────────────────────────────────────────
+  // 6) getSessionForToday — wrapper avec routing V2 ou legacy
+  // ────────────────────────────────────────────────────────
+  function getSessionForToday() {
+    if (window.SV2_FLAGS && window.SV2_FLAGS.personalisationV2) {
+      try { return getRecommendedSession(); }
+      catch(e) {
+        console.warn('[HIMA] getRecommendedSession a échoué, fallback legacy', e);
+      }
+    }
+    // Fallback legacy svGenSéance
+    if (typeof window.svGenSéance === 'function') {
+      return window.svGenSéance();
+    }
+    return null;
+  }
+  window.getSessionForToday = getSessionForToday;
+
+  // ────────────────────────────────────────────────────────
+  // 7) Migration localStorage
+  // ────────────────────────────────────────────────────────
+  function migrateHima8Schema() {
+    var raw, data;
+    try { raw = localStorage.getItem('hima8') || '{}'; data = JSON.parse(raw); }
+    catch(e) { return; }
+
+    if (data._migratedV2) return; // déjà migré
+
+    data.profile = data.profile || {};
+
+    // Mapper mode → objectif_principal
+    var mode = data.mode || data.profile.mode || 'glow';
+    if (!data.profile.objectif_principal) {
+      data.profile.objectif_principal = modeToObjectif[mode] || 'tonifier';
+    }
+
+    // Défauts si manquants (préservation user data)
+    if (!data.lieu && !data.profile.lieu) {
+      data.profile.lieu = 'maison';
+    }
+    if (!data.niv && !data.profile.niveau) {
+      data.profile.niveau = 'debutant';
+    }
+
+    data._migratedV2 = true;
+    try { localStorage.setItem('hima8', JSON.stringify(data)); } catch(e){}
+    console.log('[HIMA] Schema migrated to V2');
+  }
+  window.migrateHima8Schema = migrateHima8Schema;
+  // Exécuter au chargement
+  try { migrateHima8Schema(); } catch(e){ console.warn('[HIMA] migration error', e); }
+
+  console.log('[HIMA] Mission B / Personnalisation V2 prête — getRecommendedSession() exposée');
+})();
+
+</script>
+
 
 </body>
 </html>
