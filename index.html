@@ -15226,6 +15226,75 @@ window.svGenSéance = function(jourIdx) {
   };
 };
 
+// ═══════════════════════════════════════════════════════════
+// SHIM COMPAT — Restaure svGenSeance (SANS accent) comme alias
+// Bug pré-existant : 5 appels utilisent svGenSeance mais la fonction
+// définie ci-dessus s'appelle svGenSéance (avec accent é).
+// Mission B n'a pas créé ce bug mais le rend visible.
+// Référence: lignes 15327, 15443, 15474, 15522, 16115.
+// ═══════════════════════════════════════════════════════════
+(function shimSvGenSeance(){
+  if (typeof window.svGenSeance === 'function') {
+    console.log('[HIMA] svGenSeance déjà défini, shim skip');
+    return;
+  }
+  window.svGenSeance = function(jourIdx) {
+    try {
+      // 1) Préférence : la vraie fonction legacy (avec accent)
+      if (typeof window.svGenSéance === 'function') {
+        return window.svGenSéance(jourIdx);
+      }
+      // 2) Fallback : V2 (avec mapping format legacy)
+      if (typeof window.getSessionForToday === 'function') {
+        var v2 = window.getSessionForToday();
+        if (!v2) return null;
+        // Mapper format V2 → format attendu par svBuildLandingImpl
+        return {
+          rest:    false,
+          day:     new Date().getDay() === 0 ? 6 : new Date().getDay() - 1,
+          type:    v2._legacy_id || v2.discipline || 'fullbody',
+          titre:   v2.nom || v2.titre || 'Séance du jour',
+          sub:     v2.description_coach || v2.sub || v2.benefice || '',
+          duree:   v2.duree_estimee || v2.duree || 45,
+          niv:     'int',
+          lieu:    'maison',
+          mode:    'glow',
+          exos:    (v2.exos || []).map(function(slot){
+            // Slot V2 : { id }. Récupérer infos via EXOS_LIB_V2 ou SV_EXOS
+            var id = slot.id || slot;
+            var info = null;
+            if (window.EXOS_LIB_V2) {
+              info = window.EXOS_LIB_V2.find(function(e){ return e.id === id; });
+            }
+            if (!info && window.SV_EXOS && window.SV_EXOS[id]) {
+              var leg = window.SV_EXOS[id];
+              info = { id:id, nom:leg.n, muscles:[leg.m], description:leg.tip, categorie:leg.cat };
+            }
+            if (!info) info = { id:id, nom:id, muscles:[], description:'' };
+            return {
+              id:    id,
+              n:     info.nom || id,
+              m:     (info.muscles && info.muscles[0]) || '',
+              sets:  3, reps: 10, rest: 75, charge: 0,
+              tip:   info.description || info.consignes || '',
+              cat:   info.categorie || 'mixte',
+              isCardio: info.categorie === 'cardio_hiit' || info.categorie === 'hiit_pur',
+              logs:  [{reps:10, charge:0, done:false},{reps:10, charge:0, done:false},{reps:10, charge:0, done:false}]
+            };
+          })
+        };
+      }
+      // 3) Aucune fonction trouvée
+      console.warn('[HIMA SHIM] Ni svGenSéance ni getSessionForToday disponible');
+      return { rest:false, day:0, type:'fullbody', titre:'Séance du jour', sub:'Repose-toi et reviens', duree:30, niv:'deb', lieu:'maison', mode:'glow', exos:[] };
+    } catch(e) {
+      console.error('[HIMA SHIM] svGenSeance erreur:', e);
+      return { rest:false, day:0, type:'fullbody', titre:'Séance du jour', sub:'', duree:30, niv:'deb', lieu:'maison', mode:'glow', exos:[] };
+    }
+  };
+  console.log('[HIMA] Shim svGenSeance installé ✅');
+})();
+
 window.svWeekKey = function(dayIdx) {
   var d = new Date();
   var diff = dayIdx - (d.getDay() === 0 ? 6 : d.getDay() - 1);
