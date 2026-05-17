@@ -30631,6 +30631,120 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
   console.log('[HIMA] Mission B / Personnalisation V2 prête — getRecommendedSession() exposée');
 })();
 
+// ════════════════════════════════════════════════════════════════════
+// BRIDGE Mission B → UI Tab Séances
+// Injecte EXOS_LIB_V2 dans window.SV_EXOS (objet legacy) au format compact
+// Préserve les 43 exos legacy intacts (priorité au legacy si conflit d'ID)
+// Ne touche PAS au design — Mission C s'en chargera plus tard
+// ════════════════════════════════════════════════════════════════════
+(function bridgeMissionB_UI(retries) {
+  retries = retries || 0;
+  // Attendre que Mission B soit chargée
+  if (!window.EXOS_LIB_V2 || !window.SV_EXOS) {
+    if (retries < 10) {
+      setTimeout(function(){ bridgeMissionB_UI(retries + 1); }, 200);
+    } else {
+      console.warn('[BRIDGE] Timeout — EXOS_LIB_V2 ou SV_EXOS introuvable après 2s');
+    }
+    return;
+  }
+
+  try {
+    // Mapping cat V2 → cat legacy (pour compatibilité chips filtres existantes)
+    // Les chips actuels : pousser/tirer/jambes/core/cardio/mobilite
+    // On mappe les nouvelles disciplines pour qu'elles apparaissent dans "Tous" + une chip legacy proche
+    var catV2ToLegacy = {
+      'musculation':  null,           // les exos legacy gardent leur cat originale
+      'poids_corps':  'core',
+      'cardio_hiit':  'cardio',
+      'course':       'cardio',
+      'velo':         'cardio',
+      'natation':     'cardio',
+      'yoga':         'mobilite',
+      'calisthenics': 'tirer',
+      'boxe':         'cardio',
+      'pilates':      'core',
+      'crossfit':     'cardio',
+      'etirements':   'mobilite',
+      'hiit_pur':     'cardio',
+      'marche':       'cardio',
+      'danse':        'cardio'
+    };
+    // Mapping niveau V2 → legacy
+    function nivToLegacy(niveaux) {
+      if (!Array.isArray(niveaux) || niveaux.length === 0) return 'deb';
+      if (niveaux.indexOf('debutant') >= 0) return 'deb';
+      if (niveaux.indexOf('intermediaire') >= 0) return 'int';
+      return 'av';
+    }
+    // Mapping lieu V2 → legacy
+    function lieuToLegacy(lieux) {
+      if (!Array.isArray(lieux) || lieux.length === 0) return 'both';
+      if (lieux.indexOf('salle') >= 0 && lieux.indexOf('maison') === -1 && lieux.indexOf('any') === -1) return 'salle';
+      if ((lieux.indexOf('maison') >= 0 || lieux.indexOf('any') >= 0) && lieux.indexOf('salle') === -1) return 'maison';
+      return 'both';
+    }
+
+    // Compter avant injection
+    var before = Object.keys(window.SV_EXOS).length;
+
+    // Injecter chaque exo V2 dans SV_EXOS au format compact legacy
+    var injected = 0;
+    window.EXOS_LIB_V2.forEach(function(exo) {
+      // Skip si déjà présent dans le legacy (préservation totale)
+      if (window.SV_EXOS[exo.id]) return;
+      // Skip si exo legacy enrichi (legacy_id présent = doublon)
+      if (exo.legacy_id) return;
+
+      // Convertir au format compact
+      window.SV_EXOS[exo.id] = {
+        n:   exo.nom || exo.id,
+        m:   (exo.muscles && exo.muscles[0]) || exo.categorie || '',
+        l:   lieuToLegacy(exo.lieu),
+        niv: nivToLegacy(exo.niveau),
+        cat: catV2ToLegacy[exo.categorie] || exo.categorie || 'cardio',
+        tip: exo.description || exo.consignes || '',
+        // Champs V2 préservés pour usage avancé (Mission C)
+        _v2_categorie:  exo.categorie,
+        _v2_discipline: exo.discipline,
+        _v2_materiel:   exo.materiel,
+        _v2_duree:      exo.duree_max,
+        _v2_intensite:  exo.intensite,
+        _v2_contre_indications: exo.contre_indications
+      };
+      injected++;
+    });
+
+    var after = Object.keys(window.SV_EXOS).length;
+    console.log('[BRIDGE] SV_EXOS étendu : ' + after + ' exos (était ' + before + ', injectés : ' + injected + ')');
+
+    // Refresh UI Tab Séances si elle est déjà rendue (badge passera à 218 automatiquement)
+    if (typeof window.svBuildLanding === 'function') {
+      setTimeout(function(){
+        try { window.svBuildLanding(); }
+        catch(e) { console.warn('[BRIDGE] svBuildLanding refresh failed:', e); }
+      }, 100);
+    }
+    // Refresh modal Bibliothèque si ouverte
+    if (typeof window.svRenderLibList === 'function') {
+      var libList = document.getElementById('sv-lib-list');
+      var titleEl = document.getElementById('sv2-detail-title');
+      if (libList) {
+        try { libList.innerHTML = window.svRenderLibList('all', ''); }
+        catch(e){}
+      }
+      if (titleEl && titleEl.textContent.indexOf('Bibliothèque') === 0) {
+        titleEl.textContent = 'Bibliothèque · ' + after + ' exos';
+      }
+    }
+
+    console.log('[BRIDGE] Mission B → UI branché ✅');
+    console.log('[BRIDGE] EXOS disponibles dans UI : ' + after);
+  } catch(e) {
+    console.error('[BRIDGE] Erreur lors du branchement:', e);
+  }
+})();
+
 </script>
 
 
