@@ -17928,11 +17928,12 @@ function _svWatchTab() {
   t._sv_observed = true;
   var rebuilding = false;
   function maybeRebuild(reason) {
-    console.log('[SV-DEBUG] observer fired, reason:', reason, 'on:', t.classList.contains('on'), 'innerLen:', t.innerHTML.length);
-    if (rebuilding) { console.log('[SV-DEBUG] skip, rebuilding'); return; }
-    if (!t.classList.contains('on')) { console.log('[SV-DEBUG] skip, not on'); return; }
+    if (rebuilding) return;
+    if (!t.classList.contains('on')) return;
+    // Mission C : si UI v3 active et déjà rendue, ne pas rebuild
+    if (window.SV2_FLAGS && window.SV2_FLAGS.uiV3 && t.querySelector('.prog-v3-root')) return;
     var root = t.querySelector('.sv-root');
-    if (root && root.querySelector('.sv-hero')) { console.log('[SV-DEBUG] skip, already built'); return; }
+    if (root && root.querySelector('.sv-hero')) return;
     rebuilding = true;
     try { svBuildLanding(); } catch(e) { console.error('[SV] build err:', e); }
     setTimeout(function(){ rebuilding = false; }, 50);
@@ -30924,6 +30925,14 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
   -webkit-tap-highlight-color: transparent;
   padding: 4px 0;
   min-width: 0;
+  /* Reset UA Safari iOS — le tag <button> applique sinon bg gris + border + appearance */
+  background: transparent;
+  border: 0;
+  -webkit-appearance: none;
+  appearance: none;
+  font: inherit;
+  color: inherit;
+  text-align: center;
 }
 .progv3-day-circle {
   width: 40px; height: 40px;
