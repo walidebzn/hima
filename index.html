@@ -30748,5 +30748,1898 @@ console.log('[SV] HIMA Tab Séances v5.0 chargé · ' + Object.keys(window.SV_EX
 </script>
 
 
+<!-- ════════════════════════════════════════════════════════════════════
+     MISSION C — UI PREMIUM TAB SÉANCES — 2026-05-17
+     Refonte UI 8 blocs + Mode immersif fullscreen + Récap fin de séance
+     Préserve Mission B (218 exos + 54 templates + perso V2)
+     Préserve toutes features legacy (openPosture, himaSpeak, svAutopilot,
+     calcReadiness, genProgIA, svStartActive, svValidateSet, svStartRest, svFinish)
+     Kill switches : SV2_FLAGS.uiV3 (ON par défaut), SV2_FLAGS.productionReady (OFF)
+     ════════════════════════════════════════════════════════════════════ -->
+
+<style>
+/* ════════════════════════════════════════════════════════════════════
+   PROG V3 — Premium UI (isolé sous .prog-v3-root)
+   Cohérent Home V3 : gradient mesh, glassmorphism, avatar Pixar, Bebas Neue
+   ════════════════════════════════════════════════════════════════════ */
+
+/* ─── Container racine ─── */
+.prog-v3-root {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: #050507;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: calc(16px + env(safe-area-inset-top, 0px)) 16px calc(120px + env(safe-area-inset-bottom, 0px)) 16px;
+  box-sizing: border-box;
+  z-index: 1;
+  font-family: 'DM Sans', system-ui, sans-serif;
+}
+.prog-v3-root::-webkit-scrollbar { display: none; }
+.prog-v3-root > * { position: relative; z-index: 1; }
+
+/* ─── Gradient mesh background (identique Home V3, intensité ajustée) ─── */
+.progv3-mesh {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 0;
+}
+.progv3-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.32;
+  will-change: transform;
+}
+.progv3-blob-1 { width: 380px; height: 380px; top: -10%; left: -15%; background: #F98805; animation: progv3Float1 24s ease-in-out infinite; }
+.progv3-blob-2 { width: 320px; height: 320px; top: 30%; right: -15%; background: #F35695; animation: progv3Float2 28s ease-in-out infinite; }
+.progv3-blob-3 { width: 280px; height: 280px; bottom: -10%; left: 10%; background: #DDE255; animation: progv3Float3 32s ease-in-out infinite; opacity: 0.22; }
+@keyframes progv3Float1 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(30px,40px)} }
+@keyframes progv3Float2 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(-30px,-25px)} }
+@keyframes progv3Float3 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(20px,-30px)} }
+
+/* ─── Bloc 1 : Header tab ─── */
+.progv3-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+  min-height: 48px;
+}
+.progv3-header-left { display: flex; align-items: center; gap: 12px; }
+.progv3-h-circle {
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, #F98805, #F35695, #DDE255, #F98805);
+  display: flex; align-items: center; justify-content: center;
+  position: relative;
+  box-shadow: 0 8px 20px -8px rgba(249,136,5,0.5);
+  flex-shrink: 0;
+}
+.progv3-h-circle::before {
+  content: '';
+  position: absolute; inset: 2px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #F98805, #F35695);
+}
+.progv3-h-circle span {
+  position: relative; z-index: 2;
+  font-family: 'Bebas Neue', Impact, sans-serif;
+  font-size: 22px; font-weight: 700; color: #fff; line-height: 1;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+.progv3-title {
+  font-family: 'Bebas Neue', Impact, sans-serif;
+  font-size: 26px;
+  letter-spacing: 1.5px;
+  background: linear-gradient(135deg, #F98805, #F35695);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  line-height: 1;
+  margin-top: 2px;
+}
+.progv3-header-actions {
+  display: flex; align-items: center; gap: 8px;
+}
+.progv3-icon-btn {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.08);
+  display: flex; align-items: center; justify-content: center;
+  color: #F0F0FF;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.15s, background 0.2s;
+  font-size: 18px;
+}
+.progv3-icon-btn:active { transform: scale(0.92); background: rgba(255,255,255,0.1); }
+
+/* ─── Bloc 2 : Bandeau objectif actif ─── */
+.progv3-goal {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 18px;
+  margin-bottom: 18px;
+  border-radius: 22px;
+  background: linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+  backdrop-filter: blur(40px);
+  -webkit-backdrop-filter: blur(40px);
+  border: 1px solid rgba(255,255,255,0.08);
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.progv3-goal::before {
+  content: '';
+  position: absolute; left: 0; top: 0; bottom: 0;
+  width: 4px;
+  background: var(--goal-color, #F98805);
+}
+.progv3-goal-emoji {
+  font-size: 30px; line-height: 1;
+  flex-shrink: 0;
+}
+.progv3-goal-meta { flex: 1; min-width: 0; }
+.progv3-goal-label {
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-weight: 500;
+  font-size: 16px;
+  color: #F0F0FF;
+  margin-bottom: 2px;
+  line-height: 1.2;
+}
+.progv3-goal-sub {
+  font-size: 12px;
+  color: rgba(240,240,255,0.55);
+  line-height: 1.3;
+}
+.progv3-goal-arrow {
+  color: rgba(240,240,255,0.4);
+  font-size: 22px;
+  flex-shrink: 0;
+}
+
+/* ─── Bloc 3 : Calendrier 7 cercles ─── */
+.progv3-week {
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+  margin-bottom: 22px;
+  padding: 4px 2px;
+}
+.progv3-day {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  padding: 4px 0;
+  min-width: 0;
+}
+.progv3-day-circle {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.04);
+  border: 1.5px solid rgba(255,255,255,0.08);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Bebas Neue', Impact, sans-serif;
+  font-size: 16px;
+  color: rgba(240,240,255,0.55);
+  position: relative;
+  transition: all 0.2s;
+}
+.progv3-day.today .progv3-day-circle {
+  background: linear-gradient(135deg, #F98805, #F35695);
+  border: 1.5px solid #DDE255;
+  color: #fff;
+  box-shadow: 0 0 0 4px rgba(221,226,85,0.12), 0 8px 24px -8px rgba(243,86,149,0.6);
+  animation: progv3DayPulse 2.5s ease-in-out infinite;
+}
+@keyframes progv3DayPulse {
+  0%,100% { box-shadow: 0 0 0 4px rgba(221,226,85,0.12), 0 8px 24px -8px rgba(243,86,149,0.6); }
+  50% { box-shadow: 0 0 0 8px rgba(221,226,85,0.2), 0 8px 28px -6px rgba(243,86,149,0.75); }
+}
+.progv3-day.done .progv3-day-circle {
+  background: linear-gradient(135deg, #2ECC71, #1ABC9C);
+  border-color: transparent;
+  color: #fff;
+  font-size: 18px;
+}
+.progv3-day.rest .progv3-day-circle {
+  background: rgba(255,255,255,0.03);
+  font-size: 14px;
+}
+.progv3-day.future .progv3-day-circle::after {
+  content: '';
+  position: absolute;
+  bottom: 5px;
+  width: 4px; height: 4px;
+  border-radius: 50%;
+  background: #DDE255;
+  box-shadow: 0 0 6px #DDE255;
+}
+.progv3-day.missed .progv3-day-circle {
+  color: rgba(240,240,255,0.3);
+}
+.progv3-day-name {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  color: rgba(240,240,255,0.55);
+  text-transform: uppercase;
+}
+.progv3-day.today .progv3-day-name {
+  color: #DDE255;
+}
+
+/* ─── Bloc 4 : Hero séance du jour ─── */
+.progv3-hero {
+  padding: 20px;
+  margin-bottom: 16px;
+  border-radius: 28px;
+  background: linear-gradient(135deg, rgba(255,255,255,0.07), rgba(255,255,255,0.02));
+  backdrop-filter: blur(40px);
+  -webkit-backdrop-filter: blur(40px);
+  border: 1px solid rgba(255,255,255,0.09);
+  box-shadow: 0 24px 60px -20px rgba(0,0,0,0.55);
+  position: relative;
+  overflow: hidden;
+}
+.progv3-hero-badge {
+  display: inline-block;
+  padding: 5px 10px;
+  border-radius: 12px;
+  background: rgba(221,226,85,0.14);
+  border: 1px solid rgba(221,226,85,0.3);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: #DDE255;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+.progv3-hero-tag {
+  display: inline-block;
+  padding: 5px 12px;
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-left: 6px;
+  vertical-align: middle;
+  background: linear-gradient(135deg, var(--goal-color, #F98805), var(--goal-color-2, #F35695));
+  color: #fff;
+}
+.progv3-hero-title {
+  font-family: 'Bebas Neue', Impact, sans-serif;
+  font-size: 36px;
+  letter-spacing: 2px;
+  color: #F0F0FF;
+  line-height: 1;
+  margin-bottom: 6px;
+}
+.progv3-hero-sub {
+  font-size: 13px;
+  color: rgba(240,240,255,0.62);
+  line-height: 1.4;
+  margin-bottom: 18px;
+}
+
+/* Stats rings */
+.progv3-stats {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+.progv3-stat {
+  flex: 1;
+  text-align: center;
+  padding: 12px 6px;
+  border-radius: 16px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.05);
+}
+.progv3-stat-ring {
+  position: relative;
+  width: 56px; height: 56px;
+  margin: 0 auto 6px;
+}
+.progv3-stat-ring svg {
+  width: 56px; height: 56px;
+  transform: rotate(-90deg);
+}
+.progv3-stat-ring circle.bg {
+  fill: none; stroke: rgba(255,255,255,0.08); stroke-width: 4;
+}
+.progv3-stat-ring circle.fg {
+  fill: none; stroke-width: 4;
+  stroke-linecap: round;
+  stroke-dasharray: 144;
+  stroke-dashoffset: 144;
+  transition: stroke-dashoffset 1.2s cubic-bezier(0.65, 0, 0.35, 1);
+}
+.progv3-stat-ico {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 18px;
+}
+.progv3-stat-val {
+  font-family: 'Bebas Neue', Impact, sans-serif;
+  font-size: 18px;
+  color: #F0F0FF;
+  letter-spacing: 1px;
+  line-height: 1;
+}
+.progv3-stat-lbl {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  color: rgba(240,240,255,0.5);
+  text-transform: uppercase;
+  margin-top: 3px;
+}
+
+/* Liste 3 exos preview */
+.progv3-exos-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+.progv3-exo-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  border-radius: 14px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.05);
+}
+.progv3-exo-thumb {
+  width: 40px; height: 40px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, rgba(249,136,5,0.2), rgba(243,86,149,0.2));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+.progv3-exo-meta { flex: 1; min-width: 0; }
+.progv3-exo-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: #F0F0FF;
+  margin-bottom: 2px;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.progv3-exo-detail {
+  font-size: 11px;
+  color: rgba(240,240,255,0.55);
+}
+.progv3-exo-more {
+  text-align: center;
+  font-size: 11px;
+  color: rgba(240,240,255,0.45);
+  padding: 6px;
+}
+
+/* CTA principal */
+.progv3-cta-main {
+  display: block;
+  width: 100%;
+  height: 56px;
+  border: none;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #F98805, #F35695);
+  color: #fff;
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  box-shadow: 0 12px 32px -10px rgba(243,86,149,0.55);
+  transition: transform 0.15s, box-shadow 0.2s;
+  margin-bottom: 10px;
+}
+.progv3-cta-main:active {
+  transform: scale(0.97);
+  box-shadow: 0 8px 24px -8px rgba(243,86,149,0.65);
+}
+.progv3-cta-link {
+  display: block;
+  width: 100%;
+  background: none;
+  border: none;
+  color: rgba(240,240,255,0.7);
+  font-size: 13px;
+  font-weight: 500;
+  padding: 8px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  text-align: center;
+}
+.progv3-cta-link:active { color: #F0F0FF; }
+
+/* Hero variantes : repos / terminée */
+.progv3-hero-rest {
+  text-align: center;
+  padding: 30px 22px;
+}
+.progv3-hero-rest-emoji { font-size: 56px; line-height: 1; margin-bottom: 12px; }
+.progv3-hero-rest-title {
+  font-family: 'Bebas Neue', Impact, sans-serif;
+  font-size: 32px;
+  letter-spacing: 2px;
+  color: #2ECC71;
+  margin-bottom: 10px;
+}
+.progv3-hero-rest-quote {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-style: italic;
+  font-size: 14px;
+  color: rgba(240,240,255,0.75);
+  line-height: 1.4;
+  padding: 0 12px;
+}
+
+.progv3-hero-done {
+  text-align: center;
+}
+.progv3-hero-done-badge {
+  display: inline-block;
+  padding: 6px 14px;
+  border-radius: 14px;
+  background: rgba(46,204,113,0.16);
+  border: 1px solid rgba(46,204,113,0.35);
+  color: #2ECC71;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+/* ─── Bloc 5 : Mode rapide ⚡ ─── */
+.progv3-quick {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  margin-bottom: 18px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(249,136,5,0.1), rgba(221,226,85,0.06));
+  border: 1px solid rgba(249,136,5,0.2);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.progv3-quick-ico {
+  width: 40px; height: 40px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #F98805, #DDE255);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+  flex-shrink: 0;
+}
+.progv3-quick-meta { flex: 1; }
+.progv3-quick-title {
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  color: #F0F0FF;
+  margin-bottom: 2px;
+}
+.progv3-quick-sub {
+  font-size: 11px;
+  color: rgba(240,240,255,0.6);
+}
+.progv3-quick-arrow {
+  color: rgba(240,240,255,0.5);
+  font-size: 20px;
+}
+
+/* ─── Bloc 6 : Cards semaine swipables ─── */
+.progv3-week-title {
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: rgba(240,240,255,0.55);
+  text-transform: uppercase;
+  margin: 8px 4px 12px;
+}
+.progv3-week-track {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-padding-left: 0;
+  scroll-padding-right: 16px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  margin: 0 -16px 18px;
+  padding: 4px 16px;
+  touch-action: pan-x;
+}
+.progv3-week-track::-webkit-scrollbar { display: none; }
+.progv3-week-card {
+  flex: 0 0 calc(100vw - 80px);
+  max-width: 280px;
+  min-height: 140px;
+  padding: 16px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+  border: 1px solid rgba(255,255,255,0.07);
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  flex-shrink: 0;
+  position: relative;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.progv3-week-card.today {
+  border-color: rgba(221,226,85,0.4);
+  background: linear-gradient(135deg, rgba(249,136,5,0.08), rgba(243,86,149,0.05));
+}
+.progv3-week-card-day {
+  font-family: 'Bebas Neue', Impact, sans-serif;
+  font-size: 14px;
+  letter-spacing: 1.5px;
+  color: rgba(240,240,255,0.55);
+  margin-bottom: 8px;
+}
+.progv3-week-card.today .progv3-week-card-day { color: #DDE255; }
+.progv3-week-card-title {
+  font-family: 'Bebas Neue', Impact, sans-serif;
+  font-size: 22px;
+  letter-spacing: 1px;
+  color: #F0F0FF;
+  line-height: 1.1;
+  margin-bottom: 6px;
+}
+.progv3-week-card-sub {
+  font-size: 11px;
+  color: rgba(240,240,255,0.55);
+  margin-bottom: 12px;
+}
+.progv3-week-card-status {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 10px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.progv3-week-card-status.done { background: rgba(46,204,113,0.15); color: #2ECC71; }
+.progv3-week-card-status.planned { background: rgba(255,255,255,0.06); color: rgba(240,240,255,0.65); }
+.progv3-week-card-status.rest { background: rgba(155,89,182,0.12); color: #C39BD3; }
+
+/* ─── Bloc 7 : Bibliothèque ─── */
+.progv3-lib {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 18px;
+  margin-bottom: 14px;
+  border-radius: 20px;
+  background: rgba(255,255,255,0.04);
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+  border: 1px solid rgba(255,255,255,0.07);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.progv3-lib-ico {
+  width: 44px; height: 44px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(74,144,226,0.2), rgba(155,89,182,0.2));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+  flex-shrink: 0;
+}
+.progv3-lib-meta { flex: 1; }
+.progv3-lib-title {
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 15px;
+  color: #F0F0FF;
+}
+.progv3-lib-sub {
+  font-size: 12px;
+  color: rgba(240,240,255,0.6);
+}
+.progv3-lib-arrow {
+  color: rgba(240,240,255,0.4);
+  font-size: 20px;
+}
+
+/* ════════════════════════════════════════════════════════════════════
+   MODE IMMERSIF FULLSCREEN — Séance active type Apple Fitness+
+   ════════════════════════════════════════════════════════════════════ */
+.progv3-immersive {
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  background: #050507;
+  display: none;
+  flex-direction: column;
+  color: #F0F0FF;
+  overflow: hidden;
+  font-family: 'DM Sans', system-ui, sans-serif;
+}
+.progv3-immersive.on { display: flex; }
+
+/* Gradient mesh plus intense pour ambiance arène */
+.progv3-imm-mesh {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+.progv3-imm-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(100px);
+  opacity: 0.45;
+  will-change: transform;
+}
+.progv3-imm-blob.b1 { width: 420px; height: 420px; top: -20%; left: -20%; background: #F98805; animation: progv3Float1 20s ease-in-out infinite; }
+.progv3-imm-blob.b2 { width: 380px; height: 380px; bottom: -15%; right: -15%; background: #F35695; animation: progv3Float2 24s ease-in-out infinite; }
+
+.progv3-imm-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: calc(12px + env(safe-area-inset-top, 0px)) 14px 12px;
+  position: relative;
+  z-index: 2;
+}
+.progv3-imm-close {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: #F0F0FF;
+  font-size: 22px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.progv3-imm-name {
+  flex: 1;
+  text-align: center;
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-weight: 500;
+  font-size: 15px;
+  color: #F0F0FF;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.progv3-imm-count {
+  flex-shrink: 0;
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-weight: 500;
+  font-size: 14px;
+  color: rgba(240,240,255,0.7);
+  font-variant-numeric: tabular-nums;
+  min-width: 44px;
+  text-align: right;
+}
+.progv3-imm-progress {
+  position: relative;
+  z-index: 2;
+  height: 4px;
+  margin: 0 14px 14px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.progv3-imm-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #F98805, #F35695);
+  border-radius: 2px;
+  width: 0%;
+  transition: width 0.4s ease-out;
+}
+
+.progv3-imm-body {
+  flex: 1;
+  position: relative;
+  z-index: 2;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 0 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.progv3-imm-body::-webkit-scrollbar { display: none; }
+
+.progv3-imm-illu {
+  width: 200px; height: 200px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(249,136,5,0.18), rgba(243,86,149,0.14));
+  border: 1px solid rgba(255,255,255,0.1);
+  display: flex; align-items: center; justify-content: center;
+  margin: 8px 0 18px;
+  position: relative;
+  overflow: hidden;
+}
+.progv3-imm-illu-ico {
+  font-size: 80px;
+  line-height: 1;
+  filter: drop-shadow(0 12px 32px rgba(243,86,149,0.4));
+}
+
+.progv3-imm-exoname {
+  font-family: 'Bebas Neue', Impact, sans-serif;
+  font-size: 30px;
+  letter-spacing: 1.5px;
+  color: #F0F0FF;
+  text-align: center;
+  line-height: 1;
+  margin-bottom: 8px;
+}
+.progv3-imm-muscles {
+  display: flex; gap: 6px; flex-wrap: wrap; justify-content: center;
+  margin-bottom: 12px;
+}
+.progv3-imm-chip {
+  padding: 4px 10px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  font-size: 11px;
+  color: rgba(240,240,255,0.75);
+}
+.progv3-imm-desc {
+  font-size: 13px;
+  color: rgba(240,240,255,0.62);
+  text-align: center;
+  max-width: 280px;
+  line-height: 1.4;
+  margin-bottom: 18px;
+}
+
+/* Compteur central */
+.progv3-imm-counter {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 8px 0 24px;
+}
+.progv3-imm-bignum {
+  font-family: 'Bebas Neue', Impact, sans-serif;
+  font-size: 96px;
+  line-height: 1;
+  background: linear-gradient(135deg, #F98805, #F35695);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: 2px;
+  margin-bottom: 4px;
+}
+.progv3-imm-bignum-suff {
+  font-size: 32px;
+  color: rgba(240,240,255,0.55);
+  margin-left: 4px;
+  -webkit-text-fill-color: rgba(240,240,255,0.55);
+  background: none;
+}
+.progv3-imm-serie {
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(240,240,255,0.65);
+  letter-spacing: 1px;
+}
+
+/* CTA Set fait (sticky bottom) */
+.progv3-imm-footer {
+  position: relative;
+  z-index: 3;
+  padding: 12px 16px calc(14px + env(safe-area-inset-bottom, 0px));
+  background: linear-gradient(180deg, transparent, rgba(5,5,7,0.85) 30%);
+}
+.progv3-imm-cta {
+  display: block;
+  width: 100%;
+  height: 64px;
+  border: none;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #F98805, #F35695);
+  color: #fff;
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  box-shadow: 0 16px 40px -12px rgba(243,86,149,0.6);
+  transition: transform 0.15s, box-shadow 0.2s;
+}
+.progv3-imm-cta:active {
+  transform: scale(0.96);
+  box-shadow: 0 10px 28px -10px rgba(243,86,149,0.7);
+}
+
+/* Bottom bar permanent */
+.progv3-imm-bar {
+  display: flex;
+  justify-content: space-around;
+  gap: 6px;
+  padding: 0 16px 8px;
+}
+.progv3-imm-bar-btn {
+  flex: 1;
+  height: 44px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.06);
+  color: rgba(240,240,255,0.8);
+  font-size: 13px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.progv3-imm-bar-btn:active { background: rgba(255,255,255,0.08); }
+
+/* ────── Modal repos ────── */
+.progv3-rest-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 9500;
+  background: rgba(5,5,7,0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0 16px;
+}
+.progv3-rest-modal.on { display: flex; }
+.progv3-rest-title {
+  font-family: 'Bebas Neue', Impact, sans-serif;
+  font-size: 32px;
+  letter-spacing: 4px;
+  color: #DDE255;
+  margin-bottom: 24px;
+}
+.progv3-rest-ring {
+  position: relative;
+  width: 240px; height: 240px;
+  margin-bottom: 30px;
+}
+.progv3-rest-ring svg {
+  width: 240px; height: 240px;
+  transform: rotate(-90deg);
+}
+.progv3-rest-ring circle.bg { fill: none; stroke: rgba(255,255,255,0.06); stroke-width: 6; }
+.progv3-rest-ring circle.fg {
+  fill: none; stroke: url(#progv3-rest-grad); stroke-width: 6;
+  stroke-linecap: round;
+  stroke-dasharray: 691;
+  transition: stroke-dashoffset 1s linear;
+}
+.progv3-rest-time {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: 'Bebas Neue', Impact, sans-serif;
+  font-size: 64px;
+  color: #F0F0FF;
+  letter-spacing: 2px;
+  font-variant-numeric: tabular-nums;
+}
+.progv3-rest-skip {
+  height: 48px;
+  padding: 0 28px;
+  border-radius: 14px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: #F0F0FF;
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.progv3-rest-skip:active { background: rgba(255,255,255,0.1); }
+
+/* ════════════════════════════════════════════════════════════════════
+   RÉCAP FIN DE SÉANCE PREMIUM
+   ════════════════════════════════════════════════════════════════════ */
+.progv3-recap {
+  position: fixed;
+  inset: 0;
+  z-index: 9700;
+  background: #050507;
+  display: none;
+  flex-direction: column;
+  color: #F0F0FF;
+  overflow: hidden;
+  font-family: 'DM Sans', system-ui, sans-serif;
+}
+.progv3-recap.on { display: flex; }
+
+.progv3-recap-mesh {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+.progv3-recap-mesh .progv3-imm-blob.b1 { background: #DDE255; opacity: 0.3; }
+.progv3-recap-mesh .progv3-imm-blob.b2 { background: #2ECC71; opacity: 0.25; }
+
+.progv3-recap-body {
+  flex: 1;
+  position: relative;
+  z-index: 2;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: calc(20px + env(safe-area-inset-top, 0px)) 18px 16px;
+  text-align: center;
+}
+.progv3-recap-body::-webkit-scrollbar { display: none; }
+
+.progv3-recap-avatar {
+  width: 100px; height: 100px;
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: center top;
+  margin: 8px auto 16px;
+  display: block;
+  border: 2px solid rgba(221,226,85,0.4);
+  box-shadow: 0 0 0 6px rgba(221,226,85,0.1), 0 20px 60px -16px rgba(243,86,149,0.5);
+  animation: progv3RecapAvatarIn 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
+  background: transparent !important;
+  background-image: none !important;
+}
+@keyframes progv3RecapAvatarIn {
+  from { opacity: 0; transform: scale(0.5); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.progv3-recap-title {
+  font-family: 'Bebas Neue', Impact, sans-serif;
+  font-size: 56px;
+  letter-spacing: 4px;
+  background: linear-gradient(135deg, #DDE255, #2ECC71);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  line-height: 1;
+  margin-bottom: 4px;
+  animation: progv3RecapTitleIn 0.6s ease-out 0.2s backwards;
+}
+@keyframes progv3RecapTitleIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.progv3-recap-subtitle {
+  font-size: 14px;
+  color: rgba(240,240,255,0.62);
+  margin-bottom: 24px;
+}
+
+/* 4 rings stats */
+.progv3-recap-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 22px;
+}
+.progv3-recap-stat {
+  padding: 16px 12px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+  backdrop-filter: blur(36px);
+  -webkit-backdrop-filter: blur(36px);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+.progv3-recap-stat-val {
+  font-family: 'Bebas Neue', Impact, sans-serif;
+  font-size: 32px;
+  letter-spacing: 1px;
+  color: #F0F0FF;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+.progv3-recap-stat-lbl {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: rgba(240,240,255,0.55);
+}
+
+/* Médailles */
+.progv3-recap-medal {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 18px;
+  margin-bottom: 18px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(249,136,5,0.18), rgba(221,226,85,0.14));
+  border: 1px solid rgba(249,136,5,0.35);
+  animation: progv3MedalIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.5s backwards;
+}
+@keyframes progv3MedalIn {
+  from { opacity: 0; transform: scale(0.7); }
+  to { opacity: 1; transform: scale(1); }
+}
+.progv3-recap-medal-ico { font-size: 22px; line-height: 1; }
+.progv3-recap-medal-lbl {
+  font-family: 'Bebas Neue', Impact, sans-serif;
+  font-size: 16px;
+  letter-spacing: 2px;
+  color: #DDE255;
+}
+
+/* Phrase coach signature */
+.progv3-recap-coach {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  margin-bottom: 18px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+  border: 1px solid rgba(255,255,255,0.08);
+  text-align: left;
+}
+.progv3-recap-coach-av {
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: center top;
+  flex-shrink: 0;
+  background: transparent !important;
+  background-image: none !important;
+  border: 1px solid rgba(255,255,255,0.12);
+}
+.progv3-recap-coach-msg {
+  font-size: 13px;
+  font-style: italic;
+  color: rgba(240,240,255,0.85);
+  line-height: 1.4;
+}
+
+/* Suggestion repas */
+.progv3-recap-meal {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  margin-bottom: 18px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(46,204,113,0.1), rgba(74,144,226,0.08));
+  border: 1px solid rgba(46,204,113,0.3);
+  text-align: left;
+}
+.progv3-recap-meal-ico {
+  font-size: 28px;
+  flex-shrink: 0;
+}
+.progv3-recap-meal-meta { flex: 1; min-width: 0; }
+.progv3-recap-meal-title {
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 13px;
+  color: #F0F0FF;
+  margin-bottom: 2px;
+}
+.progv3-recap-meal-sub {
+  font-size: 11px;
+  color: rgba(240,240,255,0.6);
+}
+.progv3-recap-meal-add {
+  height: 36px;
+  padding: 0 12px;
+  border-radius: 10px;
+  background: #2ECC71;
+  color: #fff;
+  border: none;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  flex-shrink: 0;
+}
+
+/* Boutons fin */
+.progv3-recap-footer {
+  position: relative;
+  z-index: 3;
+  padding: 12px 16px calc(16px + env(safe-area-inset-bottom, 0px));
+}
+.progv3-recap-done {
+  display: block;
+  width: 100%;
+  height: 56px;
+  border: none;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #F98805, #F35695);
+  color: #fff;
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  margin-bottom: 10px;
+  box-shadow: 0 12px 32px -10px rgba(243,86,149,0.55);
+}
+.progv3-recap-done:active { transform: scale(0.97); }
+.progv3-recap-share {
+  display: block;
+  width: 100%;
+  height: 44px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: #F0F0FF;
+  font-size: 13px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  margin-bottom: 8px;
+}
+.progv3-recap-debrief {
+  display: block;
+  width: 100%;
+  background: none;
+  border: none;
+  color: rgba(240,240,255,0.7);
+  font-size: 13px;
+  padding: 8px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Confettis */
+.progv3-confetti {
+  position: fixed;
+  pointer-events: none;
+  z-index: 9800;
+  inset: 0;
+  overflow: hidden;
+}
+.progv3-confetti span {
+  position: absolute;
+  width: 8px; height: 12px;
+  top: -20px;
+  animation: progv3ConfettiFall 1.6s linear forwards;
+}
+@keyframes progv3ConfettiFall {
+  to { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+}
+
+/* ════════════════════════════════════════════════════════════════════
+   OVERRIDE CSS — sv2-active (mode actif legacy) stylé immersif V3
+   Cohérent avec le design Mission C sans toucher au JS legacy.
+   ════════════════════════════════════════════════════════════════════ */
+#sv2-active.on {
+  background: #050507 !important;
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 9000 !important;
+}
+#sv2-active.on::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(circle at 15% 20%, rgba(249,136,5,0.18), transparent 50%),
+    radial-gradient(circle at 85% 80%, rgba(243,86,149,0.16), transparent 50%);
+  animation: progv3ImmMeshPulse 14s ease-in-out infinite;
+}
+@keyframes progv3ImmMeshPulse {
+  0%,100% { opacity: 0.9; }
+  50%     { opacity: 1; }
+}
+#sv2-active.on > * { position: relative; z-index: 1; }
+#sv2-active.on .sv-active-name {
+  font-family: 'Bebas Neue', Impact, sans-serif !important;
+  font-size: 30px !important;
+  letter-spacing: 1.5px !important;
+}
+/* CTA "Set fait" / validation : si présent en bas, augmenter */
+#sv2-active.on .sv-validate, #sv2-active.on .sv2-validate-cta, #sv2-active.on .sv-active-validate {
+  min-height: 60px !important;
+  font-size: 17px !important;
+  font-weight: 600 !important;
+  border-radius: 18px !important;
+  box-shadow: 0 12px 32px -10px rgba(243,86,149,0.55) !important;
+}
+
+/* ─── Banner kill-switch productionReady (DEV) ─── */
+.progv3-dev-banner {
+  position: fixed;
+  bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(231,76,60,0.92);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  padding: 6px 12px;
+  border-radius: 10px;
+  z-index: 99;
+  pointer-events: none;
+  max-width: 90vw;
+  text-align: center;
+  display: none;
+}
+
+/* ─── Mobile fine-tuning 380px ─── */
+@media (max-width: 380px) {
+  .progv3-day-circle { width: 36px; height: 36px; font-size: 14px; }
+  .progv3-hero-title { font-size: 30px; }
+  .progv3-imm-illu { width: 170px; height: 170px; }
+  .progv3-imm-bignum { font-size: 80px; }
+  .progv3-recap-title { font-size: 48px; }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .progv3-blob, .progv3-imm-blob, .progv3-day.today .progv3-day-circle, .progv3-confetti span {
+    animation: none !important;
+  }
+}
+</style>
+
+<script>
+// ════════════════════════════════════════════════════════════════════
+// MISSION C — UI Premium Tab Séances : JS render + mode immersif + récap
+// ════════════════════════════════════════════════════════════════════
+(function progV3Bootstrap(){
+  'use strict';
+
+  // ─── Kill switches ───
+  window.SV2_FLAGS = window.SV2_FLAGS || {};
+  if (typeof window.SV2_FLAGS.uiV3 === 'undefined') window.SV2_FLAGS.uiV3 = true;
+  // CLAUSE SÉCURITÉ : passer à TRUE après les 5 tests Mission B
+  if (typeof window.SV2_FLAGS.productionReady === 'undefined') window.SV2_FLAGS.productionReady = false;
+
+  if (!window.SV2_FLAGS.productionReady) {
+    console.warn('⚠️ HIMA: Les 5 tests de sécurité Mission B n\'ont pas été validés. Ne pas mettre en production publique.');
+  }
+
+  // ─── Helpers ───
+  function $(s, root){ return (root || document).querySelector(s); }
+  function escapeHtml(s){
+    if (s == null) return '';
+    return String(s).replace(/[&<>"']/g, function(c){
+      return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c];
+    });
+  }
+
+  // ─── Mapping objectif → couleur/emoji/label ───
+  var GOAL_MAP = {
+    'perte':     { emoji:'🔥', label:'Perdre du poids',   sub:'Tes séances brûlent les calories',     color:'#F35695', color2:'#9B59B6' },
+    'muscle':    { emoji:'💪', label:'Prendre du muscle', sub:'Séances adaptées à la prise de masse',  color:'#F98805', color2:'#F35695' },
+    'tonifier':  { emoji:'✨', label:'Tonifier',           sub:'Sculpte ta silhouette progressivement', color:'#DDE255', color2:'#F98805' },
+    'endurance': { emoji:'🏃', label:'Endurance',         sub:'Construis ton cardio sur la durée',     color:'#4A90E2', color2:'#2ECC71' },
+    'perf':      { emoji:'⚡', label:'Performance',        sub:'Pousse tes limites au max',             color:'#9B59B6', color2:'#F35695' },
+    'bienetre':  { emoji:'🧘', label:'Bien-être',         sub:'Équilibre corps et mental',             color:'#2ECC71', color2:'#DDE255' }
+  };
+  // Mapping ancien mode → nouvel objectif (compat)
+  var MODE_TO_GOAL = { glow:'perte', bodybuilding:'muscle', hyrox:'endurance', mindset:'bienetre' };
+
+  // Emoji par catégorie/discipline (pour thumbnails et illu immersif)
+  var DISC_EMOJI = {
+    musculation:'🏋️', poids_corps:'💪', cardio_hiit:'⚡', course:'🏃', velo:'🚴',
+    natation:'🏊', yoga:'🧘', calisthenics:'🤸', boxe:'🥊', pilates:'🩰',
+    crossfit:'🔥', etirements:'🤲', hiit_pur:'💥', marche:'🚶', danse:'💃',
+    pousser:'🏋️', tirer:'🏋️', jambes:'🏋️', core:'💪', cardio:'⚡', mobilite:'🧘'
+  };
+  function exoEmoji(exo){
+    if (!exo) return '💪';
+    return DISC_EMOJI[exo._v2_discipline || exo._v2_categorie || exo.cat || exo.categorie] || '💪';
+  }
+
+  // ─── Lookup profil ───
+  function getProgV3Profile(){
+    var U = window.U || {};
+    var prof = null;
+    if (typeof window.getProfileForSession === 'function') {
+      try { prof = window.getProfileForSession(); } catch(e){}
+    }
+    if (!prof) prof = {};
+    // Récupérer goal soit depuis profile V2 soit dériver de U.mode
+    var goal = prof.goal || U.objectif_principal || MODE_TO_GOAL[U.mode || 'glow'] || 'tonifier';
+    return {
+      goal: goal,
+      goalInfo: GOAL_MAP[goal] || GOAL_MAP.tonifier,
+      mode: prof.mode || U.mode || 'glow',
+      lieu: prof.lieu || U.lieu || 'maison',
+      niveau: prof.niveau || 'debutant',
+      duree: prof.seances_duree || 45,
+      prenom: U.prenom || ''
+    };
+  }
+
+  // ─── Mode actuel (objectif → couleur) ───
+  function setGoalCSSVars(root, goalInfo){
+    if (!root || !goalInfo) return;
+    root.style.setProperty('--goal-color', goalInfo.color);
+    root.style.setProperty('--goal-color-2', goalInfo.color2);
+  }
+
+  // ─── Bloc 1 : Header ───
+  function renderHeader(){
+    return ''
+      + '<header class="progv3-header">'
+      + '  <div class="progv3-header-left">'
+      + '    <div class="progv3-h-circle"><span>H</span></div>'
+      + '    <div class="progv3-title">MES SÉANCES</div>'
+      + '  </div>'
+      + '  <div class="progv3-header-actions">'
+      + '    <button class="progv3-icon-btn" onclick="progV3OpenChat()" aria-label="Coach">💬</button>'
+      + '  </div>'
+      + '</header>';
+  }
+
+  // ─── Bloc 2 : Bandeau objectif ───
+  function renderGoal(profile){
+    var gi = profile.goalInfo;
+    var U = window.U || {};
+    var nbWeek = (function(){
+      if (!U.sessions) return 0;
+      var w = Date.now() - 7*24*60*60*1000;
+      return U.sessions.filter(function(s){ return new Date(s.date).getTime() >= w; }).length;
+    })();
+    return ''
+      + '<section class="progv3-goal" style="--goal-color:'+gi.color+'" onclick="progV3OpenGoalPicker()">'
+      + '  <div class="progv3-goal-emoji">'+gi.emoji+'</div>'
+      + '  <div class="progv3-goal-meta">'
+      + '    <div class="progv3-goal-label">'+escapeHtml(gi.label)+'</div>'
+      + '    <div class="progv3-goal-sub">'+escapeHtml(gi.sub)+' · '+nbWeek+' séance'+(nbWeek>1?'s':'')+' cette semaine</div>'
+      + '  </div>'
+      + '  <div class="progv3-goal-arrow">›</div>'
+      + '</section>';
+  }
+
+  // ─── Bloc 3 : Semaine ───
+  function renderWeek(profile){
+    var DAYS = ['L','M','M','J','V','S','D'];
+    var DAY_NAMES = ['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche'];
+    var d = new Date(); var today = d.getDay() === 0 ? 6 : d.getDay() - 1;
+    var U = window.U || {};
+    var html = '<section class="progv3-week" aria-label="Semaine">';
+    for (var i = 0; i < 7; i++) {
+      var cls = 'progv3-day';
+      var inner = DAYS[i];
+      var seance = null;
+      try { if (typeof window.svGenSeance === 'function') seance = window.svGenSeance(i); } catch(e){}
+      var isRest = seance && seance.rest;
+      var key = null;
+      try { if (typeof window.svWeekKey === 'function') key = window.svWeekKey(i); } catch(e){}
+      var done = (U.sessionsByDay && key && U.sessionsByDay[key]) ? true : false;
+
+      if (i === today) cls += ' today';
+      else if (done) { cls += ' done'; inner = '✓'; }
+      else if (isRest) { cls += ' rest'; inner = '🌙'; }
+      else if (i < today) { cls += ' missed'; }
+      else cls += ' future';
+
+      html += '<button class="'+cls+'" onclick="progV3TapDay('+i+')" aria-label="'+DAY_NAMES[i]+'">'
+           +  '<div class="progv3-day-circle">'+inner+'</div>'
+           +  '<div class="progv3-day-name">'+DAYS[i]+'</div>'
+           +  '</button>';
+    }
+    html += '</section>';
+    return html;
+  }
+  window.progV3TapDay = function(i){
+    // Pour l'instant : navigue vers la séance de ce jour. Tap = vibration légère.
+    if (navigator.vibrate) try { navigator.vibrate(10); } catch(e){}
+    // L'UI courante reste centrée sur today. Évolution Mission C+ : afficher détail jour i.
+  };
+
+  // ─── Bloc 4 : Hero séance du jour ───
+  function renderHeroDay(profile){
+    var d = new Date(); var today = d.getDay() === 0 ? 6 : d.getDay() - 1;
+    var DAYS = ['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche'];
+    var seance = null;
+    try { if (typeof window.svGenSeance === 'function') seance = window.svGenSeance(today); } catch(e){ console.warn('[progV3] svGenSeance fail', e); }
+    if (!seance) {
+      return '<section class="progv3-hero progv3-hero-rest"><div class="progv3-hero-rest-emoji">🌿</div><div class="progv3-hero-rest-title">JOUR DE REPOS</div><div class="progv3-hero-rest-quote">Le muscle ne pousse pas pendant l\'effort, il pousse pendant le repos.</div></section>';
+    }
+    if (seance.rest) {
+      return ''
+        + '<section class="progv3-hero progv3-hero-rest">'
+        + '  <div class="progv3-hero-rest-emoji">🌿</div>'
+        + '  <div class="progv3-hero-rest-title">JOUR DE REPOS</div>'
+        + '  <div class="progv3-hero-rest-quote">Le muscle ne pousse pas pendant l\'effort, il pousse pendant le repos.</div>'
+        + '  <div style="margin-top:18px;"><button class="progv3-cta-link" onclick="progV3StartMobilite()">Lancer une routine mobilité →</button></div>'
+        + '</section>';
+    }
+
+    // Séance déjà faite aujourd'hui ?
+    var U = window.U || {};
+    var todayStr = new Date().toISOString().slice(0,10);
+    var doneToday = (U.sessions || []).filter(function(s){ return (s.date||'').slice(0,10) === todayStr; })[0];
+
+    if (doneToday) {
+      var heure = new Date(doneToday.date).toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'});
+      return ''
+        + '<section class="progv3-hero progv3-hero-done">'
+        + '  <div class="progv3-hero-done-badge">✅ Terminée à '+heure+'</div>'
+        + '  <div class="progv3-hero-title">'+escapeHtml((seance.titre||'').toUpperCase())+'</div>'
+        + '  <div class="progv3-hero-sub">Bravo, tu as bouclé ta séance du jour.</div>'
+        + '  <div class="progv3-stats">'
+        + '    <div class="progv3-stat"><div class="progv3-stat-val">'+(doneToday.duree||0)+'</div><div class="progv3-stat-lbl">MINUTES</div></div>'
+        + '    <div class="progv3-stat"><div class="progv3-stat-val">'+(doneToday.kcal||0)+'</div><div class="progv3-stat-lbl">KCAL</div></div>'
+        + '    <div class="progv3-stat"><div class="progv3-stat-val">'+(doneToday.setsCount||0)+'</div><div class="progv3-stat-lbl">SÉRIES</div></div>'
+        + '  </div>'
+        + '  <button class="progv3-cta-main" onclick="progV3ViewRecap()">Voir le récap complet →</button>'
+        + '</section>';
+    }
+
+    // Séance prévue
+    var gi = profile.goalInfo;
+    var duree = seance.duree || 45;
+    var nbExos = (seance.exos || []).length;
+    var kcal = Math.round(duree * 7.5);
+    var difficulte = ({deb:4, int:6, av:8}[seance.niv] || 5);
+
+    // Liste 3 premiers exos
+    var topExos = (seance.exos || []).slice(0, 3);
+    var exosHtml = topExos.map(function(e){
+      var nom = escapeHtml(e.n || e.nom || e.id || '');
+      var detail = (e.sets || 3) + '×' + (e.reps || 10);
+      var emo = '💪';
+      if (window.SV_EXOS && window.SV_EXOS[e.id]) {
+        emo = exoEmoji(window.SV_EXOS[e.id]);
+      } else if (e.isCardio) emo = '⚡';
+      return ''
+        + '<div class="progv3-exo-row">'
+        + '  <div class="progv3-exo-thumb">'+emo+'</div>'
+        + '  <div class="progv3-exo-meta">'
+        + '    <div class="progv3-exo-name">'+nom+'</div>'
+        + '    <div class="progv3-exo-detail">'+detail+'</div>'
+        + '  </div>'
+        + '</div>';
+    }).join('');
+    if (nbExos > 3) {
+      exosHtml += '<div class="progv3-exo-more">+ '+(nbExos-3)+' autres exercices</div>';
+    }
+
+    // Rings stats (avec circumference 144 = 2π × 23)
+    var pctDuree = Math.min(100, (duree/60)*100);
+    var pctDifficulte = (difficulte/10)*100;
+    var pctKcal = Math.min(100, (kcal/500)*100);
+    function ringDash(pct){ return Math.round(144 - (144 * pct / 100)); }
+
+    return ''
+      + '<section class="progv3-hero" style="--goal-color:'+gi.color+';--goal-color-2:'+gi.color2+'">'
+      + '  <div class="progv3-hero-badge">Aujourd\'hui · '+DAYS[today]+'</div>'
+      + '  <div class="progv3-hero-tag">'+gi.emoji+' '+escapeHtml(gi.label)+'</div>'
+      + '  <div class="progv3-hero-title">'+escapeHtml((seance.titre||'Séance').toUpperCase())+'</div>'
+      + '  <div class="progv3-hero-sub">'+escapeHtml(seance.sub || 'Adaptée à ton profil et ton matériel')+'</div>'
+
+      + '  <div class="progv3-stats">'
+      + '    <div class="progv3-stat">'
+      + '      <div class="progv3-stat-ring">'
+      + '        <svg viewBox="0 0 56 56"><circle class="bg" cx="28" cy="28" r="23"/><circle class="fg" cx="28" cy="28" r="23" stroke="'+gi.color+'" style="stroke-dashoffset:'+ringDash(pctDuree)+'"/></svg>'
+      + '        <div class="progv3-stat-ico">⏱</div>'
+      + '      </div>'
+      + '      <div class="progv3-stat-val">'+duree+' min</div>'
+      + '      <div class="progv3-stat-lbl">Durée</div>'
+      + '    </div>'
+      + '    <div class="progv3-stat">'
+      + '      <div class="progv3-stat-ring">'
+      + '        <svg viewBox="0 0 56 56"><circle class="bg" cx="28" cy="28" r="23"/><circle class="fg" cx="28" cy="28" r="23" stroke="'+gi.color2+'" style="stroke-dashoffset:'+ringDash(pctDifficulte)+'"/></svg>'
+      + '        <div class="progv3-stat-ico">💪</div>'
+      + '      </div>'
+      + '      <div class="progv3-stat-val">'+difficulte+'/10</div>'
+      + '      <div class="progv3-stat-lbl">Intensité</div>'
+      + '    </div>'
+      + '    <div class="progv3-stat">'
+      + '      <div class="progv3-stat-ring">'
+      + '        <svg viewBox="0 0 56 56"><circle class="bg" cx="28" cy="28" r="23"/><circle class="fg" cx="28" cy="28" r="23" stroke="#DDE255" style="stroke-dashoffset:'+ringDash(pctKcal)+'"/></svg>'
+      + '        <div class="progv3-stat-ico">🔥</div>'
+      + '      </div>'
+      + '      <div class="progv3-stat-val">'+kcal+'</div>'
+      + '      <div class="progv3-stat-lbl">kcal</div>'
+      + '    </div>'
+      + '  </div>'
+
+      + '  <div class="progv3-exos-preview">'+exosHtml+'</div>'
+
+      + '  <button class="progv3-cta-main" onclick="progV3StartSession()">⚡ Démarrer la séance</button>'
+      + '  <button class="progv3-cta-link" onclick="progV3AskHIMA()">💬 Adapter avec HIMA</button>'
+      + '</section>';
+  }
+
+  // ─── Bloc 5 : Mode rapide ───
+  function renderQuick(){
+    return ''
+      + '<section class="progv3-quick" onclick="progV3OpenQuickMenu()" role="button" tabindex="0">'
+      + '  <div class="progv3-quick-ico">⚡</div>'
+      + '  <div class="progv3-quick-meta">'
+      + '    <div class="progv3-quick-title">Pas le temps&nbsp;? Express 10 min</div>'
+      + '    <div class="progv3-quick-sub">Cardio · HIIT · Abdos · Mobilité</div>'
+      + '  </div>'
+      + '  <div class="progv3-quick-arrow">›</div>'
+      + '</section>';
+  }
+
+  // ─── Bloc 6 : Programme semaine cards ───
+  function renderWeekCards(profile){
+    var d = new Date(); var today = d.getDay() === 0 ? 6 : d.getDay() - 1;
+    var DAYS = ['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche'];
+    var U = window.U || {};
+    var html = '<div class="progv3-week-title">Ta semaine</div>';
+    html += '<div class="progv3-week-track">';
+    for (var i = 0; i < 7; i++) {
+      var s = null;
+      try { if (typeof window.svGenSeance === 'function') s = window.svGenSeance(i); } catch(e){}
+      var cls = 'progv3-week-card';
+      if (i === today) cls += ' today';
+      var status, statusCls;
+      var key = null;
+      try { if (typeof window.svWeekKey === 'function') key = window.svWeekKey(i); } catch(e){}
+      var done = (U.sessionsByDay && key && U.sessionsByDay[key]) ? true : false;
+      if (done) { status = '✅ Terminée'; statusCls = 'done'; }
+      else if (s && s.rest) { status = '🌙 Repos'; statusCls = 'rest'; }
+      else { status = '📅 Prévue'; statusCls = 'planned'; }
+      var titre = (s && s.titre) ? s.titre : (s && s.rest ? 'Repos' : 'Séance');
+      var sub = (s && s.sub) ? s.sub : (s && s.duree ? s.duree + ' min · ' + (s.exos||[]).length + ' exos' : '');
+      html += ''
+        + '<div class="'+cls+'" onclick="progV3TapDay('+i+')">'
+        + '  <div class="progv3-week-card-day">'+DAYS[i].toUpperCase()+'</div>'
+        + '  <div class="progv3-week-card-title">'+escapeHtml((titre||'').toUpperCase())+'</div>'
+        + '  <div class="progv3-week-card-sub">'+escapeHtml(sub)+'</div>'
+        + '  <span class="progv3-week-card-status '+statusCls+'">'+status+'</span>'
+        + '</div>';
+    }
+    html += '</div>';
+    return html;
+  }
+
+  // ─── Bloc 7 : Bibliothèque ───
+  function renderLib(){
+    var count = (window.SV_EXOS) ? Object.keys(window.SV_EXOS).length : 43;
+    return ''
+      + '<section class="progv3-lib" onclick="progV3OpenLib()" role="button" tabindex="0">'
+      + '  <div class="progv3-lib-ico">📚</div>'
+      + '  <div class="progv3-lib-meta">'
+      + '    <div class="progv3-lib-title">Bibliothèque d\'exercices</div>'
+      + '    <div class="progv3-lib-sub">'+count+' mouvements à explorer</div>'
+      + '  </div>'
+      + '  <div class="progv3-lib-arrow">›</div>'
+      + '</section>';
+  }
+
+  // ─── Mesh background ───
+  function renderMesh(){
+    return ''
+      + '<div class="progv3-mesh">'
+      + '  <div class="progv3-blob progv3-blob-1"></div>'
+      + '  <div class="progv3-blob progv3-blob-2"></div>'
+      + '  <div class="progv3-blob progv3-blob-3"></div>'
+      + '</div>';
+  }
+
+  // ─── RENDER GLOBAL ───
+  function progV3RenderLanding(){
+    if (!window.SV2_FLAGS.uiV3) return false; // skip si désactivé
+    var tab = document.getElementById('t-prog');
+    if (!tab) return false;
+    var profile = getProgV3Profile();
+
+    var html = ''
+      + '<div class="prog-v3-root">'
+      + renderMesh()
+      + renderHeader()
+      + renderGoal(profile)
+      + renderWeek(profile)
+      + renderHeroDay(profile)
+      + renderQuick()
+      + renderWeekCards(profile)
+      + renderLib()
+      + '</div>';
+
+    // Banner DEV si pas productionReady
+    if (!window.SV2_FLAGS.productionReady) {
+      html += '<div class="progv3-dev-banner" style="display:block">⚠️ MODE DEV · 5 TESTS SÉCURITÉ À VALIDER</div>';
+    }
+
+    tab.innerHTML = html;
+    setGoalCSSVars(tab.querySelector('.prog-v3-root'), profile.goalInfo);
+
+    // Force scroll iOS — réutilise les règles existantes du tab parent
+    try {
+      tab.style.display = 'block';
+      tab.style.height = 'calc(100vh - 70px)';
+      tab.style.overflow = 'hidden';
+    } catch(e){}
+
+    document.body.setAttribute('data-progv3', 'on');
+    return true;
+  }
+  window.progV3RenderLanding = progV3RenderLanding;
+
+  // ════════════════════════════════════════════════════════════════════
+  // ACTIONS — délégations vers legacy
+  // ════════════════════════════════════════════════════════════════════
+  window.progV3StartSession = function(){
+    if (navigator.vibrate) try { navigator.vibrate(15); } catch(e){}
+    // Délégation vers svStartActive legacy (le mode immersif sera wrappé séparément)
+    if (typeof window.svStartActive === 'function') {
+      try { window.svStartActive(); }
+      catch(e) { console.error('[progV3] svStartActive failed:', e); }
+    }
+  };
+
+  window.progV3AskHIMA = function(){
+    if (typeof window.svAskHIMA === 'function') {
+      try { window.svAskHIMA(); return; } catch(e){}
+    }
+    if (typeof window.switchTab === 'function') window.switchTab('t-chat');
+  };
+
+  window.progV3StartMobilite = function(){
+    // Lance une séance mobilité 10 min
+    var U = window.U || {};
+    U._quickMode = 'mobilite';
+    if (typeof window.svStartActive === 'function') {
+      try { window.svStartActive(); } catch(e){}
+    }
+  };
+
+  window.progV3ViewRecap = function(){
+    var U = window.U || {};
+    var todayStr = new Date().toISOString().slice(0,10);
+    var done = (U.sessions || []).filter(function(s){ return (s.date||'').slice(0,10) === todayStr; })[0];
+    if (!done) return;
+    progV3ShowRecap(done, true /* fromHistory */);
+  };
+
+  window.progV3OpenChat = function(){
+    if (typeof window.switchTab === 'function') window.switchTab('t-chat');
+  };
+
+  window.progV3OpenGoalPicker = function(){
+    // Évolution Mission C+ : modal de choix d'objectif. Pour l'instant : tab Profil
+    if (typeof window.switchTab === 'function') window.switchTab('t-prf');
+  };
+
+  window.progV3OpenQuickMenu = function(){
+    if (navigator.vibrate) try { navigator.vibrate(10); } catch(e){}
+    if (typeof window.HIMA_QUICKLINK === 'function') { window.HIMA_QUICKLINK(); return; }
+    // Pour l'instant : lance la session quick via le mode rapide existant
+    var U = window.U || {};
+    U._quickMode = 'express';
+    if (typeof window.svStartActive === 'function') {
+      try { window.svStartActive(); } catch(e){}
+    }
+  };
+
+  window.progV3OpenLib = function(){
+    if (typeof window.svOpenLib === 'function') {
+      try { window.svOpenLib(); } catch(e){ console.error('[progV3] svOpenLib failed:', e); }
+    }
+  };
+
+  // ════════════════════════════════════════════════════════════════════
+  // OVERRIDE svBuildLanding → router vers progV3RenderLanding
+  // ════════════════════════════════════════════════════════════════════
+  var _origSvBuildLanding = window.svBuildLanding;
+  window.svBuildLanding = function(){
+    if (window.SV2_FLAGS.uiV3) {
+      try {
+        var ok = progV3RenderLanding();
+        if (ok) {
+          console.log('[progV3] Landing rendu via UI v3');
+          return;
+        }
+      } catch(e) {
+        console.error('[progV3] Render failed, fallback legacy:', e);
+      }
+    }
+    // Fallback legacy
+    if (_origSvBuildLanding) {
+      try { return _origSvBuildLanding.apply(this, arguments); } catch(e){ console.error('[SV] legacy build err:', e); }
+    }
+  };
+
+  // ════════════════════════════════════════════════════════════════════
+  // RÉCAP FIN DE SÉANCE PREMIUM (wrap svFinish)
+  // ════════════════════════════════════════════════════════════════════
+  function progV3ShowRecap(session, fromHistory){
+    var U = window.U || {};
+    var prenom = U.prenom || '';
+    var streak = U.streak || 0;
+
+    // Médaille
+    var medal = null;
+    if ((U.sessions||[]).length === 1 && !fromHistory) medal = { ico:'⭐', lbl:'PREMIÈRE SÉANCE' };
+    else if (streak >= 7) medal = { ico:'🔥', lbl: streak + ' JOURS' };
+    else if (session && (session.newPRs||[]).length > 0) medal = { ico:'🏆', lbl:'NOUVEAU RECORD' };
+
+    // Phrase coach
+    var msg;
+    if (typeof window.pickCoachQuote === 'function') {
+      try { msg = window.pickCoachQuote(); } catch(e){}
+    }
+    if (!msg) msg = "Bien joué" + (prenom ? ' '+prenom : '') + ", t'as poussé fort aujourd'hui.";
+
+    // Repas suggéré (basique selon objectif)
+    var profile = getProgV3Profile();
+    var meal;
+    switch(profile.goal) {
+      case 'muscle': meal = { ico:'🍗', title:'Riz + poulet + brocolis', sub:'30g protéines · 450 kcal' }; break;
+      case 'perte':  meal = { ico:'🥗', title:'Bowl quinoa + saumon + légumes', sub:'25g protéines · 380 kcal' }; break;
+      case 'endurance': meal = { ico:'🍌', title:'Banane + flocons + miel', sub:'15g protéines · 320 kcal' }; break;
+      default:       meal = { ico:'🥗', title:'Repas équilibré post-séance', sub:'Protéines + glucides + légumes' };
+    }
+
+    // Stats
+    var duree = (session && session.duree) || 0;
+    var kcal = (session && session.kcal) || Math.round(duree * 7.5);
+    var tonnage = (session && session.tonnage) || 0;
+    var perf = (session && session.felt) ? Math.round(session.felt*20) : (typeof window.calcReadiness === 'function' ? window.calcReadiness() : 75);
+
+    var recap = document.getElementById('progv3-recap-overlay');
+    if (!recap) {
+      recap = document.createElement('div');
+      recap.id = 'progv3-recap-overlay';
+      recap.className = 'progv3-recap';
+      document.body.appendChild(recap);
+    }
+
+    var medalHtml = medal ? ('<div class="progv3-recap-medal"><span class="progv3-recap-medal-ico">'+medal.ico+'</span><span class="progv3-recap-medal-lbl">'+medal.lbl+'</span></div>') : '';
+
+    recap.innerHTML = ''
+      + '<div class="progv3-recap-mesh">'
+      + '  <div class="progv3-imm-blob b1"></div>'
+      + '  <div class="progv3-imm-blob b2"></div>'
+      + '</div>'
+      + '<div class="progv3-recap-body">'
+      + '  <img src="/avatar.jpg" alt="Coach HIMA" class="progv3-recap-avatar" onerror="this.style.display=\'none\'" />'
+      + '  <div class="progv3-recap-title">BRAVO&nbsp;!</div>'
+      + '  <div class="progv3-recap-subtitle">Tu viens de finir ta séance, savoure ça.</div>'
+      + medalHtml
+      + '  <div class="progv3-recap-stats">'
+      + '    <div class="progv3-recap-stat"><div class="progv3-recap-stat-val">'+duree+' min</div><div class="progv3-recap-stat-lbl">Durée</div></div>'
+      + '    <div class="progv3-recap-stat"><div class="progv3-recap-stat-val">'+kcal+'</div><div class="progv3-recap-stat-lbl">Calories</div></div>'
+      + (tonnage > 0 ? '<div class="progv3-recap-stat"><div class="progv3-recap-stat-val">'+Math.round(tonnage)+' kg</div><div class="progv3-recap-stat-lbl">Volume</div></div>' : '<div class="progv3-recap-stat"><div class="progv3-recap-stat-val">'+((session && session.setsCount)||0)+'</div><div class="progv3-recap-stat-lbl">Séries</div></div>')
+      + '    <div class="progv3-recap-stat"><div class="progv3-recap-stat-val">'+perf+'</div><div class="progv3-recap-stat-lbl">Score</div></div>'
+      + '  </div>'
+      + '  <div class="progv3-recap-coach">'
+      + '    <img src="/avatar.jpg" alt="HIMA" class="progv3-recap-coach-av" onerror="this.style.display=\'none\'" />'
+      + '    <div class="progv3-recap-coach-msg">'+escapeHtml(msg)+'</div>'
+      + '  </div>'
+      + '  <div class="progv3-recap-meal">'
+      + '    <div class="progv3-recap-meal-ico">'+meal.ico+'</div>'
+      + '    <div class="progv3-recap-meal-meta">'
+      + '      <div class="progv3-recap-meal-title">'+escapeHtml(meal.title)+'</div>'
+      + '      <div class="progv3-recap-meal-sub">'+escapeHtml(meal.sub)+'</div>'
+      + '    </div>'
+      + '    <button class="progv3-recap-meal-add" onclick="progV3AddMeal()">+ Ajouter</button>'
+      + '  </div>'
+      + '</div>'
+      + '<div class="progv3-recap-footer">'
+      + '  <button class="progv3-recap-done" onclick="progV3CloseRecap()">✓ Terminer</button>'
+      + '  <button class="progv3-recap-share" onclick="progV3Share()">📤 Partager ma victoire</button>'
+      + '  <button class="progv3-recap-debrief" onclick="progV3Debrief()">💬 Débriefer avec HIMA</button>'
+      + '</div>';
+
+    recap.classList.add('on');
+    // Confettis
+    progV3Confetti();
+    // Vibration légère célébration
+    if (navigator.vibrate) try { navigator.vibrate([20, 60, 20]); } catch(e){}
+  }
+  window.progV3ShowRecap = progV3ShowRecap;
+
+  window.progV3CloseRecap = function(){
+    var r = document.getElementById('progv3-recap-overlay');
+    if (r) r.classList.remove('on');
+    // Refresh landing pour montrer état "terminée"
+    try { window.svBuildLanding(); } catch(e){}
+  };
+  window.progV3AddMeal = function(){
+    if (typeof window.switchTab === 'function') window.switchTab('t-nutr');
+    progV3CloseRecap();
+  };
+  window.progV3Share = function(){
+    if (navigator.share) {
+      navigator.share({ title:'Séance HIMA terminée', text:'Je viens de finir ma séance HIMA 💪', url:'https://hima-navy.vercel.app' }).catch(function(){});
+    } else {
+      alert('Partage natif non disponible sur cet appareil.');
+    }
+  };
+  window.progV3Debrief = function(){
+    if (typeof window.switchTab === 'function') window.switchTab('t-chat');
+    progV3CloseRecap();
+  };
+
+  function progV3Confetti(){
+    var colors = ['#F98805','#F35695','#DDE255','#2ECC71','#4A90E2'];
+    var c = document.createElement('div');
+    c.className = 'progv3-confetti';
+    var html = '';
+    for (var i = 0; i < 26; i++) {
+      var col = colors[Math.floor(Math.random()*colors.length)];
+      var left = Math.random()*100;
+      var delay = Math.random()*0.4;
+      html += '<span style="left:'+left+'vw;background:'+col+';animation-delay:'+delay+'s"></span>';
+    }
+    c.innerHTML = html;
+    document.body.appendChild(c);
+    setTimeout(function(){ c.remove(); }, 2200);
+  }
+
+  // Wrap svFinish pour afficher le récap V3
+  var _origSvFinish = window.svFinish;
+  window.svFinish = function(){
+    var session = null;
+    // Capturer la session juste après que svFinish legacy l'ait sauvegardée
+    var origResult;
+    try { if (_origSvFinish) origResult = _origSvFinish.apply(this, arguments); } catch(e){ console.error('[progV3] svFinish legacy err:', e); }
+    // Récupérer la dernière session sauvée
+    try {
+      var U = window.U || {};
+      session = (U.sessions || []).slice(-1)[0];
+    } catch(e){}
+    // Afficher le récap V3 si uiV3 actif
+    if (window.SV2_FLAGS.uiV3) {
+      setTimeout(function(){
+        try { progV3ShowRecap(session, false); } catch(e){ console.error('[progV3] showRecap err:', e); }
+      }, 200);
+    }
+    return origResult;
+  };
+
+  // ════════════════════════════════════════════════════════════════════
+  // INIT
+  // ════════════════════════════════════════════════════════════════════
+  function progV3Init(){
+    // Premier render si #t-prog est actif
+    var tab = document.getElementById('t-prog');
+    if (tab && tab.classList.contains('on')) {
+      try { window.svBuildLanding(); } catch(e){ console.error('[progV3] init render err:', e); }
+    }
+  }
+
+  // Tenter init après chargement
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function(){ setTimeout(progV3Init, 300); });
+  } else {
+    setTimeout(progV3Init, 300);
+  }
+
+  console.log('[HIMA] Mission C UI Premium loaded ✅');
+})();
+</script>
+
 </body>
 </html>
